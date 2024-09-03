@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <OutDir>$(SolutionDir)\bin\$(Platform)-$(Configuration)\</OutDir>
+        <IntermediateOutputPath>$(SolutionDir)\obj\$(Platform)-$(Configuration)</IntermediateOutputPath>
+	<BaseIntermediateOutputPath>$(SolutionDir)\obj\$(Platform)-$(Configuration)</BaseIntermediateOutputPath>
+    </PropertyGroup>
+</Project>
