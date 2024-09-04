@@ -17,22 +17,31 @@ namespace Warp9.Viewer
 
         Dictionary<int, ConstantBufferPayload> cbuffPayloads = new Dictionary<int, ConstantBufferPayload>();
 
+        public bool Enabled { get; set; } = true;
         public bool IsIndexed { get; internal set; }
         public PrimitiveTopology Topology { get; internal set; }
+        public RasterizerMode RastMode { get; internal set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
+        public BlendMode BlendMode { get; internal set; } = BlendMode.Default;
+        public DepthMode DepthMode { get; internal set; } = DepthMode.UseDepth;
         public int FirstElem { get; internal set; }
         public int NumElems { get; internal set; }
         public int FirstVertexIdx { get; internal set; }
         public Dictionary<int, ConstantBufferPayload> ConstBuffPayloads => cbuffPayloads;
 
-        public void Execute(DeviceContext ctx)
+        public void Execute(DeviceContext ctx, StateCache stateCache)
         {
+            if (!Enabled) return;
+
             ctx.InputAssembler.PrimitiveTopology = Topology;
-            /*ctx.Rasterizer.State = new RasterizerState(ctx.Device, new RasterizerStateDescription()
-            {
-                CullMode = CullMode.None,
-                IsFrontCounterClockwise = true,
-                FillMode = FillMode.Solid
-            });*/
+        
+            if (stateCache.RasterizerStateCache.LastState != RastMode)
+                ctx.Rasterizer.State = stateCache.RasterizerStateCache.Get(RastMode);
+
+            if (stateCache.BlendStateCache.LastState != BlendMode)
+                ctx.OutputMerger.BlendState = stateCache.BlendStateCache.Get(BlendMode);
+
+            if (stateCache.DepthStateCache.LastState != DepthMode)
+                ctx.OutputMerger.DepthStencilState = stateCache.DepthStateCache.Get(DepthMode);
 
             if (IsIndexed)
                 ctx.DrawIndexed(NumElems, FirstElem, FirstVertexIdx);

@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Warp9.Viewer
@@ -37,6 +39,7 @@ namespace Warp9.Viewer
 
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
+        private bool wireframe = false;
         private bool buffDirty = true;
 
         public CubeRenderStyle Style
@@ -51,6 +54,11 @@ namespace Warp9.Viewer
             set { color = value; buffDirty = true; }
         }
 
+        public bool AddWireframe
+        {
+            get { return wireframe; }
+            set { wireframe = value; buffDirty = true; }
+        }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
         {
@@ -61,7 +69,24 @@ namespace Warp9.Viewer
             job.SetIndexBuffer(ctx, RenderUtils.ToByteArray<int>(IndexBuffer), SharpDX.DXGI.Format.R32_UInt);
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
-            job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList, 0, IndexBuffer.Length, 0);
+            
+            DrawCall dcSolid = job.SetDrawCall(0, true, 
+                SharpDX.Direct3D.PrimitiveTopology.TriangleList, 
+                0, IndexBuffer.Length, 0);
+
+            DrawCall dcWire = job.SetDrawCall(1, true,
+                SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                0, IndexBuffer.Length, 0);
+            dcWire.RastMode = RasterizerMode.Wireframe | RasterizerMode.CullBack;
+            dcWire.DepthMode = DepthMode.NoDepth;
+
+            PshConst pshConstWire = new PshConst();
+            pshConstWire.flags = StockShaders.PshConst_Flags_ColorFlat;
+            pshConstWire.color = RenderUtils.ToNumColor(Color.White);
+            job.SetConstBuffer(1, StockShaders.Name_PshConst, pshConstWire);
+
+            buffDirty = true;
+
             return true;
         }
 
@@ -85,6 +110,8 @@ namespace Warp9.Viewer
                 }
 
                 job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
+
+                job.EnableDrawCall(1, wireframe);
 
                 buffDirty = false;
             }

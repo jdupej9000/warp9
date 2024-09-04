@@ -16,6 +16,7 @@ namespace Warp9.Viewer
             device = d;
             ctx = d.ImmediateContext;
             deviceDesc = desc;
+            stateCache = new StateCache(d);
         }
 
         RenderTargetView? renderTargetView;

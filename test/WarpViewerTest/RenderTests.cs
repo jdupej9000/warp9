@@ -104,5 +104,22 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeFlatColorTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void ColorCubeWithWireframeTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.FlatColor;
+            cube.Color = Color.Gray;
+            cube.AddWireframe = true;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeWithWireframeTest_0.png", bmp);
+        }
     }
 }

@@ -19,6 +19,7 @@ namespace Warp9.Viewer
         protected SharpDX.DXGI.AdapterDescription deviceDesc;
         protected ShaderRegistry shaders = new ShaderRegistry();
         protected ConstantBufferManager constantBufferManager = new ConstantBufferManager();
+        protected StateCache? stateCache;
         Dictionary<int, ConstantBufferPayload> constantBuffers = new Dictionary<int, ConstantBufferPayload>();
         readonly Dictionary<RenderItemBase, RenderJob?> renderItems = new Dictionary<RenderItemBase, RenderJob?>();
 
@@ -36,7 +37,7 @@ namespace Warp9.Viewer
 
         protected void Render()
         {
-            if (device is null || ctx is null)
+            if (device is null || ctx is null || stateCache is null)
                 throw new InvalidOperationException();
 
             List<(RenderItemBase, RenderJob?)> updates = new List<(RenderItemBase, RenderJob?)>();
@@ -60,13 +61,16 @@ namespace Warp9.Viewer
             foreach (var kvp in constantBuffers)
                 constantBufferManager.Set(ctx, kvp.Key, kvp.Value);
 
+            // force setting the rasterizer state at least once
+            stateCache.ResetLastState();
+
             foreach (var kvp in renderItems)
             {
                 if (kvp.Value is not null)
                 {
                     // Update individual or per-drawcall vertex buffers.
                     kvp.Key.UpdateConstantBuffers(kvp.Value);
-                    kvp.Value.Render(ctx);
+                    kvp.Value.Render(ctx, stateCache);
                 }
             }
         }

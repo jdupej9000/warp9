@@ -72,7 +72,7 @@ namespace Warp9.Viewer
             }
         }
 
-        public void Render(DeviceContext ctx)
+        public void Render(DeviceContext ctx, StateCache stateCache)
         {
             if (shaderVert is null || shaderPix is null || shaderSignatureVert is null || inputSemanticAssgn is null)
                 throw new InvalidOperationException();
@@ -105,7 +105,7 @@ namespace Warp9.Viewer
                 if (dc.ConstBuffPayloads.Count > 0)
                     ApplyConstBuffPayloads(ctx, dc.ConstBuffPayloads);
 
-                dc.Execute(ctx);
+                dc.Execute(ctx, stateCache);
             }
         }
 
@@ -153,6 +153,18 @@ namespace Warp9.Viewer
 
             drawCalls[slot] = dc;
             return dc;
+        }
+
+        public void EnableDrawCall(int slot, bool enable)
+        {
+            if (drawCalls.TryGetValue(slot, out DrawCall? dc))
+            {
+                dc.Enabled = enable;
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public void ClearVertexBuffers()
