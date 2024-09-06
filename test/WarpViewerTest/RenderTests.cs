@@ -21,6 +21,7 @@ namespace Warp9.Test
             r.CanvasColor = Color.Black;
 
             r.Shaders.AddShader(StockShaders.VsDefault);
+            r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
             r.Shaders.AddShader(StockShaders.PsDefault);
 
             RenderItemCube? cube = null;
@@ -137,6 +138,28 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubePhongTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void ColorCubeInstancedTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.FlatColor;
+            cube.Color = Color.DarkOliveGreen;
+            cube.TriangleSoup = true;
+            cube.UseInstances = true;
+
+            ModelConst mc = new ModelConst();
+            mc.model = Matrix4x4.CreateScale(0.25f);
+            rend.SetConstant(StockShaders.Name_ModelConst, mc);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeInstancedTest_0.png", bmp);
         }
     }
 }

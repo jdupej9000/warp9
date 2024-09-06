@@ -37,6 +37,7 @@ namespace Warp9.Viewer
         readonly Dictionary<int, DrawCall> drawCalls = new Dictionary<int, DrawCall>();
         readonly Dictionary<int, RenderJobBuffer> vertBuffBindings = new Dictionary<int, RenderJobBuffer>();
         RenderJobBuffer? indexBuffer;
+        RenderJobBuffer? instanceBuffer;
 
         bool rebuildInputLayout = false;
 
@@ -85,7 +86,7 @@ namespace Warp9.Viewer
 
             foreach (var vbb in vertBuffBindings)
                 ctx.InputAssembler.SetVertexBuffers(vbb.Key, vbb.Value.Binding);
-
+           
             if (indexBuffer is not null)
                 ctx.InputAssembler.SetIndexBuffer(indexBuffer.Buffer, indexBuffer.Format, 0);
 
@@ -155,6 +156,21 @@ namespace Warp9.Viewer
             return dc;
         }
 
+        public DrawCall SetInstancedDrawCall(int slot, bool indexed, PrimitiveTopology topo, int firstInst, int numInst, int firstElem, int numElems)
+        {
+            if(firstElem != 0) 
+                throw new NotSupportedException();
+
+            DrawCall dc;
+            if (indexed)
+                dc = DrawCall.CreateIndexedInstanced(topo, firstInst, numInst, numElems);
+            else
+                dc = DrawCall.CreateInstanced(topo, firstInst, numInst, numElems);
+
+            drawCalls[slot] = dc;
+            return dc;
+        }
+
         public void EnableDrawCall(int slot, bool enable)
         {
             if (drawCalls.TryGetValue(slot, out DrawCall? dc))
@@ -187,7 +203,7 @@ namespace Warp9.Viewer
             }
         }
 
-        public void SetVertexBuffer(DeviceContext ctx, int slot, byte[] data, VertexDataLayout layout, bool dynamic = false)
+        public void SetVertexBuffer(DeviceContext ctx, int slot, byte[] data, VertexDataLayout layout, bool isDynamic = false)
         {
             if (vertBuffBindings.TryGetValue(slot, out RenderJobBuffer? rjb) && rjb is not null)
             {
@@ -202,7 +218,7 @@ namespace Warp9.Viewer
             vertBuffBindings[slot] = RenderJobBuffer.Create(ctx.Device, data, 
                 BindFlags.VertexBuffer, 
                 SharpDX.DXGI.Format.R8_UInt,
-                data.Length / vertexStructSize, vertexStructSize, dynamic);
+                data.Length / vertexStructSize, vertexStructSize, isDynamic);
 
             vertBuffBindings[slot].Layout = layout;
 

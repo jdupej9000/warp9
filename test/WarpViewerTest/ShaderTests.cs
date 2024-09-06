@@ -11,6 +11,7 @@ namespace Warp9.Test
         {
             ShaderRegistry shr = new ShaderRegistry();
             shr.AddShader(StockShaders.VsDefault);
+            shr.AddShader(StockShaders.VsDefaultInstanced);
             shr.AddShader(StockShaders.PsDefault);
         }
     }

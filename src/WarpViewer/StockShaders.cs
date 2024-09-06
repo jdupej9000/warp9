@@ -106,6 +106,60 @@ VsOutput main(VsInput input)
 }
 ");
 
+        public readonly static ShaderSpec VsDefaultInstanced = ShaderSpec.Create(
+            "VsDefaultInstanced",
+            ShaderType.Vertex,
+            [   new (0, Name_ModelConst),
+                new (1, Name_ViewProjConst)
+            ],
+            [   new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+                new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
+                new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
+                new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+                new ("TEXCOORD", 1, SharpDX.DXGI.Format.R32G32B32_Float)
+            ], @"
+struct VsInput
+{
+   float3 pos : POSITION;
+   float4 color : COLOR0;
+   float2 tex0: TEXCOORD0;
+   float3 normal : NORMAL;
+   float3 translation : TEXCOORD1;
+};
+
+struct VsOutput
+{
+   float4 pos : SV_POSITION;
+   float3 posw : POSITION1;
+   float4 color : COLOR0;
+   float2 tex0 : TEXCOORD0;
+   float3 normal : NORMAL;
+};
+
+cbuffer ModelConst : register(b0)
+{
+   matrix model;
+};
+
+cbuffer ViewProjConst : register(b1)
+{
+   matrix viewProj;
+   float4 camera;
+}
+
+VsOutput main(VsInput input)
+{
+   VsOutput ret;
+   float4 posw = mul(float4(input.pos, 1), model) + float4(input.translation, 0);
+   ret.posw = posw.xyz;
+   ret.pos = mul(posw, viewProj);
+   ret.color = input.color+ float4(input.translation, 0);
+   ret.tex0 = input.tex0;
+   ret.normal = normalize(mul(input.normal, (float3x3)model));
+   return ret;
+}
+");
+
         public readonly static ShaderSpec PsDefault = ShaderSpec.Create(
             "PsDefault", 
             ShaderType.Pixel,

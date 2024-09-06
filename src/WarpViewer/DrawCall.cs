@@ -19,12 +19,15 @@ namespace Warp9.Viewer
 
         public bool Enabled { get; set; } = true;
         public bool IsIndexed { get; internal set; }
+        public bool IsInstanced { get; internal set; } = false;
         public PrimitiveTopology Topology { get; internal set; }
         public RasterizerMode RastMode { get; internal set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
         public BlendMode BlendMode { get; internal set; } = BlendMode.Default;
         public DepthMode DepthMode { get; internal set; } = DepthMode.UseDepth;
         public int FirstElem { get; internal set; }
         public int NumElems { get; internal set; }
+        public int FirstInstance { get; internal set; } = 0;
+        public int NumInstances { get; internal set; } = 0;
         public int FirstVertexIdx { get; internal set; }
         public Dictionary<int, ConstantBufferPayload> ConstBuffPayloads => cbuffPayloads;
 
@@ -43,10 +46,20 @@ namespace Warp9.Viewer
             if (stateCache.DepthStateCache.LastState != DepthMode)
                 ctx.OutputMerger.DepthStencilState = stateCache.DepthStateCache.Get(DepthMode);
 
-            if (IsIndexed)
-                ctx.DrawIndexed(NumElems, FirstElem, FirstVertexIdx);
+            if (IsInstanced)
+            {
+                if (IsIndexed)
+                    ctx.DrawIndexedInstanced(NumElems, NumInstances, 0, FirstVertexIdx, FirstInstance);
+                else
+                    ctx.DrawInstanced(NumElems, NumInstances, FirstVertexIdx, FirstInstance);
+            }
             else
-                ctx.Draw(NumElems, FirstVertexIdx);
+            {
+                if (IsIndexed)
+                    ctx.DrawIndexed(NumElems, FirstElem, FirstVertexIdx);
+                else
+                    ctx.Draw(NumElems, FirstVertexIdx);
+            }
         }
 
         public static DrawCall CreateIndexed(PrimitiveTopology topo, int first, int num, int offs = 0)
@@ -57,6 +70,36 @@ namespace Warp9.Viewer
         public static DrawCall Create(PrimitiveTopology topo, int first, int num)
         {
             return new DrawCall { IsIndexed = false, Topology = topo, FirstElem = first, NumElems = num, FirstVertexIdx = 0 };
+        }
+
+        public static DrawCall CreateInstanced(PrimitiveTopology topo, int firstInst, int numInst, int numElems)
+        {
+            return new DrawCall
+            {
+                IsIndexed = false,
+                IsInstanced = true,
+                Topology = topo,
+                FirstElem = 0,
+                NumElems = numElems,
+                FirstVertexIdx = 0,
+                FirstInstance = firstInst,
+                NumInstances = numInst
+            };
+        }
+
+        public static DrawCall CreateIndexedInstanced(PrimitiveTopology topo, int firstInst, int numInst, int numElems)
+        {
+            return new DrawCall
+            {
+                IsIndexed = true,
+                IsInstanced = true,
+                Topology = topo,
+                FirstElem = 0,
+                NumElems = numElems,
+                FirstVertexIdx = 0,
+                FirstInstance = firstInst,
+                NumInstances = numInst
+            };
         }
     }
 }
