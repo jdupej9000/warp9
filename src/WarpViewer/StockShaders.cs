@@ -52,6 +52,8 @@ namespace Warp9.Viewer
         public const uint PshConst_Flags_ColorTex = 2;
         public const uint PshConst_Flags_ColorScale = 3;
 
+        public const uint PshConst_Flags_PhongBlinn = 0x10;
+
         public readonly static ShaderSpec VsDefault = ShaderSpec.Create(
             "VsDefault", 
             ShaderType.Vertex,
@@ -157,6 +159,9 @@ float4 main(VsOutput input) : SV_TARGET
    
    float4 ret = color;
    if((flags & 0xf) == 1) ret = input.color;
+
+   if((flags & 0xf0) == 0x10)
+      ret = phong(float4(ambStrength.rrr,1) * ret, ret, input.normal, input.posw);
 
    return ret;
 }

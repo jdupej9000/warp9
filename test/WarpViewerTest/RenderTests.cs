@@ -121,5 +121,22 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeWithWireframeTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void ColorCubePhongTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.FlatColor;
+            cube.Color = Color.DarkOliveGreen;
+            cube.TriangleSoup = true;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubePhongTest_0.png", bmp);
+        }
     }
 }

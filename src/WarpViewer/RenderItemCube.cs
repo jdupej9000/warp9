@@ -37,10 +37,54 @@ namespace Warp9.Viewer
             1,2,3,7,6,5,4,5,1,5,6,2,2,6,7,0,3,7,0,1,3,4,7,5,0,4,1,1,5,2,3,2,7,4,0,7
         };
 
+        static float[] VertexBufferTriSoup = {
+            1,-1,1,0,-1,0,
+            -1,-1,1,0,-1,0,
+            -1,-1,-1,0,-1,0,
+            -1,1,-1,0,1,0,
+            -1,1,1,0,1,0,
+            1,1,1,0,1,0,
+            1,1,-1,1,0,0,
+            1,1,1,1,0,0,
+            1,-1,1,1,0,0,
+            1,1,1,0,0,1,
+            -1,1,1,0,0,1,
+            -1,-1,1,0,0,1,
+            -1,-1,1,-1,0,0,
+            -1,1,1,-1,0,0,
+            -1,1,-1,-1,0,0,
+            1,-1,-1,0,0,-1,
+            -1,-1,-1,0,0,-1,
+            -1,1,-1,0,0,-1,
+            1,-1,-1,0,-1,0,
+            1,-1,1,0,-1,0,
+            -1,-1,-1,0,-1,0,
+            1,1,-1,0,1,0,
+            -1,1,-1,0,1,0,
+            1,1,1,0,1,0,
+            1,-1,-1,1,0,0,
+            1,1,-1,1,0,0,
+            1,-1,1,1,0,0,
+            1,-1,1,0,0,1,
+            1,1,1,0,0,1,
+            -1,-1,1,0,0,1,
+            -1,-1,-1,-1,0,0,
+            -1,-1,1,-1,0,0,
+            -1,1,-1,-1,0,0,
+            1,1,-1,0,0,-1,
+            1,-1,-1,0,0,-1,
+            -1,1,-1,0,0,-1
+        };
+
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
-        private bool wireframe = false;
+        private bool wireframe = false, triangleSoup = false;
         private bool buffDirty = true;
+        public bool TriangleSoup
+        { 
+            get { return triangleSoup; }
+            set { triangleSoup = value; Commit(); }
+        }
 
         public CubeRenderStyle Style
         {
@@ -62,23 +106,46 @@ namespace Warp9.Viewer
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
         {
-            VertexDataLayout layout = new VertexDataLayout();
-            layout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0);
-            layout.AddColor(SharpDX.DXGI.Format.R32G32B32A32_Float, 0, 12);
-            job.SetVertexBuffer(ctx, 0, RenderUtils.ToByteArray<float>(VertexBuffer), layout);
-            job.SetIndexBuffer(ctx, RenderUtils.ToByteArray<int>(IndexBuffer), SharpDX.DXGI.Format.R32_UInt);
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
-            
-            DrawCall dcSolid = job.SetDrawCall(0, true, 
-                SharpDX.Direct3D.PrimitiveTopology.TriangleList, 
-                0, IndexBuffer.Length, 0);
 
-            DrawCall dcWire = job.SetDrawCall(1, true,
+            if (triangleSoup)
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0)
+                    .AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 12);
+                job.SetVertexBuffer(ctx, 0, RenderUtils.ToByteArray<float>(VertexBufferTriSoup), layout);
+
+                int numVert = VertexBufferTriSoup.Length / 6;
+
+                DrawCall dcSolid = job.SetDrawCall(0, false,
+                    SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                    0, numVert);
+
+                DrawCall dcWire = job.SetDrawCall(1, false,
+                    SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                    0, numVert);
+                dcWire.RastMode = RasterizerMode.Wireframe | RasterizerMode.CullBack;
+                dcWire.DepthMode = DepthMode.NoDepth;
+            }
+            else
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0)
+                    .AddColor(SharpDX.DXGI.Format.R32G32B32A32_Float, 0, 12);
+                job.SetVertexBuffer(ctx, 0, RenderUtils.ToByteArray<float>(VertexBuffer), layout);
+                job.SetIndexBuffer(ctx, RenderUtils.ToByteArray<int>(IndexBuffer), SharpDX.DXGI.Format.R32_UInt);
+
+                DrawCall dcSolid = job.SetDrawCall(0, true,
                 SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                 0, IndexBuffer.Length, 0);
-            dcWire.RastMode = RasterizerMode.Wireframe | RasterizerMode.CullBack;
-            dcWire.DepthMode = DepthMode.NoDepth;
+
+                DrawCall dcWire = job.SetDrawCall(1, true,
+                    SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                    0, IndexBuffer.Length, 0);
+                dcWire.RastMode = RasterizerMode.Wireframe | RasterizerMode.CullBack;
+                dcWire.DepthMode = DepthMode.NoDepth;
+            }
 
             PshConst pshConstWire = new PshConst();
             pshConstWire.flags = StockShaders.PshConst_Flags_ColorFlat;
@@ -98,7 +165,13 @@ namespace Warp9.Viewer
             {
                 PshConst pshConst = new PshConst();
 
-                if (style == CubeRenderStyle.FlatColor)
+                if (triangleSoup == true)
+                {
+                    pshConst.flags = StockShaders.PshConst_Flags_ColorFlat | StockShaders.PshConst_Flags_PhongBlinn;
+                    pshConst.color = RenderUtils.ToNumColor(color);
+                    pshConst.ambStrength = 0.1f;
+                }
+                else if (style == CubeRenderStyle.FlatColor)
                 {
                     pshConst.flags = StockShaders.PshConst_Flags_ColorFlat;
                     pshConst.color = RenderUtils.ToNumColor(color);
