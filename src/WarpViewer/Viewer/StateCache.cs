@@ -36,6 +36,17 @@ namespace Warp9.Viewer
         Invalid = 0x7fffffff
     }
 
+    [Flags]
+    public enum SamplerMode
+    {
+        Nearest = 0x0,
+        Linear = 0x1,
+
+        Clamp = 0x0,
+
+        Invalid = 0x7fffffff
+    }
+
     public class StateCache
     {
         public StateCache(Device dev)
@@ -48,15 +59,20 @@ namespace Warp9.Viewer
 
             depthStateCache = new ObjectCache<DepthMode, DepthStencilState>(
                 (m) => CreateDepthState(dev, m));
+
+            samplerStateCache = new ObjectCache<SamplerMode, SamplerState>(
+                (m) => CreateSamplerState(dev, m));
         }
 
         private ObjectCache<RasterizerMode, RasterizerState> rasterizerStateCache;
         private ObjectCache<BlendMode, BlendState> blendStateCache;
         private ObjectCache<DepthMode, DepthStencilState> depthStateCache;
+        private ObjectCache<SamplerMode, SamplerState> samplerStateCache;
 
         public ObjectCache<RasterizerMode, RasterizerState> RasterizerStateCache => rasterizerStateCache;
         public ObjectCache<BlendMode, BlendState> BlendStateCache => blendStateCache;
         public ObjectCache<DepthMode, DepthStencilState> DepthStateCache => depthStateCache;
+        public ObjectCache<SamplerMode, SamplerState> SamplerStateCache => samplerStateCache;
 
         public void ResetLastState()
         {
@@ -97,6 +113,22 @@ namespace Warp9.Viewer
                 desc.IsDepthEnabled = true;
 
             return new DepthStencilState(device, desc);
+        }
+
+        public static SamplerState CreateSamplerState(Device device, SamplerMode mode)
+        {
+            SamplerStateDescription desc = new SamplerStateDescription();
+
+            if (mode.HasFlag(SamplerMode.Linear))
+                desc.Filter = Filter.MinMagMipLinear;
+            else
+                desc.Filter = Filter.MinMagMipPoint;
+
+            desc.AddressV = TextureAddressMode.Clamp;
+            desc.AddressU = TextureAddressMode.Clamp;
+            desc.AddressW = TextureAddressMode.Clamp;
+            
+            return new SamplerState(device, desc);
         }
     }
 }

@@ -30,6 +30,7 @@ namespace Warp9.Viewer
         ConstBuffAssgn[]? cbuffShaderGeom;
         SemanticAssgn[]? inputSemanticAssgn;
         Dictionary<int, ConstantBufferPayload> constantBuffers = new Dictionary<int, ConstantBufferPayload>();
+        Dictionary<int, Texture> textures = new Dictionary<int, Texture>();
         ConstantBufferManager constantBuffersManager;
         ShaderRegistry shaderRegistry;
 
@@ -99,7 +100,11 @@ namespace Warp9.Viewer
 
             ApplyConstBuffPayloads(ctx, constantBuffers);
 
-            // TODO: attach texture samplers
+            foreach (var tex in textures)
+            {
+                ctx.PixelShader.SetShaderResources(tex.Key, tex.Value.ResourceView);
+                ctx.PixelShader.SetSampler(tex.Key, stateCache.SamplerStateCache.Get(SamplerMode.Linear));
+            }
 
             foreach (DrawCall dc in drawCalls.Values)
             {
@@ -232,6 +237,19 @@ namespace Warp9.Viewer
                 BindFlags.IndexBuffer,
                 format,
                 data.Length / elemSize, elemSize, false);
+        }
+
+        public void SetTexture(DeviceContext ctx, int slot, Bitmap bmp, bool isDynamic = false)
+        {
+            if (textures.TryGetValue(slot, out Texture? tex))
+            {
+                if (tex.TryUpdateDynamic(ctx, bmp))
+                    return;
+                else
+                    tex.Dispose();
+            }
+
+            textures[slot] = Texture.Create(ctx.Device, bmp, isDynamic);
         }
 
         public void SetShader(DeviceContext ctx, ShaderType sht, string name)

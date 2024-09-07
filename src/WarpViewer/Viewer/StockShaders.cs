@@ -188,6 +188,9 @@ cbuffer PshConst : register(b1)
    uint flags;
 };
 
+Texture2D tex0: register(t0);
+SamplerState sam0: register(s0);
+
 float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
 {
    float3 l = normalize(lightpos - posw);
@@ -213,6 +216,7 @@ float4 main(VsOutput input) : SV_TARGET
    
    float4 ret = color;
    if((flags & 0xf) == 1) ret = input.color;
+   if((flags & 0xf) == 2) ret = tex0.Sample(sam0, input.tex0);
 
    if((flags & 0xf0) == 0x10)
       ret = phong(float4(ambStrength.rrr,1) * ret, ret, input.normal, input.posw);

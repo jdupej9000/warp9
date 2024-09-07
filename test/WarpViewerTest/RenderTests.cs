@@ -107,6 +107,22 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void ColorCubeTextureTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.Texture;
+            cube.Color = Color.Gray;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeTextureTest_0.png", bmp);
+        }
+
+        [TestMethod]
         public void ColorCubeWithWireframeTest()
         {
             (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
