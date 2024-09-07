@@ -153,7 +153,7 @@ VsOutput main(VsInput input)
    float4 posw = mul(float4(input.pos, 1), model) + float4(input.translation, 0);
    ret.posw = posw.xyz;
    ret.pos = mul(posw, viewProj);
-   ret.color = input.color+ float4(input.translation, 0);
+   ret.color = input.color;
    ret.tex0 = input.tex0;
    ret.normal = normalize(mul(input.normal, (float3x3)model));
    return ret;

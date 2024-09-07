@@ -161,5 +161,26 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeInstancedTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void ColorCubeIndexedInstancedTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.ColorArray;
+            cube.TriangleSoup = false;
+            cube.UseInstances = true;
+
+            ModelConst mc = new ModelConst();
+            mc.model = Matrix4x4.CreateScale(0.25f);
+            rend.SetConstant(StockShaders.Name_ModelConst, mc);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeIndexedInstancedTest_0.png", bmp);
+        }
     }
 }
