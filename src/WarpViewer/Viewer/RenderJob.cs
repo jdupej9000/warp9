@@ -241,7 +241,7 @@ namespace Warp9.Viewer
 
         public void SetTexture(DeviceContext ctx, int slot, Bitmap bmp, bool isDynamic = false)
         {
-            if (textures.TryGetValue(slot, out Texture? tex))
+            if (textures.TryGetValue(slot, out Texture? tex) && tex is not null)
             {
                 if (tex.TryUpdateDynamic(ctx, bmp))
                     return;

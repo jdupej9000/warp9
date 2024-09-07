@@ -188,8 +188,8 @@ cbuffer PshConst : register(b1)
    uint flags;
 };
 
-Texture2D tex0: register(t0);
-SamplerState sam0: register(s0);
+Texture2D tex0 : register(t0);
+SamplerState sam0 : register(s0);
 
 float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
 {
@@ -209,11 +209,6 @@ float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
 
 float4 main(VsOutput input) : SV_TARGET
 {
-   //float4 amb = float4(color.rgb * ambStrength, 1);
-   //float4 diff = float4(color.rgb, 1);
-   
-   //float4 ret = phong(amb, diff, input.normal, input.posw);
-   
    float4 ret = color;
    if((flags & 0xf) == 1) ret = input.color;
    if((flags & 0xf) == 2) ret = tex0.Sample(sam0, input.tex0);

@@ -64,7 +64,7 @@ namespace Warp9.Viewer
                 OptionFlags = ResourceOptionFlags.None,
                 SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
                 Usage = dynamic ? ResourceUsage.Dynamic : ResourceUsage.Default,
-                Format = SharpDX.DXGI.Format.R8G8B8A8_UInt
+                Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm
             };
 
             BitmapData bitmapData = bitmap.LockBits(

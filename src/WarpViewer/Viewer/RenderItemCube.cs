@@ -183,7 +183,7 @@ namespace Warp9.Viewer
 
             if (Style == CubeRenderStyle.Texture)
             {
-                job.SetTexture(ctx, 0, new Bitmap(@"D:\dev\tex.png"));
+                job.SetTexture(ctx, 0, new Bitmap(@"..\..\test\data\_tex_nebula_256.png"));
             }
 
 
