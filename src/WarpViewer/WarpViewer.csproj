@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageId>Warp9.Viewer</PackageId>
-    <RootNamespace>Warp9.Viewer</RootNamespace>
+    <RootNamespace>Warp9</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
