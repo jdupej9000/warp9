@@ -14,20 +14,20 @@ namespace Warp9.Viewer
         {
         }
 
-        Dictionary<int, RenderJobBuffer> constBuffers = new Dictionary<int, RenderJobBuffer>();
+        Dictionary<int, Buffer> constBuffers = new Dictionary<int, Buffer>();
 
         public void Set(DeviceContext ctx, int idx, ConstantBufferPayload payload)
         {
             System.Console.WriteLine(string.Format("Updating buff #{0}, length={1}",
                 idx, payload.StructSize));
 
-            if (!constBuffers.TryGetValue(idx, out RenderJobBuffer? buffer))
-                constBuffers[idx] = RenderJobBuffer.CreateConstant(ctx.Device, payload.RawData);
+            if (!constBuffers.TryGetValue(idx, out Buffer? buffer))
+                constBuffers[idx] = Buffer.CreateConstant(ctx.Device, payload.RawData);
             else
                 buffer.UpdateConstant(ctx, payload.RawData);
         }
 
-        internal RenderJobBuffer Get(int idx)
+        internal Buffer Get(int idx)
         {
             return constBuffers[idx];
         }

@@ -35,9 +35,9 @@ namespace Warp9.Viewer
 
         InputLayout? inputLayout;
         readonly Dictionary<int, DrawCall> drawCalls = new Dictionary<int, DrawCall>();
-        readonly Dictionary<int, RenderJobBuffer> vertBuffBindings = new Dictionary<int, RenderJobBuffer>();
-        RenderJobBuffer? indexBuffer;
-        RenderJobBuffer? instanceBuffer;
+        readonly Dictionary<int, Buffer> vertBuffBindings = new Dictionary<int, Buffer>();
+        Buffer? indexBuffer;
+        Buffer? instanceBuffer;
 
         bool rebuildInputLayout = false;
 
@@ -88,7 +88,7 @@ namespace Warp9.Viewer
                 ctx.InputAssembler.SetVertexBuffers(vbb.Key, vbb.Value.Binding);
            
             if (indexBuffer is not null)
-                ctx.InputAssembler.SetIndexBuffer(indexBuffer.Buffer, indexBuffer.Format, 0);
+                ctx.InputAssembler.SetIndexBuffer(indexBuffer.NativeBuffer, indexBuffer.Format, 0);
 
             ctx.VertexShader.Set(shaderVert);
             ctx.PixelShader.Set(shaderPix);
@@ -118,19 +118,19 @@ namespace Warp9.Viewer
             if (cbuffShaderVert is not null)
             {
                 foreach (ConstBuffAssgn cba in cbuffShaderVert)
-                    ctx.VertexShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).Buffer);
+                    ctx.VertexShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).NativeBuffer);
             }
 
             if (cbuffShaderPix is not null)
             {
                 foreach (ConstBuffAssgn cba in cbuffShaderPix)
-                    ctx.PixelShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).Buffer);
+                    ctx.PixelShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).NativeBuffer);
             }
 
             if (cbuffShaderGeom is not null && shaderGeom is not null)
             {
                 foreach (ConstBuffAssgn cba in cbuffShaderGeom)
-                    ctx.GeometryShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).Buffer);
+                    ctx.GeometryShader.SetConstantBuffer(cba.Slot, constantBuffersManager.Get(cba.BufferName).NativeBuffer);
             }
         }
 
@@ -185,7 +185,7 @@ namespace Warp9.Viewer
 
         public void ClearVertexBuffers()
         {
-            foreach (RenderJobBuffer rjb in vertBuffBindings.Values)
+            foreach (Buffer rjb in vertBuffBindings.Values)
                 rjb.Dispose();
 
             vertBuffBindings.Clear();
@@ -194,7 +194,7 @@ namespace Warp9.Viewer
 
         public void RemoveVertexBuffer(int slot)
         {
-            if (vertBuffBindings.TryGetValue(slot, out RenderJobBuffer? rjb) && rjb is not null)
+            if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
             {
                 rjb.Dispose();
                 vertBuffBindings.Remove(slot);
@@ -205,7 +205,7 @@ namespace Warp9.Viewer
 
         public void SetVertexBuffer(DeviceContext ctx, int slot, byte[] data, VertexDataLayout layout, bool isDynamic = false)
         {
-            if (vertBuffBindings.TryGetValue(slot, out RenderJobBuffer? rjb) && rjb is not null)
+            if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
             {
                 if (rjb.TryUpdateDynamic(ctx, data))
                     return;
@@ -215,7 +215,7 @@ namespace Warp9.Viewer
 
             int vertexStructSize = layout.StrideBytes;
 
-            vertBuffBindings[slot] = RenderJobBuffer.Create(ctx.Device, data, 
+            vertBuffBindings[slot] = Buffer.Create(ctx.Device, data, 
                 BindFlags.VertexBuffer, 
                 SharpDX.DXGI.Format.R8_UInt,
                 data.Length / vertexStructSize, vertexStructSize, isDynamic);
@@ -228,7 +228,7 @@ namespace Warp9.Viewer
         public void SetIndexBuffer(DeviceContext ctx, byte[] data, SharpDX.DXGI.Format format)
         {
             int elemSize = RenderUtils.GetStructSizeBytes(format);
-            indexBuffer = RenderJobBuffer.Create(ctx.Device, data,
+            indexBuffer = Buffer.Create(ctx.Device, data,
                 BindFlags.IndexBuffer,
                 format,
                 data.Length / elemSize, elemSize, false);

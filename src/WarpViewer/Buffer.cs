@@ -10,16 +10,16 @@ using SharpDX.D3DCompiler;
 
 namespace Warp9.Viewer
 {
-    internal class RenderJobBuffer : IDisposable
+    internal class Buffer : IDisposable
     {
-        private RenderJobBuffer(SharpDX.Direct3D11.Buffer buff, int elemSize)
+        private Buffer(SharpDX.Direct3D11.Buffer buff, int elemSize)
         {
             buffer = buff;
             elementSize = elemSize;
             itemCount = 1;
         }
 
-        private RenderJobBuffer(SharpDX.Direct3D11.Buffer buff, BindFlags bind, SharpDX.DXGI.Format fmt, int cnt, int elemSize, bool dyn)
+        private Buffer(SharpDX.Direct3D11.Buffer buff, BindFlags bind, SharpDX.DXGI.Format fmt, int cnt, int elemSize, bool dyn)
         {
             buffer = buff;
             bindFlags = bind;
@@ -41,7 +41,7 @@ namespace Warp9.Viewer
         bool isDynamic;
 
         public VertexBufferBinding Binding => binding;
-        public SharpDX.Direct3D11.Buffer Buffer => buffer;
+        public SharpDX.Direct3D11.Buffer NativeBuffer => buffer;
         public SharpDX.DXGI.Format Format => format;
 
         public VertexDataLayout Layout { get; set; }
@@ -65,7 +65,7 @@ namespace Warp9.Viewer
             return false;
         }
 
-        internal static RenderJobBuffer Create(Device device, byte[] data, BindFlags bindFlags, SharpDX.DXGI.Format fmt, int itemCount, int elemSize, bool dyn)
+        internal static Buffer Create(Device device, byte[] data, BindFlags bindFlags, SharpDX.DXGI.Format fmt, int itemCount, int elemSize, bool dyn)
         {
             int dataSize = elemSize * itemCount;
 
@@ -80,10 +80,10 @@ namespace Warp9.Viewer
                 dyn ? CpuAccessFlags.Write : CpuAccessFlags.None,
                 ResourceOptionFlags.None, 0); 
             
-           return new RenderJobBuffer(buff, bindFlags, fmt, itemCount, elemSize, dyn);
+           return new Buffer(buff, bindFlags, fmt, itemCount, elemSize, dyn);
         }
 
-        internal static RenderJobBuffer CreateConstant(Device device, byte[] data)
+        internal static Buffer CreateConstant(Device device, byte[] data)
         {
             int length = data.Length;
 
@@ -99,7 +99,7 @@ namespace Warp9.Viewer
                 CpuAccessFlags.None,
                 ResourceOptionFlags.None, 0);
 
-           return new RenderJobBuffer(buff, length);
+           return new Buffer(buff, length);
         }
 
         public void Dispose()
