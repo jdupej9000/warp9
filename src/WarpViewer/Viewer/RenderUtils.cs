@@ -36,6 +36,15 @@ namespace Warp9.Viewer
             return new System.Numerics.Vector4((float)c.R / 255.0f, (float)c.G / 255.0f, (float)c.B / 255.0f, (float)c.A / 255.0f);
         }
 
+        public static Color ToColor(System.Numerics.Vector4 c)
+        {
+            return Color.FromArgb(
+                (int)Math.Clamp(c.W * 255.0f, 0, 255.0f),
+                (int)Math.Clamp(c.X * 255.0f, 0, 255.0f),
+                (int)Math.Clamp(c.Y * 255.0f, 0, 255.0f),
+                (int)Math.Clamp(c.Z * 255.0f, 0, 255.0f));
+        }
+
         public static byte[] ToByteArray<T>(ReadOnlySpan<T> data) where T : struct
         {
             int size = Marshal.SizeOf<T>() * data.Length;
