@@ -103,7 +103,7 @@ namespace Warp9.Viewer
             foreach (var tex in textures)
             {
                 ctx.PixelShader.SetShaderResources(tex.Key, tex.Value.ResourceView);
-                ctx.PixelShader.SetSampler(tex.Key, stateCache.SamplerStateCache.Get(SamplerMode.Linear));
+                ctx.PixelShader.SetSampler(tex.Key, stateCache.SamplerStateCache.Get(SamplerMode.Anisotropic));
             }
 
             foreach (DrawCall dc in drawCalls.Values)

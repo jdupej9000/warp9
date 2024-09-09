@@ -41,6 +41,7 @@ namespace Warp9.Viewer
     {
         Nearest = 0x0,
         Linear = 0x1,
+        Anisotropic = 0x2,
 
         Clamp = 0x0,
 
@@ -119,6 +120,11 @@ namespace Warp9.Viewer
         {
             SamplerStateDescription desc = new SamplerStateDescription();
 
+            if (mode.HasFlag(SamplerMode.Anisotropic))
+            {
+                desc.Filter = Filter.Anisotropic;
+                desc.MaximumAnisotropy = 16;
+            }
             if (mode.HasFlag(SamplerMode.Linear))
                 desc.Filter = Filter.MinMagMipLinear;
             else
