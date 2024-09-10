@@ -14,6 +14,17 @@ namespace Warp9.Viewer
 {
     public class Texture : IDisposable
     {
+        private Texture(Texture1D tex, ShaderResourceView srv, Texture1DDescription desc)
+        {
+            texture = tex;
+            resourceView = srv;
+
+            Dimension = 1;
+            Width = desc.Width;
+            Format = desc.Format;
+            IsDynamic = (desc.Usage == ResourceUsage.Dynamic);
+        }
+
         private Texture(Texture2D tex, ShaderResourceView srv, Texture2DDescription desc)
         {
             texture = tex;
@@ -47,7 +58,7 @@ namespace Warp9.Viewer
             Utilities.Dispose(ref texture);
         }
 
-        internal static Texture Create(Device dev, Lut lut, bool dynamic=false)
+        internal static Texture Create(Device device, Lut lut, bool dynamic=false)
         {
             Texture1DDescription desc = new Texture1DDescription()
             {
@@ -61,15 +72,14 @@ namespace Warp9.Viewer
                 Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm
             };
 
-            Texture1D tex = new Texture1D(dev, desc);
-            using (DataStream ds = new DataStream(4 * lut.NumPixels, true, true))
-            {
-                ds.Write(lut.Data, 0, lut.NumPixels * 4);
-                ds.Position = 0;
-              
-            }
+            using DataStream ds = new DataStream(4 * lut.NumPixels, true, true);
+            ds.Write(lut.Data, 0, lut.NumPixels * 4);
+            ds.Position = 0;
+            Texture1D tex = new Texture1D(device, desc, ds);
 
-            throw new NotImplementedException();
+            ShaderResourceView srv = new ShaderResourceView(device, tex);
+
+            return new Texture(tex, srv, desc);
         }
 
         internal static Texture Create(Device device, Bitmap bitmap, bool dynamic=false)
