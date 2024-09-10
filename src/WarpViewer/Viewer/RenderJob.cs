@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -250,6 +251,19 @@ namespace Warp9.Viewer
             }
 
             textures[slot] = Texture.Create(ctx.Device, bmp, isDynamic);
+        }
+
+        public void SetTexture(DeviceContext ctx, int slot, Lut lut, bool isDynamic = false)
+        {
+            if (textures.TryGetValue(slot, out Texture? tex) && tex is not null)
+            {
+                if (tex.TryUpdateDynamic(ctx, lut))
+                    return;
+                else
+                    tex.Dispose();
+            }
+
+            textures[slot] = Texture.Create(ctx.Device, lut, isDynamic);
         }
 
         public void SetShader(DeviceContext ctx, ShaderType sht, string name)

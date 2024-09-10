@@ -53,6 +53,11 @@ namespace Warp9.Viewer
             return false;
         }
 
+        public bool TryUpdateDynamic(DeviceContext ctx, Lut lut)
+        {
+            return false;
+        }
+
         public void Dispose()
         {
             Utilities.Dispose(ref texture);
