@@ -25,7 +25,8 @@ namespace Warp9.Data
         readonly SharpDX.DXGI.Format pixelFormat;
         readonly int bytesPerPixel, numPixels;
 
-        byte[] Data => data;
+        public byte[] Data => data;
+        public int NumPixels => numPixels;
 
         public Color Sample(float x)
         {

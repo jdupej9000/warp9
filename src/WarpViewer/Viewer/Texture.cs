@@ -2,6 +2,7 @@
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Security.Permissions;
@@ -46,8 +47,28 @@ namespace Warp9.Viewer
             Utilities.Dispose(ref texture);
         }
 
-        internal static Texture Create(Device dev, Lut lut)
+        internal static Texture Create(Device dev, Lut lut, bool dynamic=false)
         {
+            Texture1DDescription desc = new Texture1DDescription()
+            {
+                Width = lut.NumPixels,
+                MipLevels = 1,
+                ArraySize = 1,
+                BindFlags = BindFlags.ShaderResource,
+                CpuAccessFlags = dynamic ? CpuAccessFlags.Write : CpuAccessFlags.None,
+                OptionFlags = ResourceOptionFlags.None,
+                Usage = dynamic ? ResourceUsage.Dynamic : ResourceUsage.Default,
+                Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm
+            };
+
+            Texture1D tex = new Texture1D(dev, desc);
+            using (DataStream ds = new DataStream(4 * lut.NumPixels, true, true))
+            {
+                ds.Write(lut.Data, 0, lut.NumPixels * 4);
+                ds.Position = 0;
+              
+            }
+
             throw new NotImplementedException();
         }
 
