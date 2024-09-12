@@ -145,9 +145,8 @@ namespace Warp9.Test
             (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
             Assert.IsNotNull(cube);
 
-            cube.Style = CubeRenderStyle.FlatColor;
+            cube.Style = CubeRenderStyle.FlatColorPhong;
             cube.Color = Color.DarkOliveGreen;
-            cube.TriangleSoup = true;
 
             rend.CanvasColor = Color.Black;
             rend.Present();
@@ -162,9 +161,8 @@ namespace Warp9.Test
             (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
             Assert.IsNotNull(cube);
 
-            cube.Style = CubeRenderStyle.FlatColor;
+            cube.Style = CubeRenderStyle.FlatColorPhong;
             cube.Color = Color.DarkOliveGreen;
-            cube.TriangleSoup = true;
             cube.UseInstances = true;
 
             ModelConst mc = new ModelConst();
@@ -185,7 +183,6 @@ namespace Warp9.Test
             Assert.IsNotNull(cube);
 
             cube.Style = CubeRenderStyle.ColorArray;
-            cube.TriangleSoup = false;
             cube.UseInstances = true;
 
             ModelConst mc = new ModelConst();
@@ -197,6 +194,21 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeIndexedInstancedTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void ColorCubeScaleTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.Scale;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeScaleTest_0.png", bmp);
         }
     }
 }

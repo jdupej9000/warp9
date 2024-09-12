@@ -63,7 +63,8 @@ namespace Warp9.Viewer
             [   new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float), 
                 new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
                 new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
-                new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float)
+                new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+                new ("TEXCOORD", 1, SharpDX.DXGI.Format.R32_Float)
             ], @"
 struct VsInput
 {
@@ -71,6 +72,7 @@ struct VsInput
    float4 color : COLOR0;
    float2 tex0: TEXCOORD0;
    float3 normal : NORMAL;
+   float value : TEXCOORD1;
 };
 
 struct VsOutput
@@ -80,6 +82,7 @@ struct VsOutput
    float4 color : COLOR0;
    float2 tex0 : TEXCOORD0;
    float3 normal : NORMAL;
+   float value : TEXCOORD1;
 };
 
 cbuffer ModelConst : register(b0)
@@ -102,6 +105,7 @@ VsOutput main(VsInput input)
    ret.color = input.color;
    ret.tex0 = input.tex0;
    ret.normal = normalize(mul(input.normal, (float3x3)model));
+   ret.value = input.value;
    return ret;
 }
 ");
@@ -116,7 +120,7 @@ VsOutput main(VsInput input)
                 new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
                 new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
                 new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
-                new ("TEXCOORD", 1, SharpDX.DXGI.Format.R32G32B32_Float)
+                new ("TEXCOORD", 7, SharpDX.DXGI.Format.R32G32B32_Float)
             ], @"
 struct VsInput
 {
@@ -124,7 +128,7 @@ struct VsInput
    float4 color : COLOR0;
    float2 tex0: TEXCOORD0;
    float3 normal : NORMAL;
-   float3 translation : TEXCOORD1;
+   float3 translation : TEXCOORD7;
 };
 
 struct VsOutput
@@ -134,6 +138,7 @@ struct VsOutput
    float4 color : COLOR0;
    float2 tex0 : TEXCOORD0;
    float3 normal : NORMAL;
+   float value : TEXCOORD1;
 };
 
 cbuffer ModelConst : register(b0)
@@ -156,6 +161,7 @@ VsOutput main(VsInput input)
    ret.color = input.color;
    ret.tex0 = input.tex0;
    ret.normal = normalize(mul(input.normal, (float3x3)model));
+   ret.value = 0;
    return ret;
 }
 ");
@@ -173,6 +179,7 @@ struct VsOutput
    float4 color : COLOR0;
    float2 tex0 : TEXCOORD0;
    float3 normal : NORMAL;
+   float value : TEXCOORD1;
 };
 
 cbuffer CameraLightConst : register(b0)
@@ -190,6 +197,7 @@ cbuffer PshConst : register(b1)
 
 Texture2D tex0 : register(t0);
 SamplerState sam0 : register(s0);
+Texture1D texScale : register(t1);
 
 float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
 {
@@ -212,6 +220,8 @@ float4 main(VsOutput input) : SV_TARGET
    float4 ret = color;
    if((flags & 0xf) == 1) ret = input.color;
    if((flags & 0xf) == 2) ret = tex0.Sample(sam0, input.tex0);
+   if((flags & 0xf) == 3) ret = texScale.Sample(sam0, input.value);
+
 
    if((flags & 0xf0) == 0x10)
       ret = phong(float4(ambStrength.rrr,1) * ret, ret, input.normal, input.posw);
