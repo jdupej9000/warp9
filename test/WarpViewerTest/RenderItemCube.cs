@@ -90,8 +90,9 @@ namespace Warp9.Test
 
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
-        private bool wireframe = false, instances = false, texture = false;
+        private bool wireframe = false, instances = false, texture = false, valueNotch = false;
         private bool buffDirty = true;
+        private float valueLevel = 0.5f;
         private Lut lut = Lut.Create(256, Lut.FastColors);
 
 
@@ -111,6 +112,18 @@ namespace Warp9.Test
         {
             get { return wireframe; }
             set { wireframe = value; buffDirty = true; }
+        }
+
+        public bool AddValueLevel
+        {
+            get { return valueNotch; }
+            set { valueNotch = value; buffDirty = true; }
+        }
+
+        public float ValueLevel
+        {
+            get { return valueLevel; }
+            set { valueLevel = value; buffDirty = true; }
         }
 
         public bool UseInstances
@@ -216,6 +229,7 @@ namespace Warp9.Test
             {
                 PshConst pshConst = new PshConst();
                 pshConst.color = RenderUtils.ToNumColor(color);
+                pshConst.valueLevel = valueLevel;
 
                 switch (style)
                 {
@@ -249,6 +263,9 @@ namespace Warp9.Test
                         pshConst.ambStrength = 0.5f;
                         break;
                 }
+
+                if (valueNotch)
+                    pshConst.flags |= StockShaders.PshConst_Flags_ValueLevel;
 
                 job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
                 job.EnableDrawCall(1, wireframe);

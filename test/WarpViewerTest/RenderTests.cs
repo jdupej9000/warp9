@@ -212,6 +212,24 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void ColorCubeScaleWithLevelTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.Scale;
+            cube.Color = Color.Black;
+            cube.AddValueLevel = true;
+            cube.ValueLevel = 0.7f;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeScaleWithLevelTest_0.png", bmp);
+        }
+
+        [TestMethod]
         public void ColorCubeEstNormalsPhongTest()
         {
             (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);

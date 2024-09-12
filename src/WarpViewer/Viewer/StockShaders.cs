@@ -36,8 +36,9 @@ namespace Warp9.Viewer
     {
         public Vector4 color;
         public float ambStrength;
+        public float valueLevel;
         public uint flags;
-        private uint reserved0, reserved1;
+        private uint reserved0;
     };
 
     public static class StockShaders
@@ -55,6 +56,7 @@ namespace Warp9.Viewer
         public const uint PshConst_Flags_PhongBlinn = 0x10;
 
         public const uint PshConst_Flags_EstimateNormals = 0x100;
+        public const uint PshConst_Flags_ValueLevel = 0x200;
 
         public readonly static ShaderSpec VsDefault = ShaderSpec.Create(
             "VsDefault", 
@@ -194,6 +196,7 @@ cbuffer PshConst : register(b1)
 {
    float4 color;
    float ambStrength;
+   float valueLevel;
    uint flags;
 };
 
@@ -223,13 +226,20 @@ float4 main(VsOutput input) : SV_TARGET
    if((flags & 0xf) == 1) ret = input.color;
    if((flags & 0xf) == 2) ret = tex0.Sample(sam0, input.tex0);
    if((flags & 0xf) == 3) ret = texScale.Sample(sam0, input.value);
-    
+ 
    float3 normal = input.normal;
    if((flags & 0x100) == 0x100)
       normal = normalize(cross(ddx(input.posw), ddy(input.posw))); // ideally this should be posw-cameraPos calculated in vert shader
 
    if((flags & 0xf0) == 0x10)
       ret = phong(float4(ambStrength.rrr,1) * ret, ret, normal, input.posw);
+
+   if((flags & 0x200) == 0x200)
+   {
+      float dlevel = 0.5 * length(float2(ddx(input.value), ddy(input.value)));
+      float level = saturate((abs(input.value - valueLevel) - dlevel) / dlevel);
+      ret = lerp(color, ret, level);
+   }
 
    return ret;
 }
