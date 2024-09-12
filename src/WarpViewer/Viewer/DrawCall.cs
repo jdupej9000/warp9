@@ -18,17 +18,17 @@ namespace Warp9.Viewer
         Dictionary<int, ConstantBufferPayload> cbuffPayloads = new Dictionary<int, ConstantBufferPayload>();
 
         public bool Enabled { get; set; } = true;
-        public bool IsIndexed { get; internal set; }
-        public bool IsInstanced { get; internal set; } = false;
-        public PrimitiveTopology Topology { get; internal set; }
-        public RasterizerMode RastMode { get; internal set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
-        public BlendMode BlendMode { get; internal set; } = BlendMode.Default;
-        public DepthMode DepthMode { get; internal set; } = DepthMode.UseDepth;
-        public int FirstElem { get; internal set; }
-        public int NumElems { get; internal set; }
-        public int FirstInstance { get; internal set; } = 0;
-        public int NumInstances { get; internal set; } = 0;
-        public int FirstVertexIdx { get; internal set; }
+        public bool IsIndexed { get; set; }
+        public bool IsInstanced { get; set; } = false;
+        public PrimitiveTopology Topology { get; set; }
+        public RasterizerMode RastMode { get; set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
+        public BlendMode BlendMode { get; set; } = BlendMode.Default;
+        public DepthMode DepthMode { get; set; } = DepthMode.UseDepth;
+        public int FirstElem { get; set; }
+        public int NumElems { get; set; }
+        public int FirstInstance { get; set; } = 0;
+        public int NumInstances { get; set; } = 0;
+        public int FirstVertexIdx { get; set; }
         public Dictionary<int, ConstantBufferPayload> ConstBuffPayloads => cbuffPayloads;
 
         public void Execute(DeviceContext ctx, StateCache stateCache)

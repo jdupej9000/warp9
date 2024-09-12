@@ -2,14 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Warp9.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Warp9.Viewer;
 
-namespace Warp9.Viewer
+namespace Warp9.Test
 {
     public enum CubeRenderStyle
     {
@@ -92,7 +90,7 @@ namespace Warp9.Viewer
 
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
-        private bool wireframe = false,instances = false, texture = false;
+        private bool wireframe = false, instances = false, texture = false;
         private bool buffDirty = true;
         private Lut lut = Lut.Create(256, Lut.FastColors);
 
@@ -115,7 +113,7 @@ namespace Warp9.Viewer
             set { wireframe = value; buffDirty = true; }
         }
 
-        public bool UseInstances 
+        public bool UseInstances
         {
             get { return instances; }
             set { instances = value; Commit(); }
