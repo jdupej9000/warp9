@@ -209,11 +209,11 @@ float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
    float3 l = normalize(lightpos - posw);
    float3 v = normalize(camerapos - posw);
    float3 h = normalize(l + v);
-   
+ 
    float cosdiff = dot(normal, l);
    float cosspec = 0;
  
-   if(cosdiff > 0) cosspec = pow(max(dot(h, normal), 0), 40);
+   if(cosdiff > 0) cosspec = pow(dot(h, normal), 40);
    else cosdiff = 0;
 
    float4 ret = amb + diff * cosdiff + float4(1,1,1,0) * cosspec;
