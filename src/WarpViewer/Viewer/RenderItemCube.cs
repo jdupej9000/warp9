@@ -17,7 +17,9 @@ namespace Warp9.Viewer
         ColorArray,
         Texture,
         FlatColorPhong,
-        Scale
+        Scale,
+        FlatColorPhongEstNormals,
+        ScalePhongEstNormals
     };
 
     public class RenderItemCube : RenderItemBase
@@ -189,7 +191,7 @@ namespace Warp9.Viewer
             {
                 job.SetTexture(ctx, 0, new Bitmap(@"..\..\test\data\_tex_nebula_256.png"));
             }
-            else if (Style == CubeRenderStyle.Scale)
+            else if (Style == CubeRenderStyle.Scale || Style == CubeRenderStyle.ScalePhongEstNormals)
             {
                 job.SetTexture(ctx, 1, lut);
             }
@@ -238,6 +240,15 @@ namespace Warp9.Viewer
 
                     case CubeRenderStyle.Scale:
                         pshConst.flags = StockShaders.PshConst_Flags_ColorScale;
+                        break;
+
+                    case CubeRenderStyle.FlatColorPhongEstNormals:
+                        pshConst.flags = StockShaders.PshConst_Flags_ColorFlat | StockShaders.PshConst_Flags_PhongBlinn | StockShaders.PshConst_Flags_EstimateNormals;
+                        break;
+
+                    case CubeRenderStyle.ScalePhongEstNormals:
+                        pshConst.flags = StockShaders.PshConst_Flags_ColorScale | StockShaders.PshConst_Flags_PhongBlinn | StockShaders.PshConst_Flags_EstimateNormals;
+                        pshConst.ambStrength = 0.5f;
                         break;
                 }
 

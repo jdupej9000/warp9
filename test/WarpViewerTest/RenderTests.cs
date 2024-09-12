@@ -210,5 +210,36 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeScaleTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void ColorCubeEstNormalsPhongTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.FlatColorPhongEstNormals;
+            cube.Color = Color.DarkOliveGreen;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeEstNormalsPhongTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void ColorCubeScaleEstNormalsPhongTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.ScalePhongEstNormals;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorScaleCubeEstNormalsPhongTest_0.png", bmp);
+        }
     }
 }
