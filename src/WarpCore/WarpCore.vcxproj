@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -24,26 +16,15 @@
     <ProjectGuid>{30b9bed9-afaf-4d12-9425-3b293d889a9f}</ProjectGuid>
     <RootNamespace>WarpCore</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ResolveNuGetPackages>False</ResolveNuGetPackages>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 2024</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseInteloneMKL>Parallel</UseInteloneMKL>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -51,6 +32,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <UseInteloneMKL>Parallel</UseInteloneMKL>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -110,8 +92,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;WARPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <OpenMP>GenerateParallelCode</OpenMP>
+      <CCppSupport>Cpp20Support</CCppSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,17 +124,47 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="cpd.h" />
+    <ClInclude Include="defs.h" />
+    <ClInclude Include="gpa.h" />
+    <ClInclude Include="impl\cpd_impl.h" />
+    <ClInclude Include="impl\gpa_impl.h" />
+    <ClInclude Include="impl\import_morpholm.h" />
+    <ClInclude Include="impl\import_obj.h" />
+    <ClInclude Include="impl\import_utils.h" />
+    <ClInclude Include="impl\kmeans.h" />
+    <ClInclude Include="impl\pcl_utils.h" />
+    <ClInclude Include="impl\random.h" />
+    <ClInclude Include="impl\search_impl.h" />
+    <ClInclude Include="impl\tri_grid.h" />
+    <ClInclude Include="impl\utils.h" />
+    <ClInclude Include="impl\vec_math.h" />
+    <ClInclude Include="import.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="p3f.h" />
+    <ClInclude Include="search.h" />
+    <ClInclude Include="warpcore.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cpd.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="gpa.cpp" />
+    <ClCompile Include="impl\cpd_impl.cpp" />
+    <ClCompile Include="impl\gpa_impl.cpp" />
+    <ClCompile Include="impl\import_morpholm.cpp" />
+    <ClCompile Include="impl\import_obj.cpp" />
+    <ClCompile Include="impl\import_utils.cpp" />
+    <ClCompile Include="impl\pcl_utils.cpp" />
+    <ClCompile Include="impl\random.cpp" />
+    <ClCompile Include="impl\search_impl.cpp" />
+    <ClCompile Include="impl\tri_grid.cpp" />
+    <ClCompile Include="impl\utils.cpp" />
+    <ClCompile Include="impl\vec_math.cpp" />
+    <ClCompile Include="import.cpp" />
+    <ClCompile Include="misc.cpp" />
+    <ClCompile Include="p3f.cpp" />
+    <ClCompile Include="search.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

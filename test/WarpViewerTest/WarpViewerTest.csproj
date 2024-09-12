@@ -10,6 +10,7 @@
     <RootNamespace>Warp9.Test</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	<UseWindowsForms>true</UseWindowsForms>
+	<Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
