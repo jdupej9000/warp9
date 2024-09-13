@@ -7,23 +7,7 @@ using System.Threading.Tasks;
 
 namespace Warp9.Data
 {
-    public enum MeshViewType
-    {
-    }
-
-    public enum MeshSegmentType
-    {
-        Position,
-        Normal,
-        Tex0
-    }
-
-    internal struct MeshSegment
-    {
-        public int NumCoords;
-        public int Offset;
-        public int ItemLength;
-    }
+   
 
     public class Mesh
     {
@@ -40,7 +24,7 @@ namespace Warp9.Data
 
         public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data, out int itemSize)
         {
-            if (meshSegments.TryGetValue(kind, out MeshSegment seg))
+            if (meshSegments.TryGetValue(kind, out MeshSegment? seg))
             {
                 if (coord == AllCoords)
                 {
