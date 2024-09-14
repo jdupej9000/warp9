@@ -22,7 +22,7 @@ namespace Warp9.Data
         public int FaceCount {get; private init; }
         public bool IsIndexed { get; private init; }
 
-        public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data, out int itemSize)
+        public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data)
         {
             if (meshSegments.TryGetValue(kind, out MeshSegment? seg))
             {
@@ -30,20 +30,17 @@ namespace Warp9.Data
                 {
                     data = new ReadOnlySpan<byte>(vertexData,
                         seg.Offset,
-                        VertexCount * seg.ItemLength * seg.NumCoords);
-                    itemSize = seg.ItemLength;
+                        seg.TotalLength);
                 }
-                else if (coord >= 0 && coord < seg.NumCoords)
+                else if (coord >= 0 && coord < seg.StructElemCount)
                 {
                     data = new ReadOnlySpan<byte>(vertexData,
-                        seg.Offset + coord * VertexCount * seg.ItemLength,
-                        VertexCount * seg.ItemLength);
-                    itemSize = seg.ItemLength;
+                        seg.Offset + coord * seg.ChannelLength,
+                       seg.ChannelLength);
                 }
             }
 
             data = new ReadOnlySpan<byte>();
-            itemSize = 0;
             return false;
         }
 

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,17 +18,23 @@ namespace Warp9.Data
 
     internal abstract class MeshSegment
     {
-        public int NumCoords;
-        public int Offset;
-        public int ItemLength;
-        public int NumItems; // TODO: does not hold with AosData != null
-
+        protected int numItems;
+        protected int structSize;
+        protected int structElemCount;
+        
+        public int Offset {get; set;}
         public bool IsDirty { get; protected set; } = false;
-        public int TotalLength => ItemLength * NumCoords * NumItems;
+        public int TotalLength => GetNumItems() * structSize;
+        public int ChannelLength => TotalLength / structElemCount;
+        public int StructLength => structSize;
+        public int StructElemCount => structElemCount;
+        public int NumItems => GetNumItems();
 
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
         public abstract void CopyAsSoa(Span<byte> raw);
         public abstract MeshSegment Clone();
+
+        protected abstract int GetNumItems();
     }
 
     internal class MeshSegment<T> : MeshSegment where T : struct
@@ -34,6 +43,13 @@ namespace Warp9.Data
         {
             AosData = new List<T>();
             IsDirty = true;
+            structSize = Marshal.SizeOf(typeof(T));
+
+            if (typeof(T) == typeof(float)) structElemCount = 1;
+            else if (typeof(T) == typeof(Vector2)) structElemCount = 2;
+            else if (typeof(T) == typeof(Vector3)) structElemCount = 3;
+            else if (typeof(T) == typeof(Vector4)) structElemCount = 4;
+            else throw new InvalidOperationException();
         }
 
         public List<T>? AosData { get; set; }
@@ -43,7 +59,7 @@ namespace Warp9.Data
             if (AosData is not null) 
                 return;
 
-            ReadOnlySpan<byte> seg = raw.Slice(Offset, ItemLength * NumItems * NumCoords);
+            ReadOnlySpan<byte> seg = raw.Slice(Offset, TotalLength);
             AosData = new List<T>(MeshUtils.CopySoaToAos<T>(seg) ?? throw new InvalidOperationException());
             IsDirty = true;
         }
@@ -59,8 +75,19 @@ namespace Warp9.Data
 
         public override MeshSegment Clone()
         {
-            throw new NotImplementedException();
-            //return new MeshSegment<T>
+            MeshSegment<T> ret = new MeshSegment<T>();
+            ret.Offset = Offset;
+            ret.numItems = numItems;
+
+            return ret;
+        }
+
+        protected override int GetNumItems()
+        {
+            if (AosData is not null)
+                return AosData.Count;
+
+            return numItems;
         }
     }
 }
