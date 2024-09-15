@@ -14,17 +14,24 @@ namespace Warp9.Data
             data = Array.Empty<byte>();
         }
 
-        internal MeshBuilder(byte[] d, Dictionary<MeshSegmentType, MeshSegment> segs)
+        internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, byte[] ixd, MeshSegment? idxSeg)
         {
-            data = d;
+            data = vxd;
+            indexData = ixd;
 
             foreach (var kvp in segs)
                 segments.Add(kvp.Key, kvp.Value.Clone());
+
+            if (idxSeg is not null)
+                indexSegment = idxSeg.Clone();
+            else
+                indexSegment = null;
         }
 
-        byte[] data;
-        bool segmentsDirty = false;
+        byte[] data, indexData;
+        bool segmentsDirty = false, idxSegmentDirty = false;
         Dictionary<MeshSegmentType, MeshSegment> segments = new Dictionary<MeshSegmentType, MeshSegment>();
+        MeshSegment? indexSegment;
 
         public bool IsDirty => segments.Any((t) => t.Value.IsDirty);
         public int BufferSizeNeeded => segments.Sum((t) => t.Value.TotalLength);
@@ -57,11 +64,12 @@ namespace Warp9.Data
             segments.Remove(segType);
         }
 
-        private void ValidateSegments(out int nv)
+        private void ValidateSegments(out int nv, out int nt)
         {
             if (segments.Count == 0)
             {
                 nv = 0;
+                nt = 0;
                 return;
             }
 
@@ -76,6 +84,15 @@ namespace Warp9.Data
                 throw new InvalidDataException("Vertex counts not identical in all channels.");
 
             nv = nv0;
+
+            if (indexSegment is not null)
+            {
+                nt = indexSegment.NumItems;
+            }
+            else
+            {
+                nt = 0;
+            }
         }
 
         private void ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments)
@@ -112,15 +129,37 @@ namespace Warp9.Data
 
                 dataRaw = ret;
             }
-            
+        }
+
+        private void ComposeIndices(out byte[] dataRaw, out MeshSegment? seg)
+        {
+            if (indexSegment is null)
+            {
+                dataRaw = Array.Empty<byte>();
+                seg = null;
+                return;
+            }
+
+            if (idxSegmentDirty)
+            {
+                dataRaw = new byte[indexSegment.TotalLength];
+                indexSegment.Copy(dataRaw);
+                seg = indexSegment.Clone();
+            }
+            else
+            {
+                dataRaw = indexData;
+                seg = indexSegment.Clone();
+            }
         }
 
         public Mesh ToMesh()
         {
-            ValidateSegments(out int nv);
+            ValidateSegments(out int nv, out int nt);
             ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments);
+            ComposeIndices(out byte[] indicesRaw, out MeshSegment? newIdxSeg);
 
-            return new Mesh(nv, dataRaw, newSegments);
+            return new Mesh(nv, nt, dataRaw, newSegments, indicesRaw, newIdxSeg);
         }
     }
 }

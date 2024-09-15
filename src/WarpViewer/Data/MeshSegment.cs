@@ -22,7 +22,7 @@ namespace Warp9.Data
         protected int structSize;
         protected int structElemCount;
         
-        public int Offset {get; set;}
+        public int Offset { get; set; }
         public bool IsDirty { get; protected set; } = false;
         public int TotalLength => GetNumItems() * structSize;
         public int ChannelLength => TotalLength / structElemCount;
@@ -32,13 +32,15 @@ namespace Warp9.Data
 
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
         public abstract void CopyAsSoa(Span<byte> raw);
+        public abstract void Copy(Span<byte> raw);
         public abstract MeshSegment Clone();
         public abstract MeshSegment CloneWith(int offset);
 
         protected abstract int GetNumItems();
     }
 
-    internal class MeshSegment<T> : MeshSegment where T : struct
+    internal class MeshSegment<T> : MeshSegment 
+        where T : struct
     {
         public MeshSegment()
         {
@@ -50,6 +52,7 @@ namespace Warp9.Data
             else if (typeof(T) == typeof(Vector2)) structElemCount = 2;
             else if (typeof(T) == typeof(Vector3)) structElemCount = 3;
             else if (typeof(T) == typeof(Vector4)) structElemCount = 4;
+            else if (typeof(T) == typeof(FaceIndices)) structElemCount = 3;
             else throw new InvalidOperationException();
         }
 
@@ -71,6 +74,14 @@ namespace Warp9.Data
                 throw new InvalidOperationException();
 
             MeshUtils.CopyAosToSoa<T>(raw, CollectionsMarshal.AsSpan(AosData));
+        }
+
+        public override void Copy(Span<byte> raw)
+        {
+            if(AosData is null)
+                throw new InvalidOperationException();
+
+            MemoryMarshal.Cast<T, byte>(CollectionsMarshal.AsSpan(AosData)).CopyTo(raw);
         }
 
         public override MeshSegment Clone()

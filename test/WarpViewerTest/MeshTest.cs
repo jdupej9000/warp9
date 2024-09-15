@@ -102,5 +102,21 @@ namespace Warp9.Test
                 Assert.AreEqual(i + 200, texSoa[i + 5]);
             }
         }
+
+        [TestMethod]
+        public void AddEditTwoChannelsInvalidTest()
+        {
+            MeshBuilder builder = new MeshBuilder();
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            for (int i = 0; i < 5; i++)
+                pos.Add(new Vector3(i, 10 * i, 100 * i));
+
+            List<Vector2> tex = builder.GetSegmentForEditing<Vector2>(MeshSegmentType.Tex0);
+            for (int i = 0; i < 3; i++)
+                tex.Add(new Vector2(i + 100, i + 200));
+
+            Assert.ThrowsException<InvalidDataException>(() => builder.ToMesh());
+           
+        }
     }
 }
