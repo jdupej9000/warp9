@@ -69,8 +69,7 @@ namespace Warp9.Data
             if (AosData is null)
                 throw new InvalidOperationException();
 
-            // TODO: can we avoid ToArray() ?
-            MeshUtils.CopyAosToSoa<T>(raw, AosData.ToArray().AsSpan());
+            MeshUtils.CopyAosToSoa<T>(raw, CollectionsMarshal.AsSpan(AosData));
         }
 
         public override MeshSegment Clone()
