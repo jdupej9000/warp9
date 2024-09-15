@@ -1,0 +1,70 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Warp9.Data;
+
+namespace Warp9.Test
+{
+    [TestClass]
+    public class MeshTest
+    {
+        [TestMethod]
+        public void EmptyMeshTest()
+        {
+            MeshBuilder builder = new MeshBuilder();
+            Mesh m = builder.ToMesh();
+
+            Assert.AreEqual(0, m.VertexCount);
+            Assert.AreEqual(0, m.FaceCount);
+            Assert.AreEqual(false, m.IsIndexed);
+
+            foreach (MeshSegmentType mst in Enum.GetValues(typeof(MeshSegmentType)))
+            {
+                Assert.AreEqual(false, m.TryGetRawData(mst, Mesh.AllCoords, out _));
+            }
+        }
+
+        [TestMethod]
+        public void AddBlankChannelTest()
+        {
+            MeshBuilder builder = new MeshBuilder();
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+
+            Mesh m = builder.ToMesh();
+            Assert.AreEqual(0, m.VertexCount);
+            Assert.AreEqual(0, m.FaceCount);
+            Assert.AreEqual(false, m.IsIndexed);
+
+            Assert.AreEqual(true, m.TryGetRawData(MeshSegmentType.Position, Mesh.AllCoords, out ReadOnlySpan<byte> d));
+            Assert.AreEqual(0, d.Length);
+        }
+
+        [TestMethod]
+        public void AddEditChannelTest()
+        {
+            MeshBuilder builder = new MeshBuilder();
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            for (int i = 0; i < 5; i++)
+                pos.Add(new Vector3(i, 10 * i, 100 * i));
+
+            Mesh m = builder.ToMesh();
+            Assert.AreEqual(0, m.VertexCount);
+            Assert.AreEqual(0, m.FaceCount);
+            Assert.AreEqual(false, m.IsIndexed);
+
+            Assert.AreEqual(true, m.TryGetRawData(MeshSegmentType.Position, Mesh.AllCoords, out ReadOnlySpan<byte> d));
+            ReadOnlySpan<float> posSoa = MemoryMarshal.Cast<byte, float>(d);
+            for (int i = 0; i < 5; i++)
+            {
+                Assert.AreEqual(i, posSoa[i]);
+                Assert.AreEqual(10 * i, posSoa[i + 5]);
+                Assert.AreEqual(100 * i, posSoa[i + 10]);
+            }
+        }
+    }
+}

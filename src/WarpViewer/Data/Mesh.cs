@@ -31,12 +31,14 @@ namespace Warp9.Data
                     data = new ReadOnlySpan<byte>(vertexData,
                         seg.Offset,
                         seg.TotalLength);
+                    return true;
                 }
                 else if (coord >= 0 && coord < seg.StructElemCount)
                 {
                     data = new ReadOnlySpan<byte>(vertexData,
                         seg.Offset + coord * seg.ChannelLength,
                        seg.ChannelLength);
+                    return true;
                 }
             }
 
