@@ -33,6 +33,7 @@ namespace Warp9.Data
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
         public abstract void CopyAsSoa(Span<byte> raw);
         public abstract MeshSegment Clone();
+        public abstract MeshSegment CloneWith(int offset);
 
         protected abstract int GetNumItems();
     }
@@ -81,6 +82,16 @@ namespace Warp9.Data
             return ret;
         }
 
+        public override MeshSegment CloneWith(int offset)
+        {
+            MeshSegment<T> ret = new MeshSegment<T>();
+            ret.Offset = offset;
+            ret.numItems = GetNumItems();
+            ret.AosData = null;
+
+            return ret;
+        }
+        
         protected override int GetNumItems()
         {
             if (AosData is not null)

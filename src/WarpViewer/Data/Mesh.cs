@@ -11,12 +11,18 @@ namespace Warp9.Data
 
     public class Mesh
     {
-        internal Mesh()
+        internal Mesh(int nv, byte[] vx, Dictionary<MeshSegmentType, MeshSegment> segs)
         {
+            meshSegments = segs;
+            vertexData = vx;
+            indexData = Array.Empty<byte>();
+            VertexCount = nv;
+            FaceCount = 0;
+            IsIndexed = false;
         }
 
         Dictionary<MeshSegmentType, MeshSegment> meshSegments = new Dictionary<MeshSegmentType, MeshSegment>();
-        byte[] vertexData, indexData;
+        readonly byte[] vertexData, indexData;
 
         public int VertexCount { get; private init; }
         public int FaceCount {get; private init; }

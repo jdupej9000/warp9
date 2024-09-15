@@ -57,43 +57,70 @@ namespace Warp9.Data
             segments.Remove(segType);
         }
 
-        private void ValidateSegments()
+        private void ValidateSegments(out int nv)
         {
-
-        }
-
-        private byte[] ComposeSoa()
-        {
-            if (!segmentsDirty && !IsDirty)
-                return data;
-
-            byte[] ret = new byte[BufferSizeNeeded];
-
-            int offs = 0;
-            foreach (var seg in segments)
+            if (segments.Count == 0)
             {
-                int segSize = seg.Value.TotalLength;
-                if (seg.Value.IsDirty)
-                {
-                    seg.Value.CopyAsSoa(ret.AsSpan().Slice(offs, segSize));
-                }
-                else
-                {
-                    data.AsSpan(seg.Value.Offset, segSize).CopyTo(ret.AsSpan(offs, segSize));
-                }
-
-                offs += segSize;
+                nv = 0;
+                return;
             }
 
-            return ComposeSoa();
+            int nv0 = int.MaxValue, nv1 = int.MinValue;
+            foreach (var kvp in segments)
+            {
+                if (nv0 > kvp.Value.NumItems) nv0 = kvp.Value.NumItems;
+                if (nv1 < kvp.Value.NumItems) nv1 = kvp.Value.NumItems;
+            }
+
+            if (nv0 != nv1)
+                throw new InvalidDataException("Vertex counts not identical in all channels.");
+
+            nv = nv0;
+        }
+
+        private void ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments)
+        {
+            newSegments = new Dictionary<MeshSegmentType, MeshSegment>();
+
+            if (!segmentsDirty && !IsDirty)
+            {   
+                foreach (var seg in segments)
+                    newSegments.Add(seg.Key, seg.Value.Clone());
+
+                dataRaw = data;
+            }
+            else
+            {
+                byte[] ret = new byte[BufferSizeNeeded];
+
+                int offs = 0;
+                foreach (var seg in segments)
+                {
+                    int segSize = seg.Value.TotalLength;
+                    newSegments.Add(seg.Key, seg.Value.CloneWith(offs));
+                    if (seg.Value.IsDirty)
+                    {
+                        seg.Value.CopyAsSoa(ret.AsSpan().Slice(offs, segSize));
+                    }
+                    else
+                    {  
+                        data.AsSpan(seg.Value.Offset, segSize).CopyTo(ret.AsSpan(offs, segSize));
+                    }
+
+                    offs += segSize;
+                }
+
+                dataRaw = ret;
+            }
+            
         }
 
         public Mesh ToMesh()
         {
-            ValidateSegments();
-            byte[] raw = ComposeSoa();
+            ValidateSegments(out int nv);
+            ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments);
 
-            throw new NotImplementedException();
+            return new Mesh(nv, dataRaw, newSegments);
         }
     }
 }
