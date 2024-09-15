@@ -1,6 +1,7 @@
 ﻿using SharpDX.D3DCompiler;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,6 +63,33 @@ namespace Warp9.Data
         {
             segmentsDirty = true;
             segments.Remove(segType);
+        }
+
+        public List<T> GetIndexSegmentForEditing<T>() where T : struct
+        {
+            if (indexSegment is MeshSegment<T> iseg)
+            {
+                iseg.EnsureAosData(indexData.AsSpan());
+                if(iseg.AosData is null) 
+                    throw new InvalidDataException();
+
+                return iseg.AosData;
+            }
+
+            MeshSegment<T> ret = new MeshSegment<T>();
+            if(ret.AosData is null)
+                throw new InvalidDataException();
+
+            indexSegment = ret;
+            idxSegmentDirty = true;
+
+            return ret.AosData;
+        }
+
+        public void RemoveIndexSegment()
+        {
+            idxSegmentDirty = true;
+            indexSegment = null;
         }
 
         private void ValidateSegments(out int nv, out int nt)
