@@ -1,12 +1,301 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Data;
 
 namespace Warp9.IO
 {
-    public class ObjImport
+    public enum ObjImportMode
     {
+        PostionsOnly = 0
+    }
+
+    public class ObjImport : IDisposable
+    {
+        private struct ObjFace
+        {
+            internal ObjFace(int flags, ReadOnlySpan<int> indices)
+            {
+                IdxPos = new FaceIndices(indices[0], indices[3], indices[6]);
+                IdxTex = new FaceIndices(indices[1], indices[4], indices[7]);
+                IdxNorm = new FaceIndices(indices[2], indices[5], indices[8]);
+                FaceType = flags;
+            }
+
+            public FaceIndices IdxPos;
+            public FaceIndices IdxNorm;
+            public FaceIndices IdxTex;
+            public int FaceType;
+
+            public const int FaceHasPos = 1;
+            public const int FaceHasTex = 2;
+            public const int FaceHasNormal = 4;
+        }
+
+        private ObjImport(Stream s)
+        {
+            reader = new StreamReader(s);
+        }
+
+        TextReader reader;
+
+        List<Vector3> position = new List<Vector3>();
+        List<Vector3> normal = new List<Vector3>();
+        List<Vector2> tex0 = new List<Vector2>();
+        List<ObjFace> faces = new List<ObjFace>();
+
+        bool readPositionsOnly;
+
+        public bool HasError { get; private set; } = false;
+
+        public void Dispose()
+        {
+            reader.Dispose();
+        }
+
+        private void Parse()
+        {
+            Span<float> vecf = stackalloc float[4];
+            Span<int> veci = stackalloc int[9];
+            char vertType;
+
+            int lineCounter = 0;
+            string? line;
+            while((line = reader.ReadLine()) is not null)
+            {
+                lineCounter++;
+
+                if (line.Length < 2)
+                {
+                    continue;
+                }
+                else if (line.StartsWith('v'))
+                {
+                    int dim = ParseVertex(line, vecf, out vertType);
+                    if (!AddVertex(vecf, vertType, dim))
+                    {
+                        SetError(lineCounter);
+                        break;
+                    }
+                }
+                else if (line.StartsWith('f'))
+                {
+                    int flags = ParseFace(line, veci);
+                    if (flags == 0)
+                    {
+                        SetError(lineCounter);
+                        break;
+                    }
+                    faces.Add(new ObjFace(flags, veci));
+                    
+                }
+                else if (line.StartsWith('#'))
+                {
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+
+        private void SetError(int line)
+        {
+            HasError = true;
+        }
+
+        private int ParseVertex(string line, Span<float> vec, out char vertType)
+        {
+            vertType = line[1];
+            int len = line.Length;
+
+            int pos = vertType == ' ' ? 1 : 2;
+            pos = Skip(line, pos);
+            if (pos == len) 
+                return 0;
+
+            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[0]))
+                return 0;
+
+            pos = SkipNonSpace(line, pos);
+            if (pos == len) 
+                return 1;
+
+            pos = Skip(line, pos);
+            if (pos == len) 
+                return 1;
+
+            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[1]))
+                return 1;
+
+            pos = SkipNonSpace(line, pos);
+            if (pos == len)
+                return 2;
+
+            pos = Skip(line, pos);
+            if (pos == len)
+                return 2;
+
+            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[2]))
+                return 2;
+
+            return 3;
+        }
+
+        private bool AddVertex(Span<float> vec, char vertType, int dim)
+        {
+            if (vertType == ' ')
+            {
+                if(dim < 3) 
+                    return false;
+
+                position.Add(new Vector3(vec));
+                return true;
+            }
+            else if (vertType == 'n')
+            {
+                if (dim < 3)
+                    return false;
+
+                normal.Add(new Vector3(vec));
+                return true;
+            }
+            else if (vertType == 't')
+            {
+                if (dim < 2)
+                    return false;
+
+                tex0.Add(new Vector2(vec));
+                return true;
+            }
+           
+            return false;
+        }
+
+        private int ParseFace(string line, Span<int> vec)
+        {
+            int pos = Skip(line, 1);
+            int len = line.Length;
+            if (pos == len) 
+                return 0;
+
+            int flags = ObjFace.FaceHasPos;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (pos == len) 
+                    return 0;
+
+                if(!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i]))
+                    return 0;
+
+                pos = SkipInt(line, pos);
+                if (pos == len) break;
+                if (line[pos] == ' ') continue;
+                pos++; // skip a slash
+
+                int pos2 = SkipInt(line, pos);
+                if (pos2 != pos)
+                {
+                    if(!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i + 1]))
+                        return 0;
+                    flags = ObjFace.FaceHasTex;
+                    pos = pos2 + 1;
+                }
+
+                if (line[pos] == '/')
+                {
+                    pos++;
+                    if (!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i + 2]))
+                        return 0;
+
+                    flags = ObjFace.FaceHasNormal;
+                    pos = SkipInt(line, pos);
+                }
+
+                pos = Skip(line, pos);
+            }
+
+            return flags;
+        }
+
+        private Mesh ComposePositionsOnly()
+        {
+            int nt = faces.Count;
+
+            MeshBuilder builder = new MeshBuilder();
+            builder.SetSegment(MeshSegmentType.Position, position);
+
+            List<FaceIndices> fidx = builder.GetIndexSegmentForEditing<FaceIndices>();
+            fidx.Clear();
+            fidx.Capacity = nt;
+            foreach (ObjFace f in faces)
+                fidx.Add(f.IdxPos);
+
+            return builder.ToMesh();
+        }
+
+        static int Skip(string s, int pos, char ch = ' ')
+        {
+            while (pos < s.Length)
+            {
+                if (s[pos] != ch) return pos;
+                pos++;
+            }
+
+            return pos;
+        }
+
+        static int SkipInt(string s, int pos)
+        {
+            while (pos < s.Length)
+            {
+                if (s[pos] < '0' || s[pos] > '9') return pos;
+                pos++;
+            }
+
+            return pos;
+        }
+
+        static int SkipNonInt(string s, int pos)
+        {
+            while (pos < s.Length)
+            {
+                if (s[pos] >= '0' && s[pos] <= '9') return pos;
+                pos++;
+            }
+
+            return pos;
+        }
+
+        static int SkipNonSpace(string s, int pos)
+        {
+            while (pos < s.Length)
+            {
+                if (s[pos] == ' ') return pos;
+                pos++;
+            }
+
+            return pos;
+        }
+
+        public static bool TryImport(Stream s, ObjImportMode mode, out Mesh m)
+        {
+            using ObjImport import = new ObjImport(s);
+            import.Parse();
+
+            m = mode switch
+            {
+                ObjImportMode.PostionsOnly => import.ComposePositionsOnly(),
+                _ => throw new InvalidOperationException()
+            };
+
+            return !import.HasError;
+        }       
     }
 }

@@ -59,6 +59,13 @@ namespace Warp9.Data
             return ret.AosData;
         }
 
+        public void SetSegment<T>(MeshSegmentType segType, IEnumerable<T> d) where T : struct
+        {
+            List<T> seg = GetSegmentForEditing<T>(segType);
+            seg.Clear();
+            seg.AddRange(d);
+        }
+
         public void RemoveSegment(MeshSegmentType segType)
         {
             segmentsDirty = true;
