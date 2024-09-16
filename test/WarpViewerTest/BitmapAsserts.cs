@@ -11,11 +11,11 @@ namespace Warp9.Test
 {
     public static class BitmapAsserts
     {
-        public static readonly string ReferenceDataPath = @"../../test/data/";
+        
         public static readonly string ResultPath = @"../../bin/testresults";
         public static void AssertEqual(string reference, Bitmap testBitmap)
         {
-            string refPath = Path.GetFullPath(Path.Combine(ReferenceDataPath, reference));
+            string refPath = Path.GetFullPath(Path.Combine(TestUtils.AssetsPath, reference));
 
             Directory.CreateDirectory(Path.GetFullPath(ResultPath));
             testBitmap.Save(Path.GetFullPath(Path.Combine(ResultPath, reference)));

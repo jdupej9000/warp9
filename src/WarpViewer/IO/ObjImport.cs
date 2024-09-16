@@ -12,7 +12,7 @@ namespace Warp9.IO
 {
     public enum ObjImportMode
     {
-        PostionsOnly = 0
+        PositionsOnly = 0
     }
 
     public class ObjImport : IDisposable
@@ -52,6 +52,7 @@ namespace Warp9.IO
         bool readPositionsOnly;
 
         public bool HasError { get; private set; } = false;
+        public string ErrorMessage { get; private set; } = string.Empty;
 
         public void Dispose()
         {
@@ -106,6 +107,7 @@ namespace Warp9.IO
 
         private void SetError(int line)
         {
+            ErrorMessage = string.Format("Invalid directive at line {0}.", line);
             HasError = true;
         }
 
@@ -119,10 +121,11 @@ namespace Warp9.IO
             if (pos == len) 
                 return 0;
 
-            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[0]))
+            int pos2 = SkipNonSpace(line, pos);
+            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[0]))
                 return 0;
 
-            pos = SkipNonSpace(line, pos);
+            pos = pos2;
             if (pos == len) 
                 return 1;
 
@@ -130,10 +133,11 @@ namespace Warp9.IO
             if (pos == len) 
                 return 1;
 
-            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[1]))
+            pos2 = SkipNonSpace(line, pos);
+            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[1]))
                 return 1;
 
-            pos = SkipNonSpace(line, pos);
+            pos = pos2;
             if (pos == len)
                 return 2;
 
@@ -141,7 +145,8 @@ namespace Warp9.IO
             if (pos == len)
                 return 2;
 
-            if (!float.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[2]))
+            pos2 = SkipNonSpace(line, pos);
+            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[2]))
                 return 2;
 
             return 3;
@@ -191,18 +196,19 @@ namespace Warp9.IO
                 if (pos == len) 
                     return 0;
 
-                if(!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i]))
+                int pos2 = SkipInt(line, pos);
+                if(!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i]))
                     return 0;
 
-                pos = SkipInt(line, pos);
+                pos = pos2;
                 if (pos == len) break;
-                if (line[pos] == ' ') continue;
+                if (line[pos] == ' ') { pos++; continue; }
                 pos++; // skip a slash
 
-                int pos2 = SkipInt(line, pos);
+                pos2 = SkipInt(line, pos);
                 if (pos2 != pos)
                 {
-                    if(!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i + 1]))
+                    if(!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i + 1]))
                         return 0;
                     flags = ObjFace.FaceHasTex;
                     pos = pos2 + 1;
@@ -211,11 +217,12 @@ namespace Warp9.IO
                 if (line[pos] == '/')
                 {
                     pos++;
-                    if (!int.TryParse(line.AsSpan(pos), CultureInfo.InvariantCulture, out vec[3 * i + 2]))
+                    pos2 = SkipInt(line, pos);
+                    if (!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i + 2]))
                         return 0;
 
                     flags = ObjFace.FaceHasNormal;
-                    pos = SkipInt(line, pos);
+                    pos = pos2;
                 }
 
                 pos = Skip(line, pos);
@@ -284,16 +291,18 @@ namespace Warp9.IO
             return pos;
         }
 
-        public static bool TryImport(Stream s, ObjImportMode mode, out Mesh m)
+        public static bool TryImport(Stream s, ObjImportMode mode, out Mesh m, out string errMsg)
         {
             using ObjImport import = new ObjImport(s);
             import.Parse();
 
             m = mode switch
             {
-                ObjImportMode.PostionsOnly => import.ComposePositionsOnly(),
+                ObjImportMode.PositionsOnly => import.ComposePositionsOnly(),
                 _ => throw new InvalidOperationException()
             };
+
+            errMsg = import.ErrorMessage;
 
             return !import.HasError;
         }       
