@@ -1,12 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Warp9</RootNamespace>
-    <Platforms>AnyCPU;x64</Platforms>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <PackageId>Warp9.Processing</PackageId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarpViewer\WarpViewer.csproj" />
+  </ItemGroup>
 
 </Project>

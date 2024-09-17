@@ -1,4 +1,6 @@
 using Warp9.Data;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
 
 namespace Warp9.Test
 {

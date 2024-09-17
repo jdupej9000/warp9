@@ -1,9 +1,5 @@
 ﻿using SharpDX.Direct3D11;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 using Warp9.Data;
 using Warp9.Viewer;
 
