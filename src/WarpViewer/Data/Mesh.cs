@@ -20,6 +20,7 @@ namespace Warp9.Data
             indexSegment = idxSeg;
         }
 
+        Dictionary<MeshViewKind, MeshView> meshViews = new Dictionary<MeshViewKind, MeshView>();
         Dictionary<MeshSegmentType, MeshSegment> meshSegments = new Dictionary<MeshSegmentType, MeshSegment>();
         readonly MeshSegment? indexSegment;
 
@@ -62,6 +63,16 @@ namespace Warp9.Data
 
             data = new ReadOnlySpan<byte>();
             return false;
+        }
+
+        public MeshView? GetView(MeshViewKind kind, bool cache=true)
+        {
+            if (meshViews.TryGetValue(kind, out MeshView? v))
+                return v;
+
+
+
+            return null;
         }
 
         public MeshBuilder ToBuilder()

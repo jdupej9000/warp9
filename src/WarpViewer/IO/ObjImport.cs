@@ -244,6 +244,7 @@ namespace Warp9.IO
             return builder.ToMesh();
         }
 
+
         static int Skip(string s, int pos, char ch = ' ')
         {
             while (pos < s.Length)
