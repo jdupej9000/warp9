@@ -5,7 +5,7 @@ namespace Warp9.Test
 {
     internal static class TestUtils
     {
-        public static readonly string AssetsPath = @"../../test/data/";
+        public static readonly string AssetsPath = @"../test/data/";
 
         public static Stream OpenAsset(string name)
         {

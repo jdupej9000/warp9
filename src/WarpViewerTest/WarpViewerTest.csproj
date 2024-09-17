@@ -9,17 +9,18 @@
     <RootNamespace>Warp9.Test</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	  <UseWindowsForms>true</UseWindowsForms>
-	  <Platforms>x64</Platforms>
+	  <Platforms>Any CPU;x64</Platforms>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
 	  <PackageReference Include="MSTest" Version="3.6.0" />
-	  <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.10.1" />
+	  <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.4" />
 	  <PackageReference Include="MSTest.TestFramework" Version="3.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\WarpViewer\WarpViewer.csproj" />
+    <ProjectReference Include="..\WarpViewer\WarpViewer.csproj" />
   </ItemGroup>
   
 </Project>
