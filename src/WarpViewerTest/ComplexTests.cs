@@ -105,7 +105,7 @@ namespace Warp9.Test
             rend.Present();
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("RenderTeapotPhongScalarFieldTest_0.png", bmp);
+                BitmapAsserts.AssertEqual("RenderTeapotPhongScalarFieldValueTest_0.png", bmp);
         }
     }
 }
