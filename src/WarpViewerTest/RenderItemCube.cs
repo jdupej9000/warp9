@@ -196,7 +196,7 @@ namespace Warp9.Test
 
             if (Style == CubeRenderStyle.Texture)
             {
-                job.SetTexture(ctx, 0, new Bitmap(@"..\test\data\_tex_nebula_256.png"));
+                job.SetTexture(ctx, 0, new Bitmap(@"..\..\test\data\_tex_nebula_256.png"));
             }
             else if (Style == CubeRenderStyle.Scale || Style == CubeRenderStyle.ScalePhongEstNormals)
             {

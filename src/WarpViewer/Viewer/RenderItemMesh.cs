@@ -116,7 +116,7 @@ namespace Warp9.Viewer
                 MeshView? indexView = mesh.GetView(MeshViewKind.Indices3i);
                 if (indexView is null)
                 {
-                    SetError("Mesh is indexed but has index view.");
+                    SetError("Mesh is indexed but has no index view.");
                     return true;
                 }
 
