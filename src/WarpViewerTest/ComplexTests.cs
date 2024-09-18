@@ -107,5 +107,24 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderTeapotPhongScalarFieldValueTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void RenderSuzannePhongTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = TestUtils.LoadObjAsset("suzanne.obj", IO.ObjImportMode.AllUnshared);
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateScale(1.5f);
+            renderItemMesh.Color = Color.Gray;
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderSuzannePhongTest_0.png", bmp);
+        }
     }
 }

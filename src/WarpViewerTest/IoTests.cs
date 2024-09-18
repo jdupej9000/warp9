@@ -23,5 +23,20 @@ namespace Warp9.Test
             Assert.AreEqual(6320, m.FaceCount);
             Assert.AreEqual(3644, m.VertexCount);
         }
+
+        [TestMethod]
+        public void ImportSuzanneObjTest()
+        {
+            using Stream s = TestUtils.OpenAsset("suzanne.obj");
+            if (!ObjImport.TryImport(s, ObjImportMode.AllUnshared, out Mesh m, out string errMsg))
+            {
+                Console.WriteLine(errMsg);
+                Assert.Fail();
+            }
+
+            Assert.IsFalse(m.IsIndexed);
+            Assert.AreEqual(15488, m.FaceCount);
+            Assert.AreEqual(15488 * 3, m.VertexCount);
+        }
     }
 }

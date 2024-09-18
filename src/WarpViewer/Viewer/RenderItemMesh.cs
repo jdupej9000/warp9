@@ -100,8 +100,11 @@ namespace Warp9.Viewer
                 SetError("Mesh has no vertex position view.");
                 return true;
             }
-
             job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), false);
+
+            MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
+            if (normalView is not null)
+                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), false);
 
             if (valueBuffer is not null)
             {

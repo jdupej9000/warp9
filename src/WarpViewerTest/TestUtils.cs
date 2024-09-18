@@ -19,7 +19,7 @@ namespace Warp9.Test
 
         public static Mesh LoadObjAsset(string name, ObjImportMode mode)
         {
-            using Stream s = TestUtils.OpenAsset("teapot.obj");
+            using Stream s = TestUtils.OpenAsset(name);
             if (!ObjImport.TryImport(s, mode, out Mesh m, out string errMsg))
                 Assert.Inconclusive("Failed to load OBJ asset: " + errMsg);
 

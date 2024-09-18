@@ -123,7 +123,10 @@ namespace Warp9.Data
             }
             else
             {
-                nt = 0;
+                if (nv % 3 != 0)
+                    throw new InvalidDataException("Vertex count in nonindexed meshes must be divisible by 3.");
+
+                nt = nv / 3;
             }
         }
 

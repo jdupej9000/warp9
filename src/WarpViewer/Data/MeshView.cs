@@ -14,6 +14,7 @@ namespace Warp9.Data
     public enum MeshViewKind
     {
         Pos3f,
+        Normal3f,
         Indices3i
     }
 
@@ -54,6 +55,10 @@ namespace Warp9.Data
             {
                 case MeshViewKind.Pos3f:
                     ret.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0);
+                    break;
+
+                case MeshViewKind.Normal3f:
+                    ret.AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 0);
                     break;
 
                 case MeshViewKind.Indices3i:

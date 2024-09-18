@@ -9,7 +9,8 @@ namespace Warp9.IO
 {
     public enum ObjImportMode
     {
-        PositionsOnly = 0
+        PositionsOnly = 0,
+        AllUnshared = 1
     }
 
     public class ObjImport : IDisposable
@@ -245,6 +246,51 @@ namespace Warp9.IO
             return builder.ToMesh();
         }
 
+        public Mesh ComposeAllUnshared()
+        {
+            MeshBuilder builder = new MeshBuilder();
+
+            int nt = faces.Count;
+
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            pos.Capacity = nt * 3;
+            for (int i = 0; i < nt; i++)
+            {
+                FaceIndices face = faces[i].IdxPos;
+                pos.Add(position[face.I0]);
+                pos.Add(position[face.I1]);
+                pos.Add(position[face.I2]);
+            }
+
+            if (normal.Count > 0)
+            {
+                List<Vector3> norm = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+                norm.Capacity = nt * 3;
+                for (int i = 0; i < nt; i++)
+                {
+                    FaceIndices face = faces[i].IdxNorm;
+                    norm.Add(normal[face.I0]);
+                    norm.Add(normal[face.I1]);
+                    norm.Add(normal[face.I2]);
+                }
+            }
+
+            if (tex0.Count > 0)
+            {
+                List<Vector2> t = builder.GetSegmentForEditing<Vector2>(MeshSegmentType.Tex0);
+                t.Capacity = nt * 3;
+                for (int i = 0; i < nt; i++)
+                {
+                    FaceIndices face = faces[i].IdxTex;
+                    t.Add(tex0[face.I0]);
+                    t.Add(tex0[face.I1]);
+                    t.Add(tex0[face.I2]);
+                }
+            }
+
+            return builder.ToMesh();
+        }
+
 
         static int Skip(string s, int pos, char ch = ' ')
         {
@@ -298,6 +344,7 @@ namespace Warp9.IO
             m = mode switch
             {
                 ObjImportMode.PositionsOnly => import.ComposePositionsOnly(),
+                ObjImportMode.AllUnshared => import.ComposeAllUnshared(),
                 _ => throw new InvalidOperationException()
             };
 

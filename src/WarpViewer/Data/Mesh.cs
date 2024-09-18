@@ -46,6 +46,11 @@ namespace Warp9.Data
         public int FaceCount { get; private init; }
         public bool IsIndexed => indexSegment is not null;
 
+        public bool HasSegment(MeshSegmentType kind)
+        {
+            return meshSegments.ContainsKey(kind);
+        }
+
         public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data)
         {
             if (meshSegments.TryGetValue(kind, out MeshSegment? seg))
@@ -78,6 +83,7 @@ namespace Warp9.Data
             MeshView? view = kind switch
             {
                 MeshViewKind.Pos3f => MakeVertexView(MeshSegmentType.Position, kind),
+                MeshViewKind.Normal3f => MakeVertexView(MeshSegmentType.Normal, kind),
                 MeshViewKind.Indices3i => MakeIndexView(),
                 _ => throw new NotSupportedException()
             };
