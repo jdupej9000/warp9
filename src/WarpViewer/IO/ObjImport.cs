@@ -18,9 +18,10 @@ namespace Warp9.IO
         {
             internal ObjFace(int flags, ReadOnlySpan<int> indices)
             {
-                IdxPos = new FaceIndices(indices[0], indices[3], indices[6]);
-                IdxTex = new FaceIndices(indices[1], indices[4], indices[7]);
-                IdxNorm = new FaceIndices(indices[2], indices[5], indices[8]);
+                // Somebody, somewhere decided that OBJ indexes vertice base 1. Go figure.
+                IdxPos = new FaceIndices(indices[0] - 1, indices[3] - 1, indices[6] - 1);
+                IdxTex = new FaceIndices(indices[1] - 1, indices[4] - 1, indices[7] - 1);
+                IdxNorm = new FaceIndices(indices[2] - 1, indices[5] - 1, indices[8] - 1);
                 FaceType = flags;
             }
 

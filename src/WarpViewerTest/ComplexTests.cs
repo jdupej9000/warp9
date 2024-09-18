@@ -58,13 +58,16 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        public void RenderTeapotWithScalarFieldTest()
+        public void RenderTeapotPhongFieldTest()
         {
             HeadlessRenderer rend = CreateRenderer();
 
             RenderItemMesh renderItemMesh = new RenderItemMesh();
             renderItemMesh.Mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;
             rend.Present();

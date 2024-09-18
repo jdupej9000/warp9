@@ -28,9 +28,10 @@ namespace Warp9.Data
 
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
         public abstract void CopyAsSoa(Span<byte> raw);
-        public abstract void Copy(Span<byte> raw);
+        public abstract void Copy(Span<byte> raw, byte[]? soaSource = null);
         public abstract MeshSegment Clone();
         public abstract MeshSegment CloneWith(int offset);
+        public abstract Type GetElementType();
 
         protected abstract int GetNumItems();
     }
@@ -66,18 +67,35 @@ namespace Warp9.Data
 
         public override void CopyAsSoa(Span<byte> raw)
         {
-            if (AosData is null)
+            if (AosData is not null)
+            {
+                MeshUtils.CopyAosToSoa<T>(raw, CollectionsMarshal.AsSpan(AosData));
+            }
+            else
+            {
                 throw new InvalidOperationException();
-
-            MeshUtils.CopyAosToSoa<T>(raw, CollectionsMarshal.AsSpan(AosData));
+            }
         }
 
-        public override void Copy(Span<byte> raw)
+        public override void Copy(Span<byte> raw, byte[]? soaSource = null)
         {
-            if(AosData is null)
+            if (AosData is not null)
+            {
+                MemoryMarshal.Cast<T, byte>(CollectionsMarshal.AsSpan(AosData)).CopyTo(raw);
+            }
+            else if (soaSource is not null)
+            {
+                MeshUtils.CopySoaToAos<T>(raw, soaSource.AsSpan(Offset, TotalLength));
+            }
+            else
+            {
                 throw new InvalidOperationException();
+            }
+        }
 
-            MemoryMarshal.Cast<T, byte>(CollectionsMarshal.AsSpan(AosData)).CopyTo(raw);
+        public override Type GetElementType()
+        {
+            return typeof(T);
         }
 
         public override MeshSegment Clone()

@@ -1,6 +1,7 @@
 ﻿using SharpDX.D3DCompiler;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,8 @@ namespace Warp9.Data
             indexSegment = idxSeg;
         }
 
-        Dictionary<MeshViewKind, MeshView> meshViews = new Dictionary<MeshViewKind, MeshView>();
-        Dictionary<MeshSegmentType, MeshSegment> meshSegments = new Dictionary<MeshSegmentType, MeshSegment>();
+        readonly Dictionary<MeshViewKind, MeshView?> meshViews = new Dictionary<MeshViewKind, MeshView?>();
+        readonly Dictionary<MeshSegmentType, MeshSegment> meshSegments = new Dictionary<MeshSegmentType, MeshSegment>();
         readonly MeshSegment? indexSegment;
 
         // Vertex data is formatted as structure of arrays. Say the contents are position of vec3 and 
@@ -36,6 +37,10 @@ namespace Warp9.Data
         // IndexData, if present is a typical array of structures with triplets of integers grouped together,
         // that describe one face.
         readonly byte [] indexData;
+
+        public const int AllCoords = -1;
+
+        public static readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<byte>(), null);
 
         public int VertexCount { get; private init; }
         public int FaceCount { get; private init; }
@@ -70,9 +75,17 @@ namespace Warp9.Data
             if (meshViews.TryGetValue(kind, out MeshView? v))
                 return v;
 
+            MeshView? view = kind switch
+            {
+                MeshViewKind.Pos3f => MakeVertexView(MeshSegmentType.Position, kind),
+                MeshViewKind.Indices3i => MakeIndexView(),
+                _ => throw new NotSupportedException()
+            };
 
+            if (cache) 
+                meshViews[kind] = view;
 
-            return null;
+            return view;
         }
 
         public MeshBuilder ToBuilder()
@@ -80,9 +93,25 @@ namespace Warp9.Data
             MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, indexData, indexSegment);
             return ret;
         }
- 
-        public const int AllCoords = -1;
 
-        public static readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<byte>(), null);
+        private MeshView? MakeIndexView()
+        {
+            if (!IsIndexed) 
+                return null;
+
+            return new MeshView(MeshViewKind.Indices3i, indexData, typeof(FaceIndices));
+        }
+
+        private MeshView? MakeVertexView(MeshSegmentType t, MeshViewKind kind)
+        {
+            if (meshSegments.TryGetValue(t, out MeshSegment? seg))
+            {
+                byte[] data = new byte[seg.TotalLength];
+                seg.Copy(data, vertexData);
+                return new MeshView(kind, data, seg.GetElementType());
+            }
+
+            return null;
+        }
     }
 }

@@ -10,6 +10,17 @@ namespace Warp9.Data
 {
     public static class MeshUtils
     {
+        public static readonly Dictionary<Type, SharpDX.DXGI.Format> TypeToDxgi = new Dictionary<Type, SharpDX.DXGI.Format>
+        {
+            { typeof(float), SharpDX.DXGI.Format.R32_Float },
+            { typeof(Vector2), SharpDX.DXGI.Format.R32G32_Float },
+            { typeof(Vector3), SharpDX.DXGI.Format.R32G32B32_Float },
+            { typeof(Vector4), SharpDX.DXGI.Format.R32G32B32A32_Float },
+            { typeof(FaceIndices), SharpDX.DXGI.Format.R32G32B32_UInt }
+        };
+
+       
+
         public static void CopySoaToAos(Span<float> dest, ReadOnlySpan<byte> src)
         {
             int n = src.Length / 4;
@@ -62,38 +73,36 @@ namespace Warp9.Data
                 dest[i] = new Vector4(x[i], y[i], z[i], w[i]);
         }
 
-        public static T[]? CopySoaToAos<T>(ReadOnlySpan<byte> src)
+        public static T[]? CopySoaToAos<T>(ReadOnlySpan<byte> src) where T:struct
+        {
+            int n = src.Length / Marshal.SizeOf<T>();
+            T[] ret = new T[n];
+            CopySoaToAos<T>(MemoryMarshal.Cast<T, byte>(ret.AsSpan()), src);
+            return ret;
+        }
+
+        public static void CopySoaToAos<T>(Span<byte> dest, ReadOnlySpan<byte> src) where T:struct
         {
             if (typeof(T) == typeof(float))
             {
-                int n = src.Length / 4;
-                float[] ret = new float[n];
-                CopySoaToAos(ret.AsSpan(), src);
-                return ret as T[];
+                CopySoaToAos(MemoryMarshal.Cast<byte, float>(dest), src);
             }
             else if (typeof(T) == typeof(Vector2))
             {
-                int n = src.Length / 8;
-                Vector2[] ret = new Vector2[n];
-                CopySoaToAos(ret.AsSpan(), src);
-                return ret as T[];
+                CopySoaToAos(MemoryMarshal.Cast<byte, Vector2>(dest), src);
             }
             else if (typeof(T) == typeof(Vector3))
             {
-                int n = src.Length / 12;
-                Vector3[] ret = new Vector3[n];
-                CopySoaToAos(ret.AsSpan(), src);
-                return ret as T[];
+                CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(dest), src);
             }
             else if (typeof(T) == typeof(Vector4))
             {
-                int n = src.Length / 16;
-                Vector4[] ret = new Vector4[n];
-                CopySoaToAos(ret.AsSpan(), src);
-                return ret as T[];
+                CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(dest), src);
             }
-
-            throw new NotSupportedException();
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         public static void CopyAosToSoaI4(Span<byte> dest, ReadOnlySpan<int> src, int srcStructSize)
