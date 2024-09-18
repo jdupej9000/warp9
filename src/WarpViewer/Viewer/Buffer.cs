@@ -65,12 +65,12 @@ namespace Warp9.Viewer
             return false;
         }
 
-        internal static Buffer Create(Device device, byte[] data, BindFlags bindFlags, SharpDX.DXGI.Format fmt, int itemCount, int elemSize, bool dyn)
+        internal static Buffer Create(Device device, ReadOnlySpan<byte> d, BindFlags bindFlags, SharpDX.DXGI.Format fmt, int itemCount, int elemSize, bool dyn)
         {
             int dataSize = elemSize * itemCount;
 
             using DataStream ds = new DataStream(dataSize, true, true);
-            ds.Write(data, 0, Math.Min(dataSize, data.Length));
+            (ds as System.IO.Stream).Write(d);
             ds.Position = 0;
 
             SharpDX.Direct3D11.Buffer buff = new SharpDX.Direct3D11.Buffer(

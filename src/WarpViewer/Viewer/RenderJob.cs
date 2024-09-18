@@ -207,7 +207,7 @@ namespace Warp9.Viewer
             }
         }
 
-        public void SetVertexBuffer(DeviceContext ctx, int slot, byte[] data, VertexDataLayout layout, bool isDynamic = false)
+        public void SetVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, VertexDataLayout layout, bool isDynamic = false)
         {
             if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
             {

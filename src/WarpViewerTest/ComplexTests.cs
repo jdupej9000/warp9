@@ -58,7 +58,7 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        public void RenderTeapotPhongFieldTest()
+        public void RenderTeapotPhongTest()
         {
             HeadlessRenderer rend = CreateRenderer();
 
@@ -67,14 +67,45 @@ namespace Warp9.Test
             renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
             renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            renderItemMesh.Color = Color.LimeGreen;
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;
             rend.Present();
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("RenderTeapotWithScalarFieldTest_0.png", bmp);
+                BitmapAsserts.AssertEqual("RenderTeapotPhongTest_0.png", bmp);
         }
 
+        [TestMethod]
+        public void RenderTeapotPhongScalarFieldValueTest()
+        {
+            Mesh m = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            float[] v = new float[m.VertexCount];
+            MeshView? posView = m.GetView(MeshViewKind.Pos3f);
+            Assert.IsNotNull(posView);
+            Assert.IsTrue(posView.AsTypedData(out ReadOnlySpan<Vector3> pos));
+
+            for (int i = 0; i < m.VertexCount; i++)
+                v[i] = MathF.Abs(Vector3.Dot(Vector3.Normalize(pos[i]), Vector3.UnitY));
+
+            HeadlessRenderer rend = CreateRenderer();
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = m;
+            renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals | MeshRenderStyle.ShowValueLevel;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            renderItemMesh.LevelValue = 0.65f;
+            renderItemMesh.Color = Color.Red;
+            renderItemMesh.SetValueField(v);
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotPhongScalarFieldTest_0.png", bmp);
+        }
     }
 }

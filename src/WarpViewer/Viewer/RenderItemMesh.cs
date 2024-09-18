@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -34,6 +35,9 @@ namespace Warp9.Viewer
 
         Mesh? mesh;
         Lut? lut;
+        float[]? valueBuffer;
+        float levelValue;
+        Color color;
         Matrix4x4? modelMatrix;
         MeshRenderStyle style;
         bool constBuffDirty = true;
@@ -50,16 +54,33 @@ namespace Warp9.Viewer
             set { lut = value; Commit(); }
         }
 
+        public float LevelValue
+        {
+            get { return levelValue; }
+            set { levelValue = value; constBuffDirty = true; }
+        }
+
         public MeshRenderStyle Style
         {
             get { return style; }
             set { style = value; constBuffDirty = true; }
+        }
+        public Color Color
+        {
+            get { return color; }
+            set { color = value; constBuffDirty = true; }
         }
 
         public Matrix4x4? ModelMatrix
         {
             get { return modelMatrix; }
             set { modelMatrix = value; constBuffDirty = true; }
+        }
+
+        public void SetValueField(float[] val)
+        {
+            valueBuffer = val;
+            Commit();
         }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
@@ -81,6 +102,13 @@ namespace Warp9.Viewer
             }
 
             job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), false);
+
+            if (valueBuffer is not null)
+            {
+                VertexDataLayout layoutValue = new VertexDataLayout();
+                layoutValue.AddTex(SharpDX.DXGI.Format.R32_Float, 1, 0);
+                job.SetVertexBuffer(ctx, 1, MemoryMarshal.Cast<float, byte>(valueBuffer.AsSpan()), layoutValue);
+            }
 
             DrawCall dcMain;
             if (mesh.IsIndexed)
@@ -117,8 +145,8 @@ namespace Warp9.Viewer
             if (constBuffDirty)
             {
                 PshConst pshConst = new PshConst();
-                pshConst.color = RenderUtils.ToNumColor(Color.Gray);
-                pshConst.valueLevel = 0;
+                pshConst.color = RenderUtils.ToNumColor(color);
+                pshConst.valueLevel = levelValue;
                 pshConst.flags = (uint)style;
                 pshConst.ambStrength = 0.1f;
                 job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
