@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
 using Warp9.Data;
 
 namespace Warp9.Viewer
@@ -37,7 +38,6 @@ namespace Warp9.Viewer
         readonly Dictionary<int, DrawCall> drawCalls = new Dictionary<int, DrawCall>();
         readonly Dictionary<int, Buffer> vertBuffBindings = new Dictionary<int, Buffer>();
         Buffer? indexBuffer;
-        Buffer? instanceBuffer;
 
         bool rebuildInputLayout = false;
 
@@ -302,12 +302,18 @@ namespace Warp9.Viewer
                 List<InputElement> listInputElems = new List<InputElement>();
                 if (vertBuffBindings.Count == 1)
                 {
-                    listInputElems.AddRange(vertBuffBindings[0].Layout.ToArray());
+                    listInputElems.AddRange(vertBuffBindings[0]?.Layout?.ToArray() ?? 
+                        throw new InvalidOperationException("Input layout must have a slot 0 assigned."));
                 }
                 else
                 {
                     foreach (var kvp in vertBuffBindings)
+                    {
+                        if (kvp.Value.Layout is null)
+                            throw new InvalidOperationException();
+
                         kvp.Value.Layout.AddToGrandLayout(listInputElems, kvp.Key);
+                    }
                 }
 
                 foreach (SemanticAssgn sem in semantics)

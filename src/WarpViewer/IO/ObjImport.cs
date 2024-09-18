@@ -48,8 +48,6 @@ namespace Warp9.IO
         List<Vector2> tex0 = new List<Vector2>();
         List<ObjFace> faces = new List<ObjFace>();
 
-        bool readPositionsOnly;
-
         public bool HasError { get; private set; } = false;
         public string ErrorMessage { get; private set; } = string.Empty;
 

@@ -86,7 +86,7 @@ namespace Warp9.Test
 
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
-        private bool wireframe = false, instances = false, texture = false, valueNotch = false;
+        private bool wireframe = false, instances = false, valueNotch = false;
         private bool buffDirty = true;
         private float valueLevel = 0.5f;
         private Lut lut = Lut.Create(256, Lut.FastColors);

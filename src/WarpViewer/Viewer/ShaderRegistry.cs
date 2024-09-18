@@ -13,6 +13,13 @@ namespace Warp9.Viewer
 {
     internal class Shader
     {
+        internal Shader(ShaderSpec spec, CompilationResult result, ShaderSignature signature)
+        {
+            Spec = spec;
+            CompilationResult = result;
+            Signature = signature;
+        }
+
         public ShaderSpec Spec { get; internal set; }
         public CompilationResult CompilationResult { get; internal set; }
         public ShaderSignature Signature { get; internal set; }
@@ -46,18 +53,12 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException(result.Message);
 
             ShaderSignature signature = ShaderSignature.GetInputSignature(result.Bytecode);
-
-            Shader sh = new Shader
-            {
-                Spec = spec,
-                CompilationResult = result,
-                Signature = signature
-            };
-
-            shaders[spec.Name] = sh;
+            shaders[spec.Name] = new Shader(spec, result, signature);
         }
 
-        public IDisposable Shadow { get; set; } 
+#pragma warning disable CS8618
+        public IDisposable Shadow { get; set; }
+#pragma warning restore CS8618
 
         public ShaderSignature GetShaderSignature(string name)
         {

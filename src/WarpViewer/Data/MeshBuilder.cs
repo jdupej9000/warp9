@@ -10,6 +10,7 @@ namespace Warp9.Data
         public MeshBuilder()
         {
             data = Array.Empty<byte>();
+            indexData = Array.Empty<byte>();
         }
 
         internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, byte[] ixd, MeshSegment? idxSeg)
@@ -26,7 +27,8 @@ namespace Warp9.Data
                 indexSegment = null;
         }
 
-        byte[] data, indexData;
+        byte[] data;
+        byte[] indexData;
         bool segmentsDirty = false, idxSegmentDirty = false;
         Dictionary<MeshSegmentType, MeshSegment> segments = new Dictionary<MeshSegmentType, MeshSegment>();
         MeshSegment? indexSegment;

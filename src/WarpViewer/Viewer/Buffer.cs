@@ -44,7 +44,7 @@ namespace Warp9.Viewer
         public SharpDX.Direct3D11.Buffer NativeBuffer => buffer;
         public SharpDX.DXGI.Format Format => format;
 
-        public VertexDataLayout Layout { get; set; }
+        public VertexDataLayout? Layout { get; set; }
 
         public void UpdateConstant(DeviceContext ctx, byte[] payload)
         {
@@ -53,12 +53,10 @@ namespace Warp9.Viewer
 
         internal bool TryUpdateDynamic(DeviceContext ctx, ReadOnlySpan<byte> data)
         {
-            throw new NotImplementedException();
-
             if (!isDynamic || data.Length > itemCount * elementSize) return false;
 
-            DataBox db = ctx.MapSubresource(buffer, MapMode.WriteDiscard, MapFlags.None, out DataStream ds);
-            //.Write(data);
+            ctx.MapSubresource(buffer, MapMode.WriteDiscard, MapFlags.None, out DataStream ds);
+            (ds as System.IO.Stream).Write(data);
             ctx.UnmapSubresource(buffer, 0);
             Utilities.Dispose(ref ds);
 

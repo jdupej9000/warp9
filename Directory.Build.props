@@ -1,6 +1,5 @@
 <Project>
     <PropertyGroup>
-	<TargetFramework>net8.0-windows</TargetFramework>
         <OutDir>$(SolutionDir)bin\$(Configuration)</OutDir>
         <IntermediateOutputPath>$(SolutionDir)\obj\obj\$(MSBuildProjectName)\</IntermediateOutputPath>
 	<BaseIntermediateOutputPath>$(SolutionDir)\obj\base\$(MSBuildProjectName)\</BaseIntermediateOutputPath>

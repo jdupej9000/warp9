@@ -29,8 +29,12 @@ namespace Warp9.Viewer
 
     public class ShaderSpec
     {
-        public ShaderSpec()
+        private ShaderSpec(string name, ConstBuffAssgn[] cba, string code, ShaderType type)
         {
+            Name = name;
+            Code = code;
+            Type = type;
+            ConstantBuffers = cba;
         }
 
         public string Name;
@@ -45,11 +49,7 @@ namespace Warp9.Viewer
             if (sht == ShaderType.Vertex)
                 throw new NotSupportedException("Vertex buffers must specify input semantics.");
 
-            ShaderSpec ret = new ShaderSpec();
-            ret.Name = name;
-            ret.Code = code;
-            ret.Type = sht;
-            ret.ConstantBuffers = constantBuffers.ToArray();
+            ShaderSpec ret = new ShaderSpec(name, constantBuffers.ToArray(), code, sht);
             return ret;
         }
 
@@ -58,11 +58,7 @@ namespace Warp9.Viewer
             if (sht != ShaderType.Vertex)
                 throw new NotSupportedException("Only vertex buffers can specify input semantics.");
 
-            ShaderSpec ret = new ShaderSpec();
-            ret.Name = name;
-            ret.Code = code;
-            ret.Type = sht;
-            ret.ConstantBuffers = constantBuffers.ToArray();
+            ShaderSpec ret = new ShaderSpec(name, constantBuffers.ToArray(), code, sht);
             ret.Semantics = semantics.ToArray();
             return ret;
         }
