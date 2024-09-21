@@ -52,9 +52,10 @@ namespace Warp9
         }
         #endregion
 
-
+        
         #region WPF-DX interop
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
+      
+        private void Grid_Loaded2(object sender, RoutedEventArgs e)
         {
             if (!WpfInteropRenderer.TryCreate(0, out renderer) || renderer is null)
                 throw new InvalidOperationException();
@@ -103,11 +104,7 @@ namespace Warp9
             CompositionTarget.Rendering += CompositionTarget_Rendering;
         }
 
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Size size = WpfSizeToPixels(ImageGrid);
-            InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
-        }
+      
 
         void CompositionTarget_Rendering(object? sender, EventArgs e)
         {
@@ -152,8 +149,28 @@ namespace Warp9
 
             renderer.Present();
         }
+
+        
         #endregion
 
+        
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Size size = WpfSizeToPixels(ImageGrid);
+            InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            Grid_Loaded2(sender, e);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            // TODO: renderer dispose
+        }
 
         private static Size WpfSizeToPixels(FrameworkElement element)
         {
@@ -163,10 +180,13 @@ namespace Warp9
             return (Size)transformToDevice.Transform(new System.Windows.Vector(element.ActualWidth, element.ActualHeight));
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+      
+
+        private void mnuHelpAbout_Click(object sender, RoutedEventArgs e)
         {
-            CompositionTarget.Rendering -= CompositionTarget_Rendering;
-            // TODO: renderer dispose
+            AboutWindow wnd = new AboutWindow();
+            wnd.Owner = this;
+            wnd.ShowDialog();
         }
     }
 }
