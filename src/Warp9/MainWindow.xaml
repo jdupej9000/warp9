@@ -15,8 +15,11 @@
         <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
             <MenuItem Header="_File">
                 <MenuItem Header="_New" />
-                <MenuItem Header="_Open" />
+                <MenuItem Header="_Open..." />
                 <MenuItem Header="_Save" />
+                <MenuItem Header="Save _As..." />
+                <Separator />
+                <MenuItem Header="Close" />
                 <Separator />
                 <MenuItem Header="_Exit" />
             </MenuItem>
@@ -26,58 +29,60 @@
             </MenuItem>
         </Menu>
     </Window.Resources>
-  
-      
-        <DockPanel>
-           
-            <ToolBarTray DockPanel.Dock="Top">
+
+
+    <DockPanel>
+
+        <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
                 <Button Content="{StaticResource OpenFileDialog}"/>
                 <Button Content="{StaticResource Save}"/>
             </ToolBar>
-            </ToolBarTray>
+        </ToolBarTray>
 
-            <StatusBar DockPanel.Dock="Bottom">
-                <StatusBarItem>
-                    <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
-                </StatusBarItem>
-            </StatusBar>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
+            </StatusBarItem>
+        </StatusBar>
 
-            <Grid x:Name="gridMain">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="200"/>
-                </Grid.ColumnDefinitions>
+        <Grid x:Name="gridMain">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
 
-                <TabControl x:Name="tabLeft" TabStripPlacement="Left">
+            <TabControl x:Name="tabLeft" TabStripPlacement="Left">
+                
                 <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8">
-
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock DockPanel.Dock="Top" FontWeight="Bold">Project Explorer</TextBlock>
+                        <Label DockPanel.Dock="Top" Height="12" />
+
+                        <StackPanel Orientation="Horizontal" Height="28" DockPanel.Dock="Top">
+                            <Button Content="{StaticResource Delete}" Width="28" Height="28"/>
+                        </StackPanel>
+
                         <Label DockPanel.Dock="Top" Height="12" />
                         <TreeView DockPanel.Dock="Top" BorderThickness="0">
                             <TreeViewItem>Root</TreeViewItem>
                         </TreeView>
                     </DockPanel>
                 </TabItem>
+                
                 <TabItem Header="{DynamicResource TaskList}" Padding="8,8,8,8">
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock FontWeight="Bold">Task List</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
-                        
+
                     </DockPanel>
                 </TabItem>
-                </TabControl>
+                
+            </TabControl>
 
-                <GridSplitter Grid.Column="1"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Stretch"
-          Background="Black" 
-          ShowsPreview="True"
-          Width="5"
-          />
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Black" ShowsPreview="True" Width="5" />
 
             <GroupBox Grid.Column="3" Header="Visualization">
                 <StackPanel Margin="4,4,4,4">
@@ -96,20 +101,20 @@
             </GroupBox>
 
             <Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
-                    <Image x:Name="ImageHost" Stretch="Fill">
-                        <Image.Source>
-                            <dx:D3D11Image x:Name="InteropImage"/>
-                        </Image.Source>
-                    </Image>
-                </Grid>
+                <Image x:Name="ImageHost" Stretch="Fill">
+                    <Image.Source>
+                        <dx:D3D11Image x:Name="InteropImage"/>
+                    </Image.Source>
+                </Image>
             </Grid>
-
-       
-
-           
+        </Grid>
 
 
-        </DockPanel>
+
+
+
+
+    </DockPanel>
 
 
 </Window>

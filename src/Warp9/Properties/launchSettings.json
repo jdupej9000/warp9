@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Warp9": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:Warp9"
         Style="{StaticResource CustomWindowStyle}"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         Title="About Warp9" Height="450" Width="450" ResizeMode="NoResize">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
@@ -16,14 +17,30 @@
         <TextBlock Canvas.Left="16" Canvas.Top="44">Version 0.0.1</TextBlock>
         <TextBlock Canvas.Left="16" Canvas.Top="60">Project page: <Hyperlink>www.github.com/jandupej/warp9</Hyperlink></TextBlock>
 
-        <TextBlock Canvas.Left="16" Canvas.Top="200">Referenced software:</TextBlock>
-        <TextBox  FontFamily="Consolas" Width ="412" Height="100" Canvas.Left="16" Canvas.Top="220" TextWrapping="Wrap" AcceptsReturn="True" xml:space="preserve">Intel oneAPI 2024.1
-(c) Intel Corp.
-        
-            
-WPFDarkTheme
-https://github.com/AngryCarrot789/WPFDarkTheme
-        </TextBox>
+        <TabControl Canvas.Left="16" Canvas.Top="158" Width="412" Height="212" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <TabItem Header="Acknowledgments">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                        <TextBlock TextWrapping="Wrap" Margin="8,8,8,8">Scrolling is enabled when it is necessary. 
+      Resize the window, making it larger and smaller.</TextBlock>
+                        
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="WarpCore Debug Info">
+                <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding debugItems}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="120" Header="ID" DisplayMemberBinding="{Binding Id}"/>
+                            <GridViewColumn Width="280" Header="User Name" DisplayMemberBinding="{Binding Name}" />
+                        </GridView>
+                    </ListView.View>
+
+                </ListView>
+            </TabItem>
+        </TabControl>
+
 
         <Button Height="28" Width="50" Canvas.Left="378" Canvas.Top="390">Close</Button>
     </Canvas>

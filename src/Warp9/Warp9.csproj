@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WarpProcessing\WarpProcessing.csproj" />
     <ProjectReference Include="..\WarpViewer\WarpViewer.csproj" />
   </ItemGroup>
 
