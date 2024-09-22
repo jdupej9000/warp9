@@ -27,8 +27,4 @@
     <ProjectReference Include="..\WarpViewer\WarpViewer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Themes\" />
-  </ItemGroup>
-
 </Project>

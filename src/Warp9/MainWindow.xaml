@@ -11,6 +11,20 @@
         Title="Warp9" Height="450" Width="800" Closing="Window_Closing">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
+
+        <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" />
+                <MenuItem Header="_Open" />
+                <MenuItem Header="_Save" />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+
+            <MenuItem Header="_Help">
+                <MenuItem Name="mnuHelpAbout" Header="_About" Click="mnuHelpAbout_Click" />
+            </MenuItem>
+        </Menu>
     </Window.Resources>
   
       

@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.Themes;
 using Warp9.Viewer;
 
 namespace Warp9
@@ -25,8 +26,8 @@ namespace Warp9
     {
         public MainWindow()
         {
-
             InitializeComponent();
+            
         }
 
 

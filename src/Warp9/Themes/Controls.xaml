@@ -5472,23 +5472,8 @@
                             <DockPanel Height="30" x:Name="titlebar" Background="{TemplateBinding BorderBrush}" VerticalAlignment="Top" Margin="0" DockPanel.Dock="Top">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" DockPanel.Dock="Left">
                                     <Image HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,3,0,0" Source="{DynamicResource AImage.MonoIcon}" Height="24"/>
-                                    
-                                    <Menu WindowChrome.IsHitTestVisibleInChrome="True" Width="Auto" Name="menu1" VerticalAlignment="Center" DockPanel.Dock="Left" Foreground="White" Background="Transparent" Padding="5 5 5 5">
-
-                                        <MenuItem Header="_File">
-                                            <MenuItem Header="_New" />
-                                            <MenuItem Header="_Open" />
-                                            <MenuItem Header="_Save" />
-                                            <Separator />
-                                            <MenuItem Header="_Exit" />
-                                        </MenuItem>
-
-                                        <MenuItem Header="_Help">
-                                            <MenuItem Name="mnuHelpAbout" Header="_About" />
-                                        </MenuItem>
-
-
-                                    </Menu>
+                                    <Label Width="12" />
+                                    <ContentControl Content="{DynamicResource ChromeMenu}" />
                                 </StackPanel>
                                 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
