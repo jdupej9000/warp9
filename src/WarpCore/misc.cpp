@@ -15,6 +15,17 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << "warpcore 0.1";
         break;
 
+    case WCINFO_COMPILER:
+#if defined(_MSC_FULL_VER)
+        ss << "MSVC++ " << ((_MSC_FULL_VER / 10000000) % 100) << "." << 
+            ((_MSC_FULL_VER / 100000) % 100) << "."
+            << (_MSC_FULL_VER % 100000);
+#else
+        ss << "unknown";
+#endif
+        break;
+
+
     case WCINFO_MKL_VERSION:
     case WCINFO_MKL_ISA: {
         MKLVersion mkl_version;

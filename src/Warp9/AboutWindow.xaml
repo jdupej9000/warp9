@@ -29,11 +29,11 @@
             </TabItem>
 
             <TabItem Header="WarpCore Debug Info">
-                <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding debugItems}">
+                <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Width="120" Header="ID" DisplayMemberBinding="{Binding Id}"/>
-                            <GridViewColumn Width="280" Header="User Name" DisplayMemberBinding="{Binding Name}" />
+                            <GridViewColumn Width="280" Header="Value" DisplayMemberBinding="{Binding Data}" />
                         </GridView>
                     </ListView.View>
 

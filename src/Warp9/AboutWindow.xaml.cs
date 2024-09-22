@@ -33,7 +33,7 @@ namespace Warp9
             foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
             {
                 int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
-                debugItems.Add(new WarpCoreDebugItem(
+                listDebug.Items.Add(new WarpCoreDebugItem(
                     idx.ToString(), sb.ToString()));
             }
         }
