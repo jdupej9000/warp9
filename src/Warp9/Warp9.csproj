@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\warp9-logo-softdark.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\warp9-logo-softdark.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="TqkLibrary.Wpf.Interop.DirectX" Version="1.0.1" />
   </ItemGroup>
 

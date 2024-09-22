@@ -7,40 +7,95 @@
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:local="clr-namespace:Warp9"
         mc:Ignorable="d"
-        Style="{StaticResource CustomWindowStyle}"
-        Title="MainWindow" Height="450" Width="800" Closing="Window_Closing">
+        Style="{StaticResource CustomWindowStyle2}"
+        Title="Warp9" Height="450" Width="800" Closing="Window_Closing">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_New" />
-                <MenuItem Header="_Open" />
-                <MenuItem Header="_Save" />
-                <Separator />
-                <MenuItem Header="_Exit" />
-            </MenuItem>
+  
+      
+        <DockPanel>
+           
+            <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Content="{StaticResource OpenFileDialog}"/>
+                <Button Content="{StaticResource Save}"/>
+            </ToolBar>
+            </ToolBarTray>
 
-            <MenuItem Header="_Help">
-                <MenuItem Name="mnuHelpAbout" Header="_About" Click="mnuHelpAbout_Click" />
-            </MenuItem>
-        </Menu>
+            <StatusBar DockPanel.Dock="Bottom">
+                <StatusBarItem>
+                    <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
+                </StatusBarItem>
+            </StatusBar>
 
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
-            </StatusBarItem>
-        </StatusBar>
-        
-        <Grid x:Name="ImageGrid"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
-            <Image x:Name="ImageHost" Stretch="Fill">
-                <Image.Source>
-                    <dx:D3D11Image x:Name="InteropImage"/>
-                </Image.Source>
-            </Image>
-        </Grid>
-        
+            <Grid x:Name="gridMain">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+
+                <TabControl x:Name="tabLeft" TabStripPlacement="Left">
+                <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8">
+
+                    <DockPanel Margin="8,8,8,8">
+                        <TextBlock DockPanel.Dock="Top" FontWeight="Bold">Project Explorer</TextBlock>
+                        <Label DockPanel.Dock="Top" Height="12" />
+                        <TreeView DockPanel.Dock="Top" BorderThickness="0">
+                            <TreeViewItem>Root</TreeViewItem>
+                        </TreeView>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="{DynamicResource TaskList}" Padding="8,8,8,8">
+                    <DockPanel Margin="8,8,8,8">
+                        <TextBlock FontWeight="Bold">Task List</TextBlock>
+                        <Label DockPanel.Dock="Top" Height="12" />
+                        
+                    </DockPanel>
+                </TabItem>
+                </TabControl>
+
+                <GridSplitter Grid.Column="1"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch"
+          Background="Black" 
+          ShowsPreview="True"
+          Width="5"
+          />
+
+            <GroupBox Grid.Column="3" Header="Visualization">
+                <StackPanel Margin="4,4,4,4">
+                    <ComboBox>
+                        <ComboBoxItem>Raw specimen</ComboBoxItem>
+                        <ComboBoxItem>Correspondence model</ComboBoxItem>
+                        <ComboBoxItem>Compare groups</ComboBoxItem>
+                    </ComboBox>
+                    <Label Height="12" />
+                    <Expander Header="More Options" ExpandDirection="Down" IsExpanded="False">
+                        <TextBlock>Peek-a-boo</TextBlock>
+                    </Expander>
+                </StackPanel>
+
+
+            </GroupBox>
+
+            <Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
+                    <Image x:Name="ImageHost" Stretch="Fill">
+                        <Image.Source>
+                            <dx:D3D11Image x:Name="InteropImage"/>
+                        </Image.Source>
+                    </Image>
+                </Grid>
+            </Grid>
+
        
-    </DockPanel>
+
+           
+
+
+        </DockPanel>
+
+
 </Window>

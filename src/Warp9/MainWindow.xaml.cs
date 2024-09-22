@@ -25,8 +25,10 @@ namespace Warp9
     {
         public MainWindow()
         {
+
             InitializeComponent();
         }
+
 
         WpfInteropRenderer? renderer;
         RenderItemMesh? meshRend;
@@ -187,6 +189,11 @@ namespace Warp9
             AboutWindow wnd = new AboutWindow();
             wnd.Owner = this;
             wnd.ShowDialog();
+        }
+
+        private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
         }
     }
 }
