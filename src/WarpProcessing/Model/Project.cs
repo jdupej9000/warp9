@@ -42,10 +42,10 @@ namespace Warp9.Model
                 throw new InvalidOperationException();
 
             if (!manifest.References.TryGetValue(index, out ProjectReference? refInfo))
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Invalid reference Id.");
 
             if (!archiveIndex.TryGetValue(refInfo.FileName, out int refFileIndex))
-                throw new InvalidDataException();
+                throw new InvalidDataException("Archive references a missing file.");
 
             return archive.Entries[refFileIndex].Open();
         }
