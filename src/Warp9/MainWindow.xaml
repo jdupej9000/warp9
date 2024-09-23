@@ -34,9 +34,10 @@
     <DockPanel>
 
         <ToolBarTray DockPanel.Dock="Top">
-            <ToolBar>
+            <ToolBar BorderThickness="0">
                 <Button Content="{StaticResource OpenFileDialog}"/>
                 <Button Content="{StaticResource Save}"/>
+                <Separator/>
             </ToolBar>
         </ToolBarTray>
 
