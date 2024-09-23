@@ -157,8 +157,6 @@ namespace Warp9.Model
 
         private void ParseRawManifest(Stream s)
         {
-           
-
             ProjectManifest? manifest = JsonSerializer.Deserialize<ProjectManifest>(s, opts);
             if (manifest is null)
                 throw new InvalidDataException();
@@ -170,6 +168,19 @@ namespace Warp9.Model
         public void Dispose()
         {
             Close();
+        }
+
+        public void Save(string path)
+        {
+            using FileStream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            using ZipArchive saveArchive = new ZipArchive(stream, ZipArchiveMode.Create, false);
+
+            // TODO: recreate manifest file
+            // TODO: push references - new and old ones
+            // TODO: add progress
+            // TODO: add save options with reference transcoding
+
+            throw new NotImplementedException();
         }
 
         public static Project CreateEmpty()
