@@ -4,14 +4,23 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Warp9.Model
 {
-    public class Project
+    public class Project : IDisposable
     {
+        private Project()
+        {
+            filePath = string.Empty;
+            archive = null;
+            manifest = new ProjectManifest();
+        }
+
         private Project(string path, ZipArchive archv)
         {
             filePath = path;
@@ -21,9 +30,8 @@ namespace Warp9.Model
         string filePath;
         ZipArchive? archive;
         ProjectManifest? manifest;
-        Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
-
-        public bool IsOpen => archive is not null;
+        readonly Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
+        readonly Dictionary<int, byte[]> newFiles = new Dictionary<int, byte[]>();
 
         private static readonly string ManifestFileName = "manifest.json";
 
@@ -38,16 +46,35 @@ namespace Warp9.Model
 
         public Stream ReadReference(int index)
         {
-            if (manifest is null || archive is null) 
+            if (manifest is null) 
                 throw new InvalidOperationException();
 
             if (!manifest.References.TryGetValue(index, out ProjectReference? refInfo))
                 throw new InvalidOperationException("Invalid reference Id.");
 
-            if (!archiveIndex.TryGetValue(refInfo.FileName, out int refFileIndex))
-                throw new InvalidDataException("Archive references a missing file.");
+            if (newFiles.TryGetValue(index, out byte[]? rawData))
+                return new MemoryStream(rawData, false);
 
-            return archive.Entries[refFileIndex].Open();
+            if (archive is not null && archiveIndex.TryGetValue(refInfo.FileName, out int refFileIndex))
+                return archive.Entries[refFileIndex].Open();
+
+            throw new InvalidDataException("Archive references a nonexistent file.");
+        }
+
+        public int AddReference(string fileName, ProjectReferenceFormat fmt, byte[] payload)
+        {
+            if (archiveIndex.ContainsKey(fileName))
+                throw new InvalidOperationException("That file is already part of the archive.");
+
+            throw new NotImplementedException();
+        }
+
+        public int TryFindReference(string fileName)
+        {
+            if (archiveIndex.TryGetValue(fileName, out int refFileIndex))
+                return refFileIndex;
+
+            return -1;
         }
 
         private void MakeArchiveIndex()
@@ -77,6 +104,16 @@ namespace Warp9.Model
             opts.AllowTrailingCommas = false;
 
             manifest = JsonSerializer.Deserialize<ProjectManifest>(s, opts);
+        }
+
+        public void Dispose()
+        {
+            Close();
+        }
+
+        public static Project CreateEmpty()
+        {
+            return new Project();
         }
 
         public static Project Load(string path, bool keepOpen=true)

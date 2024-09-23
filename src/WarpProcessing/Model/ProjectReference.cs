@@ -7,7 +7,15 @@ using System.Threading.Tasks;
 
 namespace Warp9.Model
 {
-  
+    public enum ProjectReferenceFormat
+    {
+        ObjMesh,
+        W9Mesh,
+        PngImage,
+        JpegImage,
+        FloatMatrix
+    }
+
     public class ProjectReference
     {
         [JsonIgnore]
