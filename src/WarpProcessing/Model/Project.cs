@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -18,19 +20,21 @@ namespace Warp9.Model
         {
             filePath = string.Empty;
             archive = null;
-            manifest = new ProjectManifest();
+            workingDir = null;
         }
 
         private Project(string path, ZipArchive archv)
         {
             filePath = path;
+            workingDir = Path.GetDirectoryName(path) ?? throw new InvalidOperationException();
             archive = archv;
         }
 
         string filePath;
+        string? workingDir;
         ZipArchive? archive;
-        ProjectManifest? manifest;
         readonly Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
+        readonly Dictionary<int, ProjectReference> references = new Dictionary<int, ProjectReference>();
         readonly Dictionary<int, byte[]> newFiles = new Dictionary<int, byte[]>();
 
         private static readonly string ManifestFileName = "manifest.json";
@@ -44,38 +48,88 @@ namespace Warp9.Model
             }
         }
 
-        public Stream ReadReference(int index)
+        public bool TryGetReference<T>(int index, [MaybeNullWhen(false)] out T value)
         {
-            if (manifest is null) 
+            if (!references.TryGetValue(index, out ProjectReference? reference))
+            {
+                value = default;
+                return false;
+            }
+
+            if (reference.HasNativeObject)
+            {
+                if (reference.NativeObject is T nativeObject)
+                {
+                    value = nativeObject;
+                    return true;
+                }
+               
                 throw new InvalidOperationException();
+            }
 
-            if (!manifest.References.TryGetValue(index, out ProjectReference? refInfo))
-                throw new InvalidOperationException("Invalid reference Id.");
+            if (reference.Info.IsInternal)
+            {
+                if (archive is null)
+                {
+                    value = default;
+                    return false;
+                }
 
-            if (newFiles.TryGetValue(index, out byte[]? rawData))
-                return new MemoryStream(rawData, false);
+                if (archiveIndex.TryGetValue(reference.Info.FileName, out int fileIndexZip))
+                {
+                    using Stream zipEntryStream = archive.Entries[fileIndexZip].Open();
+                    return CodecBank.ProjectCodecs.TryDecode<T>(zipEntryStream, reference.Info.Format, null, out value);
+                }
 
-            if (archive is not null && archiveIndex.TryGetValue(refInfo.FileName, out int refFileIndex))
-                return archive.Entries[refFileIndex].Open();
+                value = default;
+                return false;
+            }
 
-            throw new InvalidDataException("Archive references a nonexistent file.");
+            string externalPath = reference.Info.FileName;
+            if (!Path.IsPathRooted(externalPath))
+            {
+                if (workingDir is null)
+                    throw new InvalidOperationException();
+
+                externalPath = Path.Combine(workingDir, externalPath);
+            }
+
+            try
+            {
+                using FileStream fileStream = new FileStream(externalPath, FileMode.Open, FileAccess.Read);
+                return CodecBank.ProjectCodecs.TryDecode<T>(fileStream, reference.Info.Format, null, out value);
+            }
+            catch (FileNotFoundException)
+            {
+                value = default;
+                return false;
+            }
         }
 
-        public int AddReference(string fileName, ProjectReferenceFormat fmt, byte[] payload)
+        public bool TryAddReferenceDirect<T>(string fileName, ProjectReferenceFormat fmt, T val, int index)
         {
-            if (archiveIndex.ContainsKey(fileName))
-                throw new InvalidOperationException("That file is already part of the archive.");
-
-            throw new NotImplementedException();
+            index = 0; // TODO
+            ProjectReference reference = new ProjectReference(index,
+                 new ProjectReferenceInfo() { FileName = fileName, Format = fmt, IsInternal = true }, val);
+            references.Add(index, reference);
+            return true;
         }
 
-        public int TryFindReference(string fileName)
+        public bool TryAddReferenceExternal(string fileName, ProjectReferenceFormat fmt, int index)
         {
-            if (archiveIndex.TryGetValue(fileName, out int refFileIndex))
-                return refFileIndex;
+            string fileNameMinimal = fileName;
 
-            return -1;
+            if (workingDir is not null)
+                Path.GetRelativePath(workingDir, fileName);
+
+            index = 0; // TODO
+            ProjectReference reference = new ProjectReference(index,
+                new ProjectReferenceInfo() { FileName = fileNameMinimal, Format = fmt, IsInternal = false });
+           
+            references.Add(index, reference);
+            return true;
         }
+
 
         private void MakeArchiveIndex()
         {
@@ -103,7 +157,12 @@ namespace Warp9.Model
             JsonSerializerOptions opts = new JsonSerializerOptions();
             opts.AllowTrailingCommas = false;
 
-            manifest = JsonSerializer.Deserialize<ProjectManifest>(s, opts);
+            ProjectManifest? manifest = JsonSerializer.Deserialize<ProjectManifest>(s, opts);
+            if (manifest is null)
+                throw new InvalidDataException();
+
+            foreach (var kvp in manifest.References)
+                references.Add(kvp.Key, new ProjectReference(kvp.Key, kvp.Value));
         }
 
         public void Dispose()

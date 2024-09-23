@@ -16,13 +16,32 @@ namespace Warp9.Model
         FloatMatrix
     }
 
-    public class ProjectReference
+    public class ProjectReferenceInfo
     {
-        [JsonIgnore]
-        public int Id { get; set; }
-        public string FileName { get; set; }
+        [JsonPropertyName("file")]
+        public required string FileName { get; set; }
+
+        [JsonPropertyName("fmt")]
         public ProjectReferenceFormat Format { get; set; }
 
+        [JsonPropertyName("intern")]
+        public bool IsInternal { get; set; }
+    }
+
+    public class ProjectReference
+    {
+        public ProjectReference(int id, ProjectReferenceInfo info, object? nat=null)
+        {
+            Id = id;
+            Info = info;
+            NativeObject = nat;
+        }
+
+        public int Id { get; set; }
+        public ProjectReferenceInfo Info { get; set; }
+        
+        public bool HasNativeObject => NativeObject is not null;
+        public object? NativeObject { get; set; }
         
     }
 }
