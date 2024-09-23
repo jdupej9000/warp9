@@ -35,9 +35,12 @@ namespace Warp9.Model
         ZipArchive? archive;
         readonly Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
         readonly Dictionary<int, ProjectReference> references = new Dictionary<int, ProjectReference>();
-        readonly Dictionary<int, byte[]> newFiles = new Dictionary<int, byte[]>();
-
+        
         private static readonly string ManifestFileName = "manifest.json";
+        private static readonly JsonSerializerOptions opts = new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = false
+        };
 
         public void Close()
         {
@@ -154,8 +157,7 @@ namespace Warp9.Model
 
         private void ParseRawManifest(Stream s)
         {
-            JsonSerializerOptions opts = new JsonSerializerOptions();
-            opts.AllowTrailingCommas = false;
+           
 
             ProjectManifest? manifest = JsonSerializer.Deserialize<ProjectManifest>(s, opts);
             if (manifest is null)

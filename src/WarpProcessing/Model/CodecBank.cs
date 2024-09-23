@@ -23,7 +23,7 @@ namespace Warp9.Model
             CodecBank<ProjectReferenceFormat> ret = new CodecBank<ProjectReferenceFormat>();
 
             ret.Add(ProjectReferenceFormat.ObjMesh, new Codec<Mesh>(
-                null,
+                null, // new objects are not to be represented as OBJ, in favor of W9
                 (s, c) =>
                 {
                     if (ObjImport.TryImport(s, ObjImportMode.PositionsOnly, out Mesh ret, out _))
