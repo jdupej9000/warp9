@@ -21,6 +21,7 @@ namespace Warp9.Model
         string filePath;
         ZipArchive? archive;
         ProjectManifest? manifest;
+        Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
 
         public bool IsOpen => archive is not null;
 
@@ -33,6 +34,30 @@ namespace Warp9.Model
                 archive.Dispose();
                 archive = null;
             }
+        }
+
+        public Stream ReadReference(int index)
+        {
+            if (manifest is null || archive is null) 
+                throw new InvalidOperationException();
+
+            if (!manifest.References.TryGetValue(index, out ProjectReference? refInfo))
+                throw new InvalidOperationException();
+
+            if (!archiveIndex.TryGetValue(refInfo.FileName, out int refFileIndex))
+                throw new InvalidDataException();
+
+            return archive.Entries[refFileIndex].Open();
+        }
+
+        private void MakeArchiveIndex()
+        {
+            if (archive is null)
+                throw new InvalidOperationException();
+
+            archiveIndex.Clear();
+            for (int i = 0; i < archive.Entries.Count; i++)
+                archiveIndex.Add(archive.Entries[i].Name, i);
         }
 
         private void LoadManifest()
@@ -63,6 +88,8 @@ namespace Warp9.Model
 
             if (!keepOpen)
                 ret.Close();
+
+            ret.MakeArchiveIndex();
 
             return ret;
         }
