@@ -39,6 +39,11 @@ namespace Warp9.Model
             codecs.Add(key, c);
         }
 
+        private static Lazy<CodecBank<ProjectReferenceFormat>> lazyProjectCodecBank = new Lazy<CodecBank<ProjectReferenceFormat>>(
+            CreateProjectCodecBank);
+
+        public static CodecBank<ProjectReferenceFormat> ProjectCodecs = lazyProjectCodecBank.Value;
+
         public static CodecBank<ProjectReferenceFormat> CreateProjectCodecBank()
         {
             CodecBank<ProjectReferenceFormat> ret = new CodecBank<ProjectReferenceFormat>();

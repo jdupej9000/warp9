@@ -21,5 +21,8 @@ namespace Warp9.Model
         [JsonIgnore]
         public int Id { get; set; }
         public string FileName { get; set; }
+        public ProjectReferenceFormat Format { get; set; }
+
+        
     }
 }
