@@ -34,7 +34,9 @@ namespace Warp9.Model
         private static readonly string ManifestFileName = "manifest.json";
         private static readonly JsonSerializerOptions opts = new JsonSerializerOptions()
         {
-            AllowTrailingCommas = false
+            AllowTrailingCommas = false,
+            WriteIndented = true,
+            ReadCommentHandling = JsonCommentHandling.Skip
         };
 
         public bool IsArchiveOpen => archive?.IsOpen ?? false;

@@ -9,11 +9,11 @@ namespace Warp9.Model
 {
     public enum ProjectReferenceFormat
     {
-        ObjMesh,
-        W9Mesh,
-        PngImage,
-        JpegImage,
-        FloatMatrix
+        ObjMesh = 1,
+        W9Mesh = 2,
+        PngImage = 3,
+        JpegImage = 4,
+        FloatMatrix = 5
     }
 
     public class ProjectReferenceInfo
