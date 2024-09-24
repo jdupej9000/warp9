@@ -53,6 +53,14 @@ namespace Warp9.Model
     {
         private readonly Dictionary<TKey, Codec> codecs = new Dictionary<TKey, Codec>();
 
+        public bool TryEncodeObject(Stream dest, object val, TKey type, IEncoderConfig? cfg)
+        {
+            if (!codecs.TryGetValue(type, out Codec? codec))
+                return false;
+
+            return codec.TryEncodeObject(dest, val, cfg);
+        }
+
         public bool TryEncode<T>(Stream dest, T val, TKey type, IEncoderConfig? cfg)
         {
             if (!codecs.TryGetValue(type, out Codec? codec))

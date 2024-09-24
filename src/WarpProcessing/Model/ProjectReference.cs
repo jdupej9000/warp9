@@ -39,7 +39,6 @@ namespace Warp9.Model
 
         public int Id { get; set; }
         public ProjectReferenceInfo Info { get; set; }
-        
         public bool HasNativeObject => NativeObject is not null;
         public object? NativeObject { get; set; }
         

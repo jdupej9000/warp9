@@ -18,6 +18,7 @@ namespace Warp9.Model
 
     public abstract class Codec
     {
+        public abstract bool TryEncodeObject(Stream stream, object value, IEncoderConfig? cfg);
         public abstract bool TryEncode<T>(Stream stream, T value, IEncoderConfig? cfg);
         public abstract bool TryDecode<T>(Stream stream, IDecoderConfig? cfg, [MaybeNullWhen(false)] out T? value);
     }
@@ -32,6 +33,17 @@ namespace Warp9.Model
 
         private Action<Stream, T, IEncoderConfig?>? encoder;
         private Func<Stream, IDecoderConfig?, T?>? decoder;
+
+        public override bool TryEncodeObject(Stream stream, object value, IEncoderConfig? cfg)
+        {
+            if (encoder is not null && value is T typedValue)
+            {
+                encoder(stream, typedValue, cfg);
+                return true;
+            }
+
+            return false;
+        }
 
         public override bool TryEncode<TVal>(Stream stream, TVal value, IEncoderConfig? cfg)
         {
