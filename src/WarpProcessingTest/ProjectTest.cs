@@ -37,6 +37,7 @@ namespace Warp9.Test
 
             using InMemoryProjectArchive archive = new InMemoryProjectArchive();
             project.Save(archive);
+            Assert.IsTrue(!project.IsArchiveOpen);
 
             string manifestContents = archive.ReadFileAsString("manifest.json");
             Assert.IsTrue(manifestContents.Length > 0);
