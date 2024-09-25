@@ -11,5 +11,11 @@ namespace Warp9.Model
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Text { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public SpecimenTable? Table { get; set; }
+
+        [JsonIgnore]
+        public static readonly ProjectEntryPayload Empty = new ProjectEntryPayload();
     }
 }

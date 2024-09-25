@@ -10,19 +10,23 @@ namespace Warp9.Model
 {
     public enum ProjectEntryKind
     {
-        Comment,
-        Specimens,
-        Dca
+        Specimens = 0,
+        MeshCorrespondence = 1,
+        MeshPca = 2,
+        Gallery = 3,
+
+        Invalid = -1
     };
 
     public class ProjectEntry
     {
         [JsonIgnore]
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public ProjectEntryKind Kind { get; set; }
-        public List<int> Refs { get; set; }
-        public List<int> Deps { get; set; }
-        public ProjectEntryPayload Payload { get; set; }
+        public int Id { get; set; } = -1;
+
+        public string Name { get; set; } = string.Empty;
+        public ProjectEntryKind Kind { get; set; } = ProjectEntryKind.Invalid;
+        public List<int> Refs { get; set; } = new List<int>();
+        public List<int> Deps { get; set; } = new List<int>();
+        public ProjectEntryPayload Payload { get; set; } = ProjectEntryPayload.Empty;
     }
 }
