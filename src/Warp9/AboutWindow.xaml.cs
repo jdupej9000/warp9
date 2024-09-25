@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
+using Warp9.Native;
 
 namespace Warp9
 {
