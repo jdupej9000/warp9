@@ -7,6 +7,7 @@ namespace Warp9
     {
         WCINFO_VERSION = 0,
         WCINFO_COMPILER = 1,
+        WCINFO_OPT_PATH = 2,
         WCINFO_MKL_VERSION = 1000,
         WCINFO_MKL_ISA = 1001
     };

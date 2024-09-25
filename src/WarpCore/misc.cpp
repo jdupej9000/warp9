@@ -25,6 +25,9 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 #endif
         break;
 
+    case WCINFO_OPT_PATH:
+        ss << "avx2";
+        break;
 
     case WCINFO_MKL_VERSION:
     case WCINFO_MKL_ISA: {
