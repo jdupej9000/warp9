@@ -33,7 +33,7 @@ namespace Warp9.Model
         Dictionary<int, ProjectEntry> entries = new Dictionary<int, ProjectEntry>();
         ProjectSettings settings = new ProjectSettings();
         
-        private static readonly string ManifestFileName = "manifest.json";
+        public static readonly string ManifestFileName = "manifest.json";
         private static JsonSerializerOptions? opts;
 
         public bool IsArchiveOpen => archive?.IsOpen ?? false;

@@ -64,7 +64,8 @@ namespace Warp9.Model
 
             archiveIndex.Add(name, archive.Entries.Count);
 
-            ZipArchiveEntry entry = archive.CreateEntry(name);
+            bool isManifest = name == Project.ManifestFileName;
+            ZipArchiveEntry entry = archive.CreateEntry(name, isManifest ? CompressionLevel.SmallestSize : CompressionLevel.NoCompression);
             return entry.Open();
         }
 
