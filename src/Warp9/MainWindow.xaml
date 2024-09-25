@@ -14,14 +14,14 @@
 
         <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
             <MenuItem Header="_File">
-                <MenuItem Header="_New" />
-                <MenuItem Header="_Open..." />
-                <MenuItem Header="_Save" />
-                <MenuItem Header="Save _As..." />
+                <MenuItem Header="_New" Click="mnuFileNew_Click"/>
+                <MenuItem Header="_Open..." Click="mnuFileOpen_Click" />
+                <MenuItem Header="_Save" Click="mnuFileSave_Click"/>
+                <MenuItem Header="Save _As..." Click="mnuFileSaveAs_Click"/>
                 <Separator />
-                <MenuItem Header="Close" />
+                <MenuItem Header="Close" Click="mnuFileClose_Click"/>
                 <Separator />
-                <MenuItem Header="_Exit" />
+                <MenuItem Header="_Exit" Click="mnuFileExit_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Help">
@@ -101,13 +101,15 @@
 
             </GroupBox>
 
-            <Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
+            <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" />
+
+            <!--<Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
                 <Image x:Name="ImageHost" Stretch="Fill">
                     <Image.Source>
                         <dx:D3D11Image x:Name="InteropImage"/>
                     </Image.Source>
                 </Image>
-            </Grid>
+            </Grid>-->
         </Grid>
 
 

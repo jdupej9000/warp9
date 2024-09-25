@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -14,6 +15,7 @@ using System.Windows.Navigation;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.Model;
 using Warp9.Themes;
 using Warp9.Viewer;
 
@@ -34,6 +36,11 @@ namespace Warp9
         WpfInteropRenderer? renderer;
         RenderItemMesh? meshRend;
         TimeSpan lastRender = TimeSpan.Zero;
+
+        Warp9Model? model = null;
+
+
+        /*
         private Random rnd = new Random();
 
         #region remove
@@ -156,8 +163,6 @@ namespace Warp9
         
         #endregion
 
-        
-
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Size size = WpfSizeToPixels(ImageGrid);
@@ -182,8 +187,96 @@ namespace Warp9
 
             return (Size)transformToDevice.Transform(new System.Windows.Vector(element.ActualWidth, element.ActualHeight));
         }
+        */
 
-      
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            //Size size = WpfSizeToPixels(ImageGrid);
+            //InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Grid_Loaded2(sender, e);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+           // CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            // TODO: renderer dispose
+        }
+
+        private bool SaveOrSaveAs()
+        {
+            if (model is null)
+                return true;
+
+            return false;
+        }
+
+        private bool OfferSaveDirtyProject()
+        {
+            if (model is not null && model.IsDirty)
+            {
+                MessageBoxResult res = System.Windows.MessageBox.Show("Do you wish to save your changes?", "Warp9",
+                    MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
+
+                switch (res)
+                {
+                    case MessageBoxResult.Yes:
+                        return SaveOrSaveAs();
+
+                    case MessageBoxResult.No:
+                        return true;
+
+                    case MessageBoxResult.Cancel:
+                        return false;
+
+                }
+            }
+
+            return true;
+        }
+
+        private void mnuFileNew_Click(object sender, RoutedEventArgs e)
+        {
+            if (!OfferSaveDirtyProject())
+                return;
+
+            model = new Warp9Model(Project.CreateEmpty());
+        }
+
+        private void mnuFileOpen_Click(object sender, RoutedEventArgs e)
+        {
+            if (!OfferSaveDirtyProject())
+                return;
+
+            FileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
+
+            DialogResult res = dlg.ShowDialog();
+        }
+
+        private void mnuFileSave_Click(object sender, RoutedEventArgs e)
+        {
+            SaveOrSaveAs();
+        }
+
+        private void mnuFileSaveAs_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void mnuFileClose_Click(object sender, RoutedEventArgs e)
+        {
+            if (!OfferSaveDirtyProject())
+                return;
+        }
+
+        private void mnuFileExit_Click(object sender, RoutedEventArgs e)
+        {
+            if (!OfferSaveDirtyProject())
+                return;
+        }
 
         private void mnuHelpAbout_Click(object sender, RoutedEventArgs e)
         {
@@ -191,6 +284,8 @@ namespace Warp9
             wnd.Owner = this;
             wnd.ShowDialog();
         }
+
+
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
