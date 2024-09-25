@@ -231,19 +231,11 @@ namespace Warp9.Model
             return new Project();
         }
 
-       /* public static Project Load(string path, bool keepOpen=true)
+        public static Project Load(IProjectArchive archive)
         {
-            ZipArchive zip = ZipFile.OpenRead(path);
-            
-            Project ret = new Project(path, zip);
+            Project ret = new Project(archive);
             ret.LoadManifest();
-
-            if (!keepOpen)
-                ret.Close();
-
-            ret.MakeArchiveIndex();
-
             return ret;
-        }*/
+        }
     }
 }

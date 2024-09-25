@@ -6,6 +6,35 @@ namespace Warp9.Test
     [TestClass]
     public class ProjectTest
     {
+        private static Project MakeProject1()
+        {
+            Project project = Project.CreateEmpty();
+
+            Bitmap bmp = new Bitmap(16, 16);
+            int bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
+
+            return project;
+        }
+
+        private static Project MakeProject2()
+        {
+            Project project = Project.CreateEmpty();
+
+            SpecimenTable tab = new SpecimenTable();
+            SpecimenTableColumn<long> col1 = tab.AddColumn<long>("id", SpecimenTableColumnType.Integer);
+            col1.Data.AddRange([1, 10, 100, 1000]);
+            SpecimenTableColumn<string> col2 = tab.AddColumn<string>("name", SpecimenTableColumnType.String);
+            col2.Data.AddRange(["Janeway", "Chakotay", "Paris", "Seven"]);
+            SpecimenTableColumn<int> col3 = tab.AddColumn<int>("sex", SpecimenTableColumnType.Factor, ["M", "F"]);
+            col3.Data.AddRange([1, 0, 0, 1]);
+
+            ProjectEntry entry = project.AddNewEntry(ProjectEntryKind.Specimens);
+            entry.Name = "Specimen table";
+            entry.Payload.Table = tab;
+
+            return project;
+        }
+
         [TestMethod]
         public void CreateEmptyTest()
         {
@@ -65,10 +94,7 @@ namespace Warp9.Test
         [TestMethod]
         public void SaveProject1Test()
         {
-            using Project project = Project.CreateEmpty();
-
-            using Bitmap bmp = new Bitmap(16, 16);
-            int bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
+            using Project project = MakeProject1();
 
             using InMemoryProjectArchive archive = new InMemoryProjectArchive();
             project.Save(archive);
@@ -82,26 +108,26 @@ namespace Warp9.Test
         [TestMethod]
         public void SaveProject2Test()
         {
-            using Project project = Project.CreateEmpty();
-
-            SpecimenTable tab = new SpecimenTable();
-            SpecimenTableColumn<long> col1 = tab.AddColumn<long>("id", SpecimenTableColumnType.Integer);
-            col1.Data.AddRange([1, 10, 100, 1000]);
-            SpecimenTableColumn<string> col2 = tab.AddColumn<string>("name", SpecimenTableColumnType.String);
-            col2.Data.AddRange(["Janeway", "Chakotay", "Paris", "Seven"]);
-            SpecimenTableColumn<int> col3 = tab.AddColumn<int>("sex", SpecimenTableColumnType.Factor, ["M", "F"]);
-            col3.Data.AddRange([1, 0, 0, 1]);
-
-            ProjectEntry entry = project.AddNewEntry(ProjectEntryKind.Specimens);
-            entry.Name = "Specimen table";
-            entry.Payload.Table = tab;
+            using Project project = MakeProject2();
 
             using InMemoryProjectArchive archive = new InMemoryProjectArchive();
             project.Save(archive);
 
             string manifestContents = archive.ReadFileAsString("manifest.json");
-          
+            // TODO: assert on something
         }
 
+        [TestMethod]
+        public void SaveLoadProject2Test()
+        {
+            using Project project = MakeProject2();
+
+            using InMemoryProjectArchive archive = new InMemoryProjectArchive();
+            project.Save(archive);
+
+            using Project loaded = Project.Load(archive);
+            Assert.IsNotNull(loaded);
+            // TODO: assert project equality
+        }
     }
 }
