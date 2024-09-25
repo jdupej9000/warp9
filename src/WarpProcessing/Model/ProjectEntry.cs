@@ -20,13 +20,28 @@ namespace Warp9.Model
 
     public class ProjectEntry
     {
+        public ProjectEntry(int id, ProjectEntryKind kind)
+        {
+            Id = id;
+            Kind = kind;
+        }
+
         [JsonIgnore]
         public int Id { get; set; } = -1;
 
+        [JsonPropertyName("id")]
         public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("kind")]
         public ProjectEntryKind Kind { get; set; } = ProjectEntryKind.Invalid;
+
+        [JsonPropertyName("refs")]
         public List<int> Refs { get; set; } = new List<int>();
+
+        [JsonPropertyName("deps")]
         public List<int> Deps { get; set; } = new List<int>();
+
+        [JsonPropertyName("payload")]
         public ProjectEntryPayload Payload { get; set; } = ProjectEntryPayload.Empty;
     }
 }

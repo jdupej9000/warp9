@@ -79,5 +79,29 @@ namespace Warp9.Test
             Assert.IsTrue(archive.ContainsFile("bitmap.png"));
         }
 
+        [TestMethod]
+        public void SaveProject2Test()
+        {
+            using Project project = Project.CreateEmpty();
+
+            SpecimenTable tab = new SpecimenTable();
+            SpecimenTableColumn<long> col1 = tab.AddColumn<long>("id", SpecimenTableColumnType.Integer);
+            col1.Data.AddRange([1, 10, 100, 1000]);
+            SpecimenTableColumn<string> col2 = tab.AddColumn<string>("name", SpecimenTableColumnType.String);
+            col2.Data.AddRange(["Janeway", "Chakotay", "Paris", "Seven"]);
+            SpecimenTableColumn<int> col3 = tab.AddColumn<int>("sex", SpecimenTableColumnType.Factor, ["M", "F"]);
+            col3.Data.AddRange([1, 0, 0, 1]);
+
+            ProjectEntry entry = project.AddNewEntry(ProjectEntryKind.Specimens);
+            entry.Name = "Specimen table";
+            entry.Payload.Table = tab;
+
+            using InMemoryProjectArchive archive = new InMemoryProjectArchive();
+            project.Save(archive);
+
+            string manifestContents = archive.ReadFileAsString("manifest.json");
+          
+        }
+
     }
 }

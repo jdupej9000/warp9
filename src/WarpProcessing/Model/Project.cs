@@ -19,11 +19,13 @@ namespace Warp9.Model
         private Project()
         {
             archive = null;
+            InitJsonOptions();
         }
 
         internal Project(IProjectArchive archive)
         {
             this.archive = archive;
+            InitJsonOptions();
         }
 
         IProjectArchive? archive;
@@ -32,12 +34,7 @@ namespace Warp9.Model
         ProjectSettings settings = new ProjectSettings();
         
         private static readonly string ManifestFileName = "manifest.json";
-        private static readonly JsonSerializerOptions opts = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = false,
-            WriteIndented = true,
-            ReadCommentHandling = JsonCommentHandling.Skip
-        };
+        private static JsonSerializerOptions? opts;
 
         public bool IsArchiveOpen => archive?.IsOpen ?? false;
         public ProjectSettings Settings => settings;
@@ -125,6 +122,14 @@ namespace Warp9.Model
             return references.Remove(index);
         }
 
+        public ProjectEntry AddNewEntry(ProjectEntryKind kind)
+        {
+            int index = 0;
+            ProjectEntry entry = new ProjectEntry(index, kind);
+            entries[index] = entry;
+            return entry;
+        }
+
         private void LoadManifest()
         {
             if (archive is null || !archive.ContainsFile(ManifestFileName))
@@ -207,6 +212,18 @@ namespace Warp9.Model
 
             progress?.EndBatch();
             // TODO: add save options with reference transcoding
+        }
+
+        private void InitJsonOptions()
+        {
+            opts = new JsonSerializerOptions()
+            {
+                AllowTrailingCommas = false,
+                //WriteIndented = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            opts.Converters.Add(new SpecimenTableColumnJsonConverter());
         }
 
         public static Project CreateEmpty()

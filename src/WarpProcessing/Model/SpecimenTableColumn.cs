@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Warp9.Data;
 
@@ -26,8 +27,13 @@ namespace Warp9.Model
 
     public abstract class SpecimenTableColumn
     {
+        [JsonPropertyName("type")]
         public SpecimenTableColumnType ColumnType { get; internal set; } = SpecimenTableColumnType.Invalid;
+
+        [JsonIgnore]
         public abstract int NumRows { get; }
+
+        [JsonIgnore]
         public string[]? Names { get; set; } = null;
 
         public abstract IEnumerable<T> GetData<T>();
@@ -39,6 +45,13 @@ namespace Warp9.Model
         {
             ColumnType = colType;
             Names = names;
+        }
+
+        public SpecimenTableColumn(SpecimenTableColumnType colType, List<T> d, string[]? names = null)
+        {
+            ColumnType = colType;
+            Names = names;
+            data = d;
         }
 
         List<T> data = new List<T>();
