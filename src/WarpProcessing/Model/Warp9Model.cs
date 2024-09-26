@@ -15,5 +15,7 @@ namespace Warp9.Model
 
         public Project Project { get; init; }
         public bool IsDirty { get; private set; } = false;
+
+        public event EventHandler ItemsChanged;
     }
 }

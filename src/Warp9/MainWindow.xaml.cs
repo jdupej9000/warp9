@@ -1,5 +1,8 @@
 ﻿using SharpDX.Direct3D11;
 using SharpDX.Mathematics.Interop;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -12,10 +15,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Xml.Linq;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.Model;
+using Warp9.ProjectExplorer;
 using Warp9.Themes;
 using Warp9.Viewer;
 
@@ -29,6 +34,7 @@ namespace Warp9
         public MainWindow()
         {
             InitializeComponent();
+            InitView();
             
         }
 
@@ -39,6 +45,36 @@ namespace Warp9
 
         Warp9Model? model = null;
 
+        public ObservableCollection<ProjExpModel> col = new ObservableCollection<ProjExpModel>();
+        public ObservableCollection<ProjExpModel> ProjectView => col;
+
+
+        public void InitView()
+        {
+            string path = @"D:\warp9\";
+            foreach (var dir in Directory.GetDirectories(path))
+            {
+                try
+                {
+                    LoadFolder(dir, col);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private void LoadFolder(string path, ObservableCollection<ProjExpModel> col)
+        {
+            ProjExpModel tree = new ProjExpModel()
+            {
+                Name = System.IO.Path.GetFileNameWithoutExtension(path)
+            };
+            col.Add(tree);
+          
+            foreach (var dir in Directory.GetDirectories(path))
+                LoadFolder(dir, tree.Children);
+        }
 
         /*
         private Random rnd = new Random();
@@ -244,6 +280,8 @@ namespace Warp9
                 return;
 
             model = new Warp9Model(Project.CreateEmpty());
+
+            treeProject.ItemsSource = ProjectView;
         }
 
         private void mnuFileOpen_Click(object sender, RoutedEventArgs e)
@@ -270,6 +308,8 @@ namespace Warp9
         {
             if (!OfferSaveDirtyProject())
                 return;
+
+            UnsetProject();
         }
 
         private void mnuFileExit_Click(object sender, RoutedEventArgs e)
@@ -285,6 +325,34 @@ namespace Warp9
             wnd.ShowDialog();
         }
 
+        private void SetProject(Project project)
+        {
+            model = new Warp9Model(project);
+            model.ItemsChanged += Model_ItemsChanged;
+            UpdateProjectExplorer();
+        }
+
+        private void UnsetProject()
+        {
+            if (model is not null)
+            {
+                model.ItemsChanged -= Model_ItemsChanged;
+                model = null;
+                UpdateProjectExplorer();
+            }
+        }
+
+        private void Model_ItemsChanged(object? sender, EventArgs e)
+        {
+            UpdateProjectExplorer();
+        }
+
+        private void UpdateProjectExplorer()
+        {
+           
+            //if(model is null)
+             //   treeProject.
+        }
 
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
