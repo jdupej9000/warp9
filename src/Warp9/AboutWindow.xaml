@@ -13,9 +13,10 @@
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
     <Canvas>
-        <TextBlock FontSize="20" FontWeight="Bold" Canvas.Left="16" Canvas.Top="16">Warp9</TextBlock>
-        <TextBlock Canvas.Left="16" Canvas.Top="44">Version 0.0.1</TextBlock>
-        <TextBlock Canvas.Left="16" Canvas.Top="60">Project page: <Hyperlink>www.github.com/jandupej/warp9</Hyperlink></TextBlock>
+        <Image Source="{DynamicResource AImage.MonoIcon}" Canvas.Left="16" Canvas.Top="16" Height="56"/>
+        <TextBlock Canvas.Left="180" Canvas.Top="16">Warp9</TextBlock>
+        <TextBlock Canvas.Left="180" Canvas.Top="36">Version 0.0.1</TextBlock>
+        <TextBlock Canvas.Left="180" Canvas.Top="56"><Hyperlink>www.github.com/jdupej9000/warp9</Hyperlink></TextBlock>
 
         <TabControl Canvas.Left="16" Canvas.Top="158" Width="412" Height="212" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TabItem Header="Acknowledgments">
@@ -42,6 +43,6 @@
         </TabControl>
 
 
-        <Button Height="28" Width="50" Canvas.Left="378" Canvas.Top="390">Close</Button>
+        <Button Height="28" Width="50" Canvas.Left="378" Canvas.Top="385">Close</Button>
     </Canvas>
 </Window>

@@ -13,6 +13,11 @@ namespace Warp9.ProjectExplorer
 {
     public class ProjExpModel
     {
+        public ProjExpModel(string name) 
+        {
+            Name = name;
+        }
+
         public string Name { get; set; } = string.Empty;
         public ObservableCollection<ProjExpModel> Children { get; set; } = new ObservableCollection<ProjExpModel>();
     }

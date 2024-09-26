@@ -51,29 +51,15 @@ namespace Warp9
 
         public void InitView()
         {
-            string path = @"D:\warp9\";
-            foreach (var dir in Directory.GetDirectories(path))
-            {
-                try
-                {
-                    LoadFolder(dir, col);
-                }
-                catch
-                {
-                }
-            }
-        }
+            col.Add(new ProjExpModel("General"));
+            col[0].Children.Add(new ProjExpModel("Comment"));
 
-        private void LoadFolder(string path, ObservableCollection<ProjExpModel> col)
-        {
-            ProjExpModel tree = new ProjExpModel()
-            {
-                Name = System.IO.Path.GetFileNameWithoutExtension(path)
-            };
-            col.Add(tree);
-          
-            foreach (var dir in Directory.GetDirectories(path))
-                LoadFolder(dir, tree.Children);
+            col.Add(new ProjExpModel("Datasets"));
+
+            col.Add(new ProjExpModel("Results"));
+
+            col.Add(new ProjExpModel("Galleries"));
+
         }
 
         /*
