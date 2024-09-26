@@ -38,6 +38,7 @@ namespace Warp9.Model
 
         public bool IsArchiveOpen => archive?.IsOpen ?? false;
         public ProjectSettings Settings => settings;
+        public IReadOnlyDictionary<int, ProjectEntry> Entries => entries;
 
 
         public bool TryGetReference<T>(int index, [MaybeNullWhen(false)] out T value)

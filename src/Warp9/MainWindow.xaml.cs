@@ -20,6 +20,7 @@ using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.Model;
+using Warp9.Navigation;
 using Warp9.ProjectExplorer;
 using Warp9.Themes;
 using Warp9.Viewer;
@@ -34,33 +35,17 @@ namespace Warp9
         public MainWindow()
         {
             InitializeComponent();
-            InitView();
-            
+            pageViewer = new ViewerPage(this);
         }
 
 
-        WpfInteropRenderer? renderer;
-        RenderItemMesh? meshRend;
-        TimeSpan lastRender = TimeSpan.Zero;
+       
 
         Warp9Model? model = null;
 
-        public ObservableCollection<ProjExpModel> col = new ObservableCollection<ProjExpModel>();
-        public ObservableCollection<ProjExpModel> ProjectView => col;
-
-
-        public void InitView()
-        {
-            col.Add(new ProjExpModel("General"));
-            col[0].Children.Add(new ProjExpModel("Comment"));
-
-            col.Add(new ProjExpModel("Datasets"));
-
-            col.Add(new ProjExpModel("Results"));
-
-            col.Add(new ProjExpModel("Galleries"));
-
-        }
+        MainLandingPage pageLanding = new MainLandingPage();
+        TextEditorPage pageTextEditor = new TextEditorPage();
+        ViewerPage pageViewer;
 
         /*
         private Random rnd = new Random();
@@ -265,9 +250,9 @@ namespace Warp9
             if (!OfferSaveDirtyProject())
                 return;
 
-            model = new Warp9Model(Project.CreateEmpty());
+           SetProject(Project.CreateEmpty());
 
-            treeProject.ItemsSource = ProjectView;
+           
         }
 
         private void mnuFileOpen_Click(object sender, RoutedEventArgs e)
@@ -314,7 +299,6 @@ namespace Warp9
         private void SetProject(Project project)
         {
             model = new Warp9Model(project);
-            model.ItemsChanged += Model_ItemsChanged;
             UpdateProjectExplorer();
         }
 
@@ -322,28 +306,37 @@ namespace Warp9
         {
             if (model is not null)
             {
-                model.ItemsChanged -= Model_ItemsChanged;
                 model = null;
                 UpdateProjectExplorer();
             }
         }
 
-        private void Model_ItemsChanged(object? sender, EventArgs e)
-        {
-            UpdateProjectExplorer();
-        }
-
         private void UpdateProjectExplorer()
         {
-           
-            //if(model is null)
-             //   treeProject.
+            treeProject.ItemsSource = model?.Items ?? new ObservableCollection<ProjectItem>();
         }
-
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
         }
+
+        private void treeProject_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is ProjectItem item)
+            {
+                if(item.Level == 0)
+                    frameMain.NavigationService.Navigate(pageViewer);
+                else
+                    frameMain.NavigationService.Navigate(pageTextEditor);
+            }
+            else
+            {
+                frameMain.NavigationService.Navigate(pageLanding);
+            }
+
+            e.Handled = true;
+        }
+
     }
 }

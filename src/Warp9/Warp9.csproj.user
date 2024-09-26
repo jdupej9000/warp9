@@ -10,6 +10,12 @@
     <Compile Update="Navigation\MainLandingPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Navigation\TextEditorPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Navigation\ViewerPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Assets\Icons.xaml">
@@ -19,6 +25,12 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Navigation\MainLandingPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Navigation\TextEditorPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Navigation\ViewerPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

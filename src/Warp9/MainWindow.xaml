@@ -36,14 +36,6 @@
 
     <DockPanel>
 
-        <!--<ToolBarTray DockPanel.Dock="Top">
-            <ToolBar BorderThickness="0">
-                <Button Content="{StaticResource OpenFileDialog}"/>
-                <Button Content="{StaticResource Save}"/>
-                <Separator/>
-            </ToolBar>
-        </ToolBarTray>-->
-
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
                 <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
@@ -61,7 +53,7 @@
             <TabControl x:Name="tabLeft" TabStripPlacement="Left" Margin="2,2,2,2">
 
                 <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8" >
-                    
+
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock DockPanel.Dock="Top" FontWeight="Bold">Project Explorer</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
@@ -71,7 +63,7 @@
                         </StackPanel>
 
                         <Label DockPanel.Dock="Top" Height="12" />
-                        <TreeView Name="treeProject" DockPanel.Dock="Top" BorderThickness="0">
+                        <TreeView Name="treeProject" DockPanel.Dock="Top" BorderThickness="0" SelectedItemChanged="treeProject_SelectedItemChanged">
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                     <TextBlock Text="{Binding Name}"/>
@@ -94,7 +86,7 @@
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Border}" ShowsPreview="True" Width="5" />
 
-            <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" />
+            <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" Margin="0,2,2,2" />
 
             <!--<Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
                 <Image x:Name="ImageHost" Stretch="Fill">

@@ -27,13 +27,20 @@ namespace Warp9.Controls
         Texture2D? texFboDepth;
         Size depthStencilLastSize = Size.Empty;
 
+        public bool Fussy { get; set; } = true;
+
         public void Present()
         {
             if (device is null || ctx is null)
                 throw new InvalidOperationException();
 
             if (depthStencilView is null || renderTargetView is null)
-                throw new InvalidOperationException();
+            {
+                if(Fussy)
+                    throw new InvalidOperationException();
+
+                return;
+            }
 
             ctx.ClearDepthStencilView(depthStencilView,
                 DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 255);
