@@ -8,6 +8,7 @@
         xmlns:local="clr-namespace:Warp9"
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle2}"
+        Background="{DynamicResource Window.Static.Border}"
         Title="Warp9" Height="450" Width="800" Closing="Window_Closing">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
@@ -33,13 +34,13 @@
 
     <DockPanel>
 
-        <ToolBarTray DockPanel.Dock="Top">
+        <!--<ToolBarTray DockPanel.Dock="Top">
             <ToolBar BorderThickness="0">
                 <Button Content="{StaticResource OpenFileDialog}"/>
                 <Button Content="{StaticResource Save}"/>
                 <Separator/>
             </ToolBar>
-        </ToolBarTray>
+        </ToolBarTray>-->
 
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
@@ -49,14 +50,13 @@
 
         <Grid x:Name="gridMain">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="300"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
-                <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
 
-          
-            <TabControl x:Name="tabLeft" TabStripPlacement="Left">
+           
+            <TabControl x:Name="tabLeft" TabStripPlacement="Left" Margin="2,2,2,2">
 
                 <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8" >
                     
@@ -88,26 +88,9 @@
                 </TabItem>
                 
             </TabControl>
-           
-   
-
-            <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Black" ShowsPreview="True" Width="5" />
-
-            <GroupBox Grid.Column="3" Header="Visualization">
-                <StackPanel Margin="4,4,4,4">
-                    <ComboBox>
-                        <ComboBoxItem>Raw specimen</ComboBoxItem>
-                        <ComboBoxItem>Correspondence model</ComboBoxItem>
-                        <ComboBoxItem>Compare groups</ComboBoxItem>
-                    </ComboBox>
-                    <Label Height="12" />
-                    <Expander Header="More Options" ExpandDirection="Down" IsExpanded="False">
-                        <TextBlock>Peek-a-boo</TextBlock>
-                    </Expander>
-                </StackPanel>
 
 
-            </GroupBox>
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Border}" ShowsPreview="True" Width="5" />
 
             <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" />
 
