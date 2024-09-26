@@ -13,7 +13,7 @@
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
 
         <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
-            <MenuItem Header="_File">
+            <MenuItem Header="_File" Padding="4">
                 <MenuItem Header="_New" Click="mnuFileNew_Click"/>
                 <MenuItem Header="_Open..." Click="mnuFileOpen_Click" />
                 <MenuItem Header="_Save" Click="mnuFileSave_Click"/>
@@ -55,9 +55,11 @@
                 <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
 
+          
             <TabControl x:Name="tabLeft" TabStripPlacement="Left">
-                
-                <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8">
+
+                <TabItem Header="{DynamicResource MeasureTree}" Padding="8,8,8,8" >
+                    
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock DockPanel.Dock="Top" FontWeight="Bold">Project Explorer</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
@@ -67,12 +69,16 @@
                         </StackPanel>
 
                         <Label DockPanel.Dock="Top" Height="12" />
-                        <TreeView DockPanel.Dock="Top" BorderThickness="0">
-                            <TreeViewItem>Root</TreeViewItem>
+                        <TreeView DockPanel.Dock="Top" BorderThickness="0" >
+                            <TreeViewItem Header="Root">
+                                <TreeViewItem Header="Trunk" />
+                                <TreeViewItem Header="Leaf" />
+                                <TreeViewItem Header="Bark" />
+                            </TreeViewItem>
                         </TreeView>
                     </DockPanel>
                 </TabItem>
-                
+
                 <TabItem Header="{DynamicResource TaskList}" Padding="8,8,8,8">
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock FontWeight="Bold">Task List</TextBlock>
@@ -82,6 +88,8 @@
                 </TabItem>
                 
             </TabControl>
+           
+   
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Black" ShowsPreview="True" Width="5" />
 

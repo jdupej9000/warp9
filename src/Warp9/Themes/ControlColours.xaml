@@ -224,7 +224,7 @@
     <SolidColorBrush x:Key="StatusBar.Static.Background" Color="{DynamicResource AColour.Tone4.Background.Static}"/>
     <SolidColorBrush x:Key="StatusBar.Static.Border" Color="{DynamicResource AColour.Tone4.Border.Static}"/>
 
-    <SolidColorBrush x:Key="ToolBarTrayBackground" Color="{DynamicResource AColour.Tone2.Background.Static}"/>
+    <SolidColorBrush x:Key="ToolBarTrayBackground" Color="{DynamicResource AColour.Tone4.Background.Static}"/>
     <SolidColorBrush x:Key="ToolBarHorizontalBackground" Color="{DynamicResource AColour.Tone5.Background.Static}"/>
     <SolidColorBrush x:Key="ToolBarHorizontalBorder" Color="{DynamicResource AColour.Tone5.Border.Static}"/>
     <SolidColorBrush x:Key="ToolBarToggleButtonHorizontalBackground" Color="{DynamicResource AColour.Tone6.Background.Static}"/>
