@@ -65,17 +65,15 @@ namespace Warp9.IO
             return numRead == Marshal.SizeOf<T>();
         }
 
-        private PointCloud ReadPointCloud()
+        private int ParsePointCloudChunks(List<WarpBinImportChunk> parsedChunks)
         {
-            List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
-
             int nv = 0;
             int offset = 0;
             foreach (WarpBinChunkInfo chunk in chunks)
             {
-                if (nv == 0) 
+                if (nv == 0)
                     nv = chunk.Rows;
-                else if (nv != chunk.Rows) 
+                else if (nv != chunk.Rows)
                     throw new InvalidDataException();
 
                 MeshSegmentType segType = chunk.Semantic switch
@@ -86,7 +84,7 @@ namespace Warp9.IO
                     _ => MeshSegmentType.Invalid
                 };
 
-                if (segType == MeshSegmentType.Invalid) 
+                if (segType == MeshSegmentType.Invalid)
                     continue;
 
                 MeshSegment? seg = chunk.Columns switch
@@ -98,7 +96,7 @@ namespace Warp9.IO
                     _ => null
                 };
 
-                if (seg is null) 
+                if (seg is null)
                     continue;
 
                 parsedChunks.Add(new WarpBinImportChunk()
@@ -111,11 +109,22 @@ namespace Warp9.IO
                 offset += seg.TotalLength;
             }
 
-            byte[] vertData = new byte[offset];
+            return offset;
+        }
+
+        private PointCloud ReadPointCloud()
+        {
+            List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
+            int vertDataSize = ParsePointCloudChunks(parsedChunks);
+           
+            byte[] vertData = new byte[vertDataSize];
             Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
 
+            int nv = 0;
             foreach (WarpBinImportChunk chunk in parsedChunks)
             {
+                if (nv == 0) nv = chunk.Chunk.Rows;
+
                 throw new NotImplementedException();
 
                 vertSegments.Add(chunk.SegmentType, chunk.Segment);
