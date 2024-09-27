@@ -14,6 +14,7 @@ namespace Warp9.ProjectExplorer
         {
             Project = project;
             ViewModel = new Warp9ViewModel(project);
+            ViewModel.Update();
         }
 
         public Project Project { get; init; }

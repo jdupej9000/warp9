@@ -10,7 +10,14 @@
 
     <Grid>
         <Border BorderBrush="{DynamicResource TabItem.Selected.Border}">
-            <TextBox x:Name="txtEdit" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" FontFamily="Consolas" Padding="4,4,4,4" />
+            <TextBox x:Name="txtEdit" 
+                     Style="{DynamicResource NoHoverTextBox}"
+                     VerticalScrollBarVisibility="Visible" 
+                     TextWrapping="Wrap" 
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     FontFamily="Consolas" 
+                     Padding="4,4,4,4" />
         </Border>
     </Grid>
 </Page>

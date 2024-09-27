@@ -10,11 +10,25 @@
       Title="ViewerPage"
       Unloaded="Page_Unloaded">
 
-    <Grid x:Name="ImageGrid" Grid.Column="2"  Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
-        <Image x:Name="ImageHost" Stretch="Fill">
-            <Image.Source>
-                <dx:D3D11Image x:Name="InteropImage"/>
-            </Image.Source>
-        </Image>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="224" />
+        </Grid.ColumnDefinitions>
+
+        <GroupBox x:Name="grpVis" Grid.Column="2" Header="Visualization">
+            
+        </GroupBox>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Border}" ShowsPreview="True" Width="5" />
+
+        <Grid x:Name="ImageGrid" Grid.Column="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
+            <Image x:Name="ImageHost" Stretch="Fill">
+                <Image.Source>
+                    <dx:D3D11Image x:Name="InteropImage"/>
+                </Image.Source>
+            </Image>
+        </Grid>
     </Grid>
 </Page>
