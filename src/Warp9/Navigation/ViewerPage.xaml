@@ -17,7 +17,7 @@
             <ColumnDefinition Width="224" />
         </Grid.ColumnDefinitions>
 
-        <GroupBox x:Name="grpVis" Grid.Column="2" Header="Visualization">
+        <GroupBox x:Name="grpVis" Grid.Column="2" Header="Visualization" >
             
         </GroupBox>
 
