@@ -313,7 +313,7 @@ namespace Warp9
 
         private void UpdateProjectExplorer()
         {
-            treeProject.ItemsSource = model?.Items ?? new ObservableCollection<ProjectItem>();
+            treeProject.ItemsSource = model?.ViewModel?.Items ?? new ObservableCollection<ProjectItem>();
         }
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
