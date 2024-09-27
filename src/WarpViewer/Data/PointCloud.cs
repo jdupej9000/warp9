@@ -30,7 +30,10 @@ namespace Warp9.Data
 
         public const int AllCoords = -1;
 
+        public static readonly PointCloud Empty = new PointCloud(0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>());
+
         public int VertexCount { get; private init; }
+
 
         public bool HasSegment(MeshSegmentType kind)
         {

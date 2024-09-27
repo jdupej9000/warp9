@@ -9,7 +9,9 @@ namespace Warp9.Data
     {
         Position,
         Normal,
-        Tex0
+        Tex0,
+
+        Invalid
     }
 
     internal abstract class MeshSegment
@@ -51,6 +53,12 @@ namespace Warp9.Data
             else if (typeof(T) == typeof(Vector4)) structElemCount = 4;
             else if (typeof(T) == typeof(FaceIndices)) structElemCount = 3;
             else throw new InvalidOperationException();
+        }
+
+        internal MeshSegment(int offs, int count)
+        {
+            Offset = offs;
+            numItems = count;
         }
 
         public List<T>? AosData { get; set; }

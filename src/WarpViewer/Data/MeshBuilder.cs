@@ -98,7 +98,7 @@ namespace Warp9.Data
             indexSegment = null;
         }
 
-        private void ValidateSegments(out int nv, out int nt)
+        private void ValidateSegments(bool isPcl, out int nv, out int nt)
         {
             if (segments.Count == 0)
             {
@@ -125,7 +125,7 @@ namespace Warp9.Data
             }
             else
             {
-                if (nv % 3 != 0)
+                if (!isPcl && nv % 3 != 0)
                     throw new InvalidDataException("Vertex count in nonindexed meshes must be divisible by 3.");
 
                 nt = nv / 3;
@@ -192,11 +192,19 @@ namespace Warp9.Data
 
         public Mesh ToMesh()
         {
-            ValidateSegments(out int nv, out int nt);
+            ValidateSegments(false, out int nv, out int nt);
             ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments);
             ComposeIndices(out byte[] indicesRaw, out MeshSegment? newIdxSeg);
 
             return new Mesh(nv, nt, dataRaw, newSegments, indicesRaw, newIdxSeg);
+        }
+
+        public PointCloud ToPointCloud()
+        {
+            ValidateSegments(true, out int nv, out int _);
+            ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments);
+
+            return new PointCloud(nv, dataRaw, newSegments);
         }
     }
 }

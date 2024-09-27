@@ -25,7 +25,7 @@ namespace Warp9.Data
         // that describe one face.
         readonly byte [] indexData;
 
-        public static readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<byte>(), null);
+        public static new readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<byte>(), null);
        
         public int FaceCount { get; private init; }
         public bool IsIndexed => indexSegment is not null;

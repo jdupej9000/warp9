@@ -11,58 +11,6 @@ using Warp9.Data;
 
 namespace Warp9.IO
 {
-    public enum ChunkNativeFormat
-    {
-        Float
-    }
-
-    public enum ChunkSemantic : short
-    {
-        None = 0,
-        Position = 1,
-        Normal = 2,
-        TexCoord = 3,
-        Indices = 4
-    }
-
-    public enum ChunkEncoding : short
-    {
-        Raw = 0,
-        Int16 = 1,
-        Int32 = 2,
-        Float32 = 3,
-        Fixed16 = 4,
-        Normalized16 = 5,
-
-        Ignore = 0x7fff
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WarpBinHeader
-    {
-        public WarpBinHeader(ushort ver, ushort nch)
-        {
-            Magic = WarpBinExport.WarpBinMagic;
-            Version = ver;
-            NumChunks = nch;
-        }
-
-        public uint Magic;
-        public ushort Version;
-        public ushort NumChunks;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WarpBinChunkInfo
-    {
-        public long StreamPos;
-        public int Size;
-        public int Columns;
-        public int Rows;
-        public ChunkSemantic Semantic;
-        public ChunkEncoding Encoding;
-    }
-
     internal class WarpBinExportTask
     {
         internal Mesh? Mesh { get; init; }
@@ -90,8 +38,10 @@ namespace Warp9.IO
                 if (!PointCloud.TryGetRawData(MeshSegment, -1, out data))
                     throw new InvalidOperationException();
             }
-
-            throw new InvalidOperationException();
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 
@@ -115,8 +65,6 @@ namespace Warp9.IO
 
         Stream stream;
         List<WarpBinExportTask> tasks = new List<WarpBinExportTask>();
-
-        public const uint WarpBinMagic = 0xbadcaca0;
 
         private void AddChunk(WarpBinExportTask task)
         {
@@ -155,10 +103,35 @@ namespace Warp9.IO
             foreach (WarpBinExportTask t in tasks)
             {
                 t.GetRawData(out ChunkNativeFormat fmtFrom, out ReadOnlySpan<byte> data);
-                int numElements = data.Length / 4; // TODO
+                int numElements = data.Length / t.MeshSegmentDimension / 4; // TODO
 
                 Write(wr, data, t.MeshSegmentDimension, numElements, fmtFrom, t.Encoding);
             }
+        }
+
+        private static void FindExtremes(Span<float> ext, ReadOnlySpan<float> data, int dim, int numElems)
+        {
+            for (int i = 0; i < dim; i++)
+            {
+                ReadOnlySpan<float> channel = data.Slice(i * numElems);
+                float min = float.MaxValue, max = float.MinValue;
+
+                for (int j = 0; j < numElems; j++)
+                {
+                    if(channel[j] < min) min = channel[j];
+                    if(channel[j] > max) max = channel[j];
+                }
+
+                ext[2 * i] = min;
+                ext[2 * i + 1] = max;
+            }
+        }
+
+        private static void WriteFloat32AsInt16(BinaryWriter wr, ReadOnlySpan<float> data, float min, float max)
+        {
+            float norm = 65535.0f / (max - min);
+            for (int i = 0; i < data.Length; i++)
+                wr.Write((ushort)((data[i] - min) * norm));
         }
 
         private static void Write(BinaryWriter wr, ReadOnlySpan<byte> data, int dim, int numElems, ChunkNativeFormat fmtFrom, ChunkEncoding fmtTo)
@@ -171,6 +144,25 @@ namespace Warp9.IO
 
                 case (ChunkNativeFormat.Float, ChunkEncoding.Float32):
                     wr.Write(data.Slice(0, numElems * dim * 4));
+                    break;
+
+                case (ChunkNativeFormat.Float, ChunkEncoding.Fixed16): 
+                    {
+                        ReadOnlySpan<float> dataf = MemoryMarshal.Cast<byte, float>(data);
+                        Span<float> extr = stackalloc float[2 * dim];
+                        FindExtremes(extr, dataf, dim, numElems);
+                        wr.Write(MemoryMarshal.Cast<float, byte>(extr));
+
+                        for (int i = 0; i < dim; i++)
+                            WriteFloat32AsInt16(wr, dataf.Slice(i * numElems, numElems), extr[2 * i], extr[2 * i + 1]); 
+                    }
+                    break;
+
+                case (ChunkNativeFormat.Float, ChunkEncoding.Normalized16): 
+                    {
+                        ReadOnlySpan<float> dataf = MemoryMarshal.Cast<byte, float>(data);
+                        WriteFloat32AsInt16(wr, dataf, 0, 1);
+                    }
                     break;
 
                 default:
@@ -244,7 +236,7 @@ namespace Warp9.IO
             }
         }
 
-        public static void ExportPcl(Stream stream, PointCloud pcl, WarpBinExportSettings? settings)
+        public static void ExportPcl(Stream stream, PointCloud pcl, WarpBinExportSettings? settings=null)
         {
             WarpBinExportSettings s = settings ?? new WarpBinExportSettings();
             WarpBinExport export = new WarpBinExport(stream);
@@ -252,7 +244,7 @@ namespace Warp9.IO
             export.Compose();
         }
 
-        public static void ExportMesh(Stream stream, Mesh m, WarpBinExportSettings? settings)
+        public static void ExportMesh(Stream stream, Mesh m, WarpBinExportSettings? settings=null)
         {
             WarpBinExportSettings s = settings ?? new WarpBinExportSettings();
             WarpBinExport export = new WarpBinExport(stream);
