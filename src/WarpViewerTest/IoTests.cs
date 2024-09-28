@@ -68,6 +68,10 @@ namespace Warp9.Test
             using MemoryStream stream = new MemoryStream();
             WarpBinExport.ExportPcl(stream, pcl, settings);
 
+            stream.Seek(0, SeekOrigin.Begin);
+
+            Assert.IsTrue(WarpBinImport.TryImport(stream, out PointCloud? pclImp));
+            MeshAsserts.AssertPclEqual(pcl, pclImp);
         }
 
         [TestMethod]
@@ -88,6 +92,10 @@ namespace Warp9.Test
             using MemoryStream stream = new MemoryStream();
             WarpBinExport.ExportPcl(stream, pcl, settings);
 
+            stream.Seek(0, SeekOrigin.Begin);
+
+            Assert.IsTrue(WarpBinImport.TryImport(stream, out PointCloud? pclImp));
+            MeshAsserts.AssertPclEqual(pcl, pclImp);
         }
     }
 }

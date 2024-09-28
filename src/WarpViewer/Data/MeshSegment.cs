@@ -59,6 +59,14 @@ namespace Warp9.Data
         {
             Offset = offs;
             numItems = count;
+            structSize = Marshal.SizeOf(typeof(T));
+
+            if (typeof(T) == typeof(float)) structElemCount = 1;
+            else if (typeof(T) == typeof(Vector2)) structElemCount = 2;
+            else if (typeof(T) == typeof(Vector3)) structElemCount = 3;
+            else if (typeof(T) == typeof(Vector4)) structElemCount = 4;
+            else if (typeof(T) == typeof(FaceIndices)) structElemCount = 3;
+            else throw new InvalidOperationException();
         }
 
         public List<T>? AosData { get; set; }

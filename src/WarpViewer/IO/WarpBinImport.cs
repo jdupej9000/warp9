@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 using Warp9.Data;
 
 namespace Warp9.IO
@@ -112,6 +113,32 @@ namespace Warp9.IO
             return offset;
         }
 
+        private void ReadInt16AsFloat32(Span<byte> buffer, int count, float min, float max)
+        {
+            float d = (max - min) / 65535.0f;
+            Span<float> dest = MemoryMarshal.Cast<byte, float>(buffer.Slice(0, count * 4));
+            
+            for (int i = 0; i < count; i++)
+            {
+                ushort x = reader.ReadUInt16();
+                dest[i] = min + x * d;
+            }
+        }
+
+        private void ReadFixed16AsFloat32(Span<byte> buffer, int cols, int rows)
+        {
+            Span<float> limits = stackalloc float[cols * 2];
+            reader.Read(MemoryMarshal.Cast<float, byte>(limits));
+
+            for (int i = 0; i < cols; i++)
+                ReadInt16AsFloat32(buffer.Slice(i * rows * 4), rows, limits[2*i], limits[2 *i+1]);
+        }
+
+        private void ReadNormalized16AsFloat32(Span<byte> buffer, int count)
+        {
+            ReadInt16AsFloat32(buffer, count, 0, 1);
+        }
+
         private PointCloud ReadPointCloud()
         {
             List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
@@ -123,9 +150,30 @@ namespace Warp9.IO
             int nv = 0;
             foreach (WarpBinImportChunk chunk in parsedChunks)
             {
-                if (nv == 0) nv = chunk.Chunk.Rows;
+                if (nv == 0) 
+                    nv = chunk.Chunk.Rows;
 
-                throw new NotImplementedException();
+                reader.BaseStream.Seek(chunk.Chunk.StreamPos, SeekOrigin.Begin);
+
+                switch (chunk.Chunk.Encoding)
+                {
+                    case ChunkEncoding.Float32:
+                        reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.TotalLength);
+                        break;
+
+                    case ChunkEncoding.Fixed16:
+                        ReadFixed16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                           chunk.Chunk.Columns, chunk.Chunk.Rows);
+                        break;
+
+                    case ChunkEncoding.Normalized16:
+                        ReadNormalized16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                           chunk.Chunk.Columns * chunk.Chunk.Rows);
+                        break;
+
+                    default:
+                        throw new NotSupportedException();
+                }
 
                 vertSegments.Add(chunk.SegmentType, chunk.Segment);
             }
@@ -142,11 +190,8 @@ namespace Warp9.IO
                 return false;
             }
 
-            
-
-           
-
-            throw new NotImplementedException();
+            pcl = import.ReadPointCloud();
+            return true;
         }
     }
 }

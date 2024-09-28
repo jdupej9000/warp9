@@ -91,13 +91,13 @@ namespace Warp9.IO
                 {
                     StreamPos = dataPos,
                     Size = data.Length,
-                    Columns = numElements / t.MeshSegmentDimension,
-                    Rows = numElements,
+                    Columns = t.MeshSegmentDimension,
+                    Rows = numElements / t.MeshSegmentDimension,
                     Semantic = t.Semantic,
                     Encoding = t.Encoding
                 };
 
-                Write(wr, ref hdr);
+                Write(wr, ref chunk);
             }
 
             foreach (WarpBinExportTask t in tasks)
