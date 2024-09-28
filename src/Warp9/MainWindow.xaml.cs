@@ -218,7 +218,16 @@ namespace Warp9
             if (model is null)
                 return true;
 
-            return false;
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
+
+            DialogResult res = dlg.ShowDialog();
+            if(res != System.Windows.Forms.DialogResult.OK) 
+                return false;
+
+            model.Save(dlg.FileName);
+
+            return true;
         }
 
         private bool OfferSaveDirtyProject()

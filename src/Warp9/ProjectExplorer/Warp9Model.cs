@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,5 +22,24 @@ namespace Warp9.ProjectExplorer
         public Warp9ViewModel ViewModel { get; init; }
         public bool IsDirty { get; private set; } = false;
 
+        public void Save(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                throw new InvalidOperationException();
+            }
+            else
+            {
+                Warp9ProjectArchive arch = new Warp9ProjectArchive(fileName, true);
+                Project.Save(arch);
+                arch.Dispose();
+
+                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false);
+                IProjectArchive? oldArch = Project.SwitchToSavedArchive(archSaved);
+                oldArch?.Dispose();
+            }
+        }
+
+        //public void 
     }
 }

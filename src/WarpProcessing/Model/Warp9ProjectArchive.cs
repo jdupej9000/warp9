@@ -62,7 +62,7 @@ namespace Warp9.Model
             if (archiveIndex.ContainsKey(name))
                 throw new InvalidOperationException("That file already exists in the archive.");
 
-            archiveIndex.Add(name, archive.Entries.Count);
+            //archiveIndex.Add(name, archive.Entries.Count);
 
             bool isManifest = name == Project.ManifestFileName;
             ZipArchiveEntry entry = archive.CreateEntry(name, isManifest ? CompressionLevel.SmallestSize : CompressionLevel.NoCompression);

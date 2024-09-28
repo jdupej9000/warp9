@@ -172,6 +172,19 @@ namespace Warp9.Model
             archive?.Dispose();
         }
 
+        public IProjectArchive? SwitchToSavedArchive(IProjectArchive newArchive)
+        {
+            IProjectArchive? oldArchive = archive;
+            archive = newArchive;
+
+            // Forget all native objects in the references, as they are now contained in 
+            // the new archive.
+            foreach (var kvp in references)
+                kvp.Value.NativeObject = null;
+
+            return oldArchive;
+        }
+
         public void Save(IProjectArchive destArchive, IProgressProvider? progress=null)
         {
             progress?.StartBatch(1 + references.Count);
