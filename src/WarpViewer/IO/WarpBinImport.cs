@@ -193,5 +193,20 @@ namespace Warp9.IO
             pcl = import.ReadPointCloud();
             return true;
         }
+
+        public static bool TryImport(Stream s, [MaybeNullWhen(false)] out Mesh pcl)
+        {
+            throw new NotImplementedException();
+
+            using WarpBinImport import = new WarpBinImport(s);
+            if (!import.ReadHeaders())
+            {
+                pcl = null;
+                return false;
+            }
+
+            //pcl = import.ReadPointCloud();
+            return true;
+        }
     }
 }

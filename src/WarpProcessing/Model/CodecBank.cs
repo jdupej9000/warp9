@@ -32,9 +32,24 @@ namespace Warp9.Model
                 }
             ));
 
+            ret.Add(ProjectReferenceFormat.W9Pcl, new Codec<PointCloud>(
+               (s, b, c) => WarpBinExport.ExportPcl(s, b, null),
+               (s, c) =>
+               {
+                   if (WarpBinImport.TryImport(s, out PointCloud? pcl))
+                       return pcl;
+                   return null;
+               }
+           ));
+
             ret.Add(ProjectReferenceFormat.W9Mesh, new Codec<Mesh>(
-                null,
-                null
+                (s, b, c) => WarpBinExport.ExportMesh(s, b, null),
+                (s, c) =>
+                {
+                    if (WarpBinImport.TryImport(s, out Mesh? m))
+                        return m;
+                    return null;
+                }
             ));
 
             ret.Add(ProjectReferenceFormat.PngImage, new Codec<Bitmap>(

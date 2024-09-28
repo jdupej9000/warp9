@@ -11,9 +11,10 @@ namespace Warp9.Model
     {
         ObjMesh = 1,
         W9Mesh = 2,
-        PngImage = 3,
-        JpegImage = 4,
-        FloatMatrix = 5
+        W9Pcl = 3,
+        PngImage = 4,
+        JpegImage = 5,
+        FloatMatrix = 6
     }
 
     public class ProjectReferenceInfo
