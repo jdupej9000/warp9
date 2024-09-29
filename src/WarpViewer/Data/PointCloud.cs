@@ -9,6 +9,13 @@ namespace Warp9.Data
 {
     public class PointCloud
     {
+        internal PointCloud(PointCloud other)
+        {
+            meshSegments = other.meshSegments;
+            vertexData = other.vertexData;
+            VertexCount = other.VertexCount;
+        }
+
         internal PointCloud(int nv, byte[] vx, Dictionary<MeshSegmentType, MeshSegment> segs)
         {
             meshSegments = segs;

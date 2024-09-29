@@ -20,27 +20,28 @@ namespace Warp9.IO
         internal ChunkSemantic Semantic { get; init; }
         internal ChunkEncoding Encoding { get; init; }
 
-        internal void GetRawData(out ChunkNativeFormat fmt, out ReadOnlySpan<byte> data)
+        internal bool TryGetRawData(out ChunkNativeFormat fmt, out ReadOnlySpan<byte> data)
         {
-            fmt = ChunkNativeFormat.Float;
-
             if (Mesh is not null && Semantic == ChunkSemantic.Indices)
             {
-                throw new NotImplementedException();
+                fmt = ChunkNativeFormat.Int32x3;
+                return Mesh.TryGetIndexData(out data);
             }
             else if (Mesh is not null && Semantic != ChunkSemantic.Indices)
             {
-                if (!Mesh.TryGetRawData(MeshSegment, -1, out data))
-                    throw new InvalidOperationException();
+                fmt = ChunkNativeFormat.Float;
+                return Mesh.TryGetRawData(MeshSegment, -1, out data);
             }
             else if (PointCloud is not null)
             {
-                if (!PointCloud.TryGetRawData(MeshSegment, -1, out data))
-                    throw new InvalidOperationException();
+                fmt = ChunkNativeFormat.Float;
+                return PointCloud.TryGetRawData(MeshSegment, -1, out data);
             }
             else
             {
-                throw new InvalidOperationException();
+                fmt = ChunkNativeFormat.Float;
+                data = default;
+                return false;
             }
         }
     }
@@ -53,7 +54,7 @@ namespace Warp9.IO
         public int NormalDimension { get; set; } = 3;
         public ChunkEncoding Tex0Format { get; set; } = ChunkEncoding.Normalized16;
         public int Tex0Dimension { get; set; } = 2;
-        public ChunkEncoding IndexFormat { get; set; } = ChunkEncoding.Int32;
+        public ChunkEncoding IndexFormat { get; set; } = ChunkEncoding.Int32x3;
     }
 
     public class WarpBinExport
@@ -81,7 +82,9 @@ namespace Warp9.IO
             long dataPos = Marshal.SizeOf<WarpBinHeader>() + tasks.Count * Marshal.SizeOf<WarpBinChunkInfo>();
             foreach (WarpBinExportTask t in tasks)
             {
-                t.GetRawData(out _, out ReadOnlySpan<byte> data);
+                if (!t.TryGetRawData(out _, out ReadOnlySpan<byte> data))
+                    throw new InvalidOperationException();
+
                 int numElements = data.Length / 4;
 
                 if (numElements % t.MeshSegmentDimension != 0)
@@ -102,8 +105,14 @@ namespace Warp9.IO
 
             foreach (WarpBinExportTask t in tasks)
             {
-                t.GetRawData(out ChunkNativeFormat fmtFrom, out ReadOnlySpan<byte> data);
-                int numElements = data.Length / t.MeshSegmentDimension / 4; // TODO
+                if (!t.TryGetRawData(out ChunkNativeFormat fmtFrom, out ReadOnlySpan<byte> data))
+                    throw new InvalidOperationException();
+
+                int numElements = -1;
+                if (t.Semantic == ChunkSemantic.Indices)
+                    numElements = data.Length / 12;
+                else
+                    numElements = data.Length / t.MeshSegmentDimension / 4;
 
                 Write(wr, data, t.MeshSegmentDimension, numElements, fmtFrom, t.Encoding);
             }
@@ -163,6 +172,10 @@ namespace Warp9.IO
                         ReadOnlySpan<float> dataf = MemoryMarshal.Cast<byte, float>(data);
                         WriteFloat32AsInt16(wr, dataf, 0, 1);
                     }
+                    break;
+
+                case (ChunkNativeFormat.Int32x3, ChunkEncoding.Int32x3):
+                    wr.Write(data.Slice(0, numElems * 12));
                     break;
 
                 default:

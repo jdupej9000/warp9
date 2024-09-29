@@ -9,7 +9,8 @@ namespace Warp9.IO
 {
     public enum ChunkNativeFormat
     {
-        Float
+        Float,
+        Int32x3
     }
 
     public enum ChunkSemantic : short
@@ -24,11 +25,10 @@ namespace Warp9.IO
     public enum ChunkEncoding : short
     {
         Raw = 0,
-        Int16 = 1,
-        Int32 = 2,
-        Float32 = 3,
-        Fixed16 = 4,
-        Normalized16 = 5,
+        Int32x3 = 1,
+        Float32 = 2,
+        Fixed16 = 3,
+        Normalized16 = 4,
 
         Ignore = 0x7fff
     }

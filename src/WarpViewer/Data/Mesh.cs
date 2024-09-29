@@ -19,16 +19,38 @@ namespace Warp9.Data
             indexSegment = idxSeg;
         }
 
+        internal Mesh(PointCloud pcl, int nt, byte[] ix, MeshSegment? idxSeg) :
+            base(pcl)
+        {
+            indexData = Array.Empty<byte>();
+            FaceCount = nt;
+            indexData = ix;
+            indexSegment = idxSeg;
+        }
+
         readonly MeshSegment? indexSegment;
 
         // IndexData, if present is a typical array of structures with triplets of integers grouped together,
         // that describe one face.
-        readonly byte [] indexData;
+        readonly byte[] indexData;
 
         public static new readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<byte>(), null);
        
         public int FaceCount { get; private init; }
         public bool IsIndexed => indexSegment is not null;
+
+
+        public bool TryGetIndexData(out ReadOnlySpan<byte> data)
+        {
+            if (!IsIndexed)
+            {
+                data = default;
+                return false;
+            }
+
+            data = indexData.AsSpan();
+            return true;
+        }
 
         public MeshBuilder ToBuilder()
         {
