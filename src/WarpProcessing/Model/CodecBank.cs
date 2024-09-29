@@ -36,7 +36,7 @@ namespace Warp9.Model
                (s, b, c) => WarpBinExport.ExportPcl(s, b, null),
                (s, c) =>
                {
-                   if (WarpBinImport.TryImport(s, out PointCloud? pcl))
+                   if (WarpBinImport.TryImport(s, out Mesh? pcl))
                        return pcl;
                    return null;
                }

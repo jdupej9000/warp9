@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Markup;
 using Warp9.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace Warp9.IO
 {
@@ -113,6 +114,31 @@ namespace Warp9.IO
             return offset;
         }
 
+        private int ParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk)
+        {
+            int size = 0;
+            parsedIndexChunk = null;
+
+            foreach (WarpBinChunkInfo chunk in chunks)
+            {
+                if (chunk.Semantic == ChunkSemantic.Indices)
+                {
+                    size = chunk.Rows * 12;
+                    MeshSegment seg = new MeshSegment<int>(0, 3 * chunk.Rows);
+                    parsedIndexChunk = new WarpBinImportChunk()
+                    { 
+                        Chunk = chunk,
+                        SegmentType = MeshSegmentType.Invalid,
+                        Segment = seg
+                    };
+
+                    break;
+                }
+            }
+
+            return size;
+        }
+
         private void ReadInt16AsFloat32(Span<byte> buffer, int count, float min, float max)
         {
             float d = (max - min) / 65535.0f;
@@ -139,7 +165,7 @@ namespace Warp9.IO
             ReadInt16AsFloat32(buffer, count, 0, 1);
         }
 
-        private PointCloud ReadPointCloud()
+        private Mesh ReadMesh()
         {
             List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
             int vertDataSize = ParsePointCloudChunks(parsedChunks);
@@ -147,9 +173,15 @@ namespace Warp9.IO
             byte[] vertData = new byte[vertDataSize];
             Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
 
-            int nv = 0;
+            int idxDataSize = ParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk);
+            byte[] idxData = new byte[idxDataSize];
+
+            int nv = 0, nt = 0;
             foreach (WarpBinImportChunk chunk in parsedChunks)
             {
+                if (chunk.Chunk.Semantic == ChunkSemantic.Indices)
+                    continue;
+
                 if (nv == 0) 
                     nv = chunk.Chunk.Rows;
 
@@ -178,26 +210,22 @@ namespace Warp9.IO
                 vertSegments.Add(chunk.SegmentType, chunk.Segment);
             }
 
-            return new PointCloud(nv, vertData, vertSegments);
-        }
-
-        public static bool TryImport(Stream s, [MaybeNullWhen(false)] out PointCloud pcl)
-        {
-            using WarpBinImport import = new WarpBinImport(s);
-            if (!import.ReadHeaders())
+            if (parsedIndexChunk.HasValue)
             {
-                pcl = null;
-                return false;
+                reader.BaseStream.Seek(parsedIndexChunk.Value.Chunk.StreamPos, SeekOrigin.Begin);
+                nt = parsedIndexChunk.Value.Chunk.Rows;
+
+                if(parsedIndexChunk.Value.Chunk.Encoding != ChunkEncoding.Int32x3)
+                    throw new NotSupportedException();
+
+                reader.Read(idxData);
             }
 
-            pcl = import.ReadPointCloud();
-            return true;
+            return new Mesh(nv, nt, vertData, vertSegments, idxData, parsedIndexChunk?.Segment);
         }
 
         public static bool TryImport(Stream s, [MaybeNullWhen(false)] out Mesh pcl)
         {
-            throw new NotImplementedException();
-
             using WarpBinImport import = new WarpBinImport(s);
             if (!import.ReadHeaders())
             {
@@ -205,7 +233,7 @@ namespace Warp9.IO
                 return false;
             }
 
-            //pcl = import.ReadPointCloud();
+            pcl = import.ReadMesh();
             return true;
         }
     }
