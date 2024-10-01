@@ -169,6 +169,8 @@ namespace Warp9
                 ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);
                 entry.Name = "Specimens";
                 entry.Payload.Table = new SpecimenTable();
+                entry.Payload.Table.AddColumn<long>("id", SpecimenTableColumnType.Integer);
+                entry.Payload.Table.AddColumn<string>("name", SpecimenTableColumnType.String);
                 model.ViewModel.Update();
             }
         }
@@ -206,12 +208,31 @@ namespace Warp9
 
         private void treeProject_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (e.NewValue is ProjectItem item)
+            if (model is not null && e.NewValue is ProjectItem item)
             {
                 switch (item.Kind)
                 {
                     case StockProjectItemKind.GeneralComment:
                         frameMain.NavigationService.Navigate(pageTextEditor);
+                        break;
+
+                    case StockProjectItemKind.Entry:
+                        if (model.Project.Entries.TryGetValue(item.EntryIndex, out ProjectEntry? entry))
+                        {
+                            switch (entry.Kind)
+                            {
+                                case ProjectEntryKind.Specimens:
+                                    frameMain.NavigationService.Navigate(pageSpecimenTable);
+                                    pageSpecimenTable.ShowEntry(item.EntryIndex);
+                                    break;
+
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException();
+                        }
+
                         break;
 
                     default:

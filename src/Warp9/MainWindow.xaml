@@ -62,7 +62,7 @@
                         <Label DockPanel.Dock="Top" Height="12" />
 
                         <StackPanel Orientation="Horizontal" Height="28" DockPanel.Dock="Top">
-                            <Button Content="{StaticResource Delete}" Width="28" Height="28"/>
+                            <Button x:Name="btnProjDelete" Content="{DynamicResource Delete}" Width="28" Height="28"/>
                         </StackPanel>
 
                         <Label DockPanel.Dock="Top" Height="12" />

@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.Model;
 using Warp9.ProjectExplorer;
 
 namespace Warp9.Navigation
@@ -33,6 +34,23 @@ namespace Warp9.Navigation
         public void DetachViewModel()
         {
             viewModel = null;
+        }
+
+        public void ShowEntry(int idx)
+        {
+            dataMain.Columns.Clear();
+
+            if (viewModel is null || !viewModel.Project.Entries.TryGetValue(idx, out ProjectEntry? entry))
+                throw new InvalidOperationException();
+
+            SpecimenTable table = entry.Payload.Table ?? throw new InvalidOperationException();
+            foreach (var kvp in table.Columns)
+            {
+                DataGridTextColumn col = new DataGridTextColumn();
+                col.Header = kvp.Key;
+                col.Width = 100;
+                dataMain.Columns.Add(col);
+            }
         }
     }
 }
