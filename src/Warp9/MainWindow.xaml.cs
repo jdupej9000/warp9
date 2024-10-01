@@ -39,6 +39,7 @@ namespace Warp9
 
             views.Add(pageViewer);
             views.Add(pageTextEditor);
+            views.Add(pageSpecimenTable);
         }
 
 
@@ -48,6 +49,7 @@ namespace Warp9
 
         MainLandingPage pageLanding = new MainLandingPage();
         TextEditorPage pageTextEditor = new TextEditorPage();
+        SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         List<IWarp9View> views = new List<IWarp9View>();
         ViewerPage pageViewer;
 
@@ -102,7 +104,6 @@ namespace Warp9
 
                     case MessageBoxResult.Cancel:
                         return false;
-
                 }
             }
 
@@ -207,10 +208,16 @@ namespace Warp9
         {
             if (e.NewValue is ProjectItem item)
             {
-                if(item.Level == 0)
-                    frameMain.NavigationService.Navigate(pageViewer);
-                else
-                    frameMain.NavigationService.Navigate(pageTextEditor);
+                switch (item.Kind)
+                {
+                    case StockProjectItemKind.GeneralComment:
+                        frameMain.NavigationService.Navigate(pageTextEditor);
+                        break;
+
+                    default:
+                        frameMain.NavigationService.Navigate(pageViewer);
+                        break;
+                }
             }
             else
             {
