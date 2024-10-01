@@ -9,7 +9,7 @@ namespace Warp9.Model
 {
     public class ProjectSettings
     {
-        [JsonPropertyName("comment"), JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)]
-        public string? Comment { get; set; }
+        [JsonPropertyName("comment"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Comment { get; set; } = "Write comment here.";
     }
 }

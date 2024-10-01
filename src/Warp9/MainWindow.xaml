@@ -15,7 +15,7 @@
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
 
         <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
-            <MenuItem Header="_File" Padding="4">
+            <MenuItem Header="_File">
                 <MenuItem Header="_New" Click="mnuFileNew_Click"/>
                 <MenuItem Header="_Open..." Click="mnuFileOpen_Click" />
                 <MenuItem Header="_Save" Click="mnuFileSave_Click"/>
@@ -24,6 +24,15 @@
                 <MenuItem Header="Close" Click="mnuFileClose_Click"/>
                 <Separator />
                 <MenuItem Header="_Exit" Click="mnuFileExit_Click"/>
+            </MenuItem>
+
+            <MenuItem Header="_Project">
+                <MenuItem Header="Add new specimen table" Click="mnuProjectAddNewSpecTable_Click" />
+                <MenuItem Header="Import specimen table..." />
+                <Separator />
+                <MenuItem Header="Compute...">
+                    
+                </MenuItem>
             </MenuItem>
 
             <MenuItem Header="_Help">

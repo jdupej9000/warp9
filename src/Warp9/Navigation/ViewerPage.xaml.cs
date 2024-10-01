@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.ProjectExplorer;
 using Warp9.Viewer;
 
 namespace Warp9.Navigation
@@ -24,7 +25,7 @@ namespace Warp9.Navigation
     /// <summary>
     /// Interaction logic for ViewerPage.xaml
     /// </summary>
-    public partial class ViewerPage : Page
+    public partial class ViewerPage : Page, IWarp9View
     {
         public ViewerPage(Window owner)
         {
@@ -181,6 +182,16 @@ namespace Warp9.Navigation
             Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
 
             return (Size)transformToDevice.Transform(new System.Windows.Vector(element.ActualWidth, element.ActualHeight));
+        }
+
+        public void AttachViewModel(Warp9ViewModel vm)
+        {
+
+        }
+
+        public void DetachViewModel()
+        {
+
         }
     }
 }
