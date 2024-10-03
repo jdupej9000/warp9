@@ -171,9 +171,10 @@ namespace Warp9
                 entry.Payload.Table = new SpecimenTable();
                 SpecimenTableColumn<long> colId = entry.Payload.Table.AddColumn<long>("id", SpecimenTableColumnType.Integer);
                 SpecimenTableColumn<string> colName = entry.Payload.Table.AddColumn<string>("name", SpecimenTableColumnType.String);
-
+                SpecimenTableColumn<int> colSex = entry.Payload.Table.AddColumn<int>("sex", SpecimenTableColumnType.Factor, ["F", "M"]);
                 colId.Data.AddRange([1, 2, 3]);
                 colName.Data.AddRange(["Sisko", "Kira", "O'Brien"]);
+                colSex.Data.AddRange([1, 0, 1]);
 
                 model.ViewModel.Update();
             }
