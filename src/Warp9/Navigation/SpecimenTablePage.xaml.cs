@@ -17,6 +17,12 @@ using Warp9.ProjectExplorer;
 
 namespace Warp9.Navigation
 {
+    public record SpecimenTableColumnInfo(string name, string type)
+    {
+        public string Name { get; init; } = name;
+        public string Type { get; init; } = type;
+    }
+
     public partial class SpecimenTablePage : Page, IWarp9View
     {
         public SpecimenTablePage()
@@ -44,11 +50,13 @@ namespace Warp9.Navigation
                 throw new InvalidOperationException();
 
             SpecimenTable table = entry.Payload.Table ?? throw new InvalidOperationException();
+            dataMain.ItemsSource = table.GetRows();
+
             foreach (var kvp in table.Columns)
             {
                 DataGridTextColumn col = new DataGridTextColumn();
-                col.Header = kvp.Key;
-                col.Width = 100;
+                col.Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString());
+                col.Binding = new Binding("[" + kvp.Key + "]");
                 dataMain.Columns.Add(col);
             }
         }

@@ -37,6 +37,9 @@ namespace Warp9.Model
         public string[]? Names { get; set; } = null;
 
         public abstract IEnumerable<T> GetData<T>();
+
+        public abstract object? GetAt(int idx);
+        public abstract void SetAt(int idx, object? value);
     }
 
     public class SpecimenTableColumn<T> : SpecimenTableColumn
@@ -65,6 +68,17 @@ namespace Warp9.Model
                 return typedData;
 
             throw new InvalidOperationException();
+        }
+
+        public override object? GetAt(int idx)
+        {
+            return data[idx];
+        }
+
+        public override void SetAt(int idx, object? value)
+        {
+            if(value is T typedValue)
+                data[idx] = typedValue;
         }
     }
 }

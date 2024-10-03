@@ -26,6 +26,20 @@
 
 
                 <DataGrid x:Name="dataMain" Margin="4,4,4,4" VerticalAlignment="Stretch" DockPanel.Dock="Top" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Resources>
                     
                 </DataGrid>
             </DockPanel>

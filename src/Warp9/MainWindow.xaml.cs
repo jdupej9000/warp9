@@ -169,8 +169,12 @@ namespace Warp9
                 ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);
                 entry.Name = "Specimens";
                 entry.Payload.Table = new SpecimenTable();
-                entry.Payload.Table.AddColumn<long>("id", SpecimenTableColumnType.Integer);
-                entry.Payload.Table.AddColumn<string>("name", SpecimenTableColumnType.String);
+                SpecimenTableColumn<long> colId = entry.Payload.Table.AddColumn<long>("id", SpecimenTableColumnType.Integer);
+                SpecimenTableColumn<string> colName = entry.Payload.Table.AddColumn<string>("name", SpecimenTableColumnType.String);
+
+                colId.Data.AddRange([1, 2, 3]);
+                colName.Data.AddRange(["Sisko", "Kira", "O'Brien"]);
+
                 model.ViewModel.Update();
             }
         }
