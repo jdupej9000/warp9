@@ -17,6 +17,7 @@
 
 
                 <ToolBar DockPanel.Dock="Top" Margin="4,4,4,4">
+                    
                     <Button x:Name="btnSpecAdd" Content="{DynamicResource Add}" Click="btnSpecAdd_Click" />
                     <Button x:Name="btnSpecDelete" Content="{DynamicResource Remove}" Click="btnSpecDelete_Click" />
                     <Separator />
