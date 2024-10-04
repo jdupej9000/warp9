@@ -50,7 +50,7 @@ namespace Warp9.Navigation
                 throw new InvalidOperationException();
 
             SpecimenTable table = entry.Payload.Table ?? throw new InvalidOperationException();
-            dataMain.ItemsSource = table.GetRows().ToList();
+            dataMain.ItemsSource = table;
 
             foreach (var kvp in table.Columns)
             {

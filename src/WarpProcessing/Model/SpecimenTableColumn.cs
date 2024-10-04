@@ -37,9 +37,11 @@ namespace Warp9.Model
         public string[]? Names { get; set; } = null;
 
         public abstract IEnumerable<T> GetData<T>();
+        public abstract void Clear();
 
         public abstract object? GetAt(int idx);
         public abstract void SetAt(int idx, object? value);
+        public abstract bool RemoveAt(int idx);
     }
 
     public class SpecimenTableColumn<T> : SpecimenTableColumn
@@ -70,6 +72,11 @@ namespace Warp9.Model
             throw new InvalidOperationException();
         }
 
+        public override void Clear()
+        {
+            data.Clear();
+        }
+
         public override object? GetAt(int idx)
         {
             return data[idx];
@@ -79,6 +86,12 @@ namespace Warp9.Model
         {
             if(value is T typedValue)
                 data[idx] = typedValue;
+        }
+
+        public override bool RemoveAt(int idx)
+        {
+            data.RemoveAt(idx);
+            return true;
         }
     }
 }
