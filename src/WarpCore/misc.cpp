@@ -20,6 +20,8 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << "MSVC++ " << ((_MSC_FULL_VER / 10000000) % 100) << "." << 
             ((_MSC_FULL_VER / 100000) % 100) << "."
             << (_MSC_FULL_VER % 100000);
+#elif defined(__INTEL_LLVM_COMPILER)
+        ss << __VERSION__;
 #else
         ss << "unknown";
 #endif
