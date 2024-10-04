@@ -135,5 +135,35 @@ namespace Warp9.Navigation
                     chCol.EditingElementStyle = style;
             }
         }
+
+        private void btnSpecAdd_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSpecDelete_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSpecAddCol_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSpecEditCol_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSpecDeleteCol_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSpecImport_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

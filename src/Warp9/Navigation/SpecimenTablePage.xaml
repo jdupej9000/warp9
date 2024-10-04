@@ -17,11 +17,14 @@
 
 
                 <ToolBar DockPanel.Dock="Top" Margin="4,4,4,4">
-                    <Button x:Name="btnSpecAddCol" Content="{DynamicResource AddColumn}" />
-                    <Button x:Name="btnSpecEditCol" Content="{DynamicResource EditColumn}" />
-                    <Button x:Name="btnSpecDeleteCol" Content="{DynamicResource DeleteColumn}" />
+                    <Button x:Name="btnSpecAdd" Content="{DynamicResource Add}" Click="btnSpecAdd_Click" />
+                    <Button x:Name="btnSpecDelete" Content="{DynamicResource Remove}" Click="btnSpecDelete_Click" />
                     <Separator />
-                    <Button x:Name="btnSpecImport" Content="{DynamicResource ImportTable}" />
+                    <Button x:Name="btnSpecAddCol" Content="{DynamicResource AddColumn}" Click="btnSpecAddCol_Click" />
+                    <Button x:Name="btnSpecEditCol" Content="{DynamicResource EditColumn}" Click="btnSpecEditCol_Click" />
+                    <Button x:Name="btnSpecDeleteCol" Content="{DynamicResource DeleteColumn}" Click="btnSpecDeleteCol_Click" />
+                    <Separator />
+                    <Button x:Name="btnSpecImport" Content="{DynamicResource ImportTable}" Click="btnSpecImport_Click" />
                 </ToolBar>
 
 
