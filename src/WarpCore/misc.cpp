@@ -14,14 +14,16 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
     case WCINFO_VERSION:
         ss << "warpcore 0.1";
         break;
-
     case WCINFO_COMPILER:
-#if defined(_MSC_FULL_VER)
+#if defined(__INTEL_LLVM_COMPILER)
+        ss << "Intel(R) oneAPI DPC++/C++ Compiler " <<
+            (__INTEL_LLVM_COMPILER / 10000) << "." <<
+            (__INTEL_LLVM_COMPILER / 100) % 100 << "." <<
+            __INTEL_LLVM_COMPILER % 100;
+#elif defined(_MSC_FULL_VER)
         ss << "MSVC++ " << ((_MSC_FULL_VER / 10000000) % 100) << "." << 
             ((_MSC_FULL_VER / 100000) % 100) << "."
             << (_MSC_FULL_VER % 100000);
-#elif defined(__INTEL_LLVM_COMPILER)
-        ss << __VERSION__;
 #else
         ss << "unknown";
 #endif
