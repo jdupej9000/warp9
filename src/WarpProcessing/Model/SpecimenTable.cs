@@ -45,33 +45,6 @@ namespace Warp9.Model
             return col;
         }
 
-        public static SpecimenTable Collect(bool allowIrregular, params SpecimenTable[] src)
-        {
-            Dictionary<string, SpecimenTableColumn> cols = new Dictionary<string, SpecimenTableColumn>();
-
-            int nrows = 0;
-            foreach (SpecimenTable tab in src)
-            {
-                foreach (var kvp in tab.Columns)
-                {
-                    cols[kvp.Key] = kvp.Value;
-
-                    if (nrows == 0)
-                    {
-                        nrows = kvp.Value.NumRows;
-                    }
-                    else if (nrows != kvp.Value.NumRows && !allowIrregular)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-            }
-
-            SpecimenTable ret = new SpecimenTable();
-            ret.Columns = cols;
-
-            return ret;
-        }
 
         public IEnumerable<SpecimenTableRow> GetRows()
         {

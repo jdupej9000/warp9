@@ -146,17 +146,7 @@ namespace Warp9.Navigation
 
         }
 
-        private void btnSpecAddCol_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void btnSpecEditCol_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void btnSpecDeleteCol_Click(object sender, RoutedEventArgs e)
         {
 
         }

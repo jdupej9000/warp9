@@ -20,10 +20,7 @@
                     <Button x:Name="btnSpecAdd" Content="{DynamicResource Add}" Click="btnSpecAdd_Click" />
                     <Button x:Name="btnSpecDelete" Content="{DynamicResource Remove}" Click="btnSpecDelete_Click" />
                     <Separator />
-                    <Button x:Name="btnSpecAddCol" Content="{DynamicResource AddColumn}" Click="btnSpecAddCol_Click" />
                     <Button x:Name="btnSpecEditCol" Content="{DynamicResource EditColumn}" Click="btnSpecEditCol_Click" />
-                    <Button x:Name="btnSpecDeleteCol" Content="{DynamicResource DeleteColumn}" Click="btnSpecDeleteCol_Click" />
-                    <Separator />
                     <Button x:Name="btnSpecImport" Content="{DynamicResource ImportTable}" Click="btnSpecImport_Click" />
                 </ToolBar>
 
