@@ -20,14 +20,14 @@ namespace Warp9.Model
 
     public class ProjectEntry
     {
-        public ProjectEntry(int id, ProjectEntryKind kind)
+        public ProjectEntry(long id, ProjectEntryKind kind)
         {
             Id = id;
             Kind = kind;
         }
 
         [JsonIgnore]
-        public int Id { get; set; } = -1;
+        public long Id { get; set; } = -1;
 
         [JsonPropertyName("id")]
         public string Name { get; set; } = string.Empty;

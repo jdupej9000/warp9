@@ -42,7 +42,7 @@ namespace Warp9.Navigation
             viewModel = null;
         }
 
-        public void ShowEntry(int idx)
+        public void ShowEntry(long idx)
         {
             dataMain.Columns.Clear();
 

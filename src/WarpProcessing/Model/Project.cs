@@ -29,19 +29,24 @@ namespace Warp9.Model
         }
 
         IProjectArchive? archive;
-        readonly Dictionary<int, ProjectReference> references = new Dictionary<int, ProjectReference>();
-        Dictionary<int, ProjectEntry> entries = new Dictionary<int, ProjectEntry>();
+        readonly Dictionary<long, ProjectReference> references = new Dictionary<long, ProjectReference>();
+        Dictionary<long, ProjectEntry> entries = new Dictionary<long, ProjectEntry>();
         ProjectSettings settings = new ProjectSettings();
-        
+        UniqueIdGenerator objectIdGen = new UniqueIdGenerator();
+        UniqueIdGenerator specimenIdGen = new UniqueIdGenerator();
+
+
         public static readonly string ManifestFileName = "manifest.json";
+        private static readonly string ObjectIdGenName = "objects";
+        private static readonly string SpecimenIdGenName = "specimens";
         private static JsonSerializerOptions? opts;
 
         public bool IsArchiveOpen => archive?.IsOpen ?? false;
         public ProjectSettings Settings => settings;
-        public IReadOnlyDictionary<int, ProjectEntry> Entries => entries;
+        public IReadOnlyDictionary<long, ProjectEntry> Entries => entries;
 
 
-        public bool TryGetReference<T>(int index, [MaybeNullWhen(false)] out T value)
+        public bool TryGetReference<T>(long index, [MaybeNullWhen(false)] out T value)
         {
             if (!references.TryGetValue(index, out ProjectReference? reference))
             {
@@ -94,23 +99,23 @@ namespace Warp9.Model
             }
         }
 
-        public int AddReferenceDirect<T>(string fileName, ProjectReferenceFormat fmt, T val)
+        public long AddReferenceDirect<T>(string fileName, ProjectReferenceFormat fmt, T val)
         {
-            int index = 0; // TODO
+            long index = objectIdGen.Next();
             ProjectReference reference = new ProjectReference(index,
                  new ProjectReferenceInfo() { FileName = fileName, Format = fmt, IsInternal = true }, val);
             references.Add(index, reference);
             return index;
         }
 
-        public int AddReferenceExternal(string fileName, ProjectReferenceFormat fmt)
+        public long AddReferenceExternal(string fileName, ProjectReferenceFormat fmt)
         {
             string fileNameMinimal = fileName;
 
             if (archive is not null)
                 Path.GetRelativePath(archive.WorkingDirectory, fileName);
 
-            int index = 0; // TODO
+            long index = objectIdGen.Next();
             ProjectReference reference = new ProjectReference(index,
                 new ProjectReferenceInfo() { FileName = fileNameMinimal, Format = fmt, IsInternal = false });
            
@@ -118,14 +123,14 @@ namespace Warp9.Model
             return index;
         }
 
-        public bool RemoveReference(int index)
+        public bool RemoveReference(long index)
         {
             return references.Remove(index);
         }
 
         public ProjectEntry AddNewEntry(ProjectEntryKind kind)
         {
-            int index = 0;
+            long index = objectIdGen.Next();
             ProjectEntry entry = new ProjectEntry(index, kind);
             entries[index] = entry;
             return entry;
@@ -150,8 +155,17 @@ namespace Warp9.Model
                 references.Add(kvp.Key, new ProjectReference(kvp.Key, kvp.Value));
 
             entries = manifest.Entries;
-
             settings = manifest.Settings;
+
+            if (manifest.Counters.TryGetValue(ObjectIdGenName, out UniqueIdGenerator? igobj))
+                objectIdGen = igobj;
+            else
+                objectIdGen = new UniqueIdGenerator();
+
+            if (manifest.Counters.TryGetValue(SpecimenIdGenName, out UniqueIdGenerator? igspec))
+                specimenIdGen = igspec;
+            else
+                specimenIdGen = new UniqueIdGenerator();
         }
 
         public void MakeManifest(Stream s)
@@ -163,6 +177,8 @@ namespace Warp9.Model
                 manifest.References.Add(kvp.Key, kvp.Value.Info);
 
             manifest.Entries = entries;
+            manifest.Counters[ObjectIdGenName] = objectIdGen;
+            manifest.Counters[SpecimenIdGenName] = specimenIdGen;
 
             JsonSerializer.Serialize(s, manifest, opts);
         }

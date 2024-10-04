@@ -11,7 +11,7 @@ namespace Warp9.Test
             Project project = Project.CreateEmpty();
 
             Bitmap bmp = new Bitmap(16, 16);
-            int bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
+            long bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
 
             return project;
         }
@@ -48,7 +48,7 @@ namespace Warp9.Test
             using Project project = Project.CreateEmpty();
 
             using Bitmap bmp = new Bitmap(16, 16);
-            int bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
+            long bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
             Assert.AreEqual(0, bitmapIndex);
 
             Assert.IsTrue(project.TryGetReference(bitmapIndex, out Bitmap? bmp2));

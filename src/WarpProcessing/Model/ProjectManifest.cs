@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -18,9 +19,12 @@ namespace Warp9.Model
         public ProjectSettings Settings { get; set; } = new ProjectSettings();
 
         [JsonPropertyName("entries")]
-        public Dictionary<int, ProjectEntry> Entries { get; set; } = new Dictionary<int, ProjectEntry>();
+        public Dictionary<long, ProjectEntry> Entries { get; set; } = new Dictionary<long, ProjectEntry>();
 
         [JsonPropertyName("refs")]
-        public Dictionary<int, ProjectReferenceInfo> References { get; set; } = new Dictionary<int, ProjectReferenceInfo>();
+        public Dictionary<long, ProjectReferenceInfo> References { get; set; } = new Dictionary<long, ProjectReferenceInfo>();
+
+        [JsonPropertyName("counters")]
+        public Dictionary<string, UniqueIdGenerator> Counters { get; set; } = new Dictionary<string, UniqueIdGenerator>();
     }
 }

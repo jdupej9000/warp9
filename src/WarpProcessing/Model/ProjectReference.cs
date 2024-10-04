@@ -31,14 +31,14 @@ namespace Warp9.Model
 
     public class ProjectReference
     {
-        public ProjectReference(int id, ProjectReferenceInfo info, object? nat=null)
+        public ProjectReference(long id, ProjectReferenceInfo info, object? nat=null)
         {
             Id = id;
             Info = info;
             NativeObject = nat;
         }
 
-        public int Id { get; set; }
+        public long Id { get; set; }
         public ProjectReferenceInfo Info { get; set; }
         public bool HasNativeObject => NativeObject is not null;
         public object? NativeObject { get; set; }

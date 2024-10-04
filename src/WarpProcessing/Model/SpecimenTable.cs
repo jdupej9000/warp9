@@ -45,7 +45,6 @@ namespace Warp9.Model
             return col;
         }
 
-
         public IEnumerable<SpecimenTableRow> GetRows()
         {
             int numRows = Columns.Values.First().NumRows;

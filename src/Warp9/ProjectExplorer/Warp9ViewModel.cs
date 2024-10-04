@@ -25,7 +25,7 @@ namespace Warp9.ProjectExplorer
     public class ProjectItem
     {
         public string Name { get; set; } = string.Empty;
-        public int EntryIndex { get; set; } = -1;
+        public long EntryIndex { get; set; } = -1;
         public int ViewIndex { get; set; } = -1;
         public StockProjectItemKind Kind {get; set;} = StockProjectItemKind.None;
         public ObservableCollection<ProjectItem> Children { get; set; } = new ObservableCollection<ProjectItem>();
@@ -39,7 +39,7 @@ namespace Warp9.ProjectExplorer
             };
         }
 
-        public static ProjectItem CreateEntry(string name, int entryIndex)
+        public static ProjectItem CreateEntry(string name, long entryIndex)
         {
             return new ProjectItem()
             {
