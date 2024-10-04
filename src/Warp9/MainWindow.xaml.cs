@@ -42,9 +42,6 @@ namespace Warp9
             views.Add(pageSpecimenTable);
         }
 
-
-       
-
         Warp9Model? model = null;
 
         MainLandingPage pageLanding = new MainLandingPage();
@@ -52,23 +49,6 @@ namespace Warp9
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         List<IWarp9View> views = new List<IWarp9View>();
         ViewerPage pageViewer;
-
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //Size size = WpfSizeToPixels(ImageGrid);
-            //InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
-        }
-
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
-        {
-            //Grid_Loaded2(sender, e);
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-           // CompositionTarget.Rendering -= CompositionTarget_Rendering;
-            // TODO: renderer dispose
-        }
 
         private bool SaveOrSaveAs()
         {
@@ -169,12 +149,14 @@ namespace Warp9
                 ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);
                 entry.Name = "Specimens";
                 entry.Payload.Table = new SpecimenTable();
-                SpecimenTableColumn<long> colId = entry.Payload.Table.AddColumn<long>("id", SpecimenTableColumnType.Integer);
                 SpecimenTableColumn<string> colName = entry.Payload.Table.AddColumn<string>("name", SpecimenTableColumnType.String);
                 SpecimenTableColumn<int> colSex = entry.Payload.Table.AddColumn<int>("sex", SpecimenTableColumnType.Factor, ["F", "M"]);
-                colId.Data.AddRange([1, 2, 3]);
-                colName.Data.AddRange(["Sisko", "Kira", "O'Brien"]);
-                colSex.Data.AddRange([1, 0, 1]);
+                SpecimenTableColumn<bool> colStarfleet = entry.Payload.Table.AddColumn<bool>("starfleet", SpecimenTableColumnType.Boolean);
+                SpecimenTableColumn<double> colHeight = entry.Payload.Table.AddColumn<double>("height", SpecimenTableColumnType.Real);
+                colName.Data.AddRange(["Benjamin Sisko", "Kira Nerys", "Miles O'Brien", "Odo", "Jadzia Dax", "Weyoun"]);
+                colSex.Data.AddRange([1, 0, 1, 1, 0, 1]);
+                colStarfleet.Data.AddRange([true, false, true, false, true, false]);
+                colHeight.Data.AddRange([1.85, 1.72, 1.80, 1.83, 1.82, 1.70]);
 
                 model.ViewModel.Update();
             }

@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle2}"
         Background="{DynamicResource Window.Static.Border}"
-        Title="Warp9" Height="450" Width="800" Closing="Window_Closing">
+        Title="Warp9" Height="450" Width="800">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
 

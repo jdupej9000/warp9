@@ -10,9 +10,106 @@ using System.Threading.Tasks;
 
 namespace Warp9.Model
 {
-    public class SpecimenTableColumnJsonConverter : JsonConverter<SpecimenTableColumn>
+    public class SpecimenTableJsonConverter : JsonConverter<SpecimenTable>
     {
-        public override SpecimenTableColumn? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override SpecimenTable? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            SpecimenTable table = new SpecimenTable();
+
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException();
+
+            while (true)
+            {
+                reader.Read();
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                    break;
+
+                string colName = reader.GetString() ?? throw new JsonException();
+                
+
+                reader.Read();
+                SpecimenTableColumn? colData = ReadColumnContents(ref reader, options);
+                if(colData is null) 
+                    throw new JsonException();
+
+                table.Columns.Add(colName, colData);
+            }
+
+           
+            if (reader.TokenType != JsonTokenType.EndObject)
+                throw new JsonException();
+
+            return table;
+        }
+
+        public override void Write(Utf8JsonWriter writer, SpecimenTable value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+
+            foreach (var kvp in value.Columns)
+            {
+                writer.WriteStartObject(kvp.Key);
+                WriteColumnContents(writer, kvp.Value, options);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndObject();
+        }
+
+        private static void WriteColumnContents(Utf8JsonWriter writer, SpecimenTableColumn value, JsonSerializerOptions options)
+        {
+            writer.WriteNumber("type", (int)value.ColumnType);
+
+            if (value.Names is not null)
+            {
+                writer.WriteStartArray("names");
+                foreach (string name in value.Names)
+                    writer.WriteStringValue(name);
+
+                writer.WriteEndArray();
+            }
+
+            writer.WriteStartArray("data");
+
+            if (value is SpecimenTableColumn<long> longCol)
+            {
+                foreach (long x in longCol.Data)
+                    writer.WriteNumberValue(x);
+            }
+            else if (value is SpecimenTableColumn<double> doubleCol)
+            {
+                foreach (double x in doubleCol.Data)
+                    writer.WriteNumberValue(x);
+            }
+            else if (value is SpecimenTableColumn<int> intCol)
+            {
+                foreach (int x in intCol.Data)
+                    writer.WriteNumberValue(x);
+            }
+            else if (value is SpecimenTableColumn<bool> boolCol)
+            {
+                foreach (bool x in boolCol.Data)
+                    writer.WriteBooleanValue(x);
+            }
+            else if (value is SpecimenTableColumn<string> stringCol)
+            {
+                foreach (string x in stringCol.Data)
+                    writer.WriteStringValue(x);
+            }
+            else if (value is SpecimenTableColumn<ProjectReferenceLink> linkCol)
+            {
+                foreach (ProjectReferenceLink x in linkCol.Data)
+                    writer.WriteNumberValue(x.ReferenceIndex);
+            }
+            else
+            {
+                throw new JsonException();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        private static SpecimenTableColumn? ReadColumnContents(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
@@ -25,7 +122,7 @@ namespace Warp9.Model
                 throw new JsonException();
 
             reader.Read();
-            if(reader.TokenType != JsonTokenType.Number)
+            if (reader.TokenType != JsonTokenType.Number)
                 throw new JsonException();
 
             SpecimenTableColumnType colType = (SpecimenTableColumnType)reader.GetInt32();
@@ -53,7 +150,7 @@ namespace Warp9.Model
                 throw new JsonException();
 
             reader.Read();
-            if(reader.TokenType != JsonTokenType.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 throw new JsonException();
 
             string[]? colNamesArr = colNames?.ToArray();
@@ -64,7 +161,7 @@ namespace Warp9.Model
                 SpecimenTableColumnType.String => new SpecimenTableColumn<string>(colType, ReadStringArray(ref reader), null),
                 SpecimenTableColumnType.Factor => new SpecimenTableColumn<int>(colType, ReadInt32Array(ref reader), colNamesArr),
                 SpecimenTableColumnType.Boolean => new SpecimenTableColumn<bool>(colType, ReadBoolArray(ref reader), null),
-                SpecimenTableColumnType.Image or SpecimenTableColumnType.Mesh or SpecimenTableColumnType.PointCloud => 
+                SpecimenTableColumnType.Image or SpecimenTableColumnType.Mesh or SpecimenTableColumnType.PointCloud =>
                     new SpecimenTableColumn<ProjectReferenceLink>(colType, ReadLinkArray(ref reader), colNamesArr),
                 _ => throw new JsonException()
             };
@@ -161,61 +258,6 @@ namespace Warp9.Model
             }
 
             return list;
-        }
-
-        public override void Write(Utf8JsonWriter writer, SpecimenTableColumn value, JsonSerializerOptions options)
-        {
-            writer.WriteStartObject();
-            writer.WriteNumber("type", (int)value.ColumnType);
-
-            if (value.Names is not null)
-            {
-                writer.WriteStartArray("names");
-                foreach (string name in value.Names)
-                    writer.WriteStringValue(name);
-
-                writer.WriteEndArray();
-            }
-
-            writer.WriteStartArray("data");
-
-            if (value is SpecimenTableColumn<long> longCol)
-            {
-                foreach (long x in longCol.Data)
-                    writer.WriteNumberValue(x);
-            }
-            else if (value is SpecimenTableColumn<double> doubleCol)
-            {
-                foreach (double x in doubleCol.Data)
-                    writer.WriteNumberValue(x);
-            }
-            else if (value is SpecimenTableColumn<int> intCol)
-            {
-                foreach (int x in intCol.Data)
-                    writer.WriteNumberValue(x);
-            }
-            else if (value is SpecimenTableColumn<bool> boolCol)
-            {
-                foreach (bool x in boolCol.Data)
-                    writer.WriteBooleanValue(x);
-            }
-            else if (value is SpecimenTableColumn<string> stringCol)
-            {
-                foreach (string x in stringCol.Data)
-                    writer.WriteStringValue(x);
-            }
-            else if (value is SpecimenTableColumn<ProjectReferenceLink> linkCol)
-            {
-                foreach (ProjectReferenceLink x in linkCol.Data)
-                    writer.WriteNumberValue(x.ReferenceIndex);
-            }
-            else
-            {
-                throw new JsonException();
-            }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
         }
     }
 }

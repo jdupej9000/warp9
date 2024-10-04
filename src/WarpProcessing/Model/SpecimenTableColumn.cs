@@ -42,6 +42,7 @@ namespace Warp9.Model
         public abstract object? GetAt(int idx);
         public abstract void SetAt(int idx, object? value);
         public abstract bool RemoveAt(int idx);
+        public abstract void Add();
     }
 
     public class SpecimenTableColumn<T> : SpecimenTableColumn
@@ -92,6 +93,14 @@ namespace Warp9.Model
         {
             data.RemoveAt(idx);
             return true;
+        }
+
+        public override void Add()
+        {
+            if (data is List<string> stringData)
+                stringData.Add(string.Empty);
+            else
+                data.Add(default!);
         }
     }
 }

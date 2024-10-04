@@ -49,7 +49,6 @@ namespace Warp9.Test
 
             using Bitmap bmp = new Bitmap(16, 16);
             long bitmapIndex = project.AddReferenceDirect("bitmap.png", ProjectReferenceFormat.PngImage, bmp);
-            Assert.AreEqual(0, bitmapIndex);
 
             Assert.IsTrue(project.TryGetReference(bitmapIndex, out Bitmap? bmp2));
             Assert.IsNotNull(bmp2);

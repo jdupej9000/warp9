@@ -253,7 +253,7 @@ namespace Warp9.Model
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
 
-            opts.Converters.Add(new SpecimenTableColumnJsonConverter());
+            opts.Converters.Add(new SpecimenTableJsonConverter());
         }
 
         public static Project CreateEmpty()

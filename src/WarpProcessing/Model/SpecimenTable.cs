@@ -15,26 +15,81 @@ namespace Warp9.Model
     {
         public SpecimenTableRow(SpecimenTable t, int i)
         {
-            table = t;
+            parent = t;
             rowIndex = i;
         }
 
-        SpecimenTable table;
+        SpecimenTable parent;
         int rowIndex;
 
-        public SpecimenTable ParentTable => table;
-        public int RowIndex => rowIndex;
+        internal SpecimenTable ParentTable => parent;
+        internal int RowIndex => rowIndex;
 
         public object? this[string column]
         {
             get
             {
-                return table.Columns[column].GetAt(rowIndex);
+                if (column == "!index") return rowIndex.ToString();
+
+                if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))
+                    return null;
+
+                object? val = col.GetAt(rowIndex);
+
+                return col.ColumnType switch
+                {
+                    SpecimenTableColumnType.Integer or
+                    SpecimenTableColumnType.Real or
+                    SpecimenTableColumnType.String => val?.ToString() ?? "(null)",
+
+                    SpecimenTableColumnType.Factor => val is null ? "" : col.Names![(int)val],
+
+                    SpecimenTableColumnType.Boolean => (bool)(val ?? false),
+
+                    SpecimenTableColumnType.Image => throw new NotImplementedException(),
+                    SpecimenTableColumnType.Mesh => throw new NotImplementedException(),
+                    SpecimenTableColumnType.PointCloud => throw new NotImplementedException(),
+                    _ => throw new NotImplementedException()
+                };
             }
             set
             {
-                table.Columns[column].SetAt(rowIndex, value);
+                if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))
+                    return;
+
+                parent.Columns[column].SetAt(rowIndex, ParseValue(col, value));
             }
+        }
+
+        private static object? ParseValue(SpecimenTableColumn col, object? val)
+        {
+            if (val is string v)
+            {
+                switch (col.ColumnType)
+                {
+                    case SpecimenTableColumnType.Integer:
+                        if (long.TryParse(v, out long valLong))
+                            return valLong;
+                        break;
+
+                    case SpecimenTableColumnType.Real:
+                        if (double.TryParse(v, out double valDouble))
+                            return valDouble;
+                        break;
+
+                    case SpecimenTableColumnType.String:
+                        return v;
+
+                    case SpecimenTableColumnType.Factor:
+                        return Array.IndexOf(col.Names ?? Array.Empty<string>(), v);
+                }
+            }
+            else if (val is bool b)
+            {
+                return b;
+            }
+
+            return null;
         }
     };
 
@@ -71,11 +126,8 @@ namespace Warp9.Model
 
         public int Count => Columns.Values.First().NumRows;
         public bool IsReadOnly => false;
-
         public bool IsFixedSize => false;
-
         public bool IsSynchronized => false;
-
         public object SyncRoot => throw new NotImplementedException();
 
         object? IList.this[int index] 
@@ -95,7 +147,8 @@ namespace Warp9.Model
 
         public void Add(SpecimenTableRow item)
         {
-            throw new NotImplementedException();
+            foreach (var kvp in Columns)
+                kvp.Value.Add();
 
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
@@ -122,7 +175,7 @@ namespace Warp9.Model
 
         public IEnumerator<SpecimenTableRow> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new SpecimenTableEnumerator(this);
         }
 
         public bool Remove(SpecimenTableRow item)
@@ -141,8 +194,7 @@ namespace Warp9.Model
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            // TODO
-            throw new NotImplementedException();
+            return new SpecimenTableEnumerator(this);
         }
 
         public int IndexOf(SpecimenTableRow item)

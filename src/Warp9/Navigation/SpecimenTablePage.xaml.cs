@@ -31,7 +31,18 @@ namespace Warp9.Navigation
         }
 
         Warp9ViewModel? viewModel;
+        long entryIndex = -1;
 
+        SpecimenTable Table
+        {
+            get 
+            {
+                if (entryIndex < 0 || viewModel is null || !viewModel.Project.Entries.TryGetValue(entryIndex, out ProjectEntry? entry))
+                    throw new InvalidOperationException();
+
+                return entry.Payload.Table ?? throw new InvalidOperationException();
+            }
+        }
         public void AttachViewModel(Warp9ViewModel vm)
         {
             viewModel = vm;
@@ -46,43 +57,55 @@ namespace Warp9.Navigation
         {
             dataMain.Columns.Clear();
 
-            if (viewModel is null || !viewModel.Project.Entries.TryGetValue(idx, out ProjectEntry? entry))
-                throw new InvalidOperationException();
-
-            SpecimenTable table = entry.Payload.Table ?? throw new InvalidOperationException();
+            entryIndex = idx;
+            SpecimenTable table = Table;
             dataMain.ItemsSource = table;
+
+            DataGridTextColumn colId = new DataGridTextColumn
+            {
+                Header = new SpecimenTableColumnInfo("ID", ""),
+                Binding = new Binding("[!index]"),
+                CanUserReorder = false,
+                IsReadOnly = true
+            };
+            dataMain.Columns.Add(colId);
 
             foreach (var kvp in table.Columns)
             {
-
                 switch (kvp.Value.ColumnType)
                 {
                     case SpecimenTableColumnType.Integer:
                     case SpecimenTableColumnType.Real:
                     case SpecimenTableColumnType.String:
                         {
-                            DataGridTextColumn col = new DataGridTextColumn();
-                            col.Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString());
-                            col.Binding = new Binding("[" + kvp.Key + "]");
+                            DataGridTextColumn col = new DataGridTextColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]")
+                            };
                             dataMain.Columns.Add(col);
                         }
                         break;
 
                     case SpecimenTableColumnType.Factor:
                         {
-                            DataGridComboBoxColumn col = new DataGridComboBoxColumn();
-                            col.Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString());
-                            col.SelectedItemBinding = new Binding("[" + kvp.Key + "]");
-                            col.ItemsSource = kvp.Value.Names;
+                            DataGridComboBoxColumn col = new DataGridComboBoxColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                SelectedItemBinding = new Binding("[" + kvp.Key + "]"),
+                                ItemsSource = kvp.Value.Names
+                            };
                             dataMain.Columns.Add(col);
                         }
                         break;
 
                     case SpecimenTableColumnType.Boolean:
                         {
-                            DataGridCheckBoxColumn col = new DataGridCheckBoxColumn();
-                            col.Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString());
-                            col.Binding = new Binding("[" + kvp.Key + "]");
+                            DataGridCheckBoxColumn col = new DataGridCheckBoxColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]")
+                            };
                             dataMain.Columns.Add(col);
                         }
                         break;
@@ -138,12 +161,15 @@ namespace Warp9.Navigation
 
         private void btnSpecAdd_Click(object sender, RoutedEventArgs e)
         {
-
+            SpecimenTable table = Table;
+            table.Add(new SpecimenTableRow(table, table.Columns.Count));
         }
 
         private void btnSpecDelete_Click(object sender, RoutedEventArgs e)
         {
-
+            int selected = dataMain.SelectedIndex;
+            if (selected != -1)
+                Table.RemoveAt(selected);
         }
 
         private void btnSpecEditCol_Click(object sender, RoutedEventArgs e)
