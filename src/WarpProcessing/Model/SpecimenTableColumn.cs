@@ -21,6 +21,7 @@ namespace Warp9.Model
 
         Mesh = 20,
         PointCloud = 21,
+        Matrix = 22,
 
         Invalid = -1
     }

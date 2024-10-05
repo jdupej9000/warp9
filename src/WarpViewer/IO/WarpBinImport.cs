@@ -67,16 +67,18 @@ namespace Warp9.IO
             return numRead == Marshal.SizeOf<T>();
         }
 
-        private int ParsePointCloudChunks(List<WarpBinImportChunk> parsedChunks)
+        private bool TryParsePointCloudChunks(List<WarpBinImportChunk> parsedChunks, out int bufferSize)
         {
             int nv = 0;
             int offset = 0;
+            bufferSize = 0;
+
             foreach (WarpBinChunkInfo chunk in chunks)
             {
                 if (nv == 0)
                     nv = chunk.Rows;
                 else if (nv != chunk.Rows)
-                    throw new InvalidDataException();
+                    return false;
 
                 MeshSegmentType segType = chunk.Semantic switch
                 {
@@ -111,32 +113,33 @@ namespace Warp9.IO
                 offset += seg.TotalLength;
             }
 
-            return offset;
+            bufferSize = offset;
+            return true;
         }
 
-        private int ParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk)
+        private bool TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int bufferSize)
         {
-            int size = 0;
+            bufferSize = 0;
             parsedIndexChunk = null;
 
             foreach (WarpBinChunkInfo chunk in chunks)
             {
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
-                    size = chunk.Rows * 12;
+                    bufferSize = chunk.Rows * 12;
                     MeshSegment seg = new MeshSegment<int>(0, 3 * chunk.Rows);
                     parsedIndexChunk = new WarpBinImportChunk()
-                    { 
+                    {
                         Chunk = chunk,
                         SegmentType = MeshSegmentType.Invalid,
                         Segment = seg
                     };
 
-                    break;
+                    return true;
                 }
             }
 
-            return size;
+            return false;
         }
 
         private void ReadInt16AsFloat32(Span<byte> buffer, int count, float min, float max)
@@ -153,7 +156,7 @@ namespace Warp9.IO
 
         private void ReadFixed16AsFloat32(Span<byte> buffer, int cols, int rows)
         {
-            Span<float> limits = stackalloc float[cols * 2];
+            float[] limits = new float[cols * 2];
             reader.Read(MemoryMarshal.Cast<float, byte>(limits));
 
             for (int i = 0; i < cols; i++)
@@ -165,15 +168,49 @@ namespace Warp9.IO
             ReadInt16AsFloat32(buffer, count, 0, 1);
         }
 
-        private Mesh ReadMesh()
+        private Matrix? ReadMatrix()
+        {
+            if (chunks.Count < 1 || chunks[0].Semantic != ChunkSemantic.None)
+                return null;
+
+            int numCols = chunks[0].Columns;
+            int numRows = chunks[0].Rows;
+
+            Matrix ret = new Matrix(numCols, numRows);
+            for (int i = 0; i < numCols; i++)
+            {
+                switch (chunks[0].Encoding)
+                {
+                    case ChunkEncoding.Float32:
+                        reader.Read(MemoryMarshal.Cast<float, byte>(ret.GetColumn(i)));
+                        break;
+
+                    case ChunkEncoding.Fixed16:
+                        ReadFixed16AsFloat32(ret.GetRawData(), numCols, numRows);
+                        break;
+
+                    case ChunkEncoding.Normalized16:
+                        ReadNormalized16AsFloat32(ret.GetRawData(), numCols * numRows);
+                        break;
+
+                    default:
+                        return null;
+                }
+            } 
+
+            return null;
+        }
+
+    private Mesh? ReadMesh()
         {
             List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
-            int vertDataSize = ParsePointCloudChunks(parsedChunks);
+            if(!TryParsePointCloudChunks(parsedChunks, out int vertDataSize))
+                return null;
            
             byte[] vertData = new byte[vertDataSize];
             Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
 
-            int idxDataSize = ParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk);
+            TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int idxDataSize);
             byte[] idxData = new byte[idxDataSize];
 
             int nv = 0, nt = 0;
@@ -234,7 +271,20 @@ namespace Warp9.IO
             }
 
             pcl = import.ReadMesh();
-            return true;
+            return pcl is not null;
+        }
+
+        public static bool TryImport(Stream s, [MaybeNullWhen(false)] out Matrix mat)
+        {
+            using WarpBinImport import = new WarpBinImport(s);
+            if (!import.ReadHeaders())
+            {
+                mat = null;
+                return false;
+            }
+
+            mat = import.ReadMatrix();
+            return mat is not null;
         }
     }
 }

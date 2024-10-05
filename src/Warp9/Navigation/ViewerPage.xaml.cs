@@ -179,7 +179,7 @@ namespace Warp9.Navigation
         private static Size WpfSizeToPixels(FrameworkElement element)
         {
             var source = PresentationSource.FromVisual(element);
-            Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+            System.Windows.Media.Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
 
             return (Size)transformToDevice.Transform(new System.Windows.Vector(element.ActualWidth, element.ActualHeight));
         }

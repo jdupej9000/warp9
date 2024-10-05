@@ -52,6 +52,16 @@ namespace Warp9.Model
                 }
             ));
 
+            ret.Add(ProjectReferenceFormat.W9Matrix, new Codec<Matrix>(
+               (s, b, c) => WarpBinExport.ExportMatrix(s, b, null),
+               (s, c) =>
+               {
+                   if (WarpBinImport.TryImport(s, out Matrix? m))
+                       return m;
+                   return null;
+               }
+            ));
+
             ret.Add(ProjectReferenceFormat.PngImage, new Codec<Bitmap>(
                (s, b, c) => b.Save(s, System.Drawing.Imaging.ImageFormat.Png),
                (s, c) => new Bitmap(Bitmap.FromStream(s))));
