@@ -13,8 +13,7 @@ namespace warpcore::impl
     float cumsum(const float* x, int n, float* sums);
     void reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
     void range(const float* x, int n, float& min, float& max);
-    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, void (*fun)(int x, int y, int z));
-
+    
     template<typename T>
     int binary_search(const T* x, int n, const T& v)
     {

@@ -101,17 +101,37 @@ namespace warpcore
 
     // Applies a swizzle with indices known at compile time. If any of the indices
     // is negative, that lane will be multiplied by -1 at a minor efficiency cost.
+    // If any of the indices is zero, that lane will be set to zero, at furhter minor
+    // efficiency cost. Permute is elided if there is no change in lane order.
     template<int IX, int IY, int IZ>
     p3f p3f_swizzle(p3f a)
     {
-        p3f ret = _mm_permute_ps(a, _cabs(IX) | _cabs(IY << 2) | _cabs(IZ << 4));
+        // Set all to zero - easy peasy.
+        if constexpr (IX == 0 && IY == 0 && IZ == 0)
+            return _mm_setzero_ps();
 
+        // Compute permute indices.
+        constexpr int PX = (IX == 0) ? 0 : (_cabs(IX) - 1);
+        constexpr int PY = (IY == 0) ? 0 : (_cabs(IY) - 1);
+        constexpr int PZ = (IZ == 0) ? 0 : (_cabs(IZ) - 1);
 
+        p3f ret = a; 
+        
+        // Permute only if there is a change in lane ordering.
+        if constexpr (PX != 0 || PY != 1 || PZ != 2)
+            ret = _mm_permute_ps(a, PX | (PY << 2) | (PZ << 4));
+
+        // Negate selected lanes if needed.
         if constexpr (IX < 0 || IY < 0 || IZ < 0) {
-            ret = _mm_xor_ps(ret, _mm_castsi128_ps(p3i_set(
-                (IX < 0) ? 0x80000000 : 0x0,
-                (IY < 0) ? 0x80000000 : 0x0,
-                (IZ < 0) ? 0x80000000 : 0x0)));
+            p3f mret = _mm_xor_ps(ret, _mm_set1_ps(-0.0f));           
+            constexpr int mblend = ((IX < 0) ? 1 : 0) | ((IY < 0) ? 2 : 0) | ((IZ < 0) ? 4 : 0);
+            ret = _mm_blend_ps(ret, mret, mblend);
+        }
+
+        // Set selected lanes to zero if needed.
+        if constexpr (IX == 0 || IY == 0 || IZ == 0) {
+            constexpr int zblend = ((IX == 0) ? 1 : 0) | ((IY == 0) ? 2 : 0) | ((IZ == 0) ? 4 : 0);
+            ret = _mm_blend_ps(ret, _mm_setzero_ps(), zblend);
         }
 
         return ret;

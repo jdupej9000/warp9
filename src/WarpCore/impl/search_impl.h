@@ -59,7 +59,5 @@ namespace warpcore::impl
     // closest colliding triangle is returned and t is set to the distance of collision (in units
     // of dir). Otherwise, -1 is returned and t is left unmodified.
     //int raytri(const float* orig, const float* dir, const float* vert, int n, int stride, float* t);
-
-    p3f pttri(p3f a, p3f b, p3f c, p3f pt);
     int pttri(const float* orig, const float* vert, int n, int stride, float* closest);
 };
