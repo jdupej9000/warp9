@@ -28,7 +28,7 @@
 
             <MenuItem Header="_Project">
                 <MenuItem Header="Add new specimen table" Click="mnuProjectAddNewSpecTable_Click" />
-                <MenuItem Header="Import specimen table..." />
+                <MenuItem Header="Import specimen table..." Click="mnuProjectImportSpecTable_Click" />
                 <Separator />
                 <MenuItem Header="Compute...">
                     

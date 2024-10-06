@@ -7,24 +7,30 @@
         xmlns:controls="clr-namespace:Warp9.Themes"
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle}"
-        Title="ImportCsvWindow" Height="450" Width="800">
+        Title="ImportCsvWindow" Height="450" Width="600">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
+   
     <DockPanel>
         <GroupBox Header="Formatting" Margin="4" DockPanel.Dock="Top">
             <DockPanel>
-                <StackPanel Orientation="Horizontal" Margin="4" DockPanel.Dock="Top">
-                    <TextBlock Width="120">Separators:</TextBlock>
-                    <CheckBox>Comma</CheckBox>
+                <StackPanel Orientation="Horizontal" Margin="6" DockPanel.Dock="Top">
+                    <TextBlock Width="120">Cell delimiters</TextBlock>
+                    <CheckBox IsChecked="{Binding Path=UseCommaCellDelimiter, Mode=TwoWay}">Comma</CheckBox>
                     <Label Width="12" />
-                    <CheckBox>Tab</CheckBox>
+                    <CheckBox IsChecked="{Binding Path=UseTabCellDelimiter, Mode=TwoWay}">Tab</CheckBox>
                     <Label Width="12" />
-                    <CheckBox>Semicolon</CheckBox>
+                    <CheckBox IsChecked="{Binding Path=UseSemicolonCellDelimiter, Mode=TwoWay}">Semicolon</CheckBox>
+                    <Label Width="12" />
+                    <CheckBox IsChecked="{Binding Path=UseSpaceCellDelimiter, Mode=TwoWay}">Space</CheckBox>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="4">
-                    <TextBlock Width="120">Misc:</TextBlock>
-                    <CheckBox>Ignore first row</CheckBox>
+              
+                <StackPanel Orientation="Horizontal" Margin="6">
+                    <TextBlock Width="120">Misc</TextBlock>
+                    <CheckBox IsChecked="{Binding Path=IgnoreFirstRow, Mode=TwoWay}">Ignore first row</CheckBox>
+                    <Label Width="12" />
+                    <CheckBox IsChecked="{Binding Path=UseCommaAsDecimalDelimiter, Mode=TwoWay}">Comma is a decimal delimiter</CheckBox>
                 </StackPanel>
             </DockPanel>
         </GroupBox>
@@ -36,7 +42,7 @@
         </StackPanel>
 
         <GroupBox Header="Preview" Margin="4" DockPanel.Dock="Top">
-            <DataGrid HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
+            <DataGrid x:Name="dataCsv" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
 
             </DataGrid>
         </GroupBox>

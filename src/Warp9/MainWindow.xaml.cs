@@ -18,11 +18,13 @@ using System.Windows.Navigation;
 using System.Xml.Linq;
 using Warp9.Controls;
 using Warp9.Data;
+using Warp9.Forms;
 using Warp9.IO;
 using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.ProjectExplorer;
 using Warp9.Themes;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9
@@ -162,6 +164,21 @@ namespace Warp9
             }
         }
 
+        private void mnuProjectImportSpecTable_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Comma separated values (*.csv)|*.csv";
+
+            if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            CsvImporter importer = CsvImporter.Create(dlg.FileName);
+
+            ImportCsvWindow importDlg = new ImportCsvWindow();
+            importDlg.AttachImporter(importer);
+            importDlg.ShowDialog();
+        }
+
         private void SetProject(Project project)
         {
             model = new Warp9Model(project);
@@ -235,6 +252,6 @@ namespace Warp9
             e.Handled = true;
         }
 
-      
+       
     }
 }
