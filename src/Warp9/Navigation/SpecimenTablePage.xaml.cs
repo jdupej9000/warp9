@@ -115,6 +115,8 @@ namespace Warp9.Navigation
                         break;
                     case SpecimenTableColumnType.PointCloud:
                         break;
+                    case SpecimenTableColumnType.Matrix:
+                        break;
                     default:
                         throw new NotSupportedException();
                 }

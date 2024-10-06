@@ -7,6 +7,12 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Forms\ImportCsvWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Forms\SpecimenTableImportWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Navigation\MainLandingPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -19,6 +25,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Assets\Icons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Forms\ImportCsvWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Forms\SpecimenTableImportWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="MainWindow.xaml">
