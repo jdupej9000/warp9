@@ -89,10 +89,10 @@ namespace Warp9.Forms
             cmbType.Items.Add(new StiwTypeComboItem("String", ColumnImportType.String));
             cmbType.Items.Add(new StiwTypeComboItem("Factor", ColumnImportType.Factor));
             cmbType.Items.Add(new StiwTypeComboItem("Boolean", ColumnImportType.Boolean));
-            cmbType.Items.Add(new StiwTypeComboItem("Image", ColumnImportType.Image));
-            cmbType.Items.Add(new StiwTypeComboItem("Mesh", ColumnImportType.Mesh));
-            cmbType.Items.Add(new StiwTypeComboItem("Landmarks", ColumnImportType.Landmarks));
-            cmbType.Items.Add(new StiwTypeComboItem("Matrix", ColumnImportType.Matrix));
+            cmbType.Items.Add(new StiwTypeComboItem("Image file", ColumnImportType.Image));
+            cmbType.Items.Add(new StiwTypeComboItem("Mesh file", ColumnImportType.Mesh));
+            cmbType.Items.Add(new StiwTypeComboItem("Landmarks file", ColumnImportType.Landmarks));
+            cmbType.Items.Add(new StiwTypeComboItem("Matrix file", ColumnImportType.Matrix));
             cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xyxy)", ColumnImportType.Landmarks2DAos));
             cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xxyy)", ColumnImportType.Landmarks2DSoa));
             cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 3D (xyzxyz)", ColumnImportType.Landmarks3DAos));
