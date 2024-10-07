@@ -7,7 +7,8 @@
         xmlns:controls="clr-namespace:Warp9.Themes"
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle}"
-        Title="ImportCsvWindow" Height="450" Width="600">
+        Closing="Window_Closing"
+        Title="Import text data" Height="450" Width="600">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
@@ -30,6 +31,8 @@
                     <TextBlock Width="120">Misc</TextBlock>
                     <CheckBox IsChecked="{Binding Path=IgnoreFirstRow, Mode=TwoWay}">Ignore first row</CheckBox>
                     <Label Width="12" />
+                    <CheckBox IsChecked="{Binding Path=IgnoreEmptyRows, Mode=TwoWay}">Ignore empty rows</CheckBox>
+                    <Label Width="12" />
                     <CheckBox IsChecked="{Binding Path=UseCommaAsDecimalDelimiter, Mode=TwoWay}">Comma is a decimal delimiter</CheckBox>
                 </StackPanel>
             </DockPanel>
@@ -42,8 +45,7 @@
         </StackPanel>
 
         <GroupBox Header="Preview" Margin="4" DockPanel.Dock="Top">
-            <DataGrid x:Name="dataCsv" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
-
+            <DataGrid x:Name="dataCsv" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
             </DataGrid>
         </GroupBox>
        

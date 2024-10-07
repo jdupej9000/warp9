@@ -19,7 +19,7 @@ namespace Warp9.Utils
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private bool delimComma = true, delimTab = false, delimSpace = false, delimSemicolon = false;
-        private bool ignoreFirst = false, commaDecimal = false;
+        private bool ignoreFirst = false, commaDecimal = false, ignoreEmpty = true;
 
         public bool UseCommaCellDelimiter
         {
@@ -57,6 +57,12 @@ namespace Warp9.Utils
             set { commaDecimal = value; Update(); }
         }
 
+        public bool IgnoreEmptyRows
+        {
+            get { return ignoreEmpty; }
+            set { ignoreEmpty = value; Update(); }
+        }
+
         public IEnumerable<string[]> ParsedData => Parse();
 
         private void Update()
@@ -76,10 +82,20 @@ namespace Warp9.Utils
                 yield break;
 
             char[] seps = separators.ToArray();
+            bool isFirst = true;
 
             List<string> lineElements = new List<string>();
             foreach (string line in lines)
             {
+                if (ignoreFirst && isFirst)
+                {
+                    isFirst = false;
+                    continue;
+                }
+                
+                if (ignoreEmpty && line.Length == 0)
+                    continue;
+
                 int pos = 0;
 
                 while (pos < line.Length)
