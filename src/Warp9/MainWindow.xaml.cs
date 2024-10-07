@@ -177,6 +177,10 @@ namespace Warp9
             ImportCsvWindow importDlg = new ImportCsvWindow();
             importDlg.AttachImporter(importer);
             importDlg.ShowDialog();
+
+            SpecimenTableImportWindow assignDlg = new SpecimenTableImportWindow();
+            assignDlg.AttachImporter(importer);
+            assignDlg.ShowDialog();
         }
 
         private void SetProject(Project project)

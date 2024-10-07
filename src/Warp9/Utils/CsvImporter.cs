@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Warp9.Utils
 {
-    public class CsvImporter : INotifyPropertyChanged
+    public class CsvImporter : INotifyPropertyChanged, IUntypedTableProvider
     {
         private CsvImporter(string[] lines)
         {

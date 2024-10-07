@@ -11,10 +11,34 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Warp9.Model;
 using Warp9.Utils;
 
 namespace Warp9.Forms
 {
+    public enum ColumnImportType
+    {
+        Integer,
+        Real,
+        String,
+        Factor,
+        Boolean,
+        Image,
+        Mesh,
+        Landmarks,
+        Matrix,
+        Landmarks2DAos,
+        Landmarks2DSoa,
+        Landmarks3DAos,
+        Landmarks3DSoa
+    }
+
+    public record StiwTypeComboItem(string name, ColumnImportType type)
+    {
+        public string Name { get; init; } = name;
+        public ColumnImportType Type { get; init; } = type;
+    };
+
     /// <summary>
     /// Interaction logic for SpecimenTableImportWindow.xaml
     /// </summary>
@@ -25,6 +49,54 @@ namespace Warp9.Forms
             InitializeComponent();
         }
 
-        
+        IUntypedTableProvider? Importer;
+
+        public void AttachImporter(IUntypedTableProvider importer)
+        {
+            Importer = importer;
+            DataContext = importer;
+            UpdateColumns();
+        }
+
+        private void UpdateColumns()
+        {
+            dataCsv.Columns.Clear();
+
+            if (Importer is null) return;
+
+            string[]? data = Importer.ParsedData.FirstOrDefault();
+            if (data is null) return;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                DataGridTextColumn col = new DataGridTextColumn
+                {
+                    Header = string.Format("Column {0}", i + 1),
+                    Binding = new Binding("[" + i.ToString() + "]"),
+                    IsReadOnly = true,
+                    CanUserReorder = false,
+                    CanUserSort = false
+                };
+
+                dataCsv.Columns.Add(col);
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            cmbType.Items.Add(new StiwTypeComboItem("Integer", ColumnImportType.Integer));
+            cmbType.Items.Add(new StiwTypeComboItem("Real", ColumnImportType.Real));
+            cmbType.Items.Add(new StiwTypeComboItem("String", ColumnImportType.String));
+            cmbType.Items.Add(new StiwTypeComboItem("Factor", ColumnImportType.Factor));
+            cmbType.Items.Add(new StiwTypeComboItem("Boolean", ColumnImportType.Boolean));
+            cmbType.Items.Add(new StiwTypeComboItem("Image", ColumnImportType.Image));
+            cmbType.Items.Add(new StiwTypeComboItem("Mesh", ColumnImportType.Mesh));
+            cmbType.Items.Add(new StiwTypeComboItem("Landmarks", ColumnImportType.Landmarks));
+            cmbType.Items.Add(new StiwTypeComboItem("Matrix", ColumnImportType.Matrix));
+            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xyxy)", ColumnImportType.Landmarks2DAos));
+            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xxyy)", ColumnImportType.Landmarks2DSoa));
+            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 3D (xyzxyz)", ColumnImportType.Landmarks3DAos));
+            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 3D (xxyyzz)", ColumnImportType.Landmarks3DSoa));
+        }
     }
 }
