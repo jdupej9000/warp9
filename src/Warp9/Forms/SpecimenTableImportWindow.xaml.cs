@@ -19,23 +19,6 @@ using Warp9.Utils;
 
 namespace Warp9.Forms
 {
-    public enum ColumnImportType
-    {
-        Integer = 0,
-        Real,
-        String,
-        Factor,
-        Boolean,
-        Image,
-        Mesh,
-        Landmarks,
-        Matrix,
-        Landmarks2DAos,
-        Landmarks2DSoa,
-        Landmarks3DAos,
-        Landmarks3DSoa
-    }
-
     public record StiwTypeComboItem(string name, ColumnImportType type)
     {
         public string Name { get; init; } = name;
@@ -80,6 +63,39 @@ namespace Warp9.Forms
         public void Notify(string pn)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(pn));
+        }
+
+        public SpecimenTableColumnImportOperation ToOperation()
+        {
+            List<int> cols = new List<int>();
+
+            // TODO: move to method and optimize
+            foreach (string seg in colsRaw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = seg.Split('-');
+
+                if (parts.Length == 1)
+                {
+                    if (int.TryParse(parts[0], out int n))
+                        cols.Add(n);
+                }
+                else if (parts.Length == 2)
+                {
+                    if (int.TryParse(parts[0], out int n0) &&
+                        int.TryParse(parts[1], out int n1))
+                    {
+                        for (int i = n0; i <= n1; i++)
+                            cols.Add(i);
+                    } 
+                }
+            }
+
+            string[]? levels = null;
+            if(levelsRaw is not null)
+                levels = levelsRaw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+
+            return new SpecimenTableColumnImportOperation(
+               name, (ColumnImportType)typeIndex, cols.ToArray(), levels);
         }
 
         public static Dictionary<ColumnImportType, string> ImportTypes = new Dictionary<ColumnImportType, string>()

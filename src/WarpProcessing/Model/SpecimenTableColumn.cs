@@ -96,6 +96,11 @@ namespace Warp9.Model
             return true;
         }
 
+        public void Add(T v)
+        {
+            data.Add(v); 
+        }
+
         public override void Add()
         {
             if (data is List<string> stringData)
