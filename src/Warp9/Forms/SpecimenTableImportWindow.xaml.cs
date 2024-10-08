@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +21,7 @@ namespace Warp9.Forms
 {
     public enum ColumnImportType
     {
-        Integer,
+        Integer = 0,
         Real,
         String,
         Factor,
@@ -39,6 +42,64 @@ namespace Warp9.Forms
         public ColumnImportType Type { get; init; } = type;
     };
 
+    public class SpecimenTableImportAssgn : INotifyPropertyChanged
+    {
+        private string name = string.Empty;
+        private string levelsRaw = string.Empty;
+        private string colsRaw = "1";
+        private int typeIndex = 0;
+
+        public string Name 
+        {
+            get { return name; }
+            set { name = value; Notify("Name"); }
+        }
+
+        public int TypeIndex
+        {
+            get { return typeIndex; }
+            set { typeIndex = value; Notify("TypeIndex"); Notify("TypeRaw"); }
+        }
+
+        public string LevelsRaw
+        {
+            get { return levelsRaw; }
+            set { levelsRaw = value; Notify("LevelsRaw"); }
+        }
+
+        public string ColumnRangeRaw
+        {
+            get { return colsRaw; }
+            set { colsRaw = value; Notify("ColumnRangeRaw"); }
+        }
+
+        public string TypeRaw => ImportTypes[(ColumnImportType)typeIndex];
+        
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public void Notify(string pn)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(pn));
+        }
+
+        public static Dictionary<ColumnImportType, string> ImportTypes = new Dictionary<ColumnImportType, string>()
+        {
+            { ColumnImportType.Integer, "Integer" },
+            { ColumnImportType.Real, "Real" },
+            { ColumnImportType.String, "String" },
+            { ColumnImportType.Factor, "Factor" },
+            { ColumnImportType.Boolean, "Boolean" },
+            { ColumnImportType.Image, "Image" },
+            { ColumnImportType.Mesh, "Mesh" },
+            { ColumnImportType.Landmarks, "Landmarks" },
+            { ColumnImportType.Matrix, "Matrix" },
+            { ColumnImportType.Landmarks2DAos, "Landmarks (xyxy)" },
+            { ColumnImportType.Landmarks2DSoa, "Landmarks (xxyy)" },
+            { ColumnImportType.Landmarks3DAos, "Landmarks (xyzxyz)" },
+            { ColumnImportType.Landmarks3DSoa, "Landmarks (xxyyzz)" }
+        };
+    }
+
     /// <summary>
     /// Interaction logic for SpecimenTableImportWindow.xaml
     /// </summary>
@@ -50,6 +111,9 @@ namespace Warp9.Forms
         }
 
         IUntypedTableProvider? Importer;
+        ObservableCollection<SpecimenTableImportAssgn> ColumnAssignments = new ObservableCollection<SpecimenTableImportAssgn>();
+
+        SpecimenTableImportAssgn? SelectedAssignmnent { get; set; } = null;
 
         public void AttachImporter(IUntypedTableProvider importer)
         {
@@ -84,19 +148,34 @@ namespace Warp9.Forms
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            cmbType.Items.Add(new StiwTypeComboItem("Integer", ColumnImportType.Integer));
-            cmbType.Items.Add(new StiwTypeComboItem("Real", ColumnImportType.Real));
-            cmbType.Items.Add(new StiwTypeComboItem("String", ColumnImportType.String));
-            cmbType.Items.Add(new StiwTypeComboItem("Factor", ColumnImportType.Factor));
-            cmbType.Items.Add(new StiwTypeComboItem("Boolean", ColumnImportType.Boolean));
-            cmbType.Items.Add(new StiwTypeComboItem("Image file", ColumnImportType.Image));
-            cmbType.Items.Add(new StiwTypeComboItem("Mesh file", ColumnImportType.Mesh));
-            cmbType.Items.Add(new StiwTypeComboItem("Landmarks file", ColumnImportType.Landmarks));
-            cmbType.Items.Add(new StiwTypeComboItem("Matrix file", ColumnImportType.Matrix));
-            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xyxy)", ColumnImportType.Landmarks2DAos));
-            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 2D (xxyy)", ColumnImportType.Landmarks2DSoa));
-            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 3D (xyzxyz)", ColumnImportType.Landmarks3DAos));
-            cmbType.Items.Add(new StiwTypeComboItem("Direct landmarks 3D (xxyyzz)", ColumnImportType.Landmarks3DSoa));
+            foreach (var kvp in SpecimenTableImportAssgn.ImportTypes)
+                cmbType.Items.Add(new StiwTypeComboItem(kvp.Value, kvp.Key));
+
+            ColumnAssignments.Add(new SpecimenTableImportAssgn() { Name = "xxx", TypeIndex = 2, ColumnRangeRaw="1"});
+            lstCols.ItemsSource = ColumnAssignments;
+            
+        }
+
+        private void btnAddCol_Click(object sender, RoutedEventArgs e)
+        {
+            SpecimenTableImportAssgn newAssgn = new SpecimenTableImportAssgn();
+            ColumnAssignments.Add(newAssgn);
+        }
+
+        private void btnRemoveCol_Click(object sender, RoutedEventArgs e)
+        {
+            if(SelectedAssignmnent is not null)
+                ColumnAssignments.Remove(SelectedAssignmnent);
+        }
+
+        private void lstCols_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstCols.SelectedItem is SpecimenTableImportAssgn stia)
+                SelectedAssignmnent = stia;
+            else
+                SelectedAssignmnent = null;
+
+            gridEditAssgn.DataContext = SelectedAssignmnent;
         }
     }
 }
