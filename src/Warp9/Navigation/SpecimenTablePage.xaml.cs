@@ -105,7 +105,7 @@ namespace Warp9.Navigation
                             DataGridCheckBoxColumn col = new DataGridCheckBoxColumn
                             {
                                 Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
-                                Binding = new Binding("[" + kvp.Key + "]")                                
+                                Binding = new Binding("[" + kvp.Key + "]")
                             };
                             dataMain.Columns.Add(col);
                         }

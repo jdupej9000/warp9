@@ -114,39 +114,7 @@ namespace Warp9.IO
             int len = line.Length;
 
             int pos = vertType == ' ' ? 1 : 2;
-            pos = Skip(line, pos);
-            if (pos == len) 
-                return 0;
-
-            int pos2 = SkipNonSpace(line, pos);
-            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[0]))
-                return 0;
-
-            pos = pos2;
-            if (pos == len) 
-                return 1;
-
-            pos = Skip(line, pos);
-            if (pos == len) 
-                return 1;
-
-            pos2 = SkipNonSpace(line, pos);
-            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[1]))
-                return 1;
-
-            pos = pos2;
-            if (pos == len)
-                return 2;
-
-            pos = Skip(line, pos);
-            if (pos == len)
-                return 2;
-
-            pos2 = SkipNonSpace(line, pos);
-            if (!float.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[2]))
-                return 2;
-
-            return 3;
+            return IoUtils.ParseSeparatedFloats(line, pos, ' ', vec);
         }
 
         private bool AddVertex(Span<float> vec, char vertType, int dim)
@@ -181,7 +149,7 @@ namespace Warp9.IO
 
         private int ParseFace(string line, Span<int> vec)
         {
-            int pos = Skip(line, 1);
+            int pos = IoUtils.Skip(line, 1);
             int len = line.Length;
             if (pos == len) 
                 return 0;
@@ -193,7 +161,7 @@ namespace Warp9.IO
                 if (pos == len) 
                     return 0;
 
-                int pos2 = SkipInt(line, pos);
+                int pos2 = IoUtils.SkipInt(line, pos);
                 if(!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i]))
                     return 0;
 
@@ -202,7 +170,7 @@ namespace Warp9.IO
                 if (line[pos] == ' ') { pos++; continue; }
                 pos++; // skip a slash
 
-                pos2 = SkipInt(line, pos);
+                pos2 = IoUtils.SkipInt(line, pos);
                 if (pos2 != pos)
                 {
                     if(!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i + 1]))
@@ -214,7 +182,7 @@ namespace Warp9.IO
                 if (line[pos] == '/')
                 {
                     pos++;
-                    pos2 = SkipInt(line, pos);
+                    pos2 = IoUtils.SkipInt(line, pos);
                     if (!int.TryParse(line.AsSpan(pos, pos2 - pos), CultureInfo.InvariantCulture, out vec[3 * i + 2]))
                         return 0;
 
@@ -222,7 +190,7 @@ namespace Warp9.IO
                     pos = pos2;
                 }
 
-                pos = Skip(line, pos);
+                pos = IoUtils.Skip(line, pos);
             }
 
             return flags;
@@ -287,51 +255,6 @@ namespace Warp9.IO
             }
 
             return builder.ToMesh();
-        }
-
-
-        static int Skip(string s, int pos, char ch = ' ')
-        {
-            while (pos < s.Length)
-            {
-                if (s[pos] != ch) return pos;
-                pos++;
-            }
-
-            return pos;
-        }
-
-        static int SkipInt(string s, int pos)
-        {
-            while (pos < s.Length)
-            {
-                if (s[pos] < '0' || s[pos] > '9') return pos;
-                pos++;
-            }
-
-            return pos;
-        }
-
-        static int SkipNonInt(string s, int pos)
-        {
-            while (pos < s.Length)
-            {
-                if (s[pos] >= '0' && s[pos] <= '9') return pos;
-                pos++;
-            }
-
-            return pos;
-        }
-
-        static int SkipNonSpace(string s, int pos)
-        {
-            while (pos < s.Length)
-            {
-                if (s[pos] == ' ') return pos;
-                pos++;
-            }
-
-            return pos;
         }
 
         public static bool TryImport(Stream s, ObjImportMode mode, out Mesh m, out string errMsg)

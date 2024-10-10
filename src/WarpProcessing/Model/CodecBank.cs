@@ -71,8 +71,13 @@ namespace Warp9.Model
                 (s, c) => new Bitmap(Bitmap.FromStream(s))));
 
             ret.Add(ProjectReferenceFormat.MorphoLandmarks, new Codec<PointCloud>(
-                null, 
-                null
+                null,
+                 (s, c) =>
+                 {
+                     if (MorphoLandmarkImport.TryImport(s, out PointCloud pcl, out _)) 
+                         return pcl;
+                     return null;
+                 }
             ));
 
             return ret;
