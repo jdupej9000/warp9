@@ -92,7 +92,7 @@ namespace Warp9.Forms
 
             string[]? levels = null;
             if(levelsRaw is not null)
-                levels = levelsRaw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+                levels = levelsRaw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             return new SpecimenTableColumnImportOperation(
                name, (ColumnImportType)typeIndex, cols.ToArray(), levels);
