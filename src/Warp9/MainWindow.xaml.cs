@@ -98,8 +98,6 @@ namespace Warp9
                 return;
 
            SetProject(Project.CreateEmpty());
-
-           
         }
 
         private void mnuFileOpen_Click(object sender, RoutedEventArgs e)
@@ -111,6 +109,11 @@ namespace Warp9
             dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
 
             DialogResult res = dlg.ShowDialog();
+            if (res == System.Windows.Forms.DialogResult.OK)
+            {
+                Warp9ProjectArchive archive = new Warp9ProjectArchive(dlg.FileName, false);
+                SetProject(Project.Load(archive));
+            }
         }
 
         private void mnuFileSave_Click(object sender, RoutedEventArgs e)

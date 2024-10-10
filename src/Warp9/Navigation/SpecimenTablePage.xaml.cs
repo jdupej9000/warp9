@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -104,24 +105,28 @@ namespace Warp9.Navigation
                             DataGridCheckBoxColumn col = new DataGridCheckBoxColumn
                             {
                                 Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
-                                Binding = new Binding("[" + kvp.Key + "]")
+                                Binding = new Binding("[" + kvp.Key + "]")                                
                             };
                             dataMain.Columns.Add(col);
                         }
                         break;
                     case SpecimenTableColumnType.Image:
-                        break;
                     case SpecimenTableColumnType.Mesh:
-                        break;
                     case SpecimenTableColumnType.PointCloud:
-                        break;
                     case SpecimenTableColumnType.Matrix:
+                        {
+                            DataGridTextColumn col = new DataGridTextColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]"),
+                                IsReadOnly = true
+                            };
+                            dataMain.Columns.Add(col);
+                        }
                         break;
                     default:
                         throw new NotSupportedException();
                 }
-
-               
             }
         }
 
