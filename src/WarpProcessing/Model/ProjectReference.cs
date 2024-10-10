@@ -14,7 +14,10 @@ namespace Warp9.Model
         W9Pcl = 3,
         PngImage = 4,
         JpegImage = 5,
-        W9Matrix = 6
+        W9Matrix = 6,
+        MorphoLandmarks = 7,
+
+        Invalid = int.MaxValue
     }
 
     public class ProjectReferenceInfo

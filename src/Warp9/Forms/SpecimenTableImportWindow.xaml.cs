@@ -77,7 +77,7 @@ namespace Warp9.Forms
                 if (parts.Length == 1)
                 {
                     if (int.TryParse(parts[0], out int n))
-                        cols.Add(n);
+                        cols.Add(n - 1);
                 }
                 else if (parts.Length == 2)
                 {
@@ -85,7 +85,7 @@ namespace Warp9.Forms
                         int.TryParse(parts[1], out int n1))
                     {
                         for (int i = n0; i <= n1; i++)
-                            cols.Add(i);
+                            cols.Add(i - 1);
                     } 
                 }
             }
@@ -130,6 +130,8 @@ namespace Warp9.Forms
         ObservableCollection<SpecimenTableImportAssgn> ColumnAssignments = new ObservableCollection<SpecimenTableImportAssgn>();
 
         SpecimenTableImportAssgn? SelectedAssignmnent { get; set; } = null;
+
+        public IEnumerable<SpecimenTableColumnImportOperation> ImportOperations => ColumnAssignments.Select((t) => t.ToOperation());
 
         public void AttachImporter(IUntypedTableProvider importer)
         {

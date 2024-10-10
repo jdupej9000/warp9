@@ -70,6 +70,11 @@ namespace Warp9.Model
                 (s, b, c) => b.Save(s, System.Drawing.Imaging.ImageFormat.Jpeg),
                 (s, c) => new Bitmap(Bitmap.FromStream(s))));
 
+            ret.Add(ProjectReferenceFormat.MorphoLandmarks, new Codec<PointCloud>(
+                null, 
+                null
+            ));
+
             return ret;
         }
     }

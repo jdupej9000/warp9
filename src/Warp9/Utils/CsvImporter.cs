@@ -75,8 +75,8 @@ namespace Warp9.Utils
             List<char> separators = new List<char>();
             if (delimComma) separators.Add(',');
             if (delimTab) separators.Add('\t');
-            if (delimSpace) separators.Add(';');
-            if (delimSemicolon) separators.Add(' ');
+            if (delimSpace) separators.Add(' ');
+            if (delimSemicolon) separators.Add(';');
 
             if (separators.Count == 0)
                 yield break;

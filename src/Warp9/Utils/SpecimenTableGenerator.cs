@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using Warp9.Data;
 using Warp9.Model;
 
@@ -32,7 +33,7 @@ namespace Warp9.Utils
 
     public static class SpecimenTableGenerator
     {
-        public static SpecimenTable FromImporter(IUntypedTableProvider tableProvider, IEnumerable<SpecimenTableColumnImportOperation> ops)
+        public static SpecimenTable FromImporter(IUntypedTableProvider tableProvider, IEnumerable<SpecimenTableColumnImportOperation> ops, Project? project = null)
         {
             SpecimenTable table = new SpecimenTable();
 
@@ -52,16 +53,35 @@ namespace Warp9.Utils
                         AddStringColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name);
                         break;
 
-                    case ColumnImportType.Factor: break;
-                    case ColumnImportType.Boolean: break;
-                    case ColumnImportType.Image: break;
-                    case ColumnImportType.Mesh: break;
-                    case ColumnImportType.Landmarks: break;
-                    case ColumnImportType.Matrix: break;
-                    case ColumnImportType.Landmarks2DAos: break;
-                    case ColumnImportType.Landmarks2DSoa: break;
-                    case ColumnImportType.Landmarks3DAos: break;
-                    case ColumnImportType.Landmarks3DSoa: break;
+                    case ColumnImportType.Factor:
+                        AddFactorColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, op.Levels ?? Array.Empty<string>());
+                        break;
+
+                    case ColumnImportType.Boolean:
+                        AddBoolColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name);
+                        break;
+
+                    case ColumnImportType.Image:
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Image, project ?? throw new ArgumentNullException());
+                        break;
+
+                    case ColumnImportType.Mesh:
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Mesh, project ?? throw new ArgumentNullException());
+                        break;
+
+                    case ColumnImportType.Landmarks:
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.PointCloud, project ?? throw new ArgumentNullException());
+                        break;
+
+                    case ColumnImportType.Matrix:
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Matrix, project ?? throw new ArgumentNullException());
+                        break;
+
+                    case ColumnImportType.Landmarks2DAos:
+                    case ColumnImportType.Landmarks2DSoa: 
+                    case ColumnImportType.Landmarks3DAos:
+                    case ColumnImportType.Landmarks3DSoa:
+                        throw new NotImplementedException();
                 }
             }
 
@@ -101,6 +121,73 @@ namespace Warp9.Utils
                     col.Add(row[idx]);
                 else
                     col.Add();
+            }
+        }
+
+        private static void AddFactorColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name, string[] levels)
+        {
+            if (levels.Length == 0)
+                throw new InvalidOperationException("Cannot intialize a factor column without known levels.");
+
+            Dictionary<string, int> search = new Dictionary<string, int>();
+            for (int i = 0; i < levels.Length; i++)
+                search.Add(levels[i], i);
+
+            SpecimenTableColumn<int> col = tab.AddColumn<int>(name, SpecimenTableColumnType.Factor, levels);
+            foreach (string[] row in src.ParsedData)
+            {
+                if (row.Length > idx)
+                {
+                    if (search.TryGetValue(row[idx], out int factorValue))
+                        col.Add(factorValue);
+                    else
+                        col.Add();
+                }
+            }
+        }
+
+        private static void AddBoolColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name)
+        {
+            SpecimenTableColumn<bool> col = tab.AddColumn<bool>(name, SpecimenTableColumnType.Boolean);
+            foreach (string[] row in src.ParsedData)
+            {
+                if (row.Length > idx && bool.TryParse(row[idx], out bool x))
+                    col.Add(x);
+                else
+                    col.Add();
+            }
+        }
+
+        private static void AddReferenceColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name, SpecimenTableColumnType colType, Project proj)
+        {
+            SpecimenTableColumn<ProjectReferenceLink> col = tab.AddColumn<ProjectReferenceLink>(name, colType);
+            foreach (string[] row in src.ParsedData)
+            {
+                if (row.Length <= idx)
+                {
+                    col.Add();
+                    continue;
+                }
+
+                string referencePath = row[idx].Replace("//", "\\").Replace("\\\\", "\\");
+
+                ProjectReferenceFormat fmt = Path.GetExtension(referencePath).ToLower() switch
+                {
+                    ".obj" => ProjectReferenceFormat.ObjMesh,
+                    ".txt" => ProjectReferenceFormat.MorphoLandmarks,
+                    ".jpg" or ".jpe" or ".jpeg" or ".jfif" => ProjectReferenceFormat.JpegImage,
+                    ".png" => ProjectReferenceFormat.PngImage,
+                    _ => ProjectReferenceFormat.Invalid
+                };
+
+                if (fmt == ProjectReferenceFormat.Invalid)
+                {
+                    col.Add();
+                    continue;
+                }
+
+                long referenceIndex = proj.AddReferenceExternal(referencePath, fmt);
+                col.Add(new ProjectReferenceLink(referenceIndex));
             }
         }
     }

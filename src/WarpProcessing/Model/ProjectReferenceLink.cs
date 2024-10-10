@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 
 namespace Warp9.Model
 {
-    public readonly struct ProjectReferenceLink
+    public readonly struct ProjectReferenceLink(long idx)
     {
-        public ProjectReferenceLink(int idx)
-        {
-            ReferenceIndex = idx;
-        }
-
         [JsonPropertyName("ref")]
-        public int ReferenceIndex { get; private init; }
+        public long ReferenceIndex { get; private init; } = idx;
     }
 }
