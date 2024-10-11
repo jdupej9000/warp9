@@ -15,6 +15,7 @@ namespace Warp9.ProjectExplorer
 
         General,
         GeneralComment,
+        GeneralSettings,
         Datasets,
         Results,
         Galleries,
@@ -82,7 +83,9 @@ namespace Warp9.ProjectExplorer
 
             Items[ProjectItemIdxGeneral].Children.Add(
                 ProjectItem.CreateStock("Comment", StockProjectItemKind.GeneralComment));
-          
+            Items[ProjectItemIdxGeneral].Children.Add(
+               ProjectItem.CreateStock("Settings", StockProjectItemKind.GeneralSettings));
+
 
             foreach (var kvp in Project.Entries)
             {

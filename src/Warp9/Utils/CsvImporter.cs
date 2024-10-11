@@ -10,12 +10,14 @@ namespace Warp9.Utils
 {
     public class CsvImporter : INotifyPropertyChanged, IUntypedTableProvider
     {
-        private CsvImporter(string[] lines)
+        private CsvImporter(string[] lines, string wdir)
         {
             this.lines = lines;
+            workingDirectory = wdir;
         }
 
         private string[] lines;
+        private string workingDirectory;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private bool delimComma = true, delimTab = false, delimSpace = false, delimSemicolon = false;
@@ -64,6 +66,7 @@ namespace Warp9.Utils
         }
 
         public IEnumerable<string[]> ParsedData => Parse();
+        public string WorkingDirectory => workingDirectory;
 
         private void Update()
         {
@@ -125,7 +128,7 @@ namespace Warp9.Utils
 
         public static CsvImporter Create(string path)
         {
-            return new CsvImporter(File.ReadAllLines(path));
+            return new CsvImporter(File.ReadAllLines(path), Path.GetDirectoryName(path) ?? string.Empty);
         }
 
     }

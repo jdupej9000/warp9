@@ -46,9 +46,11 @@ namespace Warp9.Model
 
                     SpecimenTableColumnType.Boolean => (bool)(val ?? false),
 
-                    SpecimenTableColumnType.Image => throw new NotImplementedException(),
-                    SpecimenTableColumnType.Mesh => throw new NotImplementedException(),
-                    SpecimenTableColumnType.PointCloud => throw new NotImplementedException(),
+                    SpecimenTableColumnType.Image or
+                    SpecimenTableColumnType.Mesh or
+                    SpecimenTableColumnType.PointCloud or
+                    SpecimenTableColumnType.Matrix => ((ProjectReferenceLink)val!).ReferenceIndex,
+
                     _ => throw new NotImplementedException()
                 };
             }

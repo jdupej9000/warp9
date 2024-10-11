@@ -211,7 +211,7 @@ namespace Warp9.Model
             {
                 case ProjectReferenceFormat.ObjMesh:
                     {
-                        string internalRefName = string.Format("ref-{0:X}.w9mesh", key);
+                        string internalRefName = string.Format("ref-{0:x}.w9mesh", key);
                         using Stream destStream = destArchive.CreateFile(internalRefName);
 
                         if (!ObjImport.TryImport(sourceFile, ObjImportMode.PositionsOnly, out Mesh objMesh, out _))
@@ -224,7 +224,7 @@ namespace Warp9.Model
 
                 case ProjectReferenceFormat.MorphoLandmarks:
                     {
-                        string internalRefName = string.Format("ref-{0:X}.w9pcl", key);
+                        string internalRefName = string.Format("ref-{0:x}.w9pcl", key);
                         using Stream destStream = destArchive.CreateFile(internalRefName);
 
                         if (!MorphoLandmarkImport.TryImport(sourceFile, out PointCloud lms, out _))
@@ -251,7 +251,7 @@ namespace Warp9.Model
                             _ => throw new NotImplementedException()
                         };
 
-                        string internalRefName = string.Format("ref-{0:X}.{1}", key, extension);
+                        string internalRefName = string.Format("ref-{0:x}.{1}", key, extension);
                         using Stream destStream = destArchive.CreateFile(internalRefName);
                         sourceFile.CopyTo(destStream);
 

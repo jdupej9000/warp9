@@ -62,19 +62,19 @@ namespace Warp9.Utils
                         break;
 
                     case ColumnImportType.Image:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Image, project ?? throw new ArgumentNullException());
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Image, project ?? throw new ArgumentNullException());
                         break;
 
                     case ColumnImportType.Mesh:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Mesh, project ?? throw new ArgumentNullException());
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Mesh, project ?? throw new ArgumentNullException());
                         break;
 
                     case ColumnImportType.Landmarks:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.PointCloud, project ?? throw new ArgumentNullException());
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.PointCloud, project ?? throw new ArgumentNullException());
                         break;
 
                     case ColumnImportType.Matrix:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, SpecimenTableColumnType.Matrix, project ?? throw new ArgumentNullException());
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Matrix, project ?? throw new ArgumentNullException());
                         break;
 
                     case ColumnImportType.Landmarks2DAos:
@@ -158,7 +158,7 @@ namespace Warp9.Utils
             }
         }
 
-        private static void AddReferenceColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name, SpecimenTableColumnType colType, Project proj)
+        private static void AddReferenceColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name, string wdir, SpecimenTableColumnType colType, Project proj)
         {
             SpecimenTableColumn<ProjectReferenceLink> col = tab.AddColumn<ProjectReferenceLink>(name, colType);
             foreach (string[] row in src.ParsedData)
@@ -170,6 +170,8 @@ namespace Warp9.Utils
                 }
 
                 string referencePath = row[idx].Replace("//", "\\").Replace("\\\\", "\\");
+                if(!Path.IsPathRooted(referencePath))
+                    referencePath = Path.Combine(wdir, referencePath);
 
                 ProjectReferenceFormat fmt = Path.GetExtension(referencePath).ToLower() switch
                 {

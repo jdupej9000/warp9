@@ -12,14 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.Model;
 using Warp9.ProjectExplorer;
 
 namespace Warp9.Navigation
 {
- 
-    public partial class TextEditorPage : Page, IWarp9View
+    /// <summary>
+    /// Interaction logic for ProjectSettingsPage.xaml
+    /// </summary>
+    public partial class ProjectSettingsPage : Page, IWarp9View
     {
-        public TextEditorPage()
+        public ProjectSettingsPage()
         {
             InitializeComponent();
         }
@@ -29,20 +32,20 @@ namespace Warp9.Navigation
         public void AttachViewModel(Warp9ViewModel vm)
         {
             viewModel = vm;
-            txtEdit.Text = viewModel.Project.Settings.Comment ?? string.Empty;
+            cmbExtRefPolicy.SelectedIndex = (int)viewModel.Project.Settings.ExternalReferencePolicy;
+      
         }
 
         public void DetachViewModel()
         {
             viewModel = null;
-            txtEdit.Text = string.Empty;
         }
 
-        private void txtEdit_TextChanged(object sender, TextChangedEventArgs e)
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (viewModel is not null)
             {
-                viewModel.Project.Settings.Comment = txtEdit.Text;
+                viewModel.Project.Settings.ExternalReferencePolicy = (ProjectExternalReferencePolicy)cmbExtRefPolicy.SelectedIndex;
             }
         }
     }

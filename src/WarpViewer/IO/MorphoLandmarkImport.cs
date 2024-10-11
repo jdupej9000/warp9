@@ -88,9 +88,7 @@ namespace Warp9.IO
             import.Parse();
             pcl = import.Compose();
             errMsg = import.errorMessage ?? string.Empty;
-            return import.errorMessage is not null;
+            return import.errorMessage is null;
         }
-
-     
     }
 }

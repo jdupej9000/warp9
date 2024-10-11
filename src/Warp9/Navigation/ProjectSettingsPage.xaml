@@ -1,0 +1,25 @@
+﻿<Page x:Class="Warp9.Navigation.ProjectSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Warp9.Navigation"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="600"
+      Title="ProjectSettingsPage">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" BorderThickness="0">
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+            
+            <StackPanel Orientation="Horizontal">                
+                <TextBlock Width="200">External references policy</TextBlock>
+                <ComboBox x:Name="cmbExtRefPolicy" Width="200" Text="Use relative paths" SelectionChanged="ComboBox_SelectionChanged">
+                    <ComboBoxItem>Use absolute paths</ComboBoxItem>
+                    <ComboBoxItem>Use relative paths</ComboBoxItem>
+                    <ComboBoxItem>Convert to internal</ComboBoxItem>
+                </ComboBox>                
+            </StackPanel>
+            
+        </StackPanel>
+    </ScrollViewer>
+</Page>

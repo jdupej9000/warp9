@@ -253,6 +253,7 @@ namespace Warp9.IO
                 {
                     Mesh = m,
                     Semantic = ChunkSemantic.Indices,
+                    MeshSegmentDimension = 1,
                     Encoding = s.IndexFormat
                 });
             }
