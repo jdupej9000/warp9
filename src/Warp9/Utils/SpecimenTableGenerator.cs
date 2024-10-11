@@ -124,10 +124,18 @@ namespace Warp9.Utils
             }
         }
 
+        private static string[] FindFactorLevels(IUntypedTableProvider src, int idx)
+        {
+            HashSet<string> levels = new HashSet<string>();
+            foreach (string[] row in src.ParsedData)
+                levels.Add(row[idx]);
+
+            return levels.ToArray();
+        }
+
         private static void AddFactorColumn(SpecimenTable tab, IUntypedTableProvider src, int idx, string name, string[] levels)
         {
-            if (levels.Length == 0)
-                throw new InvalidOperationException("Cannot intialize a factor column without known levels.");
+            string[] lvl = levels.Length == 0 ? FindFactorLevels(src, idx) : levels;
 
             Dictionary<string, int> search = new Dictionary<string, int>();
             for (int i = 0; i < levels.Length; i++)
