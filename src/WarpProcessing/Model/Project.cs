@@ -11,6 +11,8 @@ using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Warp9.Data;
+using Warp9.IO;
 
 namespace Warp9.Model
 {
@@ -168,14 +170,11 @@ namespace Warp9.Model
                 specimenIdGen = new UniqueIdGenerator();
         }
 
-        public void MakeManifest(Stream s)
+        public void MakeManifest(Stream s, Dictionary<long, ProjectReferenceInfo> refs)
         {
             ProjectManifest manifest = new ProjectManifest();
             manifest.Settings = settings;
-
-            foreach (var kvp in references)
-                manifest.References.Add(kvp.Key, kvp.Value.Info);
-
+            manifest.References = refs;
             manifest.Entries = entries;
             manifest.Counters[ObjectIdGenName] = objectIdGen;
             manifest.Counters[SpecimenIdGenName] = specimenIdGen;
@@ -201,21 +200,84 @@ namespace Warp9.Model
             return oldArchive;
         }
 
+        private ProjectReferenceInfo MakeReferenceInternal(IProjectArchive destArchive, long key, ProjectReferenceInfo ext)
+        {
+            string workingDir = destArchive.WorkingDirectory;
+            string sourcePath = ext.WithAbsolutePath(workingDir).FileName;
+            using FileStream sourceFile = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
+
+            ProjectReferenceInfo ret;
+            switch (ext.Format)
+            {
+                case ProjectReferenceFormat.ObjMesh:
+                    {
+                        string internalRefName = string.Format("ref-{0:X}.w9mesh", key);
+                        using Stream destStream = destArchive.CreateFile(internalRefName);
+
+                        if (!ObjImport.TryImport(sourceFile, ObjImportMode.PositionsOnly, out Mesh objMesh, out _))
+                            throw new InvalidDataException("Filed to load " + sourcePath);
+
+                        WarpBinExport.ExportMesh(destStream, objMesh);
+                        ret = ProjectReferenceInfo.CreateInternal(internalRefName, ProjectReferenceFormat.W9Mesh);
+                    }
+                    break;
+
+                case ProjectReferenceFormat.MorphoLandmarks:
+                    {
+                        string internalRefName = string.Format("ref-{0:X}.w9pcl", key);
+                        using Stream destStream = destArchive.CreateFile(internalRefName);
+
+                        if (!MorphoLandmarkImport.TryImport(sourceFile, out PointCloud lms, out _))
+                            throw new InvalidDataException("Filed to load " + sourcePath);
+
+                        WarpBinExport.ExportPcl(destStream, lms);
+                        ret = ProjectReferenceInfo.CreateInternal(internalRefName, ProjectReferenceFormat.W9Pcl);
+                    }
+                    break;
+
+                case ProjectReferenceFormat.W9Mesh:
+                case ProjectReferenceFormat.W9Pcl:
+                case ProjectReferenceFormat.W9Matrix:
+                case ProjectReferenceFormat.PngImage:
+                case ProjectReferenceFormat.JpegImage:
+                    {
+                        string extension = ext.Format switch
+                        {
+                            ProjectReferenceFormat.W9Mesh => "w9mesh",
+                            ProjectReferenceFormat.W9Pcl => "w9pcl",
+                            ProjectReferenceFormat.W9Matrix => "w9mx",
+                            ProjectReferenceFormat.PngImage => "png",
+                            ProjectReferenceFormat.JpegImage => "jpg",
+                            _ => throw new NotImplementedException()
+                        };
+
+                        string internalRefName = string.Format("ref-{0:X}.{1}", key, extension);
+                        using Stream destStream = destArchive.CreateFile(internalRefName);
+                        sourceFile.CopyTo(destStream);
+
+                        ret = ProjectReferenceInfo.CreateInternal(internalRefName, ext.Format);
+                    }
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return ret;
+        }
+
         public void Save(IProjectArchive destArchive, IProgressProvider? progress=null)
         {
             progress?.StartBatch(1 + references.Count);
 
-            progress?.StartTask(0);
-            using (Stream streamManifest = destArchive.CreateFile(ManifestFileName))
-            {
-                MakeManifest(streamManifest);
-            }
-            progress?.FinishTask(0);
+            Dictionary<long, ProjectReferenceInfo> savedRefs = new Dictionary<long, ProjectReferenceInfo>();
+            string workingDir = destArchive.WorkingDirectory;
 
             int refIdx = 0;
             foreach(var kvp in references)
             {
-                progress?.StartTask(refIdx + 1);
+                progress?.StartTask(refIdx);
+                long refKey = kvp.Key;
                 ProjectReference pr = kvp.Value;
 
                 if (pr.Info.IsInternal && !pr.HasNativeObject)
@@ -224,24 +286,40 @@ namespace Warp9.Model
                         throw new InvalidOperationException("Cannot copy reference from a closed archive.");
 
                     destArchive.CopyFileFrom(pr.Info.FileName, archive);
+                    savedRefs[refKey] = pr.Info;
                 }
                 else if (pr.Info.IsInternal && pr.HasNativeObject)
                 {
                     using Stream destRefStream = destArchive.CreateFile(pr.Info.FileName);
                     if (!CodecBank.ProjectCodecs.TryEncodeObject(destRefStream, pr.NativeObject!, pr.Info.Format, null))
                         throw new NotSupportedException();
+
+                    savedRefs[refKey] = pr.Info;
                 }
-                else
+                else if(!pr.Info.IsInternal) // external reference
                 {
-                    // keep external references external
+                    savedRefs[refKey] = settings.ExternalReferencePolicy switch
+                    {
+                        ProjectExternalReferencePolicy.KeepExternalAbsolutePaths => pr.Info.WithAbsolutePath(workingDir),
+                        ProjectExternalReferencePolicy.KeepExternalRelativePaths => pr.Info.WithRelativePath(workingDir),
+                        ProjectExternalReferencePolicy.ConvertToInternal => MakeReferenceInternal(destArchive, refKey, pr.Info),
+                        _ => throw new NotImplementedException("This external reference policy is not implemented.")
+                    };
                 }
 
-                progress?.FinishTask(refIdx + 1);
+                progress?.FinishTask(refIdx);
                 refIdx++;
             }
 
+            int manifestTask = references.Count;
+            progress?.StartTask(manifestTask);
+            using (Stream streamManifest = destArchive.CreateFile(ManifestFileName))
+            {
+                MakeManifest(streamManifest, savedRefs);
+            }
+            progress?.FinishTask(manifestTask);
+
             progress?.EndBatch();
-            // TODO: add save options with reference transcoding
         }
 
         private void InitJsonOptions()

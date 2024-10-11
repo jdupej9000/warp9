@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -30,6 +31,48 @@ namespace Warp9.Model
 
         [JsonPropertyName("intern")]
         public bool IsInternal { get; set; }
+
+        public static ProjectReferenceInfo CreateInternal(string fileName, ProjectReferenceFormat fmt)
+        {
+            return new ProjectReferenceInfo()
+            {
+                FileName = fileName,
+                Format = fmt,
+                IsInternal = true
+            };
+        }
+
+        public ProjectReferenceInfo WithRelativePath(string workingDir)
+        {
+            if (IsInternal)
+                throw new InvalidOperationException("Only external references are allowed.");
+
+            if (!Path.IsPathRooted(FileName))
+                return this;
+
+            return new ProjectReferenceInfo()
+            {
+                FileName = Path.GetRelativePath(workingDir, FileName),
+                Format = Format,
+                IsInternal = false
+            };
+        }
+
+        public ProjectReferenceInfo WithAbsolutePath(string workingDir)
+        {
+            if (IsInternal)
+                throw new InvalidOperationException("Only external references are allowed.");
+
+            if (Path.IsPathRooted(FileName))
+                return this;
+
+            return new ProjectReferenceInfo()
+            {
+                FileName = Path.Combine(workingDir, FileName),
+                Format = Format,
+                IsInternal = false
+            };
+        }
     }
 
     public class ProjectReference
@@ -45,6 +88,5 @@ namespace Warp9.Model
         public ProjectReferenceInfo Info { get; set; }
         public bool HasNativeObject => NativeObject is not null;
         public object? NativeObject { get; set; }
-        
     }
 }
