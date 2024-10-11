@@ -40,14 +40,14 @@ namespace Warp9
             pageViewer = new ViewerPage(this);
 
             views.Add(pageViewer);
-            views.Add(pageTextEditor);
+            views.Add(pageProjectMain);
             views.Add(pageSpecimenTable);
         }
 
         Warp9Model? model = null;
 
         MainLandingPage pageLanding = new MainLandingPage();
-        TextEditorPage pageTextEditor = new TextEditorPage();
+        ProjectMainPage pageProjectMain = new ProjectMainPage();
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         List<IWarp9View> views = new List<IWarp9View>();
         ViewerPage pageViewer;
@@ -233,7 +233,7 @@ namespace Warp9
                 switch (item.Kind)
                 {
                     case StockProjectItemKind.GeneralComment:
-                        frameMain.NavigationService.Navigate(pageTextEditor);
+                        frameMain.NavigationService.Navigate(pageProjectMain);
                         break;
 
                     case StockProjectItemKind.Entry:

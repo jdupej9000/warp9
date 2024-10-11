@@ -16,7 +16,7 @@
     <Compile Update="Navigation\MainLandingPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Navigation\TextEditorPage.xaml.cs">
+    <Compile Update="Navigation\ProjectMainPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Navigation\ViewerPage.xaml.cs">
@@ -39,7 +39,7 @@
     <Page Update="Navigation\MainLandingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Navigation\TextEditorPage.xaml">
+    <Page Update="Navigation\ProjectMainPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Navigation\ViewerPage.xaml">
