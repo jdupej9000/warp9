@@ -17,9 +17,9 @@ using Warp9.ProjectExplorer;
 namespace Warp9.Navigation
 {
  
-    public partial class ProjectMainPage : Page, IWarp9View
+    public partial class TextEditorPage : Page, IWarp9View
     {
-        public ProjectMainPage()
+        public TextEditorPage()
         {
             InitializeComponent();
         }
