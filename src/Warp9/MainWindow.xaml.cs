@@ -184,10 +184,12 @@ namespace Warp9
             ImportCsvWindow importDlg = new ImportCsvWindow();
             importDlg.AttachImporter(importer);
             importDlg.ShowDialog();
+            if (importDlg.DialogResult != true) return;
 
             SpecimenTableImportWindow assignDlg = new SpecimenTableImportWindow();
             assignDlg.AttachImporter(importer);
             assignDlg.ShowDialog();
+            if (assignDlg.DialogResult != true) return;
 
             SpecimenTable specTab = SpecimenTableGenerator.FromImporter(importer, assignDlg.ImportOperations, model.Project);
             ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);

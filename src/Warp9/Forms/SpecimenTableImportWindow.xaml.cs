@@ -195,5 +195,15 @@ namespace Warp9.Forms
 
             gridEditAssgn.DataContext = SelectedAssignmnent;
         }
+
+        private void btnOK_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+        }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+        }
     }
 }

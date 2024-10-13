@@ -15,9 +15,9 @@
     <DockPanel>
 
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button Content="OK" Width="100" />
+            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" />
             <Label Width="4" />
-            <Button Content="Cancel" Width="100" />
+            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click" />
         </StackPanel>
 
         <GroupBox Header="Assignments to Specimen Table" DockPanel.Dock="Right" Width="400" Margin="4">

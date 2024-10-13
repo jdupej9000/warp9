@@ -64,5 +64,15 @@ namespace Warp9.Forms
             if (Importer is not null)
                 Importer.PropertyChanged -= Importer_PropertyChanged;
         }
+
+        private void btnOK_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+        }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+        }
     }
 }
