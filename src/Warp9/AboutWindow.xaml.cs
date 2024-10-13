@@ -50,5 +50,10 @@ namespace Warp9
                 MessageBox.Show("WarpCore is down.");
             }
         }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+        }
     }
 }

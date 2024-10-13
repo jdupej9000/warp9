@@ -43,6 +43,6 @@
         </TabControl>
 
 
-        <Button Height="28" Width="50" Canvas.Left="378" Canvas.Top="385">Close</Button>
+        <Button x:Name="btnClose" Height="28" Width="50" Canvas.Left="378" Canvas.Top="385" Click="btnClose_Click">Close</Button>
     </Canvas>
 </Window>
