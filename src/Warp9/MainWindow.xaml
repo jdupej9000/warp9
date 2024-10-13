@@ -80,6 +80,9 @@
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock FontWeight="Bold"  DockPanel.Dock="Top">Task List</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
+                        <ListBox x:Name="lstTasks">
+                            <ListItem />
+                        </ListBox>
                     </DockPanel>
                 </TabItem>
 
