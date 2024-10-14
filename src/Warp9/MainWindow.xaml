@@ -87,13 +87,13 @@
                         <ListView x:Name="lstTasks" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=5}">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
-                                    <Setter Property="Height" Value="80" />
+                                    <Setter Property="Height" Value="76" />
                                     <Setter Property="HorizontalAlignment" Value="Stretch" />
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <ListView.ItemTemplate>
                                 <DataTemplate DataType="utils:BackgroundJob">
-                                    <DockPanel Margin="4,4,4,4">
+                                    <DockPanel Margin="2">
                                         <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
                                         <TextBlock Text="{Binding Status, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
                                         <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
