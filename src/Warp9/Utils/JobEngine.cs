@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX.Direct3D11;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media.Media3D;
 
 namespace Warp9.Utils
 {
@@ -70,6 +72,7 @@ namespace Warp9.Utils
         public int NumItems => Items.Count;
         public int NumItemsDone => numDone;
         public int NumErrors => numError;
+        public string Status => MakeStatus();
 
         public List<BackgroundJobItem> Items { get; init; } = new List<BackgroundJobItem>();
 
@@ -87,6 +90,16 @@ namespace Warp9.Utils
                 numError++;
 
             Notify();
+        }
+
+        private string MakeStatus()
+        {
+            if (IsCancelled)
+                return "Canceled";
+            else if (numError > 0)
+                return string.Format("{0}/{1} done, {2} errors", NumItemsDone, NumItems, NumErrors);
+            else 
+                return string.Format("{0}/{1} done", NumItemsDone, NumItems);
         }
 
         private void Notify()
