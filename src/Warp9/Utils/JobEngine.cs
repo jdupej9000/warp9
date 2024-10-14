@@ -12,16 +12,11 @@ using System.Threading.Tasks;
 using System.Transactions;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Media3D;
+using Warp9.Jobs;
 
 namespace Warp9.Utils
 {
-    public enum JobItemStatus
-    {
-        Waiting,
-        Running,
-        Completed,
-        Failed
-    }
+  
 
     public interface IJobLog
     {
