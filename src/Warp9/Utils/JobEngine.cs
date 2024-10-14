@@ -1,9 +1,12 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Warp9.Utils
 {
@@ -22,6 +25,7 @@ namespace Warp9.Utils
     public interface IJobContext
     {
         public IJobLog Log { get; }
+        public bool IsCancelled { get; }
 
         public void JobItemDone(long key, JobItemStatus status);
     }
@@ -32,14 +36,29 @@ namespace Warp9.Utils
         public string Title { get; init; }
         public bool FailureCancelsJob { get; init; }
 
-        public void Execute(IJobContext ctx)
+        public bool Execute(IJobContext ctx)
         {
+            return false;
         }
     }
 
-    public class BackgroundJob
+    public class BackgroundJob : IJobContext
     {
-        
+        public IJobLog Log => throw new NotImplementedException();
+        public bool IsCancelled { get; set; } = false;
+       
+
+        public bool FindNextJobItem([MaybeNullWhen(false)] out BackgroundJobItem? item)
+        {
+            item = null;
+            return false;
+        }
+
+        public void JobItemDone(long key, JobItemStatus status)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
     internal class BackgroundWorkerContext(int threadIndex, JobEngine engine)
@@ -66,16 +85,76 @@ namespace Warp9.Utils
             }
         }
 
+        private object contextLock = new object();
+        private int contextRoundRobin = 0;
         private readonly int workerCount;
         private readonly Thread[] workers;
         private BackgroundWorkerContext[] contexts;
+        private List<BackgroundJob> jobs = new List<BackgroundJob>();
 
-        private bool TryExecuteJob()
+        public void Run(BackgroundJob job)
         {
+            lock (contextLock)
+                jobs.Add(job);
+
+            NotifyWorkers();
+        }
+
+        private void NotifyWorkers()
+        {
+            for (int i = 0; i < workerCount; i++)
+                contexts[i].Notification.Set();
+        }
+
+        private bool FindNextJobItem([MaybeNullWhen(false)] out BackgroundJob? job, [MaybeNullWhen(false)] out BackgroundJobItem? item)
+        {
+            lock (contextLock)
+            {
+                int numJobs = jobs.Count;
+
+                if (numJobs > 0)
+                {
+                    for (int i = 0; i < numJobs; i++)
+                    {
+                        int idx = (i + contextRoundRobin) % numJobs;
+                        if (jobs[idx].FindNextJobItem(out item))
+                        {
+                            job = jobs[idx];
+                            contextRoundRobin = (idx + 1) % numJobs;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            job = null;
+            item = null;
             return false;
         }
 
-        public async void TerminateAll()
+        private void JobStatusChanged(BackgroundJob job)
+        {
+        }
+
+        private bool TryExecuteJob()
+        {
+            if (FindNextJobItem(out BackgroundJob? job, out BackgroundJobItem? item) &&
+                item is not null && 
+                job is not null)
+            {
+                bool executedSuccessfully = item.Execute(job);
+                if (!executedSuccessfully && item.FailureCancelsJob)
+                    job.IsCancelled = true;
+
+                JobStatusChanged(job);
+
+                return executedSuccessfully;
+            }
+
+            return false;
+        }
+
+       /*public async void TerminateAll()
         {
             foreach (BackgroundWorkerContext ctx in contexts)
             {
@@ -84,12 +163,12 @@ namespace Warp9.Utils
             }
 
             // TODO
-        }
+        }*/
 
         private static void BackgroundWorkerProc(object? p)
         {
             if (p is not BackgroundWorkerContext ctx)
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(p));
 
             while (true)
             {
