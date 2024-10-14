@@ -6,10 +6,12 @@
         xmlns:dx="clr-namespace:TqkLibrary.Wpf.Interop.DirectX;assembly=TqkLibrary.Wpf.Interop.DirectX"
         xmlns:projexp ="clr-namespace:Warp9.ProjectExplorer"
         xmlns:controls="clr-namespace:Warp9.Themes"
+        xmlns:utils="clr-namespace:Warp9.Utils"
         xmlns:local="clr-namespace:Warp9"
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle2}"
         Background="{DynamicResource Window.Static.Border}"
+        Closing="Window_Closing"
         Title="Warp9" Height="450" Width="800">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
@@ -30,6 +32,7 @@
                 <MenuItem Header="Add new specimen table" Click="mnuProjectAddNewSpecTable_Click" />
                 <MenuItem Header="Import specimen table..." Click="mnuProjectImportSpecTable_Click" />
                 <Separator />
+                <MenuItem Header="Compute DCA" Click="MenuItem_Click"/> <!-- remove this -->
                 <MenuItem Header="Compute...">
                     
                 </MenuItem>
@@ -80,9 +83,24 @@
                     <DockPanel Margin="8,8,8,8">
                         <TextBlock FontWeight="Bold"  DockPanel.Dock="Top">Task List</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
-                        <ListBox x:Name="lstTasks">
-                            <ListItem />
-                        </ListBox>
+                        
+                        <ListView x:Name="lstTasks" BorderThickness="1" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Height" Value="80" />
+                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate DataType="utils:BackgroundJob">
+                                    <DockPanel Margin="4,4,4,4">
+                                        <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
+                                        <TextBlock Text="14 items done of 612" DockPanel.Dock="Top" Margin="2" />
+                                        <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </DockPanel>
                 </TabItem>
 

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.Windows.Controls.Primitives;
 
 namespace Warp9.Utils
 {
@@ -32,6 +35,13 @@ namespace Warp9.Utils
 
     public class BackgroundJobItem
     {
+        public BackgroundJobItem(long key, string title, bool failIsFatal = false)
+        {
+            Key = key;
+            Title = title;
+            FailureCancelsJob = failIsFatal;
+        }
+
         public long Key { get; init; }
         public string Title { get; init; }
         public bool FailureCancelsJob { get; init; }
@@ -42,11 +52,26 @@ namespace Warp9.Utils
         }
     }
 
-    public class BackgroundJob : IJobContext
+    public class BackgroundJob : IJobContext, INotifyPropertyChanged
     {
+        public BackgroundJob(string title)
+        {
+            Title = title;
+        }
+
+        private int numDone = 0, numError = 0;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Title { get; init; }
         public IJobLog Log => throw new NotImplementedException();
         public bool IsCancelled { get; set; } = false;
-       
+
+        public int NumItems => Items.Count;
+        public int NumItemsDone => numDone;
+        public int NumErrors => numError;
+
+        public List<BackgroundJobItem> Items { get; init; } = new List<BackgroundJobItem>();
 
         public bool FindNextJobItem([MaybeNullWhen(false)] out BackgroundJobItem? item)
         {
@@ -56,9 +81,22 @@ namespace Warp9.Utils
 
         public void JobItemDone(long key, JobItemStatus status)
         {
-            throw new NotImplementedException();
+            numDone++;
+
+            if (status == JobItemStatus.Failed)
+                numError++;
+
+            Notify();
         }
 
+        private void Notify()
+        {
+            if (PropertyChanged is not null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NumItemsDone)));
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NumErrors)));
+            }
+        }
     }
 
     internal class BackgroundWorkerContext(int threadIndex, JobEngine engine)
@@ -69,7 +107,7 @@ namespace Warp9.Utils
         internal bool MustTerminate { get; set; } = false;
     }
 
-    public class JobEngine
+    public class JobEngine : IDisposable
     {
         public JobEngine()
         {
@@ -83,6 +121,12 @@ namespace Warp9.Utils
                 workers[i] = new Thread(BackgroundWorkerProc);
                 workers[i].Start(contexts[i]);
             }
+
+            BackgroundJob job = new BackgroundJob("CPD-DCA");
+            job.Items.Add(new BackgroundJobItem(0, "Initialize CPD"));
+            job.Items.Add(new BackgroundJobItem(1, "Register mesh 1"));
+            jobs.Add(job);
+            jobs.Add(job);
         }
 
         private object contextLock = new object();
@@ -90,7 +134,9 @@ namespace Warp9.Utils
         private readonly int workerCount;
         private readonly Thread[] workers;
         private BackgroundWorkerContext[] contexts;
-        private List<BackgroundJob> jobs = new List<BackgroundJob>();
+        private ObservableCollection<BackgroundJob> jobs = new ObservableCollection<BackgroundJob>();
+
+        public ObservableCollection<BackgroundJob> Jobs => jobs;
 
         public void Run(BackgroundJob job)
         {
@@ -98,6 +144,11 @@ namespace Warp9.Utils
                 jobs.Add(job);
 
             NotifyWorkers();
+        }
+
+        public void Dispose()
+        {
+            TerminateAll();
         }
 
         private void NotifyWorkers()
@@ -134,6 +185,7 @@ namespace Warp9.Utils
 
         private void JobStatusChanged(BackgroundJob job)
         {
+            TerminateAll();
         }
 
         private bool TryExecuteJob()
@@ -154,16 +206,14 @@ namespace Warp9.Utils
             return false;
         }
 
-       /*public async void TerminateAll()
-        {
-            foreach (BackgroundWorkerContext ctx in contexts)
-            {
-                ctx.MustTerminate = true;
-                ctx.Notification.Set();
-            }
 
-            // TODO
-        }*/
+        private void TerminateAll()
+        {
+            for (int i = 0; i < workerCount; i++)
+                contexts[i].MustTerminate = true;
+
+            NotifyWorkers();
+        }
 
         private static void BackgroundWorkerProc(object? p)
         {

@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Numerics;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -43,6 +44,8 @@ namespace Warp9
             views.Add(pageTextEditor);
             views.Add(pageSpecimenTable);
             views.Add(pageProjectSettings);
+
+            lstTasks.ItemsSource = JobEngine.Jobs;
         }
 
         Warp9Model? model = null;
@@ -51,9 +54,13 @@ namespace Warp9
         TextEditorPage pageTextEditor = new TextEditorPage();
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
+        JobEngine jobEngine = new JobEngine();
         List<IWarp9View> views = new List<IWarp9View>();
         ViewerPage pageViewer;
 
+        public JobEngine JobEngine => jobEngine;
+
+        
         private bool SaveOrSaveAs()
         {
             if (model is null)
@@ -276,6 +283,13 @@ namespace Warp9
             e.Handled = true;
         }
 
-       
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            jobEngine.Dispose();
+        }
     }
 }
