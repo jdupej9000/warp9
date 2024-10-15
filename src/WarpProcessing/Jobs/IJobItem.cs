@@ -18,7 +18,8 @@ namespace Warp9.Jobs
     public enum JobItemFlags
     {
         None = 0x0,
-        FailuesAreFatal = 0x1
+        FailuesAreFatal = 0x1,
+        Barrier = 0x2
     }
 
     public interface IJobItem

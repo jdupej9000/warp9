@@ -4,16 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Warp9.Analysis.Meshes
+namespace Warp9.Jobs
 {
-    public class Dca
+    public class JobWorkspace
     {
-        public Dca()
+        public void Set<T>(string key, T value)
         {
+            
         }
-
-        private readonly DcaConfiguration config;
-
-
     }
 }

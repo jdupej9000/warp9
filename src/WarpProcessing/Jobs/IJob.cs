@@ -8,7 +8,6 @@ namespace Warp9.Jobs
 {
     public interface IJob
     {
-        public IEnumerable<IJobItem> GenerateItems();
         public JobItemStatus ExecuteItem(IJobItem item);
     }
 }
