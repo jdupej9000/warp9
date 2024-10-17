@@ -19,14 +19,14 @@ namespace Warp9.Jobs
 
         public JobItemFlags Flags { get; init; }
 
-        public JobItemStatus Run(IJob job)
+        public JobItemStatus Run(IJob job, IJobContext ctx)
         {
-            if (job is not ProjectJob pjob)
+            if (ctx is not ProjectJobContext pctx)
                 return JobItemStatus.Failed;
 
-            return RunInternal(pjob) ? JobItemStatus.Completed : JobItemStatus.Failed;
+            return RunInternal(job, pctx) ? JobItemStatus.Completed : JobItemStatus.Failed;
         }
 
-        protected abstract bool RunInternal(ProjectJob job);
+        protected abstract bool RunInternal(IJob job, ProjectJobContext ctx);
     }
 }

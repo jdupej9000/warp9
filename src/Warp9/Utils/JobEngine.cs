@@ -16,95 +16,32 @@ using Warp9.Jobs;
 
 namespace Warp9.Utils
 {
-  
 
-    public interface IJobLog
+    public class BackgroundJob : INotifyPropertyChanged
     {
-    }
-
-    public interface IJobContext
-    {
-        public IJobLog Log { get; }
-        public bool IsCancelled { get; }
-
-        public void JobItemDone(long key, JobItemStatus status);
-    }
-
-    public class BackgroundJobItem
-    {
-        public BackgroundJobItem(long key, string title, bool failIsFatal = false)
+        public BackgroundJob(IJob job, IJobContext ctx)
         {
-            Key = key;
-            Title = title;
-            FailureCancelsJob = failIsFatal;
+            Job = job;
+            Context = ctx;
         }
 
-        public long Key { get; init; }
-        public string Title { get; init; }
-        public bool FailureCancelsJob { get; init; }
-
-        public bool Execute(IJobContext ctx)
-        {
-            return false;
-        }
-    }
-
-    public class BackgroundJob : IJobContext, INotifyPropertyChanged
-    {
-        public BackgroundJob(string title)
-        {
-            Title = title;
-        }
-
-        private int numDone = 0, numError = 0;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string Title { get; init; }
-        public IJobLog Log => throw new NotImplementedException();
-        public bool IsCancelled { get; set; } = false;
-
-        public int NumItems => Items.Count;
-        public int NumItemsDone => numDone;
-        public int NumErrors => numError;
+        public IJob Job { get; init; }
+        public IJobContext? Context { get; set; }
         public string Status => MakeStatus();
+        public bool IsDone => Job.NumItemsDone == Job.NumItems;
 
-        public List<BackgroundJobItem> Items { get; init; } = new List<BackgroundJobItem>();
-
-        public bool FindNextJobItem([MaybeNullWhen(false)] out BackgroundJobItem? item)
-        {
-            item = null;
-            return false;
-        }
-
-        public void JobItemDone(long key, JobItemStatus status)
-        {
-            numDone++;
-
-            if (status == JobItemStatus.Failed)
-                numError++;
-
-            Notify();
-        }
+        public event PropertyChangedEventHandler? PropertyChanged;  // TODO: call this sometimes
 
         private string MakeStatus()
         {
-            if (IsCancelled)
+            if (false)
                 return "Canceled";
-            else if (numError > 0)
-                return string.Format("{0}/{1} done, {2} errors", NumItemsDone, NumItems, NumErrors);
+            else if (Job.NumItemsFailed > 0)
+                return string.Format("{0}/{1} done, {2} errors", Job.NumItemsDone, Job.NumItems, Job.NumItemsFailed);
             else 
-                return string.Format("{0}/{1} done", NumItemsDone, NumItems);
+                return string.Format("{0}/{1} done", Job.NumItemsDone, Job.NumItems);
         }
 
-        private void Notify()
-        {
-            if (PropertyChanged is not null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NumItemsDone)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NumErrors)));
-            }
-        }
     }
 
     internal class BackgroundWorkerContext(int threadIndex, JobEngine engine)
@@ -129,12 +66,6 @@ namespace Warp9.Utils
                 workers[i] = new Thread(BackgroundWorkerProc);
                 workers[i].Start(contexts[i]);
             }
-
-            BackgroundJob job = new BackgroundJob("CPD-DCA");
-            job.Items.Add(new BackgroundJobItem(0, "Initialize CPD"));
-            job.Items.Add(new BackgroundJobItem(1, "Register mesh 1"));
-            jobs.Add(job);
-            jobs.Add(job);
         }
 
         private object contextLock = new object();
@@ -143,8 +74,10 @@ namespace Warp9.Utils
         private readonly Thread[] workers;
         private BackgroundWorkerContext[] contexts;
         private ObservableCollection<BackgroundJob> jobs = new ObservableCollection<BackgroundJob>();
+        private ObservableCollection<BackgroundJob> finishedJobs = new ObservableCollection<BackgroundJob>();
 
         public ObservableCollection<BackgroundJob> Jobs => jobs;
+        public ObservableCollection<BackgroundJob> FinishedJobs => finishedJobs;
 
         public void Run(BackgroundJob job)
         {
@@ -165,53 +98,36 @@ namespace Warp9.Utils
                 contexts[i].Notification.Set();
         }
 
-        private bool FindNextJobItem([MaybeNullWhen(false)] out BackgroundJob? job, [MaybeNullWhen(false)] out BackgroundJobItem? item)
+        private void JobStatusChanged(BackgroundJob job)
         {
             lock (contextLock)
             {
-                int numJobs = jobs.Count;
-
-                if (numJobs > 0)
+                if (job.IsDone)
                 {
-                    for (int i = 0; i < numJobs; i++)
-                    {
-                        int idx = (i + contextRoundRobin) % numJobs;
-                        if (jobs[idx].FindNextJobItem(out item))
-                        {
-                            job = jobs[idx];
-                            contextRoundRobin = (idx + 1) % numJobs;
-                            return true;
-                        }
-                    }
+                    job.Context = null;
+                    finishedJobs.Add(job);
+                    jobs.Remove(job);
                 }
             }
 
-            job = null;
-            item = null;
-            return false;
+            NotifyWorkers();
         }
 
-        private void JobStatusChanged(BackgroundJob job)
+        private BackgroundJob? GetNextJob(ref int idx)
         {
-            TerminateAll();
-        }
-
-        private bool TryExecuteJob()
-        {
-            if (FindNextJobItem(out BackgroundJob? job, out BackgroundJobItem? item) &&
-                item is not null && 
-                job is not null)
+            lock (contextLock)
             {
-                bool executedSuccessfully = item.Execute(job);
-                if (!executedSuccessfully && item.FailureCancelsJob)
-                    job.IsCancelled = true;
+                if (idx >= jobs.Count)
+                    idx = 0;
 
-                JobStatusChanged(job);
-
-                return executedSuccessfully;
+                if(idx < jobs.Count)
+                {
+                    int i = idx++;
+                    return jobs[i];
+                }
             }
 
-            return false;
+            return null;
         }
 
 
@@ -228,12 +144,45 @@ namespace Warp9.Utils
             if (p is not BackgroundWorkerContext ctx)
                 throw new ArgumentException(nameof(p));
 
+            int jobIndex = 0;
+
             while (true)
             {
-                while (ctx.Engine.TryExecuteJob())
+                BackgroundJob? firstBlockedJob = null;
+                BackgroundJob? nextJob = ctx.Engine.GetNextJob(ref jobIndex);
+                while (nextJob is not null)
                 {
-                    if (ctx.MustTerminate) return;
+                    if (nextJob.Context is null)
+                        throw new InvalidOperationException();
+
+                    bool itemTaken = nextJob.Job.TryExecuteNext(nextJob.Context);
+
+                    // If we go through the entire job list and no job items get completed,
+                    // break out of the loop as we are obviously waiting for dependencies on
+                    // all of them and wait for a notification.
+                    if (!itemTaken && firstBlockedJob is null)
+                    {
+                        firstBlockedJob = nextJob;
+                    }
+                    else if (!itemTaken && firstBlockedJob == nextJob)
+                    {
+                        firstBlockedJob = null;
+                        break;
+                    }
+                    else if(itemTaken)
+                    {
+                        firstBlockedJob = null;
+                        ctx.Engine.JobStatusChanged(nextJob);
+                    }
+
+                    if (ctx.MustTerminate) 
+                        return;
+
+                    nextJob = ctx.Engine.GetNextJob(ref jobIndex);
                 }
+
+                if (ctx.MustTerminate)
+                    return;
 
                 ctx.Notification.WaitOne();
 
