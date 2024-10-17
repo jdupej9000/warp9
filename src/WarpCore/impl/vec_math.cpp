@@ -169,6 +169,8 @@ namespace warpcore::impl
 
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
+        // A' * diag(B) * A
+
         int m2 = round_down(m, 2);
         int n8 = round_down(n, 8);
         __m256 alpha8 = _mm256_set1_ps(alpha);
@@ -220,6 +222,8 @@ namespace warpcore::impl
 
     float tratdba(const float* a, int n, int m, const float* b)
     {
+        // trace(A' * diag(B) * A)
+
         float ret = 0;
 
         int n16 = round_down(n, 16);
