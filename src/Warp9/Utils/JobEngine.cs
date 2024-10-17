@@ -38,7 +38,9 @@ namespace Warp9.Utils
                 return "Canceled";
             else if (Job.NumItemsFailed > 0)
                 return string.Format("{0}/{1} done, {2} errors", Job.NumItemsDone, Job.NumItems, Job.NumItemsFailed);
-            else 
+            else if (IsDone)
+                return "All done";
+            else
                 return string.Format("{0}/{1} done", Job.NumItemsDone, Job.NumItems);
         }
 

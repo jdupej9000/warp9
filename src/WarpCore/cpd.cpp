@@ -12,7 +12,7 @@ using namespace warpcore::impl;
 
 extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
 {
-    if(cpd == NULL || y == NULL || cpd->d != 3)
+    if(cpd == NULL || (y == NULL && init != NULL) || cpd->d != 3)
         return WCORE_INVALID_ARGUMENT;
 
     const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : cpd_lowrank_numcols(cpd->m);

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Warp9.Data
 {
@@ -105,6 +107,15 @@ namespace Warp9.Data
         protected virtual MeshView? MakeIndexView()
         {
             throw new InvalidOperationException("Point clounds cannot create index views.");
+        }
+
+        public static PointCloud FromRawSoaPositions(int nv, byte[] vx)
+        {
+            Dictionary<MeshSegmentType, MeshSegment> segs = new Dictionary<MeshSegmentType, MeshSegment>
+            {
+                { MeshSegmentType.Position, new MeshSegment<Vector3>(0, nv) }
+            };
+            return new PointCloud(nv, vx, segs);
         }
     }
 }

@@ -30,6 +30,21 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
+            switch (cfg.NonrigidRegistration)
+            {
+                case DcaNonrigidRegistrationKind.None:
+                    break;
+
+                case DcaNonrigidRegistrationKind.LandmarkFittedTps:
+                    break;
+
+                case DcaNonrigidRegistrationKind.LowRankCpd:
+                    {
+
+                    }
+                    break;
+            }
+
             // TODO
         }
     }

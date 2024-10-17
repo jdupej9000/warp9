@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Warp9.Test
 {
-    internal static class TestUtils
+    public static class TestUtils
     {
         public static readonly string AssetsPath = @"../../test/data/";
 

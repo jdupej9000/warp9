@@ -31,6 +31,7 @@ namespace Warp9.Native
     [Flags]
     public enum CpdFlags : int
     {
+        CPD_NONE = 0,
         CPD_USE_GPU = 1
     }
 
@@ -92,7 +93,7 @@ namespace Warp9.Native
         public static extern int gpa_fit(nint ppdata, int d, int n, int m, nint xforms, nint mean);
 
         [DllImport("WarpCore.dll")]
-        public static extern int rigid_transform(nint data, int d, int m, int xforms, nint result);
+        public static extern int rigid_transform(nint data, int d, int m, nint xforms, nint result);
 
         [DllImport("WarpCore.dll")]
         public static extern int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
