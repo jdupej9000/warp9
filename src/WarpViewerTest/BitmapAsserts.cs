@@ -8,7 +8,6 @@ namespace Warp9.Test
 {
     public static class BitmapAsserts
     {
-        
         public static readonly string ResultPath = @"../../bin/testresults";
         public static void AssertEqual(string reference, Bitmap testBitmap)
         {

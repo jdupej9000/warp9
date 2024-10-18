@@ -58,12 +58,22 @@ namespace Warp9.Data
             return ret;
         }
 
+        public PointCloud ToPointCloud()
+        {
+            return new PointCloud(this);
+        }
+
         protected override MeshView? MakeIndexView()
         {
             if (!IsIndexed) 
                 return null;
 
             return new MeshView(MeshViewKind.Indices3i, indexData, typeof(FaceIndices));
+        }
+
+        public static Mesh FromPointCloud(PointCloud pcl)
+        {
+            return new Mesh(pcl, 0, Array.Empty<byte>(), null);
         }
     }
 }

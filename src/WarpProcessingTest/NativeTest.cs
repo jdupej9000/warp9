@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -70,10 +71,10 @@ namespace Warp9.Test
         [TestMethod]
         public void CpdRegDefaultTest()
         {
-            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            PointCloud pclTarget = DistortPcl(pcl, new Vector3(0.5f, 0.2f, -0.1f), 1.10f, 0.5f);
+            Mesh pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            PointCloud pclTarget = DistortPcl(pcl, new Vector3(0.5f, 0.2f, -0.1f), 1.10f, 0.25f);
 
-            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl);
+            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, w:0.1f);
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
             Assert.IsNotNull(ctx);
 
@@ -91,6 +92,11 @@ namespace Warp9.Test
             Console.WriteLine();
             Console.WriteLine("T-Y:");
             ComparePcls(pclBent, pcl);
+
+            TestUtils.Render("CpdRegDefaultTest_0.png",
+                (pcl.ToPointCloud(), Color.Red),
+                (pclTarget, Color.Green),
+                (pclBent, Color.White));
         }
     }
 }
