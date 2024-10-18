@@ -92,6 +92,12 @@ namespace Warp9.Data
             return view;
         }
 
+        public MeshBuilder ToBuilder()
+        {
+            MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, Array.Empty<byte>(), null);
+            return ret;
+        }
+
         private MeshView? MakeVertexView(MeshSegmentType t, MeshViewKind kind)
         {
             if (meshSegments.TryGetValue(t, out MeshSegment? seg))

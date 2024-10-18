@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Warp9.Data
@@ -30,6 +31,7 @@ namespace Warp9.Data
 
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
         public abstract void CopyAsSoa(Span<byte> raw);
+        public abstract void RemoveAosData();
         public abstract void Copy(Span<byte> raw, byte[]? soaSource = null);
         public abstract MeshSegment Clone();
         public abstract MeshSegment CloneWith(int offset);
@@ -79,6 +81,11 @@ namespace Warp9.Data
             ReadOnlySpan<byte> seg = raw.Slice(Offset, TotalLength);
             AosData = new List<T>(MeshUtils.CopySoaToAos<T>(seg) ?? throw new InvalidOperationException());
             IsDirty = true;
+        }
+
+        public override void RemoveAosData()
+        {
+            AosData = null;
         }
 
         public override void CopyAsSoa(Span<byte> raw)

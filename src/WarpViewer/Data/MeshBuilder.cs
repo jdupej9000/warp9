@@ -19,7 +19,7 @@ namespace Warp9.Data
             indexData = ixd;
 
             foreach (var kvp in segs)
-                segments.Add(kvp.Key, kvp.Value.Clone());
+                segments.Add(kvp.Key, kvp.Value.CloneWith(kvp.Value.Offset));
 
             if (idxSeg is not null)
                 indexSegment = idxSeg.Clone();
@@ -139,7 +139,7 @@ namespace Warp9.Data
             if (!segmentsDirty && !IsDirty)
             {   
                 foreach (var seg in segments)
-                    newSegments.Add(seg.Key, seg.Value.Clone());
+                    newSegments.Add(seg.Key, seg.Value.CloneWith(seg.Value.Offset));
 
                 dataRaw = data;
             }
@@ -160,7 +160,7 @@ namespace Warp9.Data
                     {  
                         data.AsSpan(seg.Value.Offset, segSize).CopyTo(ret.AsSpan(offs, segSize));
                     }
-
+                   
                     offs += segSize;
                 }
 

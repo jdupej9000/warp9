@@ -61,6 +61,12 @@ namespace Warp9.Native
         public int conv;
         public float err, sigma2;
         public float time, time_e;
+
+        public override string ToString()
+        {
+            return string.Format("it={0}, err={1}, s2={2}, t={3:F2}s, te={4:F2}s, pe={5:F1}%, conv={6}",
+                iter, err, sigma2, time, time_e, 100.0 * time_e / time, (CPD_CONV)conv);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

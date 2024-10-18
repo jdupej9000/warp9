@@ -52,7 +52,7 @@ namespace Warp9.Data
             return true;
         }
 
-        public MeshBuilder ToBuilder()
+        public new MeshBuilder ToBuilder()
         {
             MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, indexData, indexSegment);
             return ret;
