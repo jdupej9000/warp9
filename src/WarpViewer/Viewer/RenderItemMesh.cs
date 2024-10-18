@@ -41,6 +41,13 @@ namespace Warp9.Viewer
         Matrix4x4? modelMatrix;
         MeshRenderStyle style;
         bool constBuffDirty = true;
+        bool renderAsPoints = false;
+
+        public bool RenderAsPoints
+        {
+            get { return renderAsPoints; }
+            set { renderAsPoints = value; Commit(); }
+        }
 
         public Mesh? Mesh
         {
@@ -114,7 +121,12 @@ namespace Warp9.Viewer
             }
 
             DrawCall dcMain;
-            if (mesh.IsIndexed)
+            if (renderAsPoints)
+            {
+                dcMain = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.PointList,
+                   0, mesh.VertexCount);
+            }
+            else if (mesh.IsIndexed)
             {
                 MeshView? indexView = mesh.GetView(MeshViewKind.Indices3i);
                 if (indexView is null)

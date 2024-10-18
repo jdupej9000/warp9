@@ -105,7 +105,7 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeFlatColorTest_0.png", bmp);
         }
-
+              
         [TestMethod]
         public void ColorCubeTextureTest()
         {
