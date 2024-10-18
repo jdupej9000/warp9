@@ -24,7 +24,7 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
         return sizeof(float) * (m * num_eigs + 2 * m);
 
     float* lambda = (float*)init;
-    float* lambda_inv = lambda + num_eigs;
+    float* lambda_inv = lambda + m;
     float* q = lambda_inv + m;
 
     switch(method)
@@ -40,7 +40,7 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
             return WCORE_INVALID_ARGUMENT;
     }
 
-    for(int i = 0; i < m; i++)
+    for(int i = 0; i < num_eigs; i++)
         lambda_inv[i] = 1.0f / lambda[i];
 
     return WCORE_OK;

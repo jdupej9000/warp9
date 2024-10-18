@@ -113,7 +113,7 @@ namespace warpcore::impl
         // _p0 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
         // _p3 avail.
 
-        cblas_saxpy(m*3, -1.0f, _p0, 1, _p2, 1);    
+        cblas_saxpy(m*3, -1.0f, _p0, 1, _p2, 1);
         // _p2 (m,3): [w] - [solve1]
 
         cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k); 

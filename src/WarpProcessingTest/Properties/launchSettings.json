@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WarpProcessingTest": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
