@@ -49,8 +49,7 @@ namespace Warp9.Native
             GCHandle[] pins = new GCHandle[n];
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
-            {
-                numOk = i;
+            { 
                 pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
                 if (specimenDataSize == -1)
                 {
@@ -61,6 +60,7 @@ namespace Warp9.Native
                     break;
                 }
 
+                numOk = i;
                 pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);
                 handles[i] = pins[i].AddrOfPinnedObject() + offset;
             }
