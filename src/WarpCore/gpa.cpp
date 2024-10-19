@@ -5,7 +5,7 @@
 #include <cstring>
 #include <memory>
 
-extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean)
+extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res)
 {
     constexpr int MAX_IT = 50;
     constexpr float TOL_REL = 1e-4f;
@@ -39,6 +39,12 @@ extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, v
         memcpy(mean, temp_mean, sizeof(float) * d * m);
 
     delete[] temp_mean;
+
+    if (res != NULL)
+    {
+        res->iter = it;
+        res->err = err;
+    }
 
     return (it < MAX_IT) ? WCORE_OK : WCORE_NONCONVERGENCE;
 }

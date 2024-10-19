@@ -42,6 +42,7 @@ namespace Warp9.Data
         public static readonly PointCloud Empty = new PointCloud(0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>());
 
         public int VertexCount { get; private init; }
+        public byte[] RawData => vertexData;
 
 
         public bool HasSegment(MeshSegmentType kind)
@@ -51,25 +52,36 @@ namespace Warp9.Data
 
         public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data)
         {
+            if (TryGetRawDataSegment(kind, coord, out int offset, out int length))
+            {
+                data = new ReadOnlySpan<byte>(vertexData, offset, length);
+                return true;
+            }
+
+            data = new ReadOnlySpan<byte>();
+            return false;
+        }
+
+        public bool TryGetRawDataSegment(MeshSegmentType kind, int coord, out int offset, out int length)
+        {
             if (meshSegments.TryGetValue(kind, out MeshSegment? seg))
             {
                 if (coord == AllCoords)
                 {
-                    data = new ReadOnlySpan<byte>(vertexData,
-                        seg.Offset,
-                        seg.TotalLength);
+                    offset = seg.Offset;
+                    length = seg.TotalLength;
                     return true;
                 }
                 else if (coord >= 0 && coord < seg.StructElemCount)
                 {
-                    data = new ReadOnlySpan<byte>(vertexData,
-                        seg.Offset + coord * seg.ChannelLength,
-                       seg.ChannelLength);
+                    offset = seg.Offset + coord * seg.ChannelLength;
+                    length = seg.ChannelLength;                
                     return true;
                 }
             }
 
-            data = new ReadOnlySpan<byte>();
+            offset = 0;
+            length = 0;
             return false;
         }
 

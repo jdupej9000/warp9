@@ -84,6 +84,13 @@ namespace Warp9.Native
         public float size;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GpaResult
+    {
+        public int iter;
+        public float err;
+    }
+
     public static class WarpCore
     {
         [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
@@ -96,7 +103,7 @@ namespace Warp9.Native
         public static extern int cpd_process(ref CpdInfo cpd, nint x, nint y, nint init, nint t, ref CpdResult result);
 
         [DllImport("WarpCore.dll")]
-        public static extern int gpa_fit(nint ppdata, int d, int n, int m, nint xforms, nint mean);
+        public static extern int gpa_fit(nint ppdata, int d, int n, int m, nint xforms, nint mean, ref GpaResult result);
 
         [DllImport("WarpCore.dll")]
         public static extern int rigid_transform(nint data, int d, int m, nint xforms, nint result);

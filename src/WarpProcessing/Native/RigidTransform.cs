@@ -38,5 +38,65 @@ namespace Warp9.Native
 
             return null;
         }
+
+        public static WarpCoreStatus FitGpa(IReadOnlyList<PointCloud> pcls, out PointCloud meanPcl, out Rigid3[] transforms, out GpaResult result)
+        {
+            const int d = 3;
+            int n = pcls.Count;
+            int specimenDataSize = -1;
+            int numOk = 0;
+
+            GCHandle[] pins = new GCHandle[n];
+            nint[] handles = new nint[n];
+            for (int i = 0; i < n; i++)
+            {
+                numOk = i;
+                pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
+                if (specimenDataSize == -1)
+                {
+                    specimenDataSize = length;
+                }
+                else if (specimenDataSize != length)
+                {
+                    break;
+                }
+
+                pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);
+                handles[i] = pins[i].AddrOfPinnedObject() + offset;
+            }
+
+            Rigid3[] xforms = new Rigid3[n];
+            byte[] mean = new byte[specimenDataSize];
+            GpaResult gpaRes = new GpaResult();
+            int nv = specimenDataSize / d / 4;
+            WarpCoreStatus ret;
+
+            if (numOk == n)
+            {
+                unsafe
+                {
+                    fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
+                    fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
+                    fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
+                    {
+                        ret = (WarpCoreStatus)WarpCore.gpa_fit(
+                            (nint)ppdata, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
+                    }
+                }
+            }
+            else
+            {
+                ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
+            }
+
+            result = gpaRes;
+            transforms = xforms;
+            meanPcl = PointCloud.FromRawSoaPositions(nv, mean);
+
+            for (int i = 0; i < numOk; i++)
+                pins[i].Free();
+
+            return ret;
+        }
     }
 }
