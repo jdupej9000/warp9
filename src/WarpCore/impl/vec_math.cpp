@@ -183,7 +183,9 @@ namespace warpcore::impl
                 __m256 a1 = _mm256_setzero_ps();
                 
                 for(int k = 0; k < n8; k+=8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), alpha8);
+                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), 
+                        _mm256_mul_ps(alpha8, _mm256_loadu_ps(b + k)));
+
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                     a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j+1) * n), a1);
                 }
@@ -191,7 +193,7 @@ namespace warpcore::impl
                 float aa0 = reduce_add(a0);
                 float aa1 = reduce_add(a1);
                 for(int k = n8; k < n; k++) {
-                    const float aai = alpha * a[k + i * n];
+                    const float aai = alpha * a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
                 }
@@ -206,13 +208,15 @@ namespace warpcore::impl
                 __m256 a0 = _mm256_setzero_ps();
                 
                 for(int k = 0; k < n8; k+=8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), alpha8);
+                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), 
+                        _mm256_mul_ps(alpha8, _mm256_loadu_ps(b + k)));
+
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                 }
 
                 float aa0 = reduce_add(a0);
                 for(int k = n8; k < n; k++) {
-                    const float aai = alpha * a[k + i * n];
+                    const float aai = alpha * a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
 

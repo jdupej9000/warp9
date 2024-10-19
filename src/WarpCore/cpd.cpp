@@ -96,6 +96,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
 
+        //memset(tmp, 0, tmp_size * sizeof(float)); //?
         l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)t, tmp);
         tol = abs((l0 - l0_old) / l0);
 
