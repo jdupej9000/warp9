@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace Warp9.Native
 {
@@ -89,6 +90,12 @@ namespace Warp9.Native
     {
         public int iter;
         public float err;
+
+        public override string ToString()
+        {
+            return string.Format("it={0}, err={1}",
+                iter, err);
+        }
     }
 
     public static class WarpCore

@@ -99,5 +99,23 @@ namespace Warp9.Test
                 (pclTarget, Color.Green),
                 (pclBent, Color.White));
         }
+
+        [TestMethod]
+        public void GpaTeapotsTest()
+        {
+            Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(0.5f, 0.2f, -0.1f), 0.80f, 0.05f);
+            PointCloud pcl3 = DistortPcl(pcl1, Vector3.Zero, 1.10f, 0.05f);
+
+            PointCloud[] pcls = new PointCloud[3] { pcl1, pcl2, pcl3 };
+
+            WarpCoreStatus s = (WarpCoreStatus)RigidTransform.FitGpa(pcls, out PointCloud mean, out Rigid3[] xforms, out GpaResult res);
+            Console.WriteLine(res.ToString());
+
+            Assert.AreEqual(3, xforms.Length);
+            Assert.AreEqual(pcl1.VertexCount, mean.VertexCount);
+            Assert.AreEqual(WarpCoreStatus.WCORE_OK, s);
+        }
+
     }
 }

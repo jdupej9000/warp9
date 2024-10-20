@@ -60,7 +60,7 @@ namespace Warp9.Native
                     break;
                 }
 
-                numOk = i;
+                numOk = i + 1;
                 pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);
                 handles[i] = pins[i].AddrOfPinnedObject() + offset;
             }

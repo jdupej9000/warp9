@@ -7,8 +7,8 @@
 
 extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res)
 {
-    constexpr int MAX_IT = 50;
-    constexpr float TOL_REL = 1e-4f;
+    constexpr int MAX_IT = 150;
+    constexpr float TOL_REL = 1e-5f;
 
     if(d != 3 || m < 4 || xforms == NULL)
         return WCORE_INVALID_ARGUMENT;
