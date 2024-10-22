@@ -33,6 +33,12 @@ namespace warpcore::impl
         grid->cells = new trigrid_cell[num_cells];
         grid->ncell[0] = grid->ncell[1] = grid->ncell[2] = k;
 
+        for (int i = 0; i < 4; i++)
+        {
+            grid->x0[i] = FLT_MAX;
+            grid->x1[i] = FLT_MIN;
+        }
+
         pcl_aabb(vert, 3, nv, grid->x0, grid->x1);
         for(int i = 0; i < 3; i++) {
             // Inflate the AABB slightly.
@@ -228,7 +234,7 @@ namespace warpcore::impl
 
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
     {
-        constexpr int ROUND = (_MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
+        constexpr int ROUND = _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC;
         const __m256i seq = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
 
         for(int i = 0; i < nt; i+=8) {

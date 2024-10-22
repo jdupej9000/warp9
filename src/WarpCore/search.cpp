@@ -52,7 +52,7 @@ extern "C" int search_query(const void* ctx, int kind, const float* orig, const 
     if(structure == SEARCH_TRIGRID3) {
         query_info qi { .g = (const trigrid*)ctx, .hit = hit, .info = info };
 
-        switch(kind & 0xf) {
+        switch(kind) {
         case SEARCH_NN:
             foreach_row<float, 3, query_info&>(orig, n, qi,
                 [](const float* o, int i, query_info& qi) {

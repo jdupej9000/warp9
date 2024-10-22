@@ -141,7 +141,7 @@ namespace warpcore::impl
             [](p3i c, raycast_ctx& ctx) -> bool {
                 alignas(16) int cidx[4];
                 _mm_store_si128((__m128i*)cidx, c);
-                std::cerr << "   " << cidx[0] << "," << cidx[1] << "," << cidx[2] << std::endl;
+                //std::cerr << "   " << cidx[0] << "," << cidx[1] << "," << cidx[2] << std::endl;
                 const trigrid_cell* cell = get_trigrid_cell(ctx.g, cidx[0], cidx[1], cidx[2]);
                 
                 int ne = cell->n;
@@ -163,7 +163,7 @@ namespace warpcore::impl
                 return true;
             });
 
-        std::cerr << "   # tested triangles: " << ctx.ntested << std::endl;
+        //std::cerr << "   # tested triangles: " << ctx.ntested << std::endl;
 
         return ctx.idx;
     }

@@ -115,21 +115,23 @@ namespace Warp9.Test
             p0 = new Vector3[nx * ny];
             d = new Vector3[nx * ny];
 
-            const float Fov = MathF.PI / 3;
+            const float Fov = MathF.PI * 0.95f;
             const float Aspect = 1;
             const float Far = 100.0f;
             const float Near = 0.01f;
             Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
             Vector3 at = new Vector3(0, 0, 0);
             Vector3 up = new Vector3(0, 1, 0);
-            
-            Matrix4x4 viewProj = Matrix4x4.Transpose(Matrix4x4.CreateLookAtLeftHanded(camera, at, up) *
-               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(Fov, Aspect, Near, Far));
+
+            Matrix4x4 viewProj = Matrix4x4.CreateLookAtLeftHanded(camera, at, up) *
+               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(Fov, Aspect, Near, Far);
+
+            //Matrix4x4 viewProj = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(Fov, Aspect, Near, Far) * Matrix4x4.CreateLookAtLeftHanded(camera, at, up);
 
             Matrix4x4.Invert(viewProj, out Matrix4x4 viewProjInv);
 
-            float wd2r = 1.0f / (nx / 2);
-            float hd2r = 1.0f / (ny / 2);
+            float wd2r = 1.0f / (nx / 2.0f);
+            float hd2r = 1.0f / (ny / 2.0f);
 
             for (int j = 0; j < ny; j++)
             {

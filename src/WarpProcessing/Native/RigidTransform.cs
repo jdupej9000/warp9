@@ -39,6 +39,24 @@ namespace Warp9.Native
             return null;
         }
 
+        public static PclStat3 MakePclStats(PointCloud pcl)
+        {
+            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> data))
+                throw new InvalidOperationException();
+
+            PclStat3 pclStat = new PclStat3();
+
+            unsafe
+            {
+                fixed (byte* pdata = &MemoryMarshal.GetReference(data))
+                {
+                    WarpCore.pcl_stat((nint)pdata, 3, pcl.VertexCount, ref pclStat);
+                }
+            }
+
+            return pclStat;
+        }
+
         public static WarpCoreStatus FitGpa(IReadOnlyList<PointCloud> pcls, out PointCloud meanPcl, out Rigid3[] transforms, out GpaResult result)
         {
             const int d = 3;
