@@ -117,5 +117,38 @@ namespace Warp9.Test
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, s);
         }
 
+        [TestMethod]
+        public void TrigridRaycastTest()
+        {
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitSearch(mesh, SEARCH_STRUCTURE.SEARCH_TRIGRID3, out SearchContext? ctx);
+            Assert.IsNotNull(ctx);
+
+            TestUtils.GenerateRays(128, 128, out Vector3[] p0, out Vector3[] d);
+            int n = 128 * 128;
+            int[] hit = new int[n];
+            float[] t = new float[n];
+
+            ctx.RaycastAos(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
+
+            Lut lut = Lut.Create(256, Lut.FastColors);
+
+            Bitmap bmp = new Bitmap(128, 128);
+            const float range0 = 1, range1 = 100;
+            for (int j = 0; j < 128; j++)
+            {
+                for (int i = 0; i < 128; i++)
+                {
+                    float r = (t[j * 128 + i] - range0) / (range1 - range0);
+                    //bmp.SetPixel(i, j, lut.Sample(r));
+                    if(hit[i] >= 0)
+                        bmp.SetPixel(i, j, Color.FromArgb(hit[i] % 256, 0, 0));
+                }
+            }
+
+            BitmapAsserts.AssertEqual("TrigridRaycastTest_0.png", bmp);
+
+            ctx.Dispose();
+        }
     }
 }

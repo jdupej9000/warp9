@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +75,24 @@ namespace Warp9.Native
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
                         nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY, (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
+                }
+            }
+        }
+
+        public bool RaycastAos(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<float> hitT)
+        {
+            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
+                return false;
+
+            unsafe
+            {
+                fixed (Vector3* srcSoaPtr = &MemoryMarshal.GetReference(src))
+                fixed (Vector3* srcDirSoaPtr = &MemoryMarshal.GetReference(srcDir))
+                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
+                fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
+                {
+                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
+                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
         }

@@ -57,11 +57,14 @@ namespace Warp9.Native
         SEARCHD_NN_TRISOUP_3 = 2
     };
 
+    [Flags]
     public enum SEARCH_KIND : int
     {
         SEARCH_NN = 0,
         SEARCH_RAYCAST_T = 1,
-        SEARCH_RAYCAST_TBARY = 2
+        SEARCH_RAYCAST_TBARY = 2,
+
+        SEARCH_SOURCE_IS_AOS = 0x10000000
     };
 
 

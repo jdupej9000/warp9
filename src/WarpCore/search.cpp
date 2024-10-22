@@ -48,11 +48,11 @@ extern "C" int search_query(const void* ctx, int kind, const float* orig, const 
     if(!ctx)
         return WCORE_INVALID_ARGUMENT;
 
-    int structure = *(const int*)ctx;
+      int structure = *(const int*)ctx;
     if(structure == SEARCH_TRIGRID3) {
         query_info qi { .g = (const trigrid*)ctx, .hit = hit, .info = info };
 
-        switch(kind) {
+        switch(kind & 0xf) {
         case SEARCH_NN:
             foreach_row<float, 3, query_info&>(orig, n, qi,
                 [](const float* o, int i, query_info& qi) {
@@ -65,6 +65,13 @@ extern "C" int search_query(const void* ctx, int kind, const float* orig, const 
                 [](const float* o, const float* d, int i, query_info& qi) {
                     qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
                 });
+            return WCORE_OK;
+
+        case SEARCH_RAYCAST_T | SEARCH_SOURCE_IS_AOS:
+            for (int i = 0; i < n; i++)
+            {
+                qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
+            }
             return WCORE_OK;
 
         case SEARCH_RAYCAST_TBARY:
