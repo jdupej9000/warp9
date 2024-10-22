@@ -63,14 +63,14 @@ extern "C" int search_query(const void* ctx, int kind, const float* orig, const 
         case SEARCH_RAYCAST_T:
             foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
                 [](const float* o, const float* d, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, o, d, (float*)qi.info + 4 * i);
+                    qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
                 });
             return WCORE_OK;
 
         case SEARCH_RAYCAST_TBARY:
             foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
                 [](const float* o, const float* d, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_raycast_new<RayTri_TBary>(qi.g, o, d, (float*)qi.info + 4 * i);
+                    qi.hit[i] = trigrid_raycast_new<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
                 });
             return WCORE_OK;
 

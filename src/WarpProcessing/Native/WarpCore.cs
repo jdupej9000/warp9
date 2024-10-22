@@ -45,6 +45,25 @@ namespace Warp9.Native
         CPD_CONV_DSIGMA = 8
     }
 
+    public enum SEARCH_STRUCTURE : int
+    {
+        SEARCH_TRIGRID3 = 0
+    };
+
+    public enum SEARCHD_KIND : int
+    {
+        SEARCHD_NN_PCL_3 = 0,
+        SEARCHD_RAYCAST_TRISOUP_3 = 1,
+        SEARCHD_NN_TRISOUP_3 = 2
+    };
+
+    public enum SEARCH_KIND : int
+    {
+        SEARCH_NN = 0,
+        SEARCH_RAYCAST_T = 1,
+        SEARCH_RAYCAST_TBARY = 2
+    };
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpdInfo
@@ -98,6 +117,12 @@ namespace Warp9.Native
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TriGridConfig
+    {
+        public int num_cells;
+    }
+
     public static class WarpCore
     {
         [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
@@ -117,5 +142,17 @@ namespace Warp9.Native
 
         [DllImport("WarpCore.dll")]
         public static extern int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int search_build(int structure, nint vert, nint idx, int nv, int nt, nint config, ref nint ctx);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int search_free(nint ctx);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int search_direct(int kind, nint orig, nint dir, nint vert, int n);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int search_query(nint ctx, int kind, nint orig, nint dir, int n, nint hit, nint info);
     }
 }
