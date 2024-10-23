@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WarpViewer\WarpViewer.csproj" />
+	<DirectPInvoke Include="WarpCore.dll" />
   </ItemGroup>
 
 </Project>
