@@ -21,7 +21,7 @@ namespace warpcore::impl
     void _raytri(const float* orig, const float* dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept
     {
         // Moller-Trumbore intersection algorithm, vectorized
-        constexpr float EPS = 1e-8f;
+        constexpr float EPS = 1e-16f;
         const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
 
         for(int i = 0; i < n; i += 8) {

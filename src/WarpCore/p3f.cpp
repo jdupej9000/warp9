@@ -41,7 +41,7 @@ namespace warpcore
 
     p3i p3f_to_p3i(const p3f a) noexcept
     {
-        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_ZERO |_MM_FROUND_NO_EXC)));
+        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC)));
     }
 
     p3f p3i_to_p3f(const p3i a) noexcept
@@ -52,7 +52,7 @@ namespace warpcore
     void p3f_to_int(const p3f a, int& x, int& y, int& z) noexcept
     {
         alignas(16) int xi[4];
-        _mm_store_si128((__m128i*)xi, _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_ZERO |_MM_FROUND_NO_EXC))));
+        _mm_store_si128((__m128i*)xi, _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC))));
         x = xi[0];
         y = xi[1];
         z = xi[2];
