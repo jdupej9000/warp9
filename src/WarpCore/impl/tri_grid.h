@@ -47,6 +47,8 @@ namespace warpcore::impl
         p3i cur = p3i_clamp(p3f_to_p3i(p0), p3i_set(0), dimm1);
         p3f s = p3f_sign(d);
         p3f next = p3f_add(p3i_to_p3f(cur), s);
+        p3i last = _mm_blendv_epi8(dimm1, p3i_set(0), 
+            _mm_castps_si128(_mm_cmplt_ps(s, _mm_setzero_ps())));
 
         p3f dzero = p3f_mask_is_almost_zero(dnorm);
         p3f m = p3f_switch(p3f_div(p3f_sub(next, p0), dnorm), p3f_set(1e10), dzero);
@@ -56,10 +58,10 @@ namespace warpcore::impl
             return true;
 
         // if (cx >= 0 && cx < k && sx < 0) { fx--; }
-        p3i f = _mm_and_si128(
-            _mm_cmplt_epi32(cur, dim),
-            _mm_castps_si128(_mm_cmp_ps(s, _mm_setzero_ps(), _CMP_LT_OQ)));
-       
+        p3i f = _mm_andnot_si128( // !a & b
+            _mm_cmpeq_epi32(cur, last),
+            _mm_castps_si128(_mm_cmp_ps(s, _mm_setzero_ps(), _CMP_LE_OQ)));
+     
         if(!p3i_is_zero(f)) {
             cur = p3i_add(cur, f);
             if(!fun(p3i_clamp(cur, _mm_setzero_si128(), dimm1), ctx))
@@ -69,9 +71,9 @@ namespace warpcore::impl
         float mm[4], dd[4];
         _mm_storeu_ps(mm, m);
         _mm_storeu_ps(dd, delta);
-        int si[4] = { (p3f_get<0>(s) >= 0) ? 1 : -1, 
-            (p3f_get<1>(s) >= 0) ? 1 : -1, 
-            (p3f_get<2>(s) >= 0) ? 1 : -1, 
+        int si[4] = { (p3f_get<0>(s) > 0) ? 1 : -1, 
+            (p3f_get<1>(s) > 0) ? 1 : -1, 
+            (p3f_get<2>(s) > 0) ? 1 : -1, 
             0 };
 
         while(1) {
@@ -115,6 +117,7 @@ namespace warpcore::impl
             int idx;
             float* t;
             int ntested;
+            float toffs;
         };
 
         p3f o = p3f_set(orig);
@@ -123,15 +126,17 @@ namespace warpcore::impl
         const p3f grid1 = p3f_set(grid->x1);
         const p3f gridd = p3f_set(grid->dx);
 
+        float aabbt = 0.0f;
         if(!p3f_in_aabb(o, grid0, grid1)) {
-            float aabbt = intersect_ray_aabb(o, d, grid0, grid1);
+            aabbt = intersect_ray_aabb(o, d, grid0, grid1);
             if(aabbt < 0) 
                 return -1; // no intersection with the entire grid
 
-            o = p3f_fma(p3f_set(aabbt), d, o); // advance origin along ray to just intersect the grid
+            o = p3f_fma(aabbt, d, o); // advance origin along ray to just intersect the grid
         }
+        
 
-        raycast_ctx ctx { .g = grid, .o = o, .d = d, .idx = -1, .t = t, .ntested = 0 };
+        raycast_ctx ctx { .g = grid, .o = o, .d = d, .idx = -1, .t = t, .ntested = 0, .toffs = aabbt };
 
         traverse_3ddda<raycast_ctx&>(
             p3f_mul(p3f_sub(o, grid0), gridd), 
@@ -157,6 +162,7 @@ namespace warpcore::impl
                 int collision = raytri<TRayTriTraits>(orig, dir, cell->vert, ne, ne, ctx.t);
                 if(collision >= 0) {
                     ctx.idx = cell->idx[collision];
+                    ctx.t[0] += ctx.toffs;
                     return false; // intersection found, stop searching
                 }
 
@@ -166,60 +172,5 @@ namespace warpcore::impl
         //std::cerr << "   # tested triangles: " << ctx.ntested << std::endl;
 
         return ctx.idx;
-    }
-    
-
-    template<typename TRayTriTraits>
-    int trigrid_raycast(const trigrid* grid, const float* orig, const float* dir, float* t)
-    {
-        using namespace warpcore;
-        p3f o = p3f_set(orig);
-        const p3f d = p3f_set(dir);
-        const p3f di = p3f_recip(d);
-        const p3f grid0 = p3f_set(grid->x0);
-        const p3f grid1 = p3f_set(grid->x1);
-        const p3f gridd = p3f_set(grid->dx);
-
-        alignas(16) float orig_proj[4];
-
-        if(!p3f_in_aabb(o, grid0, grid1)) {
-            float aabbt = intersect_ray_aabb(o, d, grid0, grid1);
-            if(aabbt < 0) 
-                return -1; // no intersection with the entire grid
-
-            o = p3f_fma(p3f_set(aabbt), d, o); // advance origin along ray to just intersect the grid
-        } 
-
-        _mm_store_ps(orig_proj, o);
-
-        const int dx = dir[0] > 0 ? 1 : -1;
-        const int dy = dir[1] > 0 ? 1 : -1;
-        const int dz = dir[2] > 0 ? 1 : -1;
-
-        int cx = 0, cy = 0, cz = 0;
-        p3f gridpos = p3f_mul(gridd, p3f_sub(o, grid0));
-        p3f_to_int(gridpos, cx, cy, cz);
-
-        while(is_cell_in_grid(grid, cx, cy, cz))  {
-            const trigrid_cell* cell = get_trigrid_cell(grid, cx, cy, cz);
-            int ne = cell->n;
-
-            if(ne > 0) {
-                int collision = raytri<TRayTriTraits>(orig, dir, cell->vert, ne, ne, t);
-                if(collision >= 0) 
-                    return cell->idx[collision];
-            }
-
-            p3f next = p3f_add(p3f_set(cx, cy, cz), p3f_sign(d));
-            p3f nextt = p3f_mul(p3f_sub(next, o), di);
-
-            int step_coord = p3f_min_mask(nextt);
-
-            if(step_coord & 0x1) cx += dx;
-            if(step_coord & 0x2) cy += dy;
-            if(step_coord & 0x4) cz += dz;
-        }
-
-        return -1;
     }
 };

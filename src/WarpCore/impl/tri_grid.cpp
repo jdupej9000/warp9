@@ -42,10 +42,10 @@ namespace warpcore::impl
         pcl_aabb(vert, 3, nv, grid->x0, grid->x1);
         for(int i = 0; i < 3; i++) {
             // Inflate the AABB slightly.
-            float eps = (grid->x1[i] - grid->x0[i]) * 0.0001f;
+            float eps = (grid->x1[i] - grid->x0[i]) * 0.001f;
             grid->x0[i] -= eps;
             grid->x1[i] += eps;
-            grid->dx[i] = (float)k / (grid->x1[i] - grid->x0[i]);
+            grid->dx[i] = (float)(k) / (grid->x1[i] - grid->x0[i]);
         }
 
         grid->x0[3] = grid->x1[3] = grid->dx[3] = 0;
@@ -168,9 +168,9 @@ namespace warpcore::impl
                 int z0 = idx_range_chunk[4 * 8 + j];
                 int z1 = idx_range_chunk[5 * 8 + j];
     
-                for(int x = x0; x < x1; x++)
-                for(int y = y0; y < y1; y++)
-                for(int z = z0; z < z1; z++) {
+                for (int z = z0; z <= z1; z++)
+                for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++) {
                     int idx = x + grid->ncell[0] * y + grid->ncell[0] * grid->ncell[1] * z;
                     grid->cells[idx].idx[counter[idx]] = i + j;
                     counter[idx]++;
@@ -195,14 +195,9 @@ namespace warpcore::impl
                 int z0 = idx_range_chunk[4 * 8 + j];
                 int z1 = idx_range_chunk[5 * 8 + j];
 
-                /*std::cerr << (i+j) << ": " <<
-                    "(" << x0 << "-" << x1 << ") " <<
-                    "(" << y0 << "-" << y1 << ") " <<
-                    "(" << z0 << "-" << z1 << ") " << std::endl; */
-
-                for(int x = x0; x < x1; x++)
-                for(int y = y0; y < y1; y++)
-                for(int z = z0; z < z1; z++) {
+                for (int z = z0; z <= z1; z++)
+                for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++) {
                     int idx = x + grid->ncell[0] * y + grid->ncell[0] * grid->ncell[1] * z;
                     hist[idx] ++;
                 }
@@ -235,7 +230,7 @@ namespace warpcore::impl
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
     {
         constexpr int ROUND_FLOOR = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
-        constexpr int ROUND_CEIL = _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC;
+        constexpr int ROUND_CEIL = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
         const __m256i seq = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
 
         for(int i = 0; i < nt; i+=8) {
@@ -279,18 +274,24 @@ namespace warpcore::impl
 
             __m256 v0 = _mm256_broadcast_ss(grid->x0);
             __m256 dv = _mm256_broadcast_ss(grid->dx);
-            __m256i xminidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(xmin, v0), dv), ROUND_FLOOR));
-            __m256i xmaxidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(xmax, v0), dv), ROUND_CEIL));
+            __m256i xminidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(xmin, v0), dv), ROUND_FLOOR));
+            __m256i xmaxidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(xmax, v0), dv), ROUND_CEIL));
 
             v0 = _mm256_broadcast_ss(grid->x0 + 1);
             dv = _mm256_broadcast_ss(grid->dx + 1);
-            __m256i yminidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(ymin, v0), dv), ROUND_FLOOR));
-            __m256i ymaxidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(ymax, v0), dv), ROUND_CEIL));
+            __m256i yminidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(ymin, v0), dv), ROUND_FLOOR));
+            __m256i ymaxidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(ymax, v0), dv), ROUND_CEIL));
 
             v0 = _mm256_broadcast_ss(grid->x0 + 2);
             dv = _mm256_broadcast_ss(grid->dx + 2);
-            __m256i zminidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(zmin, v0), dv), ROUND_FLOOR));
-            __m256i zmaxidx = _mm256_cvtps_epi32(_mm256_round_ps(_mm256_mul_ps(_mm256_sub_ps(zmax, v0), dv), ROUND_CEIL));
+            __m256i zminidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(zmin, v0), dv), ROUND_FLOOR));
+            __m256i zmaxidx = _mm256_cvtps_epi32(_mm256_round_ps(
+                _mm256_mul_ps(_mm256_sub_ps(zmax, v0), dv), ROUND_CEIL));
 
             __m256i* chunk = (__m256i*)(range + 6 * i);
             _mm256_storeu_si256(chunk, xminidx);

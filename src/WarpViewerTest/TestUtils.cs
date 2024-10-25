@@ -108,7 +108,7 @@ namespace Warp9.Test
             }
         }
 
-        public static void GenerateRays(int nx, int ny, out Vector3[] p0, out Vector3[] d)
+        public static void GenerateRays(Vector3 camera, int nx, int ny, out Vector3[] p0, out Vector3[] d)
         {
             // TODO: make the constants more global
             // https://www.mvps.org/directx/articles/rayproj.htm
@@ -119,7 +119,8 @@ namespace Warp9.Test
             const float Aspect = 1;
             const float Far = 100.0f;
             const float Near = 0.01f;
-            Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
+            //Vector3 camera = new Vector3(0.75f, 2.0f, 2.5f);
+            //Vector3 camera = new Vector3(1.0f, 2.0f, -3.0f);
             Vector3 at = new Vector3(0, 0, 0);
             Vector3 up = new Vector3(0, 1, 0);
 

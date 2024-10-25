@@ -124,14 +124,18 @@ namespace Warp9.Test
             SearchContext.TryInitSearch(mesh, SEARCH_STRUCTURE.SEARCH_TRIGRID3, out SearchContext? ctx);
             Assert.IsNotNull(ctx);
 
-            const int Size = 128;
-            TestUtils.GenerateRays(Size, Size, out Vector3[] p0, out Vector3[] d);
+            const int Size = 512;
+            Vector3 camera = new Vector3(2.0f, 3.5f, 0.5f);
+
+            TestUtils.GenerateRays(camera, Size, Size, out Vector3[] p0, out Vector3[] d);
             int n = Size * Size;
             int[] hit = new int[n];
             float[] t = new float[n];
 
             for (int i = 0; i < n; i++)
-                p0[i] -= new Vector3(-1.5f, -3.0f, -3.0f);
+                p0[i] += 1.5f * camera;
+                //p0[i] -= new Vector3(-1.5f, -3.0f, -3.0f);
+
 
             DateTime t0 = DateTime.Now;
             ctx.RaycastAos(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
@@ -144,8 +148,8 @@ namespace Warp9.Test
             Lut lut = Lut.Create(256, Lut.FastColors);
 
             Bitmap bmp = new Bitmap(Size, Size);
-            float range0 = 0; //t.Min();
-            float range1 = 3;// t.Max();
+            float range0 = 6; //t.Min();
+            float range1 = 10;// t.Max();
             for (int j = 0; j < Size; j++)
             {
                 for (int i = 0; i < Size; i++)

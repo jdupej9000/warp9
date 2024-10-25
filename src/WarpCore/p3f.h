@@ -53,6 +53,7 @@ namespace warpcore
     p3f p3f_clamp_zero(p3f x) noexcept;
     p3f p3f_xy(p3f x) noexcept;
     float p3f_addxy(p3f x) noexcept;
+    int p3i_get(p3i x, int i) noexcept;
 
     p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
     p3f p3f_from_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
@@ -90,7 +91,7 @@ namespace warpcore
     {
         return _mm_cvtss_f32(_mm_permute_ps(x, ISrc));
     }
-
+  
     constexpr int _cabs(int x) {
 #if _MSC_VER
         return x >= 0 ? x : -x;

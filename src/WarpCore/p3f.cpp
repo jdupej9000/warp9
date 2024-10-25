@@ -41,7 +41,8 @@ namespace warpcore
 
     p3i p3f_to_p3i(const p3f a) noexcept
     {
-        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC)));
+        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_POS_INF |_MM_FROUND_NO_EXC)));
+        //return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC)));
     }
 
     p3f p3i_to_p3f(const p3i a) noexcept
@@ -56,6 +57,14 @@ namespace warpcore
         x = xi[0];
         y = xi[1];
         z = xi[2];
+    }
+
+    int p3i_get(p3i x, int i) noexcept
+    {
+        alignas(16) int xi[4];
+        _mm_store_si128((__m128i*)xi, x);
+
+        return xi[i];
     }
 
     // Returns an integer mask with bits set at positions, where the coordinates of x
@@ -298,7 +307,7 @@ namespace warpcore
         const __m128 cutoff = p3f_set(1e-8f);
         __m128 valid_mask = _mm_cmp_ps(p3f_abs(d), cutoff, _CMP_GT_OQ);
         int valid = _mm_movemask_ps(valid_mask);
-        p3f dd = _mm_blendv_ps(cutoff, d, valid_mask);
+        p3f dd = _mm_blendv_ps(cutoff, d, valid_mask); // avoid divisions by zero
 
         // TODO: profile this on d=0x`
         alignas(16) float k0[4];
@@ -307,7 +316,7 @@ namespace warpcore
         alignas(16) float k1[4];
         _mm_store_ps(k1, _mm_div_ps(_mm_sub_ps(box1, o), dd));
 
-        float tmin = 0.0, tmax = INFINITY;
+        float tmin = 0.0f, tmax = 1e30f;
 
         for (int d = 0; d < 3; d++) {
             if(valid & (1 << d)) {
