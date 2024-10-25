@@ -40,11 +40,11 @@ namespace warpcore::impl
     bool traverse_3ddda(p3f p0, p3f d, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
     {
         // J. Amanatides and A. Woo, A Fast Voxel Traversal Algorithm for Ray Tracing, Eurographics, 1987.
-        //p3i cur = p3f_to_p3i(p0);
+        p3i cur = p3f_to_p3i(p0);
         p3i dimm1 = _mm_sub_epi32(dim, p3i_set(1));
 
         p3f dnorm = p3f_normalize(d);
-        p3i cur = p3i_clamp(p3f_to_p3i(p0), p3i_set(0), dimm1);
+        //p3i cur = p3i_clamp(p3f_to_p3i(p0), p3i_set(0), dimm1);
         p3f s = p3f_sign(d);
         p3f next = p3f_add(p3i_to_p3f(cur), s);
         p3i last = _mm_blendv_epi8(dimm1, p3i_set(0), 
