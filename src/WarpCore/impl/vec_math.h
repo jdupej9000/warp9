@@ -19,6 +19,8 @@ namespace warpcore::impl
     float reduce_add(const float* x, int n);
     float reduce_add_i32(const int* x, int n);
 
+    __m256i clamp(__m256i x, __m256i x0, __m256i x1);
+
     // Y = diag(x) * A
     void dxa(const float* x, const float* v, int n, int m, float* y); 
 

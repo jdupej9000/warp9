@@ -117,25 +117,21 @@ namespace Warp9.Test
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, s);
         }
 
-        [TestMethod]
-        public void TrigridRaycastTest()
+        static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            SearchContext.TryInitSearch(mesh, SEARCH_STRUCTURE.SEARCH_TRIGRID3, out SearchContext? ctx);
+            SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
             Assert.IsNotNull(ctx);
 
-            const int Size = 512;
             Vector3 camera = new Vector3(2.0f, 3.5f, 0.5f);
 
-            TestUtils.GenerateRays(camera, Size, Size, out Vector3[] p0, out Vector3[] d);
-            int n = Size * Size;
+            TestUtils.GenerateRays(camera, bitmapSize, bitmapSize, out Vector3[] p0, out Vector3[] d);
+            int n = bitmapSize * bitmapSize;
             int[] hit = new int[n];
             float[] t = new float[n];
 
             for (int i = 0; i < n; i++)
                 p0[i] += 1.5f * camera;
-                //p0[i] -= new Vector3(-1.5f, -3.0f, -3.0f);
-
 
             DateTime t0 = DateTime.Now;
             ctx.RaycastAos(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
@@ -143,27 +139,37 @@ namespace Warp9.Test
             double seconds = (t1 - t0).TotalSeconds;
 
             Console.WriteLine(string.Format("{0} rays in {1:F3} seconds, {2:F1} rays per second",
-                Size * Size, seconds, Size * Size / seconds));
+                bitmapSize * bitmapSize, seconds, bitmapSize * bitmapSize / seconds));
 
             Lut lut = Lut.Create(256, Lut.FastColors);
 
-            Bitmap bmp = new Bitmap(Size, Size);
+            Bitmap bmp = new Bitmap(bitmapSize, bitmapSize);
             float range0 = 6; //t.Min();
             float range1 = 10;// t.Max();
-            for (int j = 0; j < Size; j++)
+            for (int j = 0; j < bitmapSize; j++)
             {
-                for (int i = 0; i < Size; i++)
+                for (int i = 0; i < bitmapSize; i++)
                 {
-                    float r = (t[j * Size + i] - range0) / (range1 - range0);
+                    float r = (t[j * bitmapSize + i] - range0) / (range1 - range0);
                     bmp.SetPixel(i, j, lut.Sample(r));
-                    //if(hit[i] >= 0)
-                     //   bmp.SetPixel(i, j, Color.FromArgb(hit[i] % 256, 0, 0));
                 }
             }
 
-            BitmapAsserts.AssertEqual("TrigridRaycastTest_0.png", bmp);
+            BitmapAsserts.AssertEqual(referenceFileName, bmp);
 
             ctx.Dispose();
+        }
+
+        [TestMethod]
+        public void Trigrid16RaycastTest()
+        {
+            TrigridRaycastTestCase("TrigridRaycast16Test_0.png", 16, 128);
+        }
+
+        [TestMethod]
+        public void Trigrid1RaycastTest()
+        {
+            TrigridRaycastTestCase("TrigridRaycast1Test_0.png", 1, 128);
         }
 
         [TestMethod]

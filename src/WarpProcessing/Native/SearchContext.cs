@@ -107,9 +107,9 @@ namespace Warp9.Native
             }
         }
 
-        public static WarpCoreStatus TryInitSearch(Mesh m, SEARCH_STRUCTURE structKind, out SearchContext? searchCtx)
+        public static WarpCoreStatus TryInitTrigrid(Mesh m, int numCells, out SearchContext? searchCtx)
         {
-            TriGridConfig cfg = new TriGridConfig() { num_cells = 16 };
+            TriGridConfig cfg = new TriGridConfig() { num_cells = numCells };
             Span<TriGridConfig> cfgSpan = stackalloc TriGridConfig[1];
             cfgSpan[0] = cfg;
 
@@ -137,7 +137,7 @@ namespace Warp9.Native
                 fixed (int* idxRawPtr = &MemoryMarshal.GetReference(idxt.AsSpan()))
                 fixed (byte* cfgPtr = &MemoryMarshal.GetReference(MemoryMarshal.Cast<TriGridConfig, byte>(cfgSpan)))
                 {
-                    WarpCoreStatus s = (WarpCoreStatus)WarpCore.search_build((int)structKind, (nint)posRawPtr, (nint)idxRawPtr, m.VertexCount, m.FaceCount, (nint)cfgPtr, ref ctx);
+                    WarpCoreStatus s = (WarpCoreStatus)WarpCore.search_build((int)SEARCH_STRUCTURE.SEARCH_TRIGRID3, (nint)posRawPtr, (nint)idxRawPtr, m.VertexCount, m.FaceCount, (nint)cfgPtr, ref ctx);
                     if (s != WarpCoreStatus.WCORE_OK)
                     {
                         searchCtx = null;
@@ -146,7 +146,7 @@ namespace Warp9.Native
                 }
             }
 
-            searchCtx = new SearchContext(ctx, structKind);
+            searchCtx = new SearchContext(ctx, SEARCH_STRUCTURE.SEARCH_TRIGRID3);
             return WarpCoreStatus.WCORE_OK;
         }
     }

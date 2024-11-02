@@ -41,7 +41,7 @@ namespace warpcore
 
     p3i p3f_to_p3i(const p3f a) noexcept
     {
-        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_POS_INF |_MM_FROUND_NO_EXC)));
+        return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC)));
         //return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC)));
     }
 

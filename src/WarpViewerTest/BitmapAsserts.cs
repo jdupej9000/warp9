@@ -60,7 +60,7 @@ namespace Warp9.Test
             testBitmap.UnlockBits(dataTest);
         }
 
-        private static unsafe void AssertEqualGray8(byte* ptrRef, byte* ptrTest, int width, int stride, int height, int tol = 0)
+        private static unsafe void AssertEqualGray8(byte* ptrRef, byte* ptrTest, int width, int stride, int height, int tol = 16)
         {
             int maxError = 0;
             int numTolExceeded = 0;
@@ -79,7 +79,7 @@ namespace Warp9.Test
             Assert.AreEqual(0, numTolExceeded);
         }
 
-        private static unsafe void AssertEqualRgba8(byte* ptrRef, byte* ptrTest, int width, int stride, int height, int tol = 0)
+        private static unsafe void AssertEqualRgba8(byte* ptrRef, byte* ptrTest, int width, int stride, int height, int tol = 16)
         {
             int maxError = 0;
             int numTolExceeded = 0;

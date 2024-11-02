@@ -135,6 +135,11 @@ namespace warpcore::impl
         *xmax = xmax1;
     }
 
+    __m256i clamp(__m256i x, __m256i x0, __m256i x1)
+    {
+        return _mm256_max_epi32(x0, _mm256_min_epi32(x1, x));
+    }
+
     void dxa(const float* x, const float* v, int n, int m, float* y)
     {
         // diag(V) * X

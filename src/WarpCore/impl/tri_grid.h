@@ -44,15 +44,16 @@ namespace warpcore::impl
         p3i dimm1 = _mm_sub_epi32(dim, p3i_set(1));
 
         p3f dnorm = p3f_normalize(d);
-        //p3i cur = p3i_clamp(p3f_to_p3i(p0), p3i_set(0), dimm1);
         p3f s = p3f_sign(d);
         p3f next = p3f_add(p3i_to_p3f(cur), s);
-        p3i last = _mm_blendv_epi8(dimm1, p3i_set(0), 
+        p3i last = _mm_blendv_epi8(dim, p3i_set(0),
             _mm_castps_si128(_mm_cmplt_ps(s, _mm_setzero_ps())));
 
         p3f dzero = p3f_mask_is_almost_zero(dnorm);
         p3f m = p3f_switch(p3f_div(p3f_sub(next, p0), dnorm), p3f_set(1e10), dzero);
         p3f delta = p3f_switch(p3f_div(s, dnorm), p3f_set(1e10), dzero);
+        //p3f m = p3f_div(p3f_sub(next, p0), dnorm);
+        //p3f delta = p3f_div(s, dnorm);
 
         if(!fun(p3i_clamp(cur, _mm_setzero_si128(), dimm1), ctx))
             return true;
@@ -95,8 +96,8 @@ namespace warpcore::impl
                 }
             }
 
-            if(!p3i_in_aabb(cur, _mm_setzero_si128(), dim))
-                return false;
+            if (!p3i_in_aabb(cur, _mm_setzero_si128(), dim))
+                break;
 
             if(!fun(cur, ctx))
                 return true;
@@ -131,7 +132,7 @@ namespace warpcore::impl
             aabbt = intersect_ray_aabb(o, d, grid0, grid1);
             if(aabbt < 0) 
                 return -1; // no intersection with the entire grid
-
+           
             o = p3f_fma(aabbt, d, o); // advance origin along ray to just intersect the grid
         }
         
@@ -140,15 +141,14 @@ namespace warpcore::impl
 
         traverse_3ddda<raycast_ctx&>(
             p3f_mul(p3f_sub(o, grid0), gridd), 
-            p3f_mul(d, gridd), 
+            p3f_mul(gridd, d), 
             p3i_set(grid->ncell),
             ctx,
             [](p3i c, raycast_ctx& ctx) -> bool {
                 alignas(16) int cidx[4];
                 _mm_store_si128((__m128i*)cidx, c);
-                //std::cerr << "   " << cidx[0] << "," << cidx[1] << "," << cidx[2] << std::endl;
                 const trigrid_cell* cell = get_trigrid_cell(ctx.g, cidx[0], cidx[1], cidx[2]);
-                
+              
                 int ne = cell->n;
                 if(ne == 0) 
                     return true; // continue along the ray, this cell is just empty
@@ -168,8 +168,6 @@ namespace warpcore::impl
 
                 return true;
             });
-
-        //std::cerr << "   # tested triangles: " << ctx.ntested << std::endl;
 
         return ctx.idx;
     }
