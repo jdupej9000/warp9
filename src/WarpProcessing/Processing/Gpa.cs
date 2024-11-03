@@ -45,6 +45,14 @@ namespace Warp9.Processing
 
             return transformed;
         }
+
+        public Rigid3 GetTransform(int idx)
+        {
+            if (idx < 0 || idx >= pointClouds.Length)
+                throw new ArgumentOutOfRangeException();
+
+            return transforms[idx];
+        }
         
 
         public static Gpa Fit(PointCloud[] data, GpaConfiguration? cfg = null)

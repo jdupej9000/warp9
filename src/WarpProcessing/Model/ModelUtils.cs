@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.LinkLabel;
 
 namespace Warp9.Model
 {
@@ -32,6 +33,20 @@ namespace Warp9.Model
                 else
                     yield return null;
             }
+        }
+
+        public static T? LoadSpecimenTableRef<T>(Project proj, SpecimenTableColumn<ProjectReferenceLink> col, int index)
+            where T : class
+        {
+            IReadOnlyList<ProjectReferenceLink> links = col.GetData<ProjectReferenceLink>();
+
+            if (index >= links.Count)
+                return null;
+
+            if(proj.TryGetReference(links[index].ReferenceIndex, out T? val))
+                return val;
+
+            return null;
         }
     }
 }

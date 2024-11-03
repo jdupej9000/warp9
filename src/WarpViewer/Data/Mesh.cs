@@ -75,5 +75,13 @@ namespace Warp9.Data
         {
             return new Mesh(pcl, 0, Array.Empty<byte>(), null);
         }
+
+        public static Mesh FromPointCloud(PointCloud pcl, Mesh facesSource)
+        {
+            if (facesSource.IsIndexed)
+                return new Mesh(pcl, facesSource.FaceCount, facesSource.indexData, facesSource.indexSegment);
+            else
+                return FromPointCloud(pcl);
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace Warp9.Model
         [JsonIgnore]
         public string[]? Names { get; set; } = null;
 
-        public abstract IEnumerable<T> GetData<T>();
+        public abstract IReadOnlyList<T> GetData<T>();
         public abstract void Clear();
 
         public abstract object? GetAt(int idx);
@@ -66,7 +66,7 @@ namespace Warp9.Model
         public override int NumRows => data.Count;
         public List<T> Data => data;
 
-        public override IEnumerable<TReq> GetData<TReq>()
+        public override IReadOnlyList<TReq> GetData<TReq>()
         {
             if (data is List<TReq> typedData)
                 return typedData;

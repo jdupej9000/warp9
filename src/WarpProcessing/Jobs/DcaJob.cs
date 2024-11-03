@@ -14,6 +14,8 @@ namespace Warp9.Jobs
 
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg)
         {
+            string meshColumn = cfg.MeshColumnName ?? throw new InvalidOperationException();
+
             switch (cfg.RigidPreregistration)
             {
                 case DcaRigidPreregKind.None:
@@ -22,8 +24,7 @@ namespace Warp9.Jobs
                 case DcaRigidPreregKind.LandmarkFittedGpa:
                     yield return new LandmarkGpaJobItem(cfg.SpecimenTableKey, 
                         cfg.LandmarkColumnName ?? throw new InvalidOperationException(), 
-                        GpaPreregKey, JobItemFlags.FailuesAreFatal | JobItemFlags.BlocksNext,
-                        null);
+                        GpaPreregKey, null);
                     break;
 
                 default:
@@ -38,11 +39,18 @@ namespace Warp9.Jobs
                 case DcaNonrigidRegistrationKind.LandmarkFittedTps:
                     break;
 
-                case DcaNonrigidRegistrationKind.LowRankCpd:
-                    {
-
-                    }
+                case DcaNonrigidRegistrationKind.LowRankCpd 
+                when cfg.RigidPreregistration == DcaRigidPreregKind.None:
+                    yield return new CpdInitJobItem(cfg.SpecimenTableKey, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
                     break;
+
+                case DcaNonrigidRegistrationKind.LowRankCpd
+                when cfg.RigidPreregistration == DcaRigidPreregKind.None:
+                    yield return new CpdInitJobItem(cfg.SpecimenTableKey, NonrigidInitKey, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
             }
 
             // TODO
