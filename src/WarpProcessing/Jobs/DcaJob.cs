@@ -43,7 +43,7 @@ namespace Warp9.Jobs
                     break;
 
                 case DcaNonrigidRegistrationKind.LandmarkFittedTps:
-                    break;
+                    throw new NotImplementedException();
 
                 case DcaNonrigidRegistrationKind.LowRankCpd:
                     yield return new CpdInitJobItem(cfg.SpecimenTableKey, gpaRegItem, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
@@ -55,6 +55,18 @@ namespace Warp9.Jobs
                     }
                     break;
 
+                default:
+                    throw new NotImplementedException();
+            }
+
+            switch (cfg.SurfaceProjection)
+            {
+                case DcaSurfaceProjectionKind.None:
+                    throw new NotImplementedException();
+                case DcaSurfaceProjectionKind.ClosestPoint:
+                    throw new NotImplementedException();
+                case DcaSurfaceProjectionKind.RaycastWithFallback:
+                    throw new NotImplementedException();
                 default:
                     throw new NotImplementedException();
             }
