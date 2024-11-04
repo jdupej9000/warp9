@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Data;
 using Warp9.Processing;
 
 namespace Warp9.Jobs
@@ -12,6 +13,7 @@ namespace Warp9.Jobs
         private static readonly string GpaPreregKey = "rigid";
         private static readonly string NonrigidInitKey = "nonrigid.init";
         private static readonly string NonrigidRegKey = "nonrigid.reg";
+        private static readonly string CorrespondenceRegKey = "corr.reg";
 
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg)
         {
@@ -25,8 +27,8 @@ namespace Warp9.Jobs
                     break;
 
                 case DcaRigidPreregKind.LandmarkFittedGpa:
-                    yield return new LandmarkGpaJobItem(cfg.SpecimenTableKey, 
-                        cfg.LandmarkColumnName ?? throw new InvalidOperationException(), 
+                    yield return new LandmarkGpaJobItem(cfg.SpecimenTableKey,
+                        cfg.LandmarkColumnName ?? throw new InvalidOperationException(),
                         GpaPreregKey, null);
                     gpaRegItem = GpaPreregKey;
                     break;
@@ -63,13 +65,22 @@ namespace Warp9.Jobs
             {
                 case DcaSurfaceProjectionKind.None:
                     throw new NotImplementedException();
+
                 case DcaSurfaceProjectionKind.ClosestPoint:
-                    throw new NotImplementedException();
                 case DcaSurfaceProjectionKind.RaycastWithFallback:
-                    throw new NotImplementedException();
+                    yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
+                    for (int i = 0; i < cfg.NumSpecimens; i++)
+                    {
+                        if (i != baseMeshIndex)
+                            yield return new SurfaceProjectionJobItem(cfg.SpecimenTableKey, meshColumn, i, NonrigidRegKey, gpaRegItem, CorrespondenceRegKey);
+                    }
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
+
+            yield return new WorkspaceCleanupJobItem(NonrigidInitKey, NonrigidRegKey);
 
             // TODO
         }

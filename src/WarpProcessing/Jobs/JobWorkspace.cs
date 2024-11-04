@@ -15,7 +15,16 @@ namespace Warp9.Jobs
             
         }
 
+        public void Remove(string key)
+        {
+        }
+
         public bool TryGet<T>(string key, [MaybeNullWhen(false)] out T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGet<T>(string key, int index, [MaybeNullWhen(false)] out T value)
         {
             throw new NotImplementedException();
         }
