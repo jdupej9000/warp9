@@ -60,7 +60,7 @@ namespace Warp9.Native
     [Flags]
     public enum SEARCH_KIND : int
     {
-        SEARCH_NN = 0,
+        SEARCH_NN_DPTBARY = 0,
         SEARCH_RAYCAST_T = 1,
         SEARCH_RAYCAST_TBARY = 2,
 

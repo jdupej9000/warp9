@@ -108,7 +108,7 @@ namespace warpcore::impl
 
 
     template<typename TRayTriTraits>
-    int trigrid_raycast_new(const trigrid* grid, const float* orig, const float* dir, float* t)
+    int trigrid_raycast(const trigrid* grid, const float* orig, const float* dir, float* t)
     {
         using namespace warpcore;
 
@@ -170,5 +170,78 @@ namespace warpcore::impl
             });
 
         return ctx.idx;
+    }
+
+    template<typename TPtTriTraits>
+    int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
+    {
+        struct trigrid_nn_ctx {
+            const trigrid* grid;
+            float* best;
+            int* bestIdx;
+            const float* pt;
+            float* proj;
+            int* coarseRadius;
+            int cx, cy, cz;
+        };
+
+        const p3f p = p3f_set(pt);
+        const p3f r = p3f_mul(p3f_set(grid->dx), p3f_sub(p, p3f_set(grid->x0)));
+
+        int cx, cy, cz;
+        p3f_to_int(r, cx, cy, cz);
+
+        float best = clamp * clamp;
+        int bestIdx = -1;
+        int coarseRadius = clamp > 0.0f ?
+            (int)(clamp * p3f_max(p3f_set(grid->dx)) + 0.5f) :
+            grid->ncell[0];
+
+        if (coarseRadius < 1)
+            coarseRadius = 1;
+        else if (coarseRadius > grid->ncell[0])
+            coarseRadius = grid->ncell[0];
+
+        trigrid_nn_ctx ctx{
+            .grid = grid,
+            .best = &best,
+            .bestIdx = &bestIdx,
+            .pt = pt,
+            .proj = proj,
+            .coarseRadius = &coarseRadius,
+            .cx = cx,
+            .cy = cy,
+            .cz = cz
+        };
+
+        foreach_voxel_central<trigrid_nn_ctx&>(coarseRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
+            [](int dx, int dy, int dz, trigrid_nn_ctx& ctx) noexcept {
+
+                // early out if the cell cannot possibly contain any closer triangles
+                if (abs(dx - ctx.cx) > *ctx.coarseRadius || abs(dy - ctx.cy) > *ctx.coarseRadius || abs(dz - ctx.cz) > *ctx.coarseRadius)
+                    return;
+
+                // x,y,z are in range, guaranteed by foreach_voxel_central
+                const int idx = dx + ctx.grid->ncell[0] * dy + ctx.grid->ncell[0] * ctx.grid->ncell[1] * dz;
+                const trigrid_cell* cell = ctx.grid->cells + idx;
+
+                if (cell->n > 0) {
+                    float d2 = FLT_MAX;
+                    float cellResult[TPtTriTraits::ResultSize];
+                    const int hitIdx = pttri<TPtTriTraits>(ctx.pt, cell->vert, cell->n, cell->n, cellResult, &d2);
+
+                    if (d2 < *ctx.best) {
+                        *ctx.best = d2;
+                        *ctx.bestIdx = cell->idx[hitIdx];
+                        memcpy(ctx.proj, cellResult, sizeof(float) * TPtTriTraits::ResultSize);
+
+                        float r = p3f_max(p3f_mul(p3f_set(ctx.grid->dx), p3f_set(sqrtf(d2))));
+                        *ctx.coarseRadius = std::max(1, (int)(r + 0.5f));
+                    }
+                }
+
+            });
+
+        return bestIdx;
     }
 };

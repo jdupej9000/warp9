@@ -94,14 +94,15 @@ namespace warpcore::impl
         }
     }
 
-    int pttri(const float* orig, const float* vert, int n, int stride, float* closest)
+    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
     {
         const __m128i idx = _mm_set_epi32(0, 2 * stride, stride, 0);
         const p3f pt = p3f_set(orig); 
 
-        float mindist = 1e30f;
+        float mindist = retDist;
         int ret = 0;
         p3f ptclosest = p3f_zero();
+        p3f baryclosest = p3f_zero();
 
         const float* v = vert;
         for(int i = 0; i < n; i++) {
@@ -110,17 +111,20 @@ namespace warpcore::impl
             p3f c = _mm_i32gather_ps(v + 6 * stride, idx, 4);
             v++;
 
-            p3f q = p3f_proj_to_tri(a, b, c, pt);
+            p3f bary = p3f_proj_to_tri_bary(a, b, c, pt);
+            p3f q = p3f_from_bary(a, b, c, bary);
             float dist = p3f_distsq(q, pt);
             if(dist < mindist) {
                 mindist = dist;
                 ret = i;
                 ptclosest = q;
+                baryclosest = bary;
             }
         }
 
-        if(closest)
-            _mm_storeu_ps(closest, ptclosest);
+        retBary = baryclosest;
+        retPt = ptclosest;
+        retDist = mindist;
 
         return ret;
     }

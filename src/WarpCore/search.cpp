@@ -53,31 +53,38 @@ extern "C" int search_query(const void* ctx, int kind, const float* orig, const 
         query_info qi { .g = (const trigrid*)ctx, .hit = hit, .info = info };
 
         switch(kind) {
-        case SEARCH_NN:
+        case SEARCH_NN_DPTBARY:
             foreach_row<float, 3, query_info&>(orig, n, qi,
                 [](const float* o, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_nn(qi.g, o, 1e10f, (float*)qi.info + 4 * i);
+                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, 1e10f, (float*)qi.info + 8 * i);
                 });
+            return WCORE_OK;
+
+        case SEARCH_NN_DPTBARY | SEARCH_SOURCE_IS_AOS:
+            for (int i = 0; i < n; i++)
+            {
+                qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, 1e10f, (float*)qi.info + 8 * i);
+            }
             return WCORE_OK;
 
         case SEARCH_RAYCAST_T:
             foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
                 [](const float* o, const float* d, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
+                    qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
                 });
             return WCORE_OK;
 
         case SEARCH_RAYCAST_T | SEARCH_SOURCE_IS_AOS:
             for (int i = 0; i < n; i++)
             {
-                qi.hit[i] = trigrid_raycast_new<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
+                qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
             }
             return WCORE_OK;
 
         case SEARCH_RAYCAST_TBARY:
             foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
                 [](const float* o, const float* d, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_raycast_new<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
+                    qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
                 });
             return WCORE_OK;
 
@@ -101,7 +108,7 @@ extern "C" int search_direct(int kind, const float* orig, const float* dir, cons
         return raytri<RayTri_T>(orig, dir, vert, n, n, &t);
 
     case SEARCHD_NN_TRISOUP_3:
-        return pttri(orig, vert, n, n, nullptr);
+        return pttri<PtTri_Blank>(orig, vert, n, n, nullptr, &t);
     }
 
     return -1;

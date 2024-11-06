@@ -12,7 +12,13 @@ namespace Warp9.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct ResultInfoTBary
     {
-        float t, u, v, w;
+        public float t, u, v, w;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ResultInfoDPtBary
+    {
+        public float d, x, y, z, u, v, w, _reserved0;
     }
 
     public class SearchContext : IDisposable
@@ -26,7 +32,7 @@ namespace Warp9.Native
         nint nativeContext;
         SEARCH_STRUCTURE structKind;
 
-        public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, Span<int> hitIndex, Span<float> hitDist)
+        public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -35,10 +41,29 @@ namespace Warp9.Native
             {
                 fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
                 fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
-                fixed (float* hitDistPtr = &MemoryMarshal.GetReference(hitDist))
+                fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN, (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, 
+                        (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
+                }
+            }
+        }
+
+        public bool NearestAos(ReadOnlySpan<Vector3> srcSoa, int n, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        {
+            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
+                return false;
+
+            unsafe
+            {
+                fixed (Vector3* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
+                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
+                fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
+                {
+                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, 
+                        (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
         }
@@ -56,7 +81,8 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_T, (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
+                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_T, 
+                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
         }
@@ -74,7 +100,8 @@ namespace Warp9.Native
                 fixed (ResultInfoTBary* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY, (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
+                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY,
+                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
         }
@@ -92,7 +119,8 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
+                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), 
+                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
         }

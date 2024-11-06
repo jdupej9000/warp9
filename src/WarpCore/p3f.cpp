@@ -462,7 +462,7 @@ namespace warpcore
         //d := _mm_movehl_ps(tmp3, tmp1);
     }
 
-    p3f p3f_proj_to_tri(p3f aa, p3f bb, p3f cc, p3f pt) noexcept
+    p3f p3f_proj_to_tri_bary(p3f aa, p3f bb, p3f cc, p3f pt) noexcept
     {
         //https://www.geometrictools.com/Documentation/DistancePoint3Triangle3.pdf
         const p3f e0 = p3f_sub(aa, bb);
@@ -555,6 +555,7 @@ namespace warpcore
             }
         }
 
-        return p3f_fma(s, e0, p3f_fma(t, e1, bb)); // s*e0 + t*e1 + bb
+        return p3f_set(s, 1.0f - s - t, t);
+        //return p3f_fma(s, e0, p3f_fma(t, e1, bb)); // s*e0 + t*e1 + bb
     }
 };  

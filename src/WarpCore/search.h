@@ -14,7 +14,7 @@ enum SEARCHD_KIND {
 };
 
 enum SEARCH_KIND {
-    SEARCH_NN = 0,
+    SEARCH_NN_DPTBARY = 0,
     SEARCH_RAYCAST_T = 1,
     SEARCH_RAYCAST_TBARY = 2,
 

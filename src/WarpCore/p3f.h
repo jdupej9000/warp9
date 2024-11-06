@@ -69,7 +69,7 @@ namespace warpcore
     p3f normal_from_tri(p3f a, p3f b, p3f c) noexcept;
     void tri_transpose_inplace(p3f& a, p3f& b, p3f& c) noexcept;
 
-    p3f p3f_proj_to_tri(p3f aa, p3f bb, p3f cc, p3f pt) noexcept;
+    p3f p3f_proj_to_tri_bary(p3f aa, p3f bb, p3f cc, p3f pt) noexcept;
     
     template<int I>
     p3f p3f_broadcast(p3f a) noexcept

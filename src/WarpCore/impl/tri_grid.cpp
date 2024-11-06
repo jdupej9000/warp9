@@ -12,16 +12,6 @@ using namespace warpcore;
 
 namespace warpcore::impl
 {
-    struct trigrid_nn_ctx {
-        const trigrid* grid;
-        float* best;
-        int* bestIdx;
-        const float* pt;
-        float* proj;
-        int* coarseRadius;
-        int cx, cy, cz;
-    };
-
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range);
     void make_cell_histogram(const trigrid* grid, const int* idx_range, int nt, int* hist);
     void populate_index_arrays(trigrid* grid, const int* idx_range, int nt, int* counter);
@@ -91,67 +81,6 @@ namespace warpcore::impl
 
        grid->buff_vert.clear();
        grid->buff_idx.clear();
-    }
-
-    int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
-    {
-        const p3f p = p3f_set(pt);
-        const p3f r = p3f_mul(p3f_set(grid->dx), p3f_sub(p, p3f_set(grid->x0)));
-
-        int cx, cy, cz;
-        p3f_to_int(r, cx, cy, cz);
-
-        float best = clamp * clamp;
-        int bestIdx = -1;
-        int coarseRadius = clamp > 0.0f ? 
-            (int)(clamp * p3f_max(p3f_set(grid->dx)) + 0.5f) : 
-            grid->ncell[0];
-
-        if(coarseRadius < 1)
-            coarseRadius = 1;
-        else if(coarseRadius > grid->ncell[0])
-            coarseRadius = grid->ncell[0];
-
-        trigrid_nn_ctx ctx {
-            .grid = grid,
-            .best = &best,
-            .bestIdx = &bestIdx,
-            .pt = pt,
-            .proj = proj,
-            .coarseRadius = &coarseRadius,
-            .cx = cx,
-            .cy = cy,
-            .cz = cz
-        };
-
-        foreach_voxel_central<trigrid_nn_ctx&>(coarseRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
-            [](int dx, int dy, int dz, trigrid_nn_ctx& ctx) noexcept {
-                
-                // early out if the cell cannot possibly contain any closer triangles
-                if(abs(dx - ctx.cx) > *ctx.coarseRadius || abs(dy - ctx.cy) > *ctx.coarseRadius || abs(dz - ctx.cz) > *ctx.coarseRadius)
-                    return;
-                
-                // x,y,z are in range, guaranteed by foreach_voxel_central
-                const int idx = dx + ctx.grid->ncell[0] * dy + ctx.grid->ncell[0] * ctx.grid->ncell[1] * dz;
-                const trigrid_cell* cell = ctx.grid->cells + idx;
-                
-                if(cell->n > 0) {
-                    alignas(32) float closest[4];
-                    const int hitIdx = pttri(ctx.pt, cell->vert, cell->n, cell->n, closest);
-                    const float d2 = p3f_distsq(p3f_set(ctx.pt), p3f_set(closest));
-                    if(d2 < *ctx.best) {
-                        *ctx.best = d2;
-                        *ctx.bestIdx = cell->idx[hitIdx];
-                        memcpy(ctx.proj, closest, sizeof(float) * 3);
-
-                        float r = p3f_max(p3f_mul(p3f_set(ctx.grid->dx), p3f_set(sqrtf(d2))));
-                        *ctx.coarseRadius = std::max(1, (int)(r + 0.5f));
-                    }
-                }
-               
-            });
-
-        return bestIdx;
     }
 
     void populate_index_arrays(trigrid* grid, const int* idx_range, int nt, int* counter)

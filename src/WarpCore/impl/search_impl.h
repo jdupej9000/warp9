@@ -52,12 +52,36 @@ namespace warpcore::impl
         return TTraits::store(bestt, besti, u, v, result);
     }
 
-    // Casts a ray from orig in the direction dir into the triangle soup in vert (assuming
-    // there are n triangles). The triangles are represented as struct-of-arrays, with all x0,
-    // then y0, z0, x1, y1, z1, x2, y2, z2. Each channel starts at an integer multiple of stride.
-    // If there is no spacing between channels, n==stride. If a collision is found, the index of
-    // closest colliding triangle is returned and t is set to the distance of collision (in units
-    // of dir). Otherwise, -1 is returned and t is left unmodified.
-    //int raytri(const float* orig, const float* dir, const float* vert, int n, int stride, float* t);
-    int pttri(const float* orig, const float* vert, int n, int stride, float* closest);
+    struct PtTri_Blank
+    {
+        constexpr static size_t ResultSize = 1;
+        static inline void store(p3f pt, p3f bary, float d, float* result) noexcept
+        {
+        }
+    };
+
+    struct PtTri_DPtBary
+    {
+        constexpr static size_t ResultSize = 8;
+        static inline void store(p3f pt, p3f bary, float d, float* result) noexcept
+        {
+            result[0] = sqrtf(d);
+            _mm_storeu_ps(result + 1, pt);
+            _mm_storeu_ps(result + 4, bary);
+        }
+    };
+  
+    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
+
+    template<typename TTraits>
+    int pttri(const float* orig, const float* vert, int n, int stride, float* result, float* pdist) noexcept
+    {
+        float dist = FLT_MAX;
+        p3f bary = p3f_zero();
+        p3f pt = p3f_zero();
+
+        int ret = _pttri(orig, vert, n, stride, bary, pt, dist);
+        TTraits::store(pt, bary, dist, result);
+        *pdist = dist;
+    }
 };
