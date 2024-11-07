@@ -44,7 +44,7 @@ namespace Warp9.Native
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, 
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, 
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
@@ -62,7 +62,7 @@ namespace Warp9.Native
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, 
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, 
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }

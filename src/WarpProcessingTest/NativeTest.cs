@@ -172,6 +172,53 @@ namespace Warp9.Test
             TrigridRaycastTestCase("TrigridRaycast1Test_0.png", 1, 128);
         }
 
+        public void TrigridNnTestCase(string referenceFileName, int gridCells, int bitmapSize)
+        {
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
+            Assert.IsNotNull(ctx);
+
+            // x0=<-3, 0, -2>, x1=<3.434, 3.15, 2>, center=<0.053937342, 1.7241387, -0.00024491842>, cs=2.0256174
+            TestUtils.GenerateGrid(bitmapSize, bitmapSize,
+                new Vector3(-3.5f, 5.2f, 0f), new Vector3(3.5f, 5.2f, 0f), new Vector3(-3.5f, -1.8f, 0f),
+                out Vector3[] pts);
+
+            int[] hit = new int[bitmapSize * bitmapSize];
+            ResultInfoDPtBary[] res = new ResultInfoDPtBary[bitmapSize * bitmapSize];
+
+            ctx.NearestAos(pts.AsSpan(), bitmapSize * bitmapSize, hit.AsSpan(), res.AsSpan());
+
+            Lut lut = Lut.Create(256, Lut.FastColors);
+
+            Bitmap bmp = new Bitmap(bitmapSize, bitmapSize);
+            float range0 = 0; //t.Min();
+            float range1 = 2;// t.Max();
+            for (int j = 0; j < bitmapSize; j++)
+            {
+                for (int i = 0; i < bitmapSize; i++)
+                {
+                    float r = (MathF.Sqrt(res[j * bitmapSize + i].d) - range0) / (range1 - range0);
+                    bmp.SetPixel(i, j, lut.Sample(r));
+                }
+            }
+
+            BitmapAsserts.AssertEqual(referenceFileName, bmp);
+
+            ctx.Dispose();
+        }
+
+        [TestMethod]
+        public void Trigrid16NnTest()
+        {
+            TrigridNnTestCase("Trigrid16NnTest_0.png", 16, 128);
+        }
+
+        [TestMethod]
+        public void Trigrid1NnTest()
+        {
+            TrigridNnTestCase("Trigrid1NnTest_0.png", 1, 128);
+        }
+
         [TestMethod]
         public void PclStatsTest()
         {
@@ -180,6 +227,7 @@ namespace Warp9.Test
 
             Console.WriteLine(string.Format("x0={0}, x1={1}, center={2}, cs={3}",
                 stat.x0.ToString(), stat.x1.ToString(), stat.center.ToString(), stat.size));
+
         }
     }
 }

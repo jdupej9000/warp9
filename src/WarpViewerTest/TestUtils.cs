@@ -127,6 +127,22 @@ namespace Warp9.Test
             }
         }
 
+        public static void GenerateGrid(int nx, int ny, Vector3 p00, Vector3 p01, Vector3 p10, out Vector3[] p)
+        {
+            p = new Vector3[nx * ny];
+
+            Vector3 dx = (p01 - p00) / nx;
+            Vector3 dy = (p10 - p00) / nx;
+
+            for (int j = 0; j < ny; j++)
+            {
+                for (int i = 0; i < nx; i++)
+                {
+                    p[i + nx * j] = p00 + (float)i * dx + (float)j * dy;
+                }
+            }
+        }
+
         public static void GenerateRays(Vector3 camera, int nx, int ny, out Vector3[] p0, out Vector3[] d)
         {
             // TODO: make the constants more global
