@@ -15,7 +15,9 @@ namespace Warp9.Test
     {
         private static (HeadlessRenderer, RenderItemCube?) CreateRenderer(bool addCube = true)
         {
-            Assert.IsTrue(HeadlessRenderer.TryCreate(0, out HeadlessRenderer? r));
+            int adapter = TestUtils.FindAdapter();
+
+            Assert.IsTrue(HeadlessRenderer.TryCreate(adapter, out HeadlessRenderer? r));
             Assert.IsNotNull(r);
          
             r.CanvasColor = Color.Black;

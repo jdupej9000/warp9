@@ -14,6 +14,24 @@ namespace Warp9.Test
     {
         public static readonly string AssetsPath = @"../../test/data/";
 
+        public static int FindAdapter()
+        {
+            var adapters = RendererBase.EnumAdapters();
+            int adapterIdx = 0;
+
+            foreach (var kvp in adapters)
+            {
+                if (kvp.Value.Contains("nvidia", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    adapterIdx = kvp.Key;
+                    break;
+                }
+            }
+
+            Console.WriteLine(string.Format("Selecting graphics adapter {0}: {1}", adapterIdx, adapters[adapterIdx]));
+            return adapterIdx;
+        }
+
         public static Stream OpenAsset(string name)
         {
             string path = Path.Combine(AssetsPath, name);
@@ -32,7 +50,8 @@ namespace Warp9.Test
 
         private static HeadlessRenderer CreateRenderer()
         {
-            Assert.IsTrue(HeadlessRenderer.TryCreate(0, out HeadlessRenderer? r));
+            int adapterIdx = FindAdapter();
+            Assert.IsTrue(HeadlessRenderer.TryCreate(adapterIdx, out HeadlessRenderer? r));
             Assert.IsNotNull(r);
 
             r.CanvasColor = Color.Black;
