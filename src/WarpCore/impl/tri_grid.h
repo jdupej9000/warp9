@@ -237,11 +237,8 @@ namespace warpcore::impl
                         float d = sqrtf(d2);
                         p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(d, p3f_set(ctx.grid->dx))), 1.0f, ctx.grid->ncell[0]);
                         _mm_storeu_si128((__m128i*)ctx.coarseRadius, p3f_to_p3i(crad));
-                        //float r = p3f_max(p3f_mul(p3f_set(ctx.grid->dx), p3f_set(sqrtf(d2))));
-                        //*ctx.coarseRadius = std::max(1, (int)(r + 0.5f));
                     }
                 }
-
             });
 
         return bestIdx;
