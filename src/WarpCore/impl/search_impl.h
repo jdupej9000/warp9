@@ -83,5 +83,6 @@ namespace warpcore::impl
         int ret = _pttri(orig, vert, n, stride, bary, pt, dist);
         TTraits::store(pt, bary, dist, result);
         *pdist = dist;
+        return ret;
     }
 };

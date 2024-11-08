@@ -196,32 +196,28 @@ namespace warpcore::impl
 
         float best = clamp * clamp;
         int bestIdx = -1;
-        int coarseRadius = clamp > 0.0f ?
-            (int)(clamp * p3f_max(p3f_set(grid->dx)) + 0.5f) :
-            grid->ncell[0];
-
-        if (coarseRadius < 1)
-            coarseRadius = 1;
-        else if (coarseRadius > grid->ncell[0])
-            coarseRadius = grid->ncell[0];
-
+        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(clamp, p3f_set(grid->dx))), 1.0f, grid->ncell[0]);
+        int coarseRadius[4];
+        _mm_storeu_si128((__m128i*)coarseRadius, p3f_to_p3i(crad));
+      
         trigrid_nn_ctx ctx{
             .grid = grid,
             .best = &best,
             .bestIdx = &bestIdx,
             .pt = pt,
             .proj = proj,
-            .coarseRadius = &coarseRadius,
+            .coarseRadius = coarseRadius,
             .cx = cx,
             .cy = cy,
             .cz = cz
         };
 
-        foreach_voxel_central<trigrid_nn_ctx&>(coarseRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
+        int initialRadius = std::max(std::max(coarseRadius[0], coarseRadius[1]), coarseRadius[2]);
+        foreach_voxel_central<trigrid_nn_ctx&>(initialRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
             [](int dx, int dy, int dz, trigrid_nn_ctx& ctx) noexcept {
 
                 // early out if the cell cannot possibly contain any closer triangles
-                if (abs(dx - ctx.cx) > *ctx.coarseRadius || abs(dy - ctx.cy) > *ctx.coarseRadius || abs(dz - ctx.cz) > *ctx.coarseRadius)
+                if (abs(dx - ctx.cx) > ctx.coarseRadius[0] || abs(dy - ctx.cy) > ctx.coarseRadius[1] || abs(dz - ctx.cz) > ctx.coarseRadius[2])
                     return;
 
                 // x,y,z are in range, guaranteed by foreach_voxel_central
@@ -230,7 +226,7 @@ namespace warpcore::impl
 
                 if (cell->n > 0) {
                     float d2 = FLT_MAX;
-                    float cellResult[TPtTriTraits::ResultSize];
+                    float cellResult[TPtTriTraits::ResultSize + 1];
                     const int hitIdx = pttri<TPtTriTraits>(ctx.pt, cell->vert, cell->n, cell->n, cellResult, &d2);
 
                     if (d2 < *ctx.best) {
@@ -238,8 +234,11 @@ namespace warpcore::impl
                         *ctx.bestIdx = cell->idx[hitIdx];
                         memcpy(ctx.proj, cellResult, sizeof(float) * TPtTriTraits::ResultSize);
 
-                        float r = p3f_max(p3f_mul(p3f_set(ctx.grid->dx), p3f_set(sqrtf(d2))));
-                        *ctx.coarseRadius = std::max(1, (int)(r + 0.5f));
+                        float d = sqrtf(d2);
+                        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(d, p3f_set(ctx.grid->dx))), 1.0f, ctx.grid->ncell[0]);
+                        _mm_storeu_si128((__m128i*)ctx.coarseRadius, p3f_to_p3i(crad));
+                        //float r = p3f_max(p3f_mul(p3f_set(ctx.grid->dx), p3f_set(sqrtf(d2))));
+                        //*ctx.coarseRadius = std::max(1, (int)(r + 0.5f));
                     }
                 }
 

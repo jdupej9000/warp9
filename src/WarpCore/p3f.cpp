@@ -142,6 +142,11 @@ namespace warpcore
         return _mm_sub_ps(a, b);
     }
 
+    p3f p3f_add(float a, p3f b) noexcept
+    {
+        return _mm_add_ps(_mm_set1_ps(a), b);
+    }
+
     p3f p3f_add(p3f a, p3f b) noexcept
     {
         return _mm_add_ps(a, b);
@@ -246,6 +251,11 @@ namespace warpcore
     p3f p3f_clamp_zero(p3f x) noexcept
     {
         return _mm_max_ps(x, _mm_setzero_ps());
+    }
+
+    p3f p3f_clamp(p3f x, float x0, float x1) noexcept
+    {
+        return _mm_max_ps(_mm_min_ps(x, _mm_set1_ps(x1)), _mm_set1_ps(x0));
     }
 
     p3f p3f_xy(p3f x) noexcept

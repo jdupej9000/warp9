@@ -32,6 +32,7 @@ namespace warpcore
     p3f p3f_normalize(p3f a) noexcept;
     p3f p3f_sub(p3f a, p3f b) noexcept;
     p3f p3f_add(p3f a, p3f b) noexcept;
+    p3f p3f_add(float a, p3f b) noexcept;
     p3i p3i_add(p3i a, p3i b) noexcept;
     p3f p3f_mul(p3f a, p3f b) noexcept;
     p3f p3f_mul(float a, p3f b) noexcept;
@@ -51,6 +52,7 @@ namespace warpcore
     bool p3i_is_zero(p3i x) noexcept;
     p3i p3i_clamp(p3i x, p3i box0, p3i box1) noexcept;
     p3f p3f_clamp_zero(p3f x) noexcept;
+    p3f p3f_clamp(p3f x, float x0, float x1) noexcept;
     p3f p3f_xy(p3f x) noexcept;
     float p3f_addxy(p3f x) noexcept;
     int p3i_get(p3i x, int i) noexcept;
