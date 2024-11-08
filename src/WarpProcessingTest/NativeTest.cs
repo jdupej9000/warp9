@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -186,10 +187,16 @@ namespace Warp9.Test
             int[] hit = new int[bitmapSize * bitmapSize];
             ResultInfoDPtBary[] res = new ResultInfoDPtBary[bitmapSize * bitmapSize];
 
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             Parallel.For(0, bitmapSize, (i) =>
             {
                 ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
             });
+            sw.Stop();
+
+            Console.WriteLine("{0:F1} queries per second",
+                bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds);
 
             Lut lut = Lut.Create(256, Lut.FastColors);
 

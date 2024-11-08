@@ -95,23 +95,23 @@ namespace warpcore::impl
     }
 
     template<typename TCtx>
-    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, TCtx ctx, void (*fun)(int x, int y, int z, TCtx ctx))
+    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, TCtx ctx, bool (*fun)(int x, int y, int z, int r, TCtx ctx))
     {
-		#define FUN(x,y,z) if((x) >= 0 && (x) < maxx && (y) >= 0 && (y) < maxy && (z) >= 0 && (z) < maxz) fun((x), (y), (z), ctx)
-    	FUN(cx, cy, cz);
+		#define FUN(x,y,z,l) if((x) >= 0 && (x) < maxx && (y) >= 0 && (y) < maxy && (z) >= 0 && (z) < maxz) if(!fun((x), (y), (z), (l), ctx)) return;
+    	FUN(cx, cy, cz, 0);
 
 		// TODO: this order could still be more optimal
 		for (int r = 1; r < radius; r++) {
-			for(int i = 0; i < 2 * radius - 1; i++) {
+			for(int i = 0; i < 2 * r - 1; i++) {
 				int du = decode_zigzag(i);
-				for(int j = 0; j < 2 * radius - 1; j++) {
+				for(int j = 0; j < 2 * r - 1; j++) {
 					int dv = decode_zigzag(j);
-					FUN(cx + du, cy + dv, cz + r);
-                    FUN(cx - du, cy - dv, cz - r);
-                    FUN(cx + du, cy + r, cz + dv);
-                    FUN(cx - du, cy - r, cz - dv);
-                    FUN(cx + r, cy + du, cz + dv);
-                    FUN(cx - r, cy - du, cz - dv);
+					FUN(cx + du, cy + dv, cz + r, r);
+                    FUN(cx - du, cy - dv, cz - r, r);
+                    FUN(cx + du, cy + r, cz + dv, r);
+                    FUN(cx - du, cy - r, cz - dv, r);
+                    FUN(cx + r, cy + du, cz + dv, r);
+                    FUN(cx - r, cy - du, cz - dv, r);
 				}
 			}
 		}
