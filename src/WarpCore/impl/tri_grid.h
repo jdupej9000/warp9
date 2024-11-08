@@ -190,6 +190,9 @@ namespace warpcore::impl
 
         int cx, cy, cz;
         p3f_to_int(r, cx, cy, cz);
+        cx = std::min(std::max(0, cx), grid->ncell[0] - 1);
+        cy = std::min(std::max(0, cy), grid->ncell[1] - 1);
+        cz = std::min(std::max(0, cz), grid->ncell[2] - 1);
 
         float best = clamp * clamp;
         int bestIdx = -1;

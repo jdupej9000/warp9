@@ -186,7 +186,10 @@ namespace Warp9.Test
             int[] hit = new int[bitmapSize * bitmapSize];
             ResultInfoDPtBary[] res = new ResultInfoDPtBary[bitmapSize * bitmapSize];
 
-            ctx.NearestAos(pts.AsSpan(), bitmapSize * bitmapSize, hit.AsSpan(), res.AsSpan());
+            Parallel.For(0, bitmapSize, (i) =>
+            {
+                ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
+            });
 
             Lut lut = Lut.Create(256, Lut.FastColors);
 
