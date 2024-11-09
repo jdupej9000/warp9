@@ -32,10 +32,13 @@ namespace Warp9.Native
         nint nativeContext;
         SEARCH_STRUCTURE structKind;
 
-        public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
+
+            SearchQueryConfig cfg = new SearchQueryConfig();
+            cfg.max_dist = maxDist;
 
             unsafe
             {
@@ -44,16 +47,19 @@ namespace Warp9.Native
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, 
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, ref cfg, 
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
         }
 
-        public bool NearestAos(ReadOnlySpan<Vector3> srcSoa, int n, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        public bool NearestAos(ReadOnlySpan<Vector3> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
+
+            SearchQueryConfig cfg = new SearchQueryConfig();
+            cfg.max_dist = maxDist;
 
             unsafe
             {
@@ -62,7 +68,7 @@ namespace Warp9.Native
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, 
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, ref cfg,
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
@@ -73,6 +79,8 @@ namespace Warp9.Native
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
+            SearchQueryConfig cfg = new SearchQueryConfig();
+
             unsafe
             {
                 fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
@@ -81,7 +89,7 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_T, 
+                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_T, ref cfg,
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
@@ -92,6 +100,8 @@ namespace Warp9.Native
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
+            SearchQueryConfig cfg = new SearchQueryConfig();
+
             unsafe
             {
                 fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
@@ -100,7 +110,7 @@ namespace Warp9.Native
                 fixed (ResultInfoTBary* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY,
+                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY, ref cfg,
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
@@ -111,6 +121,8 @@ namespace Warp9.Native
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
+            SearchQueryConfig cfg = new SearchQueryConfig();
+
             unsafe
             {
                 fixed (Vector3* srcSoaPtr = &MemoryMarshal.GetReference(src))
@@ -119,7 +131,7 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), 
+                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), ref cfg,
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }

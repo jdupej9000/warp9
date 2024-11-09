@@ -25,7 +25,12 @@ struct trigrid_config {
     int num_cells; 
 };
 
+struct search_query_config
+{
+    float max_dist;
+};
+
 extern "C" WCEXPORT int search_build(int structure, const float* vert, const int* idx, int nv, int nt, const void* config, void** ctx);
 extern "C" WCEXPORT int search_free(void* ctx);
 extern "C" WCEXPORT int search_direct(int kind, const float* orig, const float* dir, const float* vert, int n);
-extern "C" WCEXPORT int search_query(const void* ctx, int kind, const float* orig, const float* dir, int n, int* hit, void* info);
+extern "C" WCEXPORT int search_query(const void* ctx, int kind, search_query_config* cfg, const float* orig, const float* dir, int n, int* hit, void* info);

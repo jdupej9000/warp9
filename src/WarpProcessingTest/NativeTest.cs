@@ -179,7 +179,7 @@ namespace Warp9.Test
             sw.Start();
             Parallel.For(0, bitmapSize, (i) =>
             {
-                ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
+                ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, 1.0f, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
             });
             sw.Stop();
 

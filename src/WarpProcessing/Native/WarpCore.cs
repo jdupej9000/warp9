@@ -126,6 +126,12 @@ namespace Warp9.Native
         public int num_cells;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SearchQueryConfig
+    {
+        public float max_dist;
+    }
+
     public static class WarpCore
     {
         [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
@@ -156,6 +162,6 @@ namespace Warp9.Native
         public static extern int search_direct(int kind, nint orig, nint dir, nint vert, int n);
 
         [DllImport("WarpCore.dll")]
-        public static extern int search_query(nint ctx, int kind, nint orig, nint dir, int n, nint hit, nint info);
+        public static extern int search_query(nint ctx, int kind, ref SearchQueryConfig cfg, nint orig, nint dir, int n, nint hit, nint info);
     }
 }

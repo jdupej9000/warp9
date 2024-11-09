@@ -56,7 +56,7 @@ namespace Warp9.Jobs
 
             bool ret = false;
             if (pclNonrigid.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
-                searchCtx.NearestSoa(pclNrData, nv, hitIndex.AsSpan(), proj.AsSpan()))
+                searchCtx.NearestSoa(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
             {
                 MeshBuilder mb = new MeshBuilder();
                 List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);

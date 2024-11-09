@@ -12,6 +12,7 @@ using namespace warpcore::impl;
 
 struct query_info {
     const trigrid* g;
+    const search_query_config* cfg;
     int* hit;
     void* info;
 };
@@ -43,27 +44,27 @@ extern "C" int search_free(void* ctx)
     return WCORE_INVALID_ARGUMENT;
 }
 
-extern "C" int search_query(const void* ctx, int kind, const float* orig, const float* dir, int n, int* hit, void* info)
+extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg, const float* orig, const float* dir, int n, int* hit, void* info)
 {
     if(!ctx)
         return WCORE_INVALID_ARGUMENT;
 
-      int structure = *(const int*)ctx;
+    int structure = *(const int*)ctx;
     if(structure == SEARCH_TRIGRID3) {
-        query_info qi { .g = (const trigrid*)ctx, .hit = hit, .info = info };
+        query_info qi { .g = (const trigrid*)ctx, .cfg = cfg, .hit = hit, .info = info };
 
         switch(kind) {
         case SEARCH_NN_DPTBARY:
             foreach_row<float, 3, query_info&>(orig, n, qi,
                 [](const float* o, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, 1e10f, (float*)qi.info + 8 * i);
+                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, qi.cfg->max_dist, (float*)qi.info + 8 * i);
                 });
             return WCORE_OK;
 
         case SEARCH_NN_DPTBARY | SEARCH_SOURCE_IS_AOS:
             for (int i = 0; i < n; i++)
             {
-                qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, 1e10f, (float*)qi.info + 8 * i);
+                qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, cfg->max_dist, (float*)qi.info + 8 * i);
             }
             return WCORE_OK;
 
