@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Numerics;
 using Warp9.Viewer;
 using Microsoft.VisualBasic.Logging;
+using System.Drawing.Imaging;
 
 namespace Warp9.Test
 {
@@ -46,6 +47,35 @@ namespace Warp9.Test
                 Assert.Inconclusive("Failed to load OBJ asset: " + errMsg);
 
             return m;
+        }
+
+        public static Bitmap RenderAsHeatmap(int width, int height, float min, float max, Func<int, int, float> fun)
+        {
+            Lut lut = Lut.Create(256, Lut.FastColors);
+            Bitmap bmp = new Bitmap(width, height);
+
+            unsafe
+            {
+                BitmapData bmpData = bmp.LockBits(
+                    new Rectangle(0, 0, width, height), 
+                    ImageLockMode.ReadWrite, PixelFormat.Format32bppRgb);
+
+                for (int j = 0; j < height; j++)
+                {
+                    nint ptr = bmpData.Scan0 + j * bmpData.Stride;
+                    Span<int> ptrSpan = new Span<int>((void*)ptr, bmpData.Stride);
+
+                    for (int i = 0; i < width; i++)
+                    {
+                        float r = (fun(i, j) - min) / (max - min);
+                        ptrSpan[i] = lut.Sample(r).ToArgb();
+                    }
+                }
+
+                bmp.UnlockBits(bmpData);
+            }
+
+            return bmp;
         }
 
         private static HeadlessRenderer CreateRenderer()

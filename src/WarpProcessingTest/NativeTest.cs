@@ -73,7 +73,6 @@ namespace Warp9.Test
         public void CpdRegDefaultTest()
         {
             Mesh pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            //PointCloud pclTarget = DistortPcl(pcl, new Vector3(0.5f, 0.2f, -0.1f), 1.10f, 0.25f);
             PointCloud pclTarget = DistortPcl(pcl, Vector3.Zero, 1.10f, 0.25f);
 
             WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, w:0.1f);
@@ -142,19 +141,8 @@ namespace Warp9.Test
             Console.WriteLine(string.Format("{0} rays in {1:F3} seconds, {2:F1} rays per second",
                 bitmapSize * bitmapSize, seconds, bitmapSize * bitmapSize / seconds));
 
-            Lut lut = Lut.Create(256, Lut.FastColors);
-
-            Bitmap bmp = new Bitmap(bitmapSize, bitmapSize);
-            float range0 = 6; //t.Min();
-            float range1 = 10;// t.Max();
-            for (int j = 0; j < bitmapSize; j++)
-            {
-                for (int i = 0; i < bitmapSize; i++)
-                {
-                    float r = (t[j * bitmapSize + i] - range0) / (range1 - range0);
-                    bmp.SetPixel(i, j, lut.Sample(r));
-                }
-            }
+            Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 6, 10,
+               (i, j) => t[j * bitmapSize + i]);
 
             BitmapAsserts.AssertEqual(referenceFileName, bmp);
 
@@ -198,19 +186,8 @@ namespace Warp9.Test
             Console.WriteLine("{0:F1} queries per second",
                 bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds);
 
-            Lut lut = Lut.Create(256, Lut.FastColors);
-
-            Bitmap bmp = new Bitmap(bitmapSize, bitmapSize);
-            float range0 = 0; //t.Min();
-            float range1 = 2;// t.Max();
-            for (int j = 0; j < bitmapSize; j++)
-            {
-                for (int i = 0; i < bitmapSize; i++)
-                {
-                    float r = (MathF.Sqrt(res[j * bitmapSize + i].d) - range0) / (range1 - range0);
-                    bmp.SetPixel(i, j, lut.Sample(r));
-                }
-            }
+            Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 0, 2,
+                (i, j) => MathF.Sqrt(res[j * bitmapSize + i].d));
 
             BitmapAsserts.AssertEqual(referenceFileName, bmp);
 
