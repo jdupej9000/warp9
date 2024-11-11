@@ -103,7 +103,7 @@ namespace warpcore::impl
                 for (int z = z0; z <= z1; z++)
                 for (int y = y0; y <= y1; y++)
                 for (int x = x0; x <= x1; x++) {
-                    int idx = x + grid->ncell[0] * y + grid->ncell[0] * grid->ncell[1] * z;
+                    const int idx = get_trigrid_cell_idx(grid, x, y, z);
                     grid->cells[idx].idx[counter[idx]] = i + j;
                     counter[idx]++;
                 }
@@ -130,7 +130,7 @@ namespace warpcore::impl
                 for (int z = z0; z <= z1; z++)
                 for (int y = y0; y <= y1; y++)
                 for (int x = x0; x <= x1; x++) {
-                    int idx = x + grid->ncell[0] * y + grid->ncell[0] * grid->ncell[1] * z;
+                    const int idx = get_trigrid_cell_idx(grid, x, y, z);
                     hist[idx] ++;
                 }
             }
@@ -235,8 +235,14 @@ namespace warpcore::impl
 
     const trigrid_cell* get_trigrid_cell(const trigrid* g, int x, int y, int z) noexcept
     {
-        const int cell_idx = x + g->ncell[0] * y + g->ncell[0] * g->ncell[1] * z;
-        return g->cells + cell_idx;
+        return g->cells + get_trigrid_cell_idx(g, x, y, z);
+    }
+
+    int get_trigrid_cell_idx(const trigrid* g, int x, int y, int z) noexcept
+    {
+        return x + 
+            g->ncell[0] * y + 
+            g->ncell[0] * g->ncell[1] * z;
     }
 
     bool is_cell_in_grid(const trigrid* g, int x, int y, int z) noexcept
