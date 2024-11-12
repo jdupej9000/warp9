@@ -40,6 +40,9 @@ namespace warpcore::impl
     template<typename TCtx>
     bool traverse_3ddda(p3f p0, p3f d, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
     {
+        // https://www.shadertoy.com/view/lfyGRW
+        // https://github.com/francisengelmann/fast_voxel_traversal/blob/master/main.cpp
+
         // J. Amanatides and A. Woo, A Fast Voxel Traversal Algorithm for Ray Tracing, Eurographics, 1987.
         p3i dimm1 = _mm_sub_epi32(dim, p3i_set(1));
         p3i cur = p3f_to_p3i(p0);
@@ -67,6 +70,31 @@ namespace warpcore::impl
             if(!fun(p3i_clamp(cur, _mm_setzero_si128(), dimm1), ctx))
                 return true;
         }
+
+        /*int diff[4]{ 0,0,0,0 };
+        bool neg = false;
+        if (p3i_get(cur, 0) == p3i_get(last, 0) && p3f_get<0>(d) < 0)
+        {
+            diff[0] = -1;
+            neg = true;
+        }
+        if (p3i_get(cur, 1) == p3i_get(last, 1) && p3f_get<1>(d) < 0)
+        {
+            diff[1] = -1;
+            neg = true;
+        }
+        if (p3i_get(cur, 2) == p3i_get(last, 2) && p3f_get<2>(d) < 0)
+        {
+            diff[2] = -1;
+            neg = true;
+        }
+
+        if (neg)
+        {
+            cur = p3i_add(cur, p3i_set(diff));
+            if (!fun(p3i_clamp(cur, _mm_setzero_si128(), dimm1), ctx))
+                return true;
+        }*/
 
         float mm[4], dd[4];
         _mm_storeu_ps(mm, m);
@@ -114,7 +142,7 @@ namespace warpcore::impl
         struct raycast_ctx {
             const trigrid* g;
             p3f o, d;
-            int idx;
+            int idx, temp;
             float* t;
             int ntested;
             float toffs;
@@ -130,13 +158,13 @@ namespace warpcore::impl
         float aabbt = 0.0f;
         if(!p3f_in_aabb(o, grid0, grid1)) {
             aabbt = intersect_ray_aabb(o, d, grid0, grid1);
-            if(aabbt < 0) 
+            if (aabbt < 0)
                 return -1; // no intersection with the entire grid
 
             o = p3f_fma(aabbt, d, o); // advance origin along ray to just intersect the grid
         }
         
-        raycast_ctx ctx { .g = grid, .o = o, .d = d, .idx = -1, .t = t, .ntested = 0, .toffs = aabbt };
+        raycast_ctx ctx { .g = grid, .o = o, .d = d, .idx = -1, .t = t, .ntested = 0, .toffs = aabbt, .temp = 0 };
 
         traverse_3ddda<raycast_ctx&>(
             p3f_mul(p3f_sub(o, grid0), gridd), 
@@ -147,14 +175,15 @@ namespace warpcore::impl
                 alignas(16) int cidx[4];
                 _mm_store_si128((__m128i*)cidx, c);
                 const trigrid_cell* cell = get_trigrid_cell(ctx.g, cidx[0], cidx[1], cidx[2]);
+                ctx.temp += 1;
               
-                //ctx.idx = 1;
-                //ctx.t[0] = cidx[2];
-                //return true;
-
                 int ne = cell->n;
                 if(ne == 0) 
                     return true; // continue along the ray, this cell is just empty
+
+                //ctx.idx = 1;
+                //ctx.t[0] = (cidx[0] + cidx[1] + cidx[2]) % 16 ;
+                //return false;
 
                 alignas(16) float orig[4], dir[4];
                 _mm_store_ps(orig, ctx.o);
@@ -166,9 +195,11 @@ namespace warpcore::impl
                 if(collision >= 0) {
                     ctx.idx = cell->idx[collision];
                     ctx.t[0] += ctx.toffs;
+                    //ctx.t[0] = ctx.temp;
                     return false; // intersection found, stop searching
                 }
 
+                //ctx.t[0] = ctx.temp;
                 return true;
             });
 
