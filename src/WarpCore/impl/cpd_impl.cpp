@@ -55,7 +55,9 @@ namespace warpcore::impl
         std::memset(lambda, 0, k * sizeof(float));
         cpd_make_lambda(y, m, k, beta, q, lambda);
 
-        delete[] (centers, labels, tau);
+        delete[] centers;
+        delete[] labels;
+        delete[] tau;
     }
 
     float cpd_estimate_sigma(const float* x, const float* y, int m, int n, float* tmp)

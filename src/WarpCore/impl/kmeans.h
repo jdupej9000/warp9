@@ -121,6 +121,7 @@ namespace warpcore::impl
             it++;
         } while(it < maxIt && changed > convCount);
 
-        delete[] (ci, d);
+        delete[] ci;
+        delete[] d;
     }
 };
