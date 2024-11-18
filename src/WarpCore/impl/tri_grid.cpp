@@ -69,7 +69,8 @@ namespace warpcore::impl
         for(int i = 0; i < num_cells; i++)
             populate_grid_cell(grid->cells[i].vert, vert, idx, grid->cells[i].idx, grid->cells[i].n, nv, nt);
 
-        delete[] (hist, idx_range);
+        delete[] hist;
+        delete[] idx_range;
     }
 
     void trigrid_destroy(trigrid* grid)

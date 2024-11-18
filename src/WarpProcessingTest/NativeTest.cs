@@ -152,7 +152,7 @@ namespace Warp9.Test
         [TestMethod]
         public void Trigrid16RaycastTest()
         {
-            TrigridRaycastTestCase("TrigridRaycast16Test_0.png", 16, 512);
+            TrigridRaycastTestCase("TrigridRaycast16Test_0.png", 16, 128);
         }
 
         [TestMethod]

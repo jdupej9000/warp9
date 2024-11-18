@@ -67,6 +67,16 @@ namespace warpcore
         return xi[i];
     }
 
+    bool p3i_equal(p3i x, p3i y) noexcept
+    {
+        // TODO: optimize
+        return _mm_test_all_ones(
+            _mm_blend_epi16(
+                _mm_cmpeq_epi32(x, y), 
+                _mm_set1_epi8(0xff), 
+                0b11000000));
+    }
+
     // Returns an integer mask with bits set at positions, where the coordinates of x
     // are equal to the minimal coordinate. Only the lowest 3 coordinates are considered.
     int p3f_min_mask(p3f x) noexcept
@@ -76,6 +86,13 @@ namespace warpcore
         __m128i maskf = _mm_cmpeq_epi32(_mm_castps_si128(x), _mm_castps_si128(xmin));
         int mask = _mm_movemask_epi8(maskf);
         return (int)_pext_u32(mask, 0x111);
+    }
+
+    p3f p3f_min_mask_full(p3f x) noexcept
+    {
+        p3f xmin = _mm_min_ss(x, _mm_min_ss(_mm_shuffle_ps(x, x, 0b01), _mm_shuffle_ps(x, x, 0b10)));
+        xmin = _mm_shuffle_ps(xmin, xmin, 0);
+        return _mm_cmpeq_ps(x, xmin);
     }
 
     float p3f_max(p3f a) noexcept
@@ -99,6 +116,18 @@ namespace warpcore
     {
         // 1.0f with copied sign from x
         return _mm_or_ps(_mm_and_ps(_mm_set1_ps(-0.0f), x), _mm_set1_ps(1.0f));
+    }
+
+    p3i p3f_isign(p3f x) noexcept
+    {
+        // 0xffffffff if x negative, 0x0 if positive
+        p3i s = _mm_srai_epi32(_mm_castps_si128(x), 31);
+        return _mm_or_si128(s, _mm_set1_epi32(1));
+    }
+
+    p3f p3f_floor(p3f x) noexcept
+    {
+        return _mm_round_ps(x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
     }
 
     float p3f_dot(p3f a, p3f b) noexcept
@@ -314,6 +343,15 @@ namespace warpcore
 
     float intersect_ray_aabb(p3f o, p3f d, p3f box0, p3f box1) noexcept
     {
+        float t0, t1;
+        if (!intersect_ray_aabb(o, d, box0, box1, t0, t1))
+            return -1;
+
+        return t0;
+    }
+
+    bool intersect_ray_aabb(p3f o, p3f d, p3f box0, p3f box1, float& t0, float& t1) noexcept
+    {
         const __m128 cutoff = p3f_set(1e-8f);
         __m128 valid_mask = _mm_cmp_ps(p3f_abs(d), cutoff, _CMP_GT_OQ);
         int valid = _mm_movemask_ps(valid_mask);
@@ -329,13 +367,15 @@ namespace warpcore
         float tmin = 0.0f, tmax = 1e30f;
 
         for (int d = 0; d < 3; d++) {
-            if(valid & (1 << d)) {
+            if (valid & (1 << d)) {
                 tmin = std::max(tmin, std::min(k0[d], k1[d]));
                 tmax = std::min(tmax, std::max(k0[d], k1[d]));
             }
         }
 
-        return (tmax > 0 && tmin < tmax) ? tmin : -1;
+        t0 = tmin;
+        t1 = tmax;
+        return (tmax > 0 && tmin < tmax);
     }
 
     bool intersect_tri_aabb(p3f box0, p3f box1, p3f t0, p3f t1, p3f t2) noexcept
