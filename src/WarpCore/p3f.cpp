@@ -514,6 +514,8 @@ namespace warpcore
 
     p3f p3f_proj_to_tri_bary(p3f aa, p3f bb, p3f cc, p3f pt) noexcept
     {
+        // try and vectorize with https://github.com/RenderKit/embree/blob/master/tutorials/common/math/closest_point.h
+
         //https://www.geometrictools.com/Documentation/DistancePoint3Triangle3.pdf
         const p3f e0 = p3f_sub(aa, bb);
         const p3f e1 = p3f_sub(cc, bb);

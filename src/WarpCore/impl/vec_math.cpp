@@ -112,6 +112,30 @@ namespace warpcore::impl
         return _mm_cvtss_f32(reduce);
     }
 
+    float extract(__m256 v, int index)
+    {
+        alignas(32) float vv[8];
+        _mm256_store_ps(vv, v);
+        return vv[index];
+    }
+
+    int extract(__m256i v, int index)
+    {
+        alignas(32) int vv[8];
+        _mm256_store_si256((__m256i*)vv, v);
+        return vv[index];
+    }
+
+    int find_min_index(__m256 v)
+    {
+        __m128 reduce = _mm_min_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        reduce = _mm_min_ps(reduce, _mm_movehl_ps(reduce, reduce));
+        reduce = _mm_min_ps(reduce, _mm_movehdup_ps(reduce));
+
+        __m256 minsel = _mm256_cmp_ps(v, _mm256_broadcastss_ps(reduce), _CMP_EQ_OQ);
+        return _tzcnt_u32(_mm256_movemask_ps(minsel));
+    }
+
     void reduce_minmax(const float* x, int n, float* xmin, float* xmax)
     {
         __m256 xmin8 = _mm256_set1_ps(*xmin);

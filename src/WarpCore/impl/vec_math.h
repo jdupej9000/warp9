@@ -14,6 +14,10 @@ namespace warpcore::impl
     float reduce_min(__m256 v);
     float reduce_max(__m256 v);
 
+    float extract(__m256 v, int index);
+    int extract(__m256i v, int index);
+    int find_min_index(__m256 v);
+
     void reduce_minmax(const float* x, int n, float* xmin, float* xmax);
 
     float reduce_add(const float* x, int n);
