@@ -1,17 +1,5 @@
-﻿using SharpDX.Direct3D11;
-using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Transactions;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media.Media3D;
 using Warp9.Jobs;
 
 namespace Warp9.Utils

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Warp9.Data;
+﻿using Warp9.Data;
 using Warp9.Model;
 using Warp9.Native;
 using Warp9.Processing;
-using static SharpDX.Utilities;
 
 namespace Warp9.Jobs
 {

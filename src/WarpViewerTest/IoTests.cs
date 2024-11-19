@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
 using Warp9.Data;
 using Warp9.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace Warp9.Test
 {

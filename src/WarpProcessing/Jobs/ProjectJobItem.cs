@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Warp9.Model;
-
-namespace Warp9.Jobs
+﻿namespace Warp9.Jobs
 {
     public abstract class ProjectJobItem : IJobItem
     {

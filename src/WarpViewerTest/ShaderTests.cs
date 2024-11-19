@@ -1,5 +1,5 @@
-using Warp9.Viewer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Warp9.Viewer;
 
 namespace Warp9.Test
 {

@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Warp9.Viewer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Drawing;
+using System.Numerics;
 using Warp9.Data;
+using Warp9.Viewer;
 
 namespace Warp9.Test
 {

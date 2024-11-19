@@ -1,32 +1,13 @@
-﻿using SharpDX.Direct3D11;
-using SharpDX.Mathematics.Interop;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Numerics;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Xml.Linq;
-using Warp9.Controls;
-using Warp9.Data;
 using Warp9.Forms;
-using Warp9.IO;
 using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.ProjectExplorer;
-using Warp9.Themes;
 using Warp9.Utils;
-using Warp9.Viewer;
 
 namespace Warp9
 {

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Numerics;
 using Warp9.Data;
 using Warp9.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Drawing;
-using System.Numerics;
 using Warp9.Viewer;
-using Microsoft.VisualBasic.Logging;
-using System.Drawing.Imaging;
 
 namespace Warp9.Test
 {

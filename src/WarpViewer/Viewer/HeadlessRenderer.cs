@@ -1,11 +1,11 @@
-﻿using System;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
+using System;
 using System.Drawing;
 using System.Threading;
-using SharpDX;
-using SharpDX.Direct3D11;
 
 namespace Warp9.Viewer
-{ 
+{
     public class HeadlessRenderer : RendererBase
     {
         private HeadlessRenderer(SharpDX.DXGI.AdapterDescription desc, Device d)

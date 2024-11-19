@@ -1,12 +1,5 @@
-﻿using SharpDX.D3DCompiler;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
+﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Warp9.Viewer;
 
 namespace Warp9.Data

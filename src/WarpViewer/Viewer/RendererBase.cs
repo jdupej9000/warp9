@@ -1,7 +1,7 @@
-﻿using System;
+﻿using SharpDX.Direct3D11;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using SharpDX.Direct3D11;
 
 namespace Warp9.Viewer
 {

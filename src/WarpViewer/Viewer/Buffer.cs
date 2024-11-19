@@ -1,12 +1,6 @@
-﻿using SharpDX.Direct3D11;
-using SharpDX;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using SharpDX.D3DCompiler;
 
 namespace Warp9.Viewer
 {

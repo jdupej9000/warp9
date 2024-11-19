@@ -1,6 +1,4 @@
-﻿using System;
-
-// The themes are copied with namespaces modified from
+﻿// The themes are copied with namespaces modified from
 // https://github.com/AngryCarrot789/WPFDarkTheme
 namespace Warp9.Themes
 {

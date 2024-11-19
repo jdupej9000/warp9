@@ -1,10 +1,4 @@
-﻿using SharpDX.D3DCompiler;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Warp9.Model;
 
 namespace Warp9.Test
