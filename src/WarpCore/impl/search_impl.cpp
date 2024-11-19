@@ -95,7 +95,7 @@ namespace warpcore::impl
         }
     }
 
-    int _pttri_fast(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
+    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
     {
         if (n == 0) return -1;
 
@@ -242,6 +242,7 @@ namespace warpcore::impl
 
             // update uv, index on triangles that are closer in their lane
             __m256 mm = _mm256_and_ps(mask, _mm256_cmp_ps(dist2, dist_best, _CMP_LT_OQ));
+            dist_best = _mm256_blendv_ps(dist_best, dist2, mm);
             u_best = _mm256_blendv_ps(u_best, u, mm);
             v_best = _mm256_blendv_ps(v_best, v, mm);
             i_best = _mm256_blendv_epi8(i_best, _mm256_add_epi32(rng, _mm256_set1_epi32(i)), _mm256_castps_si256(mm));
@@ -259,40 +260,5 @@ namespace warpcore::impl
         retPt = p3f_from_bary(a, b, c, retBary);
 
         return i;
-    }
-
-    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
-    {
-        const __m128i idx = _mm_set_epi32(0, 2 * stride, stride, 0);
-        const p3f pt = p3f_set(orig); 
-
-        float mindist = retDist;
-        int ret = 0;
-        p3f ptclosest = p3f_zero();
-        p3f baryclosest = p3f_zero();
-
-        const float* v = vert;
-        for(int i = 0; i < n; i++) {
-            p3f a = _mm_i32gather_ps(v, idx, 4);
-            p3f b = _mm_i32gather_ps(v + 3 * stride, idx, 4);
-            p3f c = _mm_i32gather_ps(v + 6 * stride, idx, 4);
-            v++;
-
-            p3f bary = p3f_proj_to_tri_bary(a, b, c, pt);
-            p3f q = p3f_from_bary(a, b, c, bary);
-            float dist = p3f_distsq(q, pt);
-            if(dist < mindist) {
-                mindist = dist;
-                ret = i;
-                ptclosest = q;
-                baryclosest = bary;
-            }
-        }
-
-        retBary = baryclosest;
-        retPt = ptclosest;
-        retDist = mindist;
-
-        return ret;
     }
 };

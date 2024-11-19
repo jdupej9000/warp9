@@ -71,6 +71,7 @@ namespace warpcore::impl
         }
     };
   
+
     int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
 
     template<typename TTraits>
@@ -81,21 +82,6 @@ namespace warpcore::impl
         p3f pt = p3f_zero();
 
         int ret = _pttri(orig, vert, n, stride, bary, pt, dist);
-        TTraits::store(pt, bary, dist, result);
-        *pdist = dist;
-        return ret;
-    }
-
-    int _pttri_fast(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
-
-    template<typename TTraits>
-    int pttri_fast(const float* orig, const float* vert, int n, int stride, float* result, float* pdist) noexcept
-    {
-        float dist = FLT_MAX;
-        p3f bary = p3f_zero();
-        p3f pt = p3f_zero();
-
-        int ret = _pttri_fast(orig, vert, n, stride, bary, pt, dist);
         TTraits::store(pt, bary, dist, result);
         *pdist = dist;
         return ret;
