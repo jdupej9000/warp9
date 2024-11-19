@@ -177,10 +177,11 @@ namespace Warp9.Test
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            Parallel.For(0, bitmapSize, (i) =>
-            {
-                ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, 1.0f, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
-            });
+            ctx.NearestAos(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
+           // Parallel.For(0, bitmapSize, (i) =>
+           // {
+            //    ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, 1.0f, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
+            //});
             sw.Stop();
 
             Console.WriteLine("{0:F1} queries per second",
