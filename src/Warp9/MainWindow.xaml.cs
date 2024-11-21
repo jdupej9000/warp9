@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Warp9.Forms;
+using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.ProjectExplorer;
