@@ -36,8 +36,11 @@ namespace Warp9.Test
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.GpaOnWhitelisted;
             cfg.BaseMeshIndex = 0;
 
-            IEnumerable<ProjectJobItem> jobs = DcaJob.Create(cfg);
-            // TODO: bring job, job context and engine into WarpProcessing
+            IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg);
+            ProjectJobContext jobCtx = new ProjectJobContext(project);
+            Job job = Job.Create(jobItems, jobCtx);
+
+            JobEngine.RunImmediately(job);
         }
     }
 }

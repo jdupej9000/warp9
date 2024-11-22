@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 
 namespace Warp9.Jobs
@@ -21,9 +22,11 @@ namespace Warp9.Jobs
 
         int nextItemIdx = 0, itemsDone = 0, itemsFailed = 0;
 
+        public IJobContext? Context { get; private set; }
         public int NumItems => jobItems.Count;
         public int NumItemsDone => itemsDone;
         public int NumItemsFailed => itemsFailed;
+        public bool IsCompleted => status == JobExecutionStatus.Done || status == JobExecutionStatus.Failed;
 
         /// <summary>
         /// Tries to pick the next job item to be executed and execute it.
@@ -32,8 +35,11 @@ namespace Warp9.Jobs
         /// left in the job. Failed items also count as executed, but failed
         /// count gets incremented.
         /// </summary>
-        public bool TryExecuteNext(IJobContext ctx)
+        public bool TryExecuteNext()
         {
+            IJobContext ctx = Context ?? 
+                throw new InvalidOperationException("Cannot execute a job once its context was destroyed.");
+
             IJobItem? item = null;
             int itemIndex = 0;
 
@@ -107,6 +113,21 @@ namespace Warp9.Jobs
             }
 
             return false;
+        }
+
+        public IJobContext DetachContext()
+        {
+            IJobContext ctx = Context ?? throw new InvalidOperationException("Context already detached.");
+            Context = null;
+            return ctx;
+        }
+
+        public static Job Create(IEnumerable<IJobItem> items, IJobContext ctx)
+        {
+            Job ret = new Job();
+            ret.jobItems.AddRange(items);
+            ret.Context = ctx;
+            return ret;
         }
     }
 }

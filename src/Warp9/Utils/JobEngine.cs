@@ -5,25 +5,18 @@ using Warp9.Jobs;
 namespace Warp9.Utils
 {
 
-    public class BackgroundJob : INotifyPropertyChanged, IJobWithContext
+    public class BackgroundJob : INotifyPropertyChanged
     {
-        public BackgroundJob(IJob job, IJobContext ctx)
+        public BackgroundJob(IJob job)
         {
             Job = job;
-            Context = ctx;
         }
 
         public IJob Job { get; init; }
-        public IJobContext? Context { get; set; }
         public string Status => MakeStatus();
         public bool IsDone => Job.NumItemsDone == Job.NumItems;
 
         public event PropertyChangedEventHandler? PropertyChanged;  // TODO: call this sometimes
-
-        public void RemoveContext()
-        {
-            Context = null;
-        }
 
         private string MakeStatus()
         {

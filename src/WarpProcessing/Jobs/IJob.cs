@@ -5,7 +5,12 @@
         public int NumItems { get; }
         public int NumItemsDone { get; }
         public int NumItemsFailed { get; }
+        public bool IsCompleted { get; }
 
-        public bool TryExecuteNext(IJobContext ctx);
+        public IJobContext? Context { get; }
+
+        public bool TryExecuteNext();
+
+        public IJobContext DetachContext();
     }
 }

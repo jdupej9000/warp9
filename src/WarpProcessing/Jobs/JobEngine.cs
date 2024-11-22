@@ -4,15 +4,6 @@ using System.Threading;
 
 namespace Warp9.Jobs
 {
-    public interface IJobWithContext
-    {
-        public IJob Job { get; }
-        public IJobContext? Context { get; }
-        public bool IsDone { get; }
-
-        public void RemoveContext();
-    }
-
     internal class BackgroundWorkerContext(int threadIndex, JobEngine engine)
     {
         internal int ThreadIndex { get; init; } = threadIndex;
@@ -51,13 +42,13 @@ namespace Warp9.Jobs
         private readonly int workerCount;
         private readonly Thread[] workers;
         private BackgroundWorkerContext[] contexts;
-        private List<IJobWithContext> jobs = new List<IJobWithContext>();
-        private List<IJobWithContext> finishedJobs = new List<IJobWithContext>();
+        private List<IJob> jobs = new List<IJob>();
+        private List<IJob> finishedJobs = new List<IJob>();
 
-        public List<IJobWithContext> Jobs => jobs;
-        public List<IJobWithContext> FinishedJobs => finishedJobs;
+        public List<IJob> Jobs => jobs;
+        public List<IJob> FinishedJobs => finishedJobs;
 
-        public void Run(IJobWithContext job)
+        public void Run(IJob job)
         {
             lock (contextLock)
                 jobs.Add(job);
@@ -65,10 +56,10 @@ namespace Warp9.Jobs
             NotifyWorkers();
         }
 
-        public static void RunImmediately(IJobWithContext job)
+        public static void RunImmediately(IJob job)
         {
             IJobContext ctx = job.Context ?? throw new ArgumentNullException(nameof(job));
-            while (!job.IsDone && job.Job.TryExecuteNext(ctx)) ;
+            while (!job.IsCompleted && job.TryExecuteNext()) ;
 
         }
 
@@ -83,13 +74,13 @@ namespace Warp9.Jobs
                 contexts[i].Notification.Set();
         }
 
-        private void JobStatusChanged(IJobWithContext job)
+        private void JobStatusChanged(IJob job)
         {
             lock (contextLock)
             {
-                if (job.IsDone)
+                if (job.IsCompleted)
                 {
-                    job.RemoveContext();
+                    job.DetachContext();
                     finishedJobs.Add(job);
                     jobs.Remove(job);
                 }
@@ -98,7 +89,7 @@ namespace Warp9.Jobs
             NotifyWorkers();
         }
 
-        private IJobWithContext? GetNextJob(ref int idx)
+        private IJob? GetNextJob(ref int idx)
         {
             lock (contextLock)
             {
@@ -133,14 +124,14 @@ namespace Warp9.Jobs
 
             while (true)
             {
-                IJobWithContext? firstBlockedJob = null;
-                IJobWithContext? nextJob = ctx.Engine.GetNextJob(ref jobIndex);
+                IJob? firstBlockedJob = null;
+                IJob? nextJob = ctx.Engine.GetNextJob(ref jobIndex);
                 while (nextJob is not null)
                 {
                     if (nextJob.Context is null)
                         throw new InvalidOperationException();
 
-                    bool itemTaken = nextJob.Job.TryExecuteNext(nextJob.Context);
+                    bool itemTaken = nextJob.TryExecuteNext();
 
                     // If we go through the entire job list and no job items get completed,
                     // break out of the loop as we are obviously waiting for dependencies on
