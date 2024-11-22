@@ -22,6 +22,7 @@ namespace Warp9.Jobs
 
     public interface IJobItem
     {
+        public int ItemIndex { get; }
         public string Title { get; }
         public JobItemFlags Flags { get; }
         public JobItemStatus Run(IJob job, IJobContext ctx);

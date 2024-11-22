@@ -2,8 +2,8 @@
 {
     public class WorkspaceCleanupJobItem : ProjectJobItem   
     {
-        public WorkspaceCleanupJobItem(params string[] items) :
-            base("Cleanup", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
+        public WorkspaceCleanupJobItem(int index, params string[] items) :
+            base(index, "Cleanup", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
         {
             CleanupItems = items;
         }

@@ -13,8 +13,8 @@ namespace Warp9.Jobs
     /// </summary>
     public class LandmarkGpaJobItem : ProjectJobItem
     {
-        public LandmarkGpaJobItem(long specTableKey, string colName, string resultKey, GpaConfiguration? cfg) :
-            base("Landmark GPA", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
+        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, GpaConfiguration? cfg) :
+            base(index, "Landmark GPA", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
             LandmarkColumnName = colName;

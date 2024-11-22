@@ -14,6 +14,7 @@ namespace Warp9.Jobs
 
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj)
         {
+            int index = 0;
             SpecimenTable? specTable = ModelUtils.TryGetSpecimenTable(proj, cfg.SpecimenTableKey);
             if (specTable == null)
                 throw new InvalidOperationException("Cannot find specified specimen table.");
@@ -30,7 +31,7 @@ namespace Warp9.Jobs
                     break;
 
                 case DcaRigidPreregKind.LandmarkFittedGpa:
-                    yield return new LandmarkGpaJobItem(cfg.SpecimenTableKey,
+                    yield return new LandmarkGpaJobItem(index++, cfg.SpecimenTableKey,
                         cfg.LandmarkColumnName ?? throw new InvalidOperationException(),
                         GpaPreregKey, null);
                     gpaRegItem = GpaPreregKey;
@@ -44,19 +45,19 @@ namespace Warp9.Jobs
             {
                 case DcaNonrigidRegistrationKind.None:
                     for (int i = 0; i < numSpecs; i++)
-                        yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
+                        yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     break;
 
                 case DcaNonrigidRegistrationKind.LandmarkFittedTps:
                     throw new NotImplementedException();
 
                 case DcaNonrigidRegistrationKind.LowRankCpd:
-                    yield return new CpdInitJobItem(cfg.SpecimenTableKey, gpaRegItem, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
-                    yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
+                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
+                    yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
-                            yield return new CpdRegJobItem(cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, NonrigidRegKey);
+                            yield return new CpdRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, NonrigidRegKey);
                     }
                     break;
 
@@ -71,11 +72,11 @@ namespace Warp9.Jobs
 
                 case DcaSurfaceProjectionKind.ClosestPoint:
                 case DcaSurfaceProjectionKind.RaycastWithFallback:
-                    yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
+                    yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
                     for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
-                            yield return new SurfaceProjectionJobItem(cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, CorrespondenceRegKey);
+                            yield return new SurfaceProjectionJobItem(index++, cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, CorrespondenceRegKey);
                     }
                     break;
 
@@ -83,7 +84,7 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
-            yield return new WorkspaceCleanupJobItem(NonrigidInitKey, NonrigidRegKey);
+            yield return new WorkspaceCleanupJobItem(index, NonrigidInitKey, NonrigidRegKey);
 
             // TODO
         }

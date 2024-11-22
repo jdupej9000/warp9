@@ -8,8 +8,8 @@ namespace Warp9.Jobs
 {
     public class SurfaceProjectionJobItem : ProjectJobItem
     {
-        public SurfaceProjectionJobItem(long specTableKey, string meshCol, int meshIndex, int baseMeshIndex, string nonrigidItem, string? gpaItem, string resultItem) :
-            base("Surface projection", JobItemFlags.FailuesAreFatal)
+        public SurfaceProjectionJobItem(int index, long specTableKey, string meshCol, int meshIndex, int baseMeshIndex, string nonrigidItem, string? gpaItem, string resultItem) :
+            base(index, "Surface projection", JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
             MeshColumn = meshCol;
@@ -39,7 +39,7 @@ namespace Warp9.Jobs
                 baseMesh is null)
                 return false;
 
-            if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, 1, out SearchContext? searchCtx) || searchCtx is null)
+            if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, 16, out SearchContext? searchCtx) || searchCtx is null)
                 return false;
 
             if (!ctx.Workspace.TryGet(NonrigidMeshesItem, MeshIndex, out PointCloud? pclNonrigid) || pclNonrigid is null)

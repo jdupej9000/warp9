@@ -2,12 +2,14 @@
 {
     public abstract class ProjectJobItem : IJobItem
     {
-        public ProjectJobItem(string title, JobItemFlags flags = JobItemFlags.None)
+        public ProjectJobItem(int index, string title, JobItemFlags flags = JobItemFlags.None)
         {
+            ItemIndex = index;
             Title = title;
             Flags = flags;
         }
 
+        public int ItemIndex { get; init; }
         public string Title { get; init; }
 
         public JobItemFlags Flags { get; init; }

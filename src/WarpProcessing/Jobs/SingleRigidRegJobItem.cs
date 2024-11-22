@@ -7,8 +7,8 @@ namespace Warp9.Jobs
 {
     public class SingleRigidRegJobItem : ProjectJobItem
     {
-        public SingleRigidRegJobItem(long specTableKey, string? gpaItem, string meshColumn, int meshIndex, string result) :
-           base("Rigid registration", JobItemFlags.None)
+        public SingleRigidRegJobItem(int index, long specTableKey, string? gpaItem, string meshColumn, int meshIndex, string result) :
+           base(index, "Rigid registration", JobItemFlags.None)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;

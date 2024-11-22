@@ -7,8 +7,8 @@ namespace Warp9.Jobs
 {
     public class CpdRegJobItem : ProjectJobItem
     {
-        public CpdRegJobItem(long specTableKey, string? gpaItem, string initItem, string meshColumn, int meshIndex, string result) :
-            base("CPD registration", JobItemFlags.None)
+        public CpdRegJobItem(int index, long specTableKey, string? gpaItem, string initItem, string meshColumn, int meshIndex, string result) :
+            base(index, "CPD registration", JobItemFlags.None)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;

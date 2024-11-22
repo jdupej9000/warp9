@@ -7,12 +7,12 @@ namespace Warp9.Jobs
 {
     public class CpdInitJobItem : ProjectJobItem
     {
-        public CpdInitJobItem(long specTableKey, int baseIndex, string meshColumn, string result) :
-            this(specTableKey, null, baseIndex, meshColumn, result)
+        public CpdInitJobItem(int index, long specTableKey, int baseIndex, string meshColumn, string result) :
+            this(index, specTableKey, null, baseIndex, meshColumn, result)
         { }
 
-        public CpdInitJobItem(long specTableKey, string? gpaItem, int baseIndex, string meshColumn, string result) :
-            base("CPD initialization", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
+        public CpdInitJobItem(int index, long specTableKey, string? gpaItem, int baseIndex, string meshColumn, string result) :
+            base(index, "CPD initialization", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;
