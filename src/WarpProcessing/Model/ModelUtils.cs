@@ -4,6 +4,18 @@ namespace Warp9.Model
 {
     public static class ModelUtils
     {
+        public static SpecimenTable? TryGetSpecimenTable(Project proj, long tableKey)
+        {
+            if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||
+                entry.Kind != ProjectEntryKind.Specimens ||
+                entry.Payload.Table is null)
+            {
+                return null;
+            }
+
+            return entry.Payload.Table;
+        }
+
         public static SpecimenTableColumn<T>? TryGetSpecimenTableColumn<T>(Project proj, long tableKey, string column)
         {
             if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||

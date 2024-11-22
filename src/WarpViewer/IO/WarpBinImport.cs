@@ -68,6 +68,9 @@ namespace Warp9.IO
 
             foreach (WarpBinChunkInfo chunk in chunks)
             {
+                if (chunk.Semantic == ChunkSemantic.Indices)
+                    continue;
+
                 if (nv == 0)
                     nv = chunk.Rows;
                 else if (nv != chunk.Rows)
@@ -120,7 +123,7 @@ namespace Warp9.IO
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
                     bufferSize = chunk.Rows * 12;
-                    MeshSegment seg = new MeshSegment<int>(0, 3 * chunk.Rows);
+                    MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows);
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
                         Chunk = chunk,
@@ -194,7 +197,7 @@ namespace Warp9.IO
             return null;
         }
 
-    private Mesh? ReadMesh()
+        private Mesh? ReadMesh()
         {
             List<WarpBinImportChunk> parsedChunks = new List<WarpBinImportChunk>();
             if(!TryParsePointCloudChunks(parsedChunks, out int vertDataSize))
@@ -215,7 +218,7 @@ namespace Warp9.IO
                 if (nv == 0) 
                     nv = chunk.Chunk.Rows;
 
-                reader.BaseStream.Seek(chunk.Chunk.StreamPos, SeekOrigin.Begin);
+                //reader.BaseStream.Seek(chunk.Chunk.StreamPos, SeekOrigin.Begin);
 
                 switch (chunk.Chunk.Encoding)
                 {
@@ -242,7 +245,7 @@ namespace Warp9.IO
 
             if (parsedIndexChunk.HasValue)
             {
-                reader.BaseStream.Seek(parsedIndexChunk.Value.Chunk.StreamPos, SeekOrigin.Begin);
+                //reader.BaseStream.Seek(parsedIndexChunk.Value.Chunk.StreamPos, SeekOrigin.Begin);
                 nt = parsedIndexChunk.Value.Chunk.Rows;
 
                 if(parsedIndexChunk.Value.Chunk.Encoding != ChunkEncoding.Int32x3)

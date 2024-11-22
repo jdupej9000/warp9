@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Warp9.Jobs
 {
@@ -19,8 +20,13 @@ namespace Warp9.Jobs
                 repository[key] = list;
             }
             
-            list.EnsureCapacity(index + 1);
+            Grow(list, index + 1);
             list[index] = value;
+        }
+
+        public void Set<T>(string key, T value)
+        {
+          repository[key] = value;
         }
 
         public void Remove(string key)
@@ -52,6 +58,22 @@ namespace Warp9.Jobs
 
             value = default;
             return false;
+        }
+
+        static void Grow<T>(List<T> list, int size, T element = default)
+        {
+            int count = list.Count;
+
+            if (size < count)
+            {
+            }
+            else if (size > count)
+            {
+                if (size > list.Capacity)   // Optimization
+                    list.Capacity = size;
+
+                list.AddRange(Enumerable.Repeat(element, size - count));
+            }
         }
 
     }

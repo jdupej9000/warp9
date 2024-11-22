@@ -53,7 +53,7 @@ namespace Warp9.Jobs
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
                 return false;
 
-            ctx.Workspace.Set(InitObjectItem, 0, cpdCtx);
+            ctx.Workspace.Set(InitObjectItem, cpdCtx);
             return true;
         }
     }

@@ -41,7 +41,7 @@ namespace Warp9.Jobs
                 return false;
 
             Gpa res = Gpa.Fit(pcls!, Config);
-            ctx.Workspace.Set(WorkspaceResultKey, 0, res);
+            ctx.Workspace.Set(WorkspaceResultKey, res);
 
             return true;
         }

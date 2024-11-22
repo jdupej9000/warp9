@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Warp9.Model;
 using Warp9.Processing;
 
 namespace Warp9.Jobs
@@ -11,8 +12,14 @@ namespace Warp9.Jobs
         private static readonly string NonrigidRegKey = "nonrigid.reg";
         private static readonly string CorrespondenceRegKey = "corr.reg";
 
-        public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg)
+        public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj)
         {
+            SpecimenTable? specTable = ModelUtils.TryGetSpecimenTable(proj, cfg.SpecimenTableKey);
+            if (specTable == null)
+                throw new InvalidOperationException("Cannot find specified specimen table.");
+
+            int numSpecs = specTable.Count;
+
             string meshColumn = cfg.MeshColumnName ?? throw new InvalidOperationException();
             int baseMeshIndex = cfg.BaseMeshIndex;
             string? gpaRegItem = null;
@@ -36,7 +43,7 @@ namespace Warp9.Jobs
             switch (cfg.NonrigidRegistration)
             {
                 case DcaNonrigidRegistrationKind.None:
-                    for (int i = 0; i < cfg.NumSpecimens; i++)
+                    for (int i = 0; i < numSpecs; i++)
                         yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     break;
 
@@ -46,7 +53,7 @@ namespace Warp9.Jobs
                 case DcaNonrigidRegistrationKind.LowRankCpd:
                     yield return new CpdInitJobItem(cfg.SpecimenTableKey, gpaRegItem, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
                     yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
-                    for (int i = 0; i < cfg.NumSpecimens; i++)
+                    for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
                             yield return new CpdRegJobItem(cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, NonrigidRegKey);
@@ -65,7 +72,7 @@ namespace Warp9.Jobs
                 case DcaSurfaceProjectionKind.ClosestPoint:
                 case DcaSurfaceProjectionKind.RaycastWithFallback:
                     yield return new SingleRigidRegJobItem(cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
-                    for (int i = 0; i < cfg.NumSpecimens; i++)
+                    for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
                             yield return new SurfaceProjectionJobItem(cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, CorrespondenceRegKey);

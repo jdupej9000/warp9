@@ -36,11 +36,15 @@ namespace Warp9.Test
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.GpaOnWhitelisted;
             cfg.BaseMeshIndex = 0;
 
-            IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg);
+            IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project);
             ProjectJobContext jobCtx = new ProjectJobContext(project);
             Job job = Job.Create(jobItems, jobCtx);
 
             JobEngine.RunImmediately(job);
+
+            Assert.AreEqual(0, job.NumItemsFailed);
+            Assert.AreEqual(job.NumItemsDone, job.NumItems);
+            Assert.AreEqual(true, job.IsCompleted);
         }
     }
 }
