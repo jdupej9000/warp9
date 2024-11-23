@@ -10,7 +10,7 @@ namespace Warp9.Processing
 
     public class Gpa
     {
-        private Gpa(PointCloud[] pcls, Rigid3[] xforms, PointCloud mean)
+        private Gpa(PointCloud[] pcls, Rigid3[] xforms, PointCloud mean, GpaResult res)
         {
             if (pcls.Length != xforms.Length)
                 throw new ArgumentException();
@@ -18,14 +18,22 @@ namespace Warp9.Processing
             Mean = mean;
             pointClouds = pcls;
             transforms = xforms;
+            result = res;
         }
 
         private PointCloud[] pointClouds;
         private Rigid3[] transforms;
+        private GpaResult result;
 
         public PointCloud Mean { get; private init; }
         public int NumData => pointClouds.Length;
         public int NumVertices => Mean.VertexCount;
+
+        public override string ToString()
+        {
+            return string.Format("d=3, m={0}, n={1}, e={2}, it={3}",
+                NumVertices, NumData, result.err, result.iter);
+        }
 
         public PointCloud GetTransformed(int idx)
         {
@@ -54,8 +62,8 @@ namespace Warp9.Processing
         {
             WarpCoreStatus s = (WarpCoreStatus)RigidTransform.FitGpa(data, 
                 out PointCloud mean, out Rigid3[] xforms, out GpaResult res);
-
-            return new Gpa(data, xforms, mean);
+            
+            return new Gpa(data, xforms, mean, res);
         }
     }
 }

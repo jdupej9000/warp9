@@ -30,20 +30,34 @@ namespace Warp9.Jobs
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
-            if(!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? floatingMesh) || 
+            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? floatingMesh) ||
                 floatingMesh is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error,
+                   string.Format("Cannot load transformed mesh '{0}'.", MeshIndex));
                 return false;
+            }
 
             // we need this to copy triangle indices from (only the reference is copied)
             if (!ctx.TryGetSpecTableMesh(SpecimenTableKey, MeshColumn, MeshIndex, out Mesh? baseMesh) ||
                 baseMesh is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load base mesh.");
                 return false;
+            }
 
             if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, 16, out SearchContext? searchCtx) || searchCtx is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "Could not initialize the spatial searching structure.");
                 return false;
+            }
 
             if (!ctx.Workspace.TryGet(NonrigidMeshesItem, MeshIndex, out PointCloud? pclNonrigid) || pclNonrigid is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, 
+                    string.Format("Could not load the bent floating mesh '{0}'.", MeshIndex));
                 return false;
+            }
 
             int nv = pclNonrigid.VertexCount;
             ResultInfoDPtBary[] proj = new ResultInfoDPtBary[nv];
@@ -63,6 +77,10 @@ namespace Warp9.Jobs
                 ctx.Workspace.Set(ResultItem, MeshIndex, corrMesh);
 
                 ret = true;
+            }
+            else
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "Spatial searching failed.");
             }
 
             searchCtx.Dispose();

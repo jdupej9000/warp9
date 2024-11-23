@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Warp9.Data;
 using Warp9.Model;
 using Warp9.Native;
@@ -15,6 +16,11 @@ namespace Warp9.Jobs
 
         public JobWorkspace Workspace { get; init; } = new JobWorkspace();
         public Project Project { get; init; }
+
+        public void WriteLog(int jobItemIndex, MessageKind kind, string message)
+        {
+            Console.WriteLine(string.Format("{0}> {1}", jobItemIndex, message));
+        }
 
         public bool TryGetSpecTableMesh(long specTableKey, string columnName, int index, [MaybeNullWhen(false)] out Mesh? m)
         {

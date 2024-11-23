@@ -1,7 +1,16 @@
 ﻿namespace Warp9.Jobs
 {
+    public enum MessageKind
+    {
+        Information,
+        Warning,
+        Error
+    }
+
     public interface IJobContext
     {
-        public JobWorkspace Workspace { get; }
+        JobWorkspace Workspace { get; }
+
+        void WriteLog(int jobItemIndex, MessageKind kind, string message);
     }
 }

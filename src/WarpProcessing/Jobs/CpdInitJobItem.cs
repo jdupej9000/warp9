@@ -32,11 +32,18 @@ namespace Warp9.Jobs
             SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
                 ctx.Project, SpecimenTableKey, MeshColumn);
             if (column is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error,
+                    string.Format("Cannot find column '{0}' in entity '{1}'.", MeshColumn, SpecimenTableKey));
                 return false;
+            }
 
             PointCloud? baseMesh = ModelUtils.LoadSpecimenTableRef<Mesh>(ctx.Project, column, BaseMeshIndex);
-            if (baseMesh is null) 
+            if (baseMesh is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load base mesh.");
                 return false;
+            }
 
             if (GpaItem is not null)
             {
@@ -46,14 +53,21 @@ namespace Warp9.Jobs
                 Rigid3 transform = gpa.GetTransform(BaseMeshIndex);
                 baseMesh = RigidTransform.TransformPosition(baseMesh, transform);
                 if (baseMesh is null)
+                {
+                    ctx.WriteLog(ItemIndex, MessageKind.Error, "Failed to transform base mesh.");
                     return false;
+                }
             }
 
             WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh);
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization failed.");
                 return false;
+            }
 
             ctx.Workspace.Set(InitObjectItem, cpdCtx);
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "CPD-LR initialization complete.");
             return true;
         }
     }

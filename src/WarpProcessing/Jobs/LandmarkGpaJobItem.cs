@@ -34,14 +34,23 @@ namespace Warp9.Jobs
                 ctx.Project, SpecimenTableKey, LandmarkColumnName);
 
             if (column is null)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error,
+                    string.Format("Cannot find landmark column '{0}' in entity '{1}'.", LandmarkColumnName, SpecimenTableKey));
                 return false;
+            }
 
             PointCloud?[] pcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(ctx.Project, column).ToArray();
             if (pcls.Any((t) => t is null))
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load landmarks in one or more specimens.");
                 return false;
+            }
 
             Gpa res = Gpa.Fit(pcls!, Config);
             ctx.Workspace.Set(WorkspaceResultKey, res);
+
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA complete: " + res.ToString());
 
             return true;
         }
