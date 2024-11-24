@@ -179,7 +179,7 @@ namespace Warp9.IO
                     pos = pos2 + 1;
                 }
 
-                if (line[pos] == '/')
+                if (pos < len && line[pos] == '/')
                 {
                     pos++;
                     pos2 = IoUtils.SkipInt(line, pos);

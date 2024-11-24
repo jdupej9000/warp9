@@ -21,13 +21,13 @@ namespace Warp9.Test
         [TestMethod]
         public void SkullsCpdDca()
         {
-            string skullsFile = GetExternalDependency("skulls.w9");
+            string facesFile = GetExternalDependency("faces.w9");
 
-            using Warp9ProjectArchive archive = new Warp9ProjectArchive(skullsFile, false);
+            using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
             using Project project = Project.Load(archive);
 
             DcaConfiguration cfg = new DcaConfiguration();
-            cfg.SpecimenTableKey = 81;
+            cfg.SpecimenTableKey = 21;
             cfg.LandmarkColumnName = "Landmarks";
             cfg.MeshColumnName = "Mesh";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
