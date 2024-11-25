@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Warp9.Data
@@ -120,6 +121,13 @@ namespace Warp9.Data
         protected virtual MeshView? MakeIndexView()
         {
             throw new InvalidOperationException("Point clounds cannot create index views.");
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Vertex data ({0} Bytes): ", vertexData.Length) +
+                string.Join(", ", meshSegments.Select(
+                    (t) => string.Format("{0}: {1}", t.Key, t.Value.ToString())).ToArray());
         }
 
         public static PointCloud FromRawSoaPositions(int nv, byte[] vx)

@@ -26,7 +26,7 @@ namespace Warp9.Jobs
 
         public void Set<T>(string key, T value)
         {
-          repository[key] = value;
+            repository[key] = value;
         }
 
         public void Remove(string key)

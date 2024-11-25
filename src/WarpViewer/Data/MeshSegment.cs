@@ -146,5 +146,10 @@ namespace Warp9.Data
 
             return numItems;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}x {1}", numItems, typeof(T).Name);
+        }
     }
 }
