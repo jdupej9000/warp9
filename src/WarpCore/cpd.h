@@ -23,7 +23,8 @@ enum CPD_CONV {
     CPD_CONV_ITER = 1,
     CPD_CONV_TOL = 2,
     CPD_CONV_SIGMA = 4,
-    CPD_CONV_DSIGMA = 8
+    CPD_CONV_DSIGMA = 8,
+    CPD_CONV_NUMERIC_ERROR = 16
 };
 
 struct cpdresult {

@@ -41,7 +41,8 @@ namespace Warp9.Native
         CPD_CONV_ITER = 1,
         CPD_CONV_TOL = 2,
         CPD_CONV_SIGMA = 4,
-        CPD_CONV_DSIGMA = 8
+        CPD_CONV_DSIGMA = 8,
+        CPD_CONV_NUMERIC_ERROR = 16
     }
 
     public enum SEARCH_STRUCTURE : int
@@ -84,7 +85,7 @@ namespace Warp9.Native
         public float err, sigma2;
         public float time, time_e;
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return string.Format("it={0}, err={1}, s2={2}, t={3:F2}s, te={4:F2}s, pe={5:F1}%, conv={6}",
                 iter, err, sigma2, time, time_e, 100.0 * time_e / time, (CPD_CONV)conv);
@@ -112,7 +113,7 @@ namespace Warp9.Native
         public int iter;
         public float err;
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return string.Format("it={0}, err={1}",
                 iter, err);

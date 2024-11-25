@@ -62,12 +62,13 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
     const int tmp_size = cpd_tmp_size(m, n, num_eigs);
 
-    float* pp = new float[2 * n + 4 * m + tmp_size];
+    float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m];
     float* psum = pp;
     float* pt1 = psum + n;
     float* p1 = pt1 + n;
     float* px = p1 + m;
     float* tmp = px + 3 * m;
+    float* ttemp = tmp + tmp_size;
 
     float sigma2 = (cpd->sigma2init > 0.0f) ? cpd->sigma2init : 
         cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
@@ -96,12 +97,24 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
 
-        //memset(tmp, 0, tmp_size * sizeof(float)); //?
-        l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)t, tmp);
+        memset(tmp, 0, tmp_size * sizeof(float));
+        l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
+        
+        if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
+            conv = CPD_CONV_NUMERIC_ERROR;
+            break;
+        }
+        
         tol = abs((l0 - l0_old) / l0);
-
         const float sigma2_old = sigma2;
-        sigma2 = cpd_update_sigma2((const float*)x, (const float*)t, pt1, p1, px, m, n);
+        sigma2 = cpd_update_sigma2((const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
+        
+        if (isnan(sigma2)) {
+            conv = CPD_CONV_NUMERIC_ERROR;
+            break;
+        }
+
+        std::memcpy(t, ttemp, sizeof(float) * 3 * m);
 
         if(it >= maxit)
             conv |= CPD_CONV_ITER;
@@ -111,6 +124,9 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
         if(abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
             conv |= CPD_CONV_DSIGMA;
+
+        if (isnan(abs(sigma2 - sigma2_old) / sigma2))
+            conv |= CPD_CONV_NUMERIC_ERROR;
 
         if(tol < cpd->tol)
             conv |= CPD_CONV_TOL;
