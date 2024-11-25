@@ -1,4 +1,6 @@
-﻿namespace Warp9.Jobs
+﻿using System;
+
+namespace Warp9.Jobs
 {
     public abstract class ProjectJobItem : IJobItem
     {
@@ -17,9 +19,18 @@
         public JobItemStatus Run(IJob job, IJobContext ctx)
         {
             if (ctx is not ProjectJobContext pctx)
-                return JobItemStatus.Failed;
+                throw new ArgumentException("ctx is not a ProjectJobContext.");
 
-            return RunInternal(job, pctx) ? JobItemStatus.Completed : JobItemStatus.Failed;
+            try
+            {
+                return RunInternal(job, pctx) ? JobItemStatus.Completed : JobItemStatus.Failed;
+            }
+            catch (Exception e)
+            {
+                pctx.WriteLog(ItemIndex, MessageKind.Error,
+                    "Job item failed with an exception. " + e.Message + Environment.NewLine + e.StackTrace);
+                return JobItemStatus.Failed;
+            }
         }
 
         protected abstract bool RunInternal(IJob job, ProjectJobContext ctx);

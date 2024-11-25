@@ -19,7 +19,9 @@ namespace Warp9.Jobs
 
         public void WriteLog(int jobItemIndex, MessageKind kind, string message)
         {
-            Console.WriteLine(string.Format("{0}> {1}", jobItemIndex, message));
+            Console.WriteLine(string.Format("{0}: {1}> {2}", 
+                DateTime.Now.ToString("HH:mm:ss.fff"),
+                jobItemIndex, message));
         }
 
         public bool TryGetSpecTableMesh(long specTableKey, string columnName, int index, [MaybeNullWhen(false)] out Mesh? m)

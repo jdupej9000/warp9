@@ -30,6 +30,8 @@ namespace Warp9.Jobs
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
+            const int GridSize = 16;
+
             if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? floatingMesh) ||
                 floatingMesh is null)
             {
@@ -46,11 +48,13 @@ namespace Warp9.Jobs
                 return false;
             }
 
-            if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, 16, out SearchContext? searchCtx) || searchCtx is null)
+            if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, GridSize, out SearchContext? searchCtx) || searchCtx is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "Could not initialize the spatial searching structure.");
                 return false;
             }
+
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "Search structure created: " + searchCtx.ToString());
 
             if (!ctx.Workspace.TryGet(NonrigidMeshesItem, MeshIndex, out PointCloud? pclNonrigid) || pclNonrigid is null)
             {
@@ -75,6 +79,8 @@ namespace Warp9.Jobs
 
                 Mesh corrMesh = Mesh.FromPointCloud(mb.ToPointCloud(), baseMesh);
                 ctx.Workspace.Set(ResultItem, MeshIndex, corrMesh);
+
+                ctx.WriteLog(ItemIndex, MessageKind.Information, "Surface projection complete.");
 
                 ret = true;
             }

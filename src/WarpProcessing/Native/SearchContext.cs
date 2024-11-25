@@ -133,6 +133,11 @@ namespace Warp9.Native
             }
         }
 
+        public override string ToString()
+        {
+            return structKind.ToString();
+        }
+
         public void Dispose()
         {
             GC.SuppressFinalize(this);

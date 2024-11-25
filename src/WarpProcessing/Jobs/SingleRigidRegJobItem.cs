@@ -62,6 +62,8 @@ namespace Warp9.Jobs
             }
 
             ctx.Workspace.Set(ResultItem, MeshIndex, mesh);
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "Applied rigid transform to mesh.");
+
             return true;
         }
     }
