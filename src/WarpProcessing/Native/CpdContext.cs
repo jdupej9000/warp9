@@ -42,7 +42,7 @@ namespace Warp9.Native
                 fixed (byte* ptrY = &MemoryMarshal.GetReference(y))
                 {
                     WarpCoreStatus res = (WarpCoreStatus)WarpCore.cpd_process(ref info, (nint)ptrX, (nint)ptrY, (nint)ptrInit, (nint)ptrT, ref cpdRes);
-                    pclBent = PointCloud.FromRawSoaPositions(info.n, t);
+                    pclBent = PointCloud.FromRawSoaPositions(info.m, t);
                    
                     result = cpdRes;
                     return res;
