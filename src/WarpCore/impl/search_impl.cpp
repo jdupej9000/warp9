@@ -1,6 +1,7 @@
 #include "search_impl.h"
 #include "utils.h"
 #include "vec_math.h"
+#include <immintrin.h>
 
 namespace warpcore::impl
 {

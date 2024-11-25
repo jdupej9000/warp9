@@ -3,7 +3,6 @@
 #include "utils.h"
 #include <immintrin.h>
 #include <cmath>
-#include <mkl.h>
 
 namespace warpcore::impl
 {

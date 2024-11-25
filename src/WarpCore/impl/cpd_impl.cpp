@@ -3,8 +3,10 @@
 #include "kmeans.h"
 #include "utils.h"
 #include <math.h>
-#include <mkl.h>
+#include <lapacke.h>
+#include <cblas.h>
 #include <algorithm>
+#include <immintrin.h>
 
 namespace warpcore::impl
 {
@@ -89,8 +91,8 @@ namespace warpcore::impl
         float tf = 1.0f / (sigma2 * lambda);
         atdba(q, m, k, p1, tf, _p1);
         cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
-        MKL_INT* piv = (MKL_INT*)_p2;
-        std::memset(piv, 0, k * sizeof(MKL_INT));
+        int* piv = (int*)_p2;
+        std::memset(piv, 0, k * sizeof(int));
         LAPACKE_sgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
         LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv); 
         // _p1 (k,k): ( tf * q^T * diag(p1) * q + l^-1)^-1  [inner]

@@ -9,6 +9,8 @@
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Warp9.Test</RootNamespace>
     <Platforms>AnyCPU;x64</Platforms>
+	  <Configurations>Debug;Release</Configurations>
+	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <ItemGroup>

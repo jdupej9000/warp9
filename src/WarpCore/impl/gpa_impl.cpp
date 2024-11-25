@@ -5,7 +5,8 @@
 #include <immintrin.h>
 #include <cmath>
 #include <cstring>
-#include <mkl.h>
+#include <lapacke.h>
+#include <cblas.h>
 
 namespace warpcore::impl
 {

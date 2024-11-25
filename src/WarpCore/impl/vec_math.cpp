@@ -143,7 +143,7 @@ namespace warpcore::impl
 
         int n8 = round_down(n, 8);
         for(int i = 0; i < n8; i+= 8) {
-            const __m256 xi = _mm256_load_ps(x + i);
+            const __m256 xi = _mm256_loadu_ps(x + i);
             xmin8 = _mm256_min_ps(xmin8, xi);
             xmax8 = _mm256_max_ps(xmax8, xi);
         }
