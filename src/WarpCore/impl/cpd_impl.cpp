@@ -82,14 +82,14 @@ namespace warpcore::impl
         float* _p2 = _p1 + m * k;
         float* _p3 = _p2 + m * k;
 
-        dxinva(px, p1, m, 3, _p0);           
-        cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1);    
+        dxinva(px, p1, m, 3, _p0);
+        cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1);
         // _p0 (m,3): diag(p1)^-1 * px - y [right]
 
         float tf = 1.0f / (sigma2 * lambda);
         atdba(q, m, k, p1, tf, _p1);
         cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
-        MKL_INT* piv = (MKL_INT*)_p2;                 
+        MKL_INT* piv = (MKL_INT*)_p2;
         std::memset(piv, 0, k * sizeof(MKL_INT));
         LAPACKE_sgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
         LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv); 
@@ -111,7 +111,7 @@ namespace warpcore::impl
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 0.0f, _p0, m);
         // _p0 (m,3): q * [inner] * tf^2 * q^T * diag(p1) * right
 
-        dxa(_p0, p1, m, 3, _p0);         
+        dxa(_p0, p1, m, 3, _p0);
         // _p0 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
         // _p3 avail.
 
@@ -123,10 +123,10 @@ namespace warpcore::impl
 
         float ret = lambda / 2 * tratdba(_p3, k, 3, l);
 
-        dxa(_p3, l, k, 3, _p3);                
+        dxa(_p3, l, k, 3, _p3);
         // _p3 (k,3): diag(l) * q^T * w
 
-        std::memcpy(t, y, m * 3 * sizeof(float));     
+        std::memcpy(t, y, m * 3 * sizeof(float));
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 1.0f, t, m); 
         // T (m,3): q * diag(l) * q^t * w + y
 
