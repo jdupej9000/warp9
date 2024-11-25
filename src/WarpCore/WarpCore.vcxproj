@@ -108,11 +108,13 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <UseProcessorExtensions>None</UseProcessorExtensions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>libopenblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -140,10 +142,11 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <UseProcessorExtensions>ALDERLAKE</UseProcessorExtensions>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMP>GenerateParallelCode</OpenMP>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,6 +154,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>libomp.lib;libopenblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <CustomBuildStep>
       <Command>copy $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>

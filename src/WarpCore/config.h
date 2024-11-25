@@ -21,5 +21,3 @@
 #endif
 
 #define WCORE_ASSERT(x) assert(x)
-
-#pragma comment(lib, "libopenblas.lib")
