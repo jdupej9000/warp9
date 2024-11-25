@@ -5,7 +5,7 @@
 namespace warpcore::impl
 {
     void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept;
-    void dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& c) noexcept;
+    __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept;
 
     void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept
     {
@@ -14,9 +14,9 @@ namespace warpcore::impl
         cz = _mm256_fmsub_ps(ax, by, _mm256_mul_ps(ay, bx));
     }
 
-    void dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& c) noexcept
+    __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept
     {
-        c = _mm256_fmadd_ps(ax, bx, _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
+        return _mm256_fmadd_ps(ax, bx, _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
     }
 
     void _raytri(const float* orig, const float* dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept
@@ -44,8 +44,7 @@ namespace warpcore::impl
             cross(_mm256_broadcast_ss(dir), _mm256_broadcast_ss(dir+1), _mm256_broadcast_ss(dir+2), 
                 e2x, e2y, e2z, px, py, pz);
 
-            __m256 det;
-            dot(e1x, e1y, e1z, px, py, pz, det);
+            __m256 det = dot(e1x, e1y, e1z, px, py, pz);
 
             mask = _mm256_and_ps(mask, _mm256_or_ps(
                 _mm256_cmp_ps(det, _mm256_set1_ps(EPS), _CMP_GT_OQ),
@@ -60,8 +59,7 @@ namespace warpcore::impl
             __m256 sy = _mm256_sub_ps(_mm256_broadcast_ss(orig + 1), ay);
             __m256 sz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), az);
 
-            dot(sx, sy, sz, px, py, pz, u);
-            u = _mm256_mul_ps(u, inv_det);
+            u = _mm256_mul_ps(dot(sx, sy, sz, px, py, pz), inv_det);
 
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(0), _CMP_GE_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(1), _CMP_LE_OQ));
@@ -72,7 +70,7 @@ namespace warpcore::impl
             __m256 qx, qy, qz;
             cross(sx, sy, sz, e1x, e1y, e1z, qx, qy, qz);
 
-            dot(_mm256_broadcast_ss(dir), _mm256_broadcast_ss(dir + 1), _mm256_broadcast_ss(dir + 2), qx, qy, qz, v);
+            v = dot(_mm256_broadcast_ss(dir), _mm256_broadcast_ss(dir + 1), _mm256_broadcast_ss(dir + 2), qx, qy, qz);
             v = _mm256_mul_ps(v, inv_det);
 
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(v, _mm256_set1_ps(0), _CMP_GE_OQ));
@@ -81,8 +79,7 @@ namespace warpcore::impl
             if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
                 continue;
 
-            __m256 tt;
-            dot(e2x, e2y, e2z, qx, qy, qz, tt);
+            __m256 tt = dot(e2x, e2y, e2z, qx, qy, qz);
             tt = _mm256_mul_ps(tt, inv_det);
 
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, _mm256_set1_ps(0), _CMP_GT_OQ));
@@ -132,9 +129,8 @@ namespace warpcore::impl
             const __m256 apz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), az);
 
             // d1 = dot(ab, ap); d2 = dot(ac, ap);
-            __m256 d1, d2;
-            dot(abx, aby, abz, apx, apy, apz, d1);
-            dot(acx, acy, acz, apx, apy, apz, d2);
+            __m256 d1 = dot(abx, aby, abz, apx, apy, apz);
+            __m256 d2 = dot(acx, acy, acz, apx, apy, apz);
 
             // TODO: disable - the selected lanes are already set to zero
             // if (d1 <= 0.f && d2 <= 0.f) return a;
@@ -149,9 +145,8 @@ namespace warpcore::impl
             const __m256 bpz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), _mm256_loadu_ps(vert + i + 5 * stride));
             
             // d3 = dot(ab, bp); d4 = dot(ac, bp);
-            __m256 d3, d4;
-            dot(abx, aby, abz, bpx, bpy, bpz, d3);
-            dot(acx, acy, acz, bpx, bpy, bpz, d4);
+            __m256 d3 = dot(abx, aby, abz, bpx, bpy, bpz);
+            __m256 d4 = dot(acx, acy, acz, bpx, bpy, bpz);
 
             // if (d3 >= 0.f && d4 <= d3) return b;
             __m256 m2 = _mm256_and_ps(_mm256_cmp_ps(d3, _mm256_setzero_ps(), _CMP_GE_OQ),
@@ -165,9 +160,8 @@ namespace warpcore::impl
             const __m256 cpz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), _mm256_loadu_ps(vert + i + 8 * stride));
 
             // d5 = dot(ab, cp); d6 = dot(ac, cp);
-            __m256 d5, d6;
-            dot(abx, aby, abz, cpx, cpy, cpz, d5);
-            dot(acx, acy, acz, cpx, cpy, cpz, d6);
+            __m256 d5 = dot(abx, aby, abz, cpx, cpy, cpz);
+            __m256 d6 = dot(acx, acy, acz, cpx, cpy, cpz);
 
             // if (d6 >= 0.f && d5 <= d6) return c;
             __m256 m3 = _mm256_and_ps(_mm256_cmp_ps(d6, _mm256_setzero_ps(), _CMP_GE_OQ),
