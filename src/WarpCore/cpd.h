@@ -24,7 +24,8 @@ enum CPD_CONV {
     CPD_CONV_TOL = 2,
     CPD_CONV_SIGMA = 4,
     CPD_CONV_DSIGMA = 8,
-    CPD_CONV_NUMERIC_ERROR = 16
+    CPD_CONV_NUMERIC_ERROR = 16,
+    CPD_CONV_INTERNAL_ERROR = 1048576
 };
 
 struct cpdresult {

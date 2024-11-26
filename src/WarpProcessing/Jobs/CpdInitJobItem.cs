@@ -59,7 +59,7 @@ namespace Warp9.Jobs
                 }
             }
 
-            WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh);
+            WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, flags: CpdFlags.CPD_USE_GPU);
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization failed.");

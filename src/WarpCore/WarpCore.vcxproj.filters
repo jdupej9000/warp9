@@ -117,4 +117,9 @@
       <Filter>Source Files\impl</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="impl\cpd_cuda.cu">
+      <Filter>Source Files\impl</Filter>
+    </CudaCompile>
+  </ItemGroup>
 </Project>

@@ -8,6 +8,11 @@
 #include <cstring>
 #include <chrono>
 
+extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx);
+extern void cpd_deinit_cuda(void* pDevCtx);
+extern void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
+extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int m, int n);
+
 using namespace warpcore::impl;
 
 extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
@@ -54,14 +59,19 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     if(cpd->d != 3)
         return WCORE_INVALID_ARGUMENT;
 
-    const int m = cpd->m, n = cpd->n;
     auto t0 = std::chrono::high_resolution_clock::now();
+
+    bool use_cuda = cpd->flags & CPD_USE_GPU;
+
+    const int m = cpd->m, n = cpd->n;
+    //auto t0 = std::chrono::high_resolution_clock::now();
 
     const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : 
         cpd_lowrank_numcols(m);
 
     const int tmp_size = cpd_tmp_size(m, n, num_eigs);
 
+    // Do not change the order of these arrays. CUDA part relies on this structure.
     float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m];
     float* psum = pp;
     float* pt1 = psum + n;
@@ -70,8 +80,25 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     float* tmp = px + 3 * m;
     float* ttemp = tmp + tmp_size;
 
-    float sigma2 = (cpd->sigma2init > 0.0f) ? cpd->sigma2init : 
-        cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
+    float* cuda_ctx = nullptr;
+    if (use_cuda) {
+        if (!cpd_init_cuda(m, n, x, (void**)&cuda_ctx)) {
+            delete[] pp;
+            return CPD_CONV_INTERNAL_ERROR;
+        }
+    }
+
+    float sigma2 = cpd->sigma2init;
+
+    if (cpd->sigma2init <= 0.0f) {
+        if (use_cuda)
+            sigma2 = cpd_estimate_sigma_cuda(cuda_ctx, (const float*)x, (const float*)y, m, n);
+        else
+            sigma2 = cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
+    }
+
+    //float sigma2 = (cpd->sigma2init > 0.0f) ? cpd->sigma2init : 
+    //    cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
 
     std::memset(pp, 0, sizeof(float) * (2 * n + 4 * m + tmp_size));
 
@@ -88,12 +115,16 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     int it = 0;
     int64_t etime = 0;
 
-    while(!conv) {
+    while (!conv) {
         float l0_old = l0;
         float denom = cpd->w / (1.0f - cpd->w) * powf(2.0f * (float)M_PI * sigma2, 1.5f) * (float)m / (float)n;
 
         auto te0 = std::chrono::high_resolution_clock::now();
-        cpd_estep((const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
+        if (use_cuda) {
+            cpd_estep_cuda(cuda_ctx, (const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, pt1);
+        } else {
+            cpd_estep((const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
+        }
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
 
@@ -139,7 +170,10 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
     delete[] pp;
 
-    if(result) {
+    if (use_cuda)
+        cpd_deinit_cuda(cuda_ctx);
+
+    if (result) {
         result->iter = it;
         result->conv = conv;
         result->sigma2 = sigma2;

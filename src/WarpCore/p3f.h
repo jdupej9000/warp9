@@ -79,11 +79,11 @@ namespace warpcore
 
     p3f p3f_proj_to_tri_bary(p3f aa, p3f bb, p3f cc, p3f pt) noexcept;
     
-    template<int I>
+    template<int K>
     p3f p3f_broadcast(p3f a) noexcept
     {
-        static_assert(I >= 0 && I < 4, "Lane index out of range.");
-        return _mm_shuffle_ps(a, a, I | (I << 2) | (I << 4) | (I << 6)); // TODO: permute
+        static_assert(K >= 0 && K < 4, "Lane index out of range.");
+        return _mm_shuffle_ps(a, a, K | (K << 2) | (K << 4) | (K << 6)); // TODO: permute
     }
 
     template<int ISrc, int IDest>

@@ -22,20 +22,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>ClangCL</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseInteloneMKL>Parallel</UseInteloneMKL>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>ClangCL</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseInteloneMKL>Sequential</UseInteloneMKL>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -109,6 +110,7 @@
       <UseProcessorExtensions>None</UseProcessorExtensions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <FloatingPointModel>Precise</FloatingPointModel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -126,6 +128,21 @@
     <PostBuildEvent>
       <Command>copy /Y $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <Optimization>O2</Optimization>
+    </CudaCompile>
+    <CudaCompile>
+      <Runtime>MT</Runtime>
+    </CudaCompile>
+    <CudaCompile>
+      <RuntimeChecks>Default</RuntimeChecks>
+    </CudaCompile>
+    <CudaCompile>
+      <TypeInfo>false</TypeInfo>
+    </CudaCompile>
+    <CudaCompile>
+      <Warning>Wall</Warning>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -147,6 +164,8 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMP>GenerateParallelCode</OpenMP>
       <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,6 +182,29 @@
     <PostBuildEvent>
       <Command>copy /Y $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </PostBuildEvent>
+    <CudaLink>
+      <GPUDebugInfo>false</GPUDebugInfo>
+    </CudaLink>
+    <CudaLink>
+      <Optimization>O2</Optimization>
+      <PerformDeviceLinkTimeOptimization>true</PerformDeviceLinkTimeOptimization>
+      <RuntimeChecks>Default</RuntimeChecks>
+    </CudaLink>
+    <CudaCompile>
+      <Optimization>O2</Optimization>
+    </CudaCompile>
+    <CudaCompile>
+      <Runtime>MT</Runtime>
+    </CudaCompile>
+    <CudaCompile>
+      <RuntimeChecks>Default</RuntimeChecks>
+    </CudaCompile>
+    <CudaCompile>
+      <TypeInfo>false</TypeInfo>
+    </CudaCompile>
+    <CudaCompile>
+      <Warning>Wall</Warning>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
@@ -199,7 +241,21 @@
     <ClCompile Include="p3f.cpp" />
     <ClCompile Include="search.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="impl\cpd_cuda.cu">
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <Optimization>O2</Optimization>
+      <Runtime>MT</Runtime>
+      <RuntimeChecks>Default</RuntimeChecks>
+      <TypeInfo>false</TypeInfo>
+      <Warning>Wall</Warning>
+      <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
+      <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MT</Runtime>
+    </CudaCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.targets" />
   </ImportGroup>
 </Project>

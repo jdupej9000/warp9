@@ -69,7 +69,7 @@ namespace Warp9.Test
             Mesh pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pclTarget = DistortPcl(pcl, Vector3.Zero, 1.10f, 0.25f);
 
-            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, w:0.1f);
+            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, w:0.1f, flags:CpdFlags.CPD_USE_GPU);
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
             Assert.IsNotNull(ctx);
 
