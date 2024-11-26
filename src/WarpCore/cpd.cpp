@@ -116,19 +116,20 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
         std::memcpy(t, ttemp, sizeof(float) * 3 * m);
 
-        if(it >= maxit)
+        if (it >= maxit)
             conv |= CPD_CONV_ITER;
         
-        if(sigma2 < 1e-8)
+        if (sigma2 < 1e-8)
             conv |= CPD_CONV_SIGMA;
 
-        if(abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
+        if (abs(sigma2 - sigma2_old) < 1e-10f ||
+            abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
             conv |= CPD_CONV_DSIGMA;
 
         if (isnan(abs(sigma2 - sigma2_old) / sigma2))
             conv |= CPD_CONV_NUMERIC_ERROR;
 
-        if(tol < cpd->tol)
+        if (tol < cpd->tol)
             conv |= CPD_CONV_TOL;
 
         it++;
