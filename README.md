@@ -14,4 +14,15 @@ Its features include registration algorithms, spatial searching structures, data
 
 ## Build instructions
 Ensure you have the following dependencies installed:
-- Intel oneAPI with Visual Studio integration
+- Visual Studio 2022
+- CUDA Toolkit 12.6 with VS integration
+
+
+**1. Install OpenBLAS**<br>
+Use the script `tools\Install-Deps.ps1` to download and install OpenBLAS. You should see it appear in the `thirdparty` directory.
+
+**2. Build warp9**<br>
+Open `Warp9.sln` in Visual Studio and build it.
+
+**3. Run unit tests (optional)**<br>
+Use Visual Studio's Test explorer to find and execute unit tests. Certain tests will not run and will report as inconclusive because they depend on data files that are not public.
