@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Warp9.Data;
+using Warp9.Jobs;
 using Warp9.Native;
 
-namespace Warp9.Jobs
+namespace Warp9.JobItems
 {
     public class SurfaceProjectionJobItem : ProjectJobItem
     {
@@ -58,7 +59,7 @@ namespace Warp9.Jobs
 
             if (!ctx.Workspace.TryGet(NonrigidMeshesItem, MeshIndex, out PointCloud? pclNonrigid) || pclNonrigid is null)
             {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, 
+                ctx.WriteLog(ItemIndex, MessageKind.Error,
                     string.Format("Could not load the bent floating mesh '{0}'.", MeshIndex));
                 return false;
             }

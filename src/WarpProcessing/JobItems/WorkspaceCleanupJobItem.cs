@@ -1,6 +1,8 @@
-﻿namespace Warp9.Jobs
+﻿using Warp9.Jobs;
+
+namespace Warp9.JobItems
 {
-    public class WorkspaceCleanupJobItem : ProjectJobItem   
+    public class WorkspaceCleanupJobItem : ProjectJobItem
     {
         public WorkspaceCleanupJobItem(int index, params string[] items) :
             base(index, "Cleanup", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)

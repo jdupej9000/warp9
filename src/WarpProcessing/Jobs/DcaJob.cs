@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Warp9.JobItems;
 using Warp9.Model;
 using Warp9.Processing;
 

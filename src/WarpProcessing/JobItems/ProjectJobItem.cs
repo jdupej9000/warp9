@@ -1,6 +1,7 @@
 ﻿using System;
+using Warp9.Jobs;
 
-namespace Warp9.Jobs
+namespace Warp9.JobItems
 {
     public abstract class ProjectJobItem : IJobItem
     {

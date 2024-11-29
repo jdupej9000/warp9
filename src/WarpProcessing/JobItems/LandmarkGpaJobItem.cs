@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using Warp9.Data;
+using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Processing;
 
-namespace Warp9.Jobs
+namespace Warp9.JobItems
 {
     /// <summary>
     /// The job item looks into the specimen table with entry index 'specTableKey' in the project,
