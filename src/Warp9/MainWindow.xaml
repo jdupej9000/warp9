@@ -32,10 +32,7 @@
                 <MenuItem Header="Add new specimen table" Click="mnuProjectAddNewSpecTable_Click" />
                 <MenuItem Header="Import specimen table..." Click="mnuProjectImportSpecTable_Click" />
                 <Separator />
-                <MenuItem Header="Compute DCA" Click="MenuItem_Click"/> <!-- remove this -->
-                <MenuItem Header="Compute...">
-                    
-                </MenuItem>
+                <MenuItem Header="Compute DCA..." Click="mnuProjectComputeDca_Click"/> 
             </MenuItem>
 
             <MenuItem Header="_Help">

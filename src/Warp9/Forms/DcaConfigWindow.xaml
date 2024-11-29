@@ -1,0 +1,176 @@
+﻿<Window x:Class="Warp9.Forms.DcaConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Warp9.Forms"
+        xmlns:controls="clr-namespace:Warp9.Themes"
+         Style="{StaticResource CustomWindowStyle}"
+        mc:Ignorable="d"
+        Title="DCA Configuration" Height="550" Width="550">
+    <Window.Resources>
+        <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
+    </Window.Resources>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Margin="4">
+            <MenuItem Header="Apply preset">
+                <MenuItem Header="CPD-DCA" />
+                <Separator />
+                <MenuItem Header="Form" />
+                <MenuItem Header="Shape" />
+            </MenuItem>
+        </Menu>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
+            <Button x:Name="btnOK" Content="OK" Width="100" />
+            <Label Width="4" />
+            <Button x:Name="btnCancel" Content="Cancel" Width="100" />
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
+            <StackPanel Orientation="Vertical" Width="500">
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Data</TextBlock>
+
+                <TextBlock Margin="2">Name of result</TextBlock>
+                <TextBox Margin="2" Height="24">DCA</TextBox>
+                <Label Height="8" />
+
+                <TextBlock Margin="2">Meshes</TextBlock>
+                <ComboBox Margin="2"/>
+                <Label Height="8" />
+
+                <TextBlock Margin="2">Landmarks</TextBlock>
+                <ComboBox Margin="2"/>
+                <Label Height="8" />
+
+                <TextBlock Margin="2">Base specimen</TextBlock>
+                <ComboBox Margin="2"/>
+                <Label Height="8" />
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid prealignment</TextBlock>
+                <RadioButton GroupName="prealign" Margin="2">No prealignment</RadioButton>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes initial prealignment. This option makes landmarks optional, but may hinder convergence of nonrigid algorithms.</TextBlock>
+                <Label Height="8" />
+                
+                <RadioButton GroupName="prealign" Margin="2">Landmark-fitted GPA</RadioButton>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Uses landmarks to rigidly prealign the meshes. It is generally recommended to use this setting.</TextBlock>
+                <Label Height="8" />
+
+                <RadioButton GroupName="prealign" Margin="2" IsEnabled="False">ICP</RadioButton>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Prealigns the meshes with a basic Iterative closest point algorithm. This is useful for improving nonrigid convergence with data where landmarks are unavailable.</TextBlock>
+                <Label Height="8" />
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Nonrigid registration</TextBlock>
+                <RadioButton GroupName="nonrigid" Margin="2">No registration</RadioButton>
+                <Label Height="8" />
+
+                <RadioButton GroupName="nonrigid" Margin="2" IsEnabled="False">Landmark-fitted thin plate spline</RadioButton>
+                <Label Height="8" />
+
+                <RadioButton GroupName="nonrigid" Margin="2">Coherent point drift (nonrigid, low-rank)</RadioButton>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,4">A nonrigid point cloud registration algorithm that does not use landmarks. Convergence is sensitive to initial alignment. Computation is accelerated with a GPU if available.</TextBlock>
+                <Grid Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="80" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="24"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0">Beta</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="0">2.0</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1">Lambda</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="1">1.0</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="2">w</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="2">0.1</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="3">Tolerance</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="3">0.01</TextBox>
+                    
+                    <TextBlock Grid.Row="0" Grid.Column="4">Max. iterations</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="4">200</TextBox>
+                </Grid>
+                <Label Height="8" />
+                
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Surface projection</TextBlock>
+                <RadioButton GroupName="proj" Margin="2">Use nonrigid result</RadioButton>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes projection to the floating surface. If a registration algorithm results in a sufficiently tight fitting, this option may help reduce noise in the correspondence meshes.</TextBlock>
+                <Label Height="8" />
+
+                <RadioButton GroupName="proj" Margin="2">Closest point</RadioButton>
+                <Label Height="8" />
+
+                <RadioButton GroupName="proj" Margin="2">Raycast along surface normal or closest point</RadioButton>
+                <Label Height="8" />
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Correspondence rejection</TextBlock>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">This step creates a blacklist of vertices whose correspondences are unreliable. It is useful to generate better rigid registrations and cleaner PCAs. Blacklisted vertices can be corrected using imputation if the statistical implicaitons are understood.</TextBlock>
+                <CheckBox Margin="2">Reject distant vertices</CheckBox>
+                <Label Height="8" />
+                <CheckBox Margin="2,0,0,8">Reject triangles by expansion</CheckBox>
+                <Grid Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="100" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="24"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0">Max. distance</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="0">0.1</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1">Min. expansion</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="1">0.1</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="2">Max. expansion</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="2">10.0</TextBox>
+
+                    <TextBlock Grid.Row="0" Grid.Column="3">Threshold (%)</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="3">5</TextBox>
+                </Grid>
+                <Label Height="8" />
+
+                <TextBlock Margin="2">Imputation method</TextBlock>
+                <ComboBox Margin="2"/>
+                <Label Height="8" />
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid registration</TextBlock>
+                <Label Height="8" />
+                <RadioButton GroupName="proj" Margin="2">No registration</RadioButton>
+                <Label Height="8" />
+
+                <RadioButton GroupName="proj" Margin="2">GPA on all vertices</RadioButton>
+                <Label Height="8" />
+
+                <RadioButton GroupName="proj" Margin="2">GPA excluding blacklisted vertices</RadioButton>
+                <Label Height="8" />
+
+                <CheckBox Margin="2,0,0,8">Restore specimen size (create form)</CheckBox>
+                <Separator/>
+
+                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Advanced</TextBlock>
+                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">These settings should generally not be changed unless troubleshooting issues.</TextBlock>
+                <CheckBox Margin="2,0,0,8">Do not use GPU for acceleration</CheckBox>
+                <CheckBox Margin="2,0,0,8">Do not run tasks in parallel</CheckBox>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

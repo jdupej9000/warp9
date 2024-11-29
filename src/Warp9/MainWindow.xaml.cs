@@ -265,8 +265,10 @@ namespace Warp9
             e.Handled = true;
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void mnuProjectComputeDca_Click(object sender, RoutedEventArgs e)
         {
+            DcaConfigWindow cfgWnd = new DcaConfigWindow();
+            cfgWnd.ShowDialog();
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

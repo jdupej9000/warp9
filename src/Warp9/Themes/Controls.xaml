@@ -69,6 +69,15 @@
         </DockPanel>
     </ControlTemplate>
 
+    <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockTitle">
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+    
+    <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockDimmed">
+        <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Disabled}"/>
+    </Style>
+    
     <Style TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}"/>
