@@ -6,7 +6,16 @@ namespace Warp9.Model
     {
         public override string ToString()
         {
-            return string.Format("{0}:{1}", SpecTableName, ColumnName);
+            return ColumnName;
+        }
+    }
+
+    public record SpecimenTableInfo(long SpecTableId, string SpecTableName, SpecimenTable SpecimenTable)
+    {
+        public override string ToString()
+        {
+            return string.Format("{0} ({1} rows)",
+                SpecTableName, SpecimenTable.Count);
         }
     }
 
@@ -73,6 +82,18 @@ namespace Warp9.Model
                 {
                     foreach (var col in table.Columns)
                         yield return new SpecimenTableColumnInfo(kvp.Key, kvp.Value.Name, col.Key, col.Value);
+                }
+            }
+        }
+
+        public static IEnumerable<SpecimenTableInfo> EnumerateSpecimenTables(Project proj)
+        {
+            foreach (var kvp in proj.Entries)
+            {
+                if (kvp.Value.Kind == ProjectEntryKind.Specimens &&
+                    kvp.Value.Payload.Table is SpecimenTable table)
+                {
+                    yield return new SpecimenTableInfo(kvp.Key, kvp.Value.Name, table);
                 }
             }
         }

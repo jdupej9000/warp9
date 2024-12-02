@@ -49,16 +49,24 @@ namespace Warp9.Forms
 
         Project project;
         DcaConfiguration configuration;
+        SpecimenTableInfo? specTable;
 
         public DcaConfiguration Config => configuration;
         public Project Project => project;
+
+        public IEnumerable<SpecimenTableInfo> SpecimenTables =>
+           ModelUtils.EnumerateSpecimenTables(project);
+
+
         public IEnumerable<SpecimenTableColumnInfo> AllowedMeshColumns =>
             ModelUtils.EnumerateAllSpecimenTableColumns(project)
-                .Where((x) => x.Column.ColumnType == SpecimenTableColumnType.Mesh);
+                .Where((x) => x.SpecTableId == (specTable?.SpecTableId ?? -1) && 
+                                x.Column.ColumnType == SpecimenTableColumnType.Mesh);
 
         public IEnumerable<SpecimenTableColumnInfo> AllowedLandmarksColumns =>
-           ModelUtils.EnumerateAllSpecimenTableColumns(project)
-               .Where((x) => x.Column.ColumnType == SpecimenTableColumnType.PointCloud);
+            ModelUtils.EnumerateAllSpecimenTableColumns(project)
+                .Where((x) => x.SpecTableId == (specTable?.SpecTableId ?? -1) &&
+                                x.Column.ColumnType == SpecimenTableColumnType.PointCloud);
 
         public void Attach(Project proj, DcaConfiguration cfg)
         {
@@ -66,29 +74,57 @@ namespace Warp9.Forms
             configuration = cfg;
             DataContext = cfg;
 
+            cmbSpecTable.Items.Clear();
+            foreach (var st in SpecimenTables)
+                cmbSpecTable.Items.Add(st);
+
+            if (cmbSpecTable.Items.Count > 0)
+                cmbSpecTable.SelectedIndex = 0;
+        }
+
+        private void UpdateColumnSelectors()
+        {
             cmbMeshes.Items.Clear();
-            foreach(var col in AllowedMeshColumns)
+            foreach (var col in AllowedMeshColumns)
                 cmbMeshes.Items.Add(col);
 
             cmbLandmarks.Items.Clear();
             foreach (var col in AllowedLandmarksColumns)
                 cmbLandmarks.Items.Add(col);
 
-            if(cmbMeshes.Items.Count > 0)
+            cmbBase.Items.Clear();
+            for (int i = 0; i < specTable?.SpecimenTable.Count; i++)
+                cmbBase.Items.Add(i);
+
+            if (cmbMeshes.Items.Count > 0)
                 cmbMeshes.SelectedIndex = 0;
 
             if (cmbLandmarks.Items.Count > 0)
                 cmbLandmarks.SelectedIndex = 0;
+
+            if(cmbBase.Items.Count > 0)
+                cmbBase.SelectedIndex = 0;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: capture results from specimen table and column selectors
+
             DialogResult = true;
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
+        }
+
+        private void cmbSpecTable_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is SpecimenTableInfo sti)
+            {
+                specTable = sti;
+                UpdateColumnSelectors();
+            }
         }
     }
 }

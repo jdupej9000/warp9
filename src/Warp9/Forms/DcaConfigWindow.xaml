@@ -40,16 +40,20 @@
                 <TextBox Margin="2" Height="24" Text="{Binding Path=ResultEntryName, Mode=TwoWay}" />
                 <Label Height="8" />
 
-                <TextBlock Margin="2">Meshes</TextBlock>
+                <TextBlock Margin="2">Specimen table</TextBlock>
+                <ComboBox x:Name="cmbSpecTable" Margin="2" SelectionChanged="cmbSpecTable_SelectionChanged"/>
+                <Label Height="8" />
+
+                <TextBlock Margin="2">Mesh column</TextBlock>
                 <ComboBox x:Name="cmbMeshes" Margin="2"/>
                 <Label Height="8" />
 
-                <TextBlock Margin="2">Landmarks</TextBlock>
+                <TextBlock Margin="2">Landmarks column</TextBlock>
                 <ComboBox x:Name="cmbLandmarks" Margin="2"/>
                 <Label Height="8" />
 
                 <TextBlock Margin="2">Base specimen</TextBlock>
-                <ComboBox Margin="2"/>
+                <ComboBox Margin="2" x:Name="cmbBase"/>
                 <Label Height="8" />
                 <Separator/>
 
