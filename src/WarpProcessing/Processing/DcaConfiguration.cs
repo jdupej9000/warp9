@@ -1,4 +1,6 @@
-﻿namespace Warp9.Processing
+﻿using Warp9.Native;
+
+namespace Warp9.Processing
 {
     public enum DcaRigidPreregKind
     {
@@ -34,9 +36,11 @@
         public string? MeshColumnName { get; set; }
         public int BaseMeshIndex { get; set; }
 
-        public DcaRigidPreregKind RigidPreregistration { get; set; }
-        public DcaNonrigidRegistrationKind NonrigidRegistration { get; set; }
-        public DcaSurfaceProjectionKind SurfaceProjection { get; set; }
-        public DcaRigidPostRegistrationKind RigidPostRegistration { get; set; }
+        public DcaRigidPreregKind RigidPreregistration { get; set; } = DcaRigidPreregKind.LandmarkFittedGpa;
+        public DcaNonrigidRegistrationKind NonrigidRegistration { get; set; } = DcaNonrigidRegistrationKind.LowRankCpd;
+        public DcaSurfaceProjectionKind SurfaceProjection { get; set; } = DcaSurfaceProjectionKind.ClosestPoint;
+        public DcaRigidPostRegistrationKind RigidPostRegistration { get; set; } = DcaRigidPostRegistrationKind.Gpa;
+
+        public CpdConfiguration CpdConfig { get; set; } = new CpdConfiguration();
     }
 }
