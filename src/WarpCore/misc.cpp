@@ -2,12 +2,15 @@
 #include <sstream>
 #include <cstring>
 #include <string.h>
+#include <openblas_config.h>
+#include <cuda_runtime.h>
 
 using namespace std;
 
 extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 {
     stringstream ss{};
+    int device;
 
     switch (index) {
     case WCINFO_VERSION:
@@ -32,15 +35,20 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << "avx2";
         break;
 
-    case WCINFO_MKL_VERSION:
-    case WCINFO_MKL_ISA: {
+    case WCINFO_OPENBLAS_VERSION:
+        ss << OPENBLAS_VERSION;
+        break;
 
-
-        if(index == WCINFO_MKL_VERSION) {
-     
-        } else if(index == WCINFO_MKL_ISA) {
-         
+    case WCINFO_CUDA_DEVICE: 
+        if (cudaGetDevice(&device) != cudaSuccess)
+        {
+            ss << "Cannot get a CUDA device.";
         }
+        else
+        {
+            cudaDeviceProp props;
+            cudaGetDeviceProperties(&props, device);
+            ss << props.name;
         }
         break;
     
