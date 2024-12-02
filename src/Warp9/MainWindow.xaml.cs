@@ -7,6 +7,7 @@ using Warp9.Forms;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Navigation;
+using Warp9.Processing;
 using Warp9.ProjectExplorer;
 using Warp9.Utils;
 
@@ -267,7 +268,13 @@ namespace Warp9
 
         private void mnuProjectComputeDca_Click(object sender, RoutedEventArgs e)
         {
+            if (model is null)
+                throw new InvalidOperationException();
+
+            DcaConfiguration config = new DcaConfiguration();
+
             DcaConfigWindow cfgWnd = new DcaConfigWindow();
+            cfgWnd.Attach(model.Project, config);
             cfgWnd.ShowDialog();
         }
 

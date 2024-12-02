@@ -2,6 +2,14 @@
 
 namespace Warp9.Model
 {
+    public record SpecimenTableColumnInfo (long SpecTableId, string SpecTableName, string ColumnName, SpecimenTableColumn Column)
+    {
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}", SpecTableName, ColumnName);
+        }
+    }
+
     public static class ModelUtils
     {
         public static SpecimenTable? TryGetSpecimenTable(Project proj, long tableKey)
@@ -54,6 +62,19 @@ namespace Warp9.Model
                 return val;
 
             return null;
+        }
+
+        public static IEnumerable<SpecimenTableColumnInfo> EnumerateAllSpecimenTableColumns(Project proj)
+        {
+            foreach (var kvp in proj.Entries)
+            {
+                if (kvp.Value.Kind == ProjectEntryKind.Specimens &&
+                    kvp.Value.Payload.Table is SpecimenTable table)
+                {
+                    foreach (var col in table.Columns)
+                        yield return new SpecimenTableColumnInfo(kvp.Key, kvp.Value.Name, col.Key, col.Value);
+                }
+            }
         }
     }
 }
