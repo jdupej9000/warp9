@@ -1,4 +1,5 @@
-﻿using Warp9.Data;
+﻿using System.Transactions;
+using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Native;
@@ -60,7 +61,10 @@ namespace Warp9.JobItems
                 }
             }
 
-            WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, flags: CpdFlags.CPD_USE_GPU);
+            CpdConfiguration cpdCfg = new CpdConfiguration();
+            cpdCfg.UseGpu = true;
+
+            WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, cpdCfg);
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization failed.");

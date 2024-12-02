@@ -4,6 +4,44 @@ using Warp9.Data;
 
 namespace Warp9.Native
 {
+    public class CpdConfiguration
+    {
+        public float Beta { get; set; } = 2.0f;
+        public float Lambda { get; set; } = 2.0f;
+        public float W { get; set; } = 0.1f;
+        public int MaxIterations { get; set; } = 200;
+        public float Tolerance { get; set; } = 5e-3f;
+        public CpdInitMethod InitMethod { get; set; } = CpdInitMethod.CPD_INIT_CLUSTERED;
+        public bool UseGpu { get; set; } = true;
+
+        public CpdFlags Flags
+        {
+            get
+            {
+                CpdFlags ret = new CpdFlags();
+                if (UseGpu) ret |= CpdFlags.CPD_USE_GPU;
+
+                return ret;
+            }
+        }
+
+        public CpdInfo ToCpdInfo(int m = 0, int n = 0)
+        {
+            return new CpdInfo()
+            { 
+                n = n,
+                m = m,
+                d = 3,
+                lambda = Lambda,
+                beta = Beta,
+                w = W,
+                maxit = MaxIterations,
+                flags = (int)Flags,
+                tol = Tolerance
+            };
+        }
+    }
+
     public class CpdContext
     {
         private CpdContext(CpdInfo info, byte[] initData, PointCloud pclFloat, CpdInitMethod im)
@@ -58,45 +96,28 @@ namespace Warp9.Native
 
         public static WarpCoreStatus TryInitNonrigidCpd(out CpdContext? ctx, 
             PointCloud pclFloating,
-            float lambda = 2,
-            float beta = 2,
-            float w = 0.1f,
-            CpdInitMethod initMethod = CpdInitMethod.CPD_INIT_CLUSTERED,
-            CpdFlags flags = CpdFlags.CPD_NONE,
-            int maxIt = 200,
-            float tol = 5e-3f)
+            CpdConfiguration cfg)
         {
-            CpdInfo info = new CpdInfo()
-            {
-                m = pclFloating.VertexCount,
-                d = 3,
-                n = 0,
-                lambda = lambda,
-                beta = beta,
-                w = w,
-                maxit = maxIt,
-                flags = (int)flags,
-                tol = tol
-            };
+            CpdInfo info = cfg.ToCpdInfo(pclFloating.VertexCount);
 
             if (!pclFloating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclFloatingData))
                 throw new InvalidOperationException();
 
             unsafe
             {
-                int initDataSize = WarpCore.cpd_init(ref info, (int)initMethod, nint.Zero, nint.Zero);
+                int initDataSize = WarpCore.cpd_init(ref info, (int)cfg.InitMethod, nint.Zero, nint.Zero);
                 byte[] initData = new byte[initDataSize];
 
                 WarpCoreStatus ret = 0;
                 fixed (byte* floatingDataPtr = &MemoryMarshal.GetReference(pclFloatingData))
                 fixed (byte* initDataPtr = &MemoryMarshal.GetReference(initData.AsSpan()))
                 {
-                    ret = (WarpCoreStatus)WarpCore.cpd_init(ref info, (int)initMethod, (nint)floatingDataPtr, (nint)initDataPtr);
+                    ret = (WarpCoreStatus)WarpCore.cpd_init(ref info, (int)cfg.InitMethod, (nint)floatingDataPtr, (nint)initDataPtr);
                 }
 
                 if (ret == WarpCoreStatus.WCORE_OK)
                 {
-                    ctx = new CpdContext(info, initData, pclFloating, initMethod);
+                    ctx = new CpdContext(info, initData, pclFloating, cfg.InitMethod);
                 }
                 else
                 {
