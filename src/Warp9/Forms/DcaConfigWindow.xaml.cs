@@ -125,7 +125,7 @@ namespace Warp9.Forms
                 configuration.LandmarkColumnName = stcilm.ColumnName;
             }
 
-            if (cmbLandmarks.SelectedValue is SpecimenTableColumnInfo stcimesh)
+            if (cmbMeshes.SelectedValue is SpecimenTableColumnInfo stcimesh)
             {
                 configuration.MeshColumnName = stcimesh.ColumnName;
             }

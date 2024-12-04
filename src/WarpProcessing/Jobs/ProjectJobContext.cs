@@ -14,14 +14,21 @@ namespace Warp9.Jobs
             Project = proj;
         }
 
+        public event EventHandler<string> LogMessage;
+
         public JobWorkspace Workspace { get; init; } = new JobWorkspace();
         public Project Project { get; init; }
 
         public void WriteLog(int jobItemIndex, MessageKind kind, string message)
         {
-            Console.WriteLine(string.Format("{0}: {1}> {2}", 
+            string fmtMsg = string.Format("{0}: {1}> {2}", 
                 DateTime.Now.ToString("HH:mm:ss.fff"),
-                jobItemIndex, message));
+                jobItemIndex, message);
+
+            if (LogMessage != null)
+                LogMessage(this, fmtMsg);
+            else
+                Console.WriteLine(fmtMsg);
         }
 
         public bool TryGetSpecTableMesh(long specTableKey, string columnName, int index, [MaybeNullWhen(false)] out Mesh? m)

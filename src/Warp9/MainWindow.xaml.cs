@@ -27,6 +27,7 @@ namespace Warp9
             views.Add(pageTextEditor);
             views.Add(pageSpecimenTable);
             views.Add(pageProjectSettings);
+            views.Add(pageLog);
 
             lstTasks.ItemsSource = JobEngine.Jobs;
         }
@@ -34,6 +35,7 @@ namespace Warp9
         Warp9Model? model = null;
 
         MainLandingPage pageLanding = new MainLandingPage();
+        LogPage pageLog = new LogPage();
         TextEditorPage pageTextEditor = new TextEditorPage();
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
@@ -260,7 +262,7 @@ namespace Warp9
             }
             else
             {
-                frameMain.NavigationService.Navigate(pageLanding);
+                frameMain.NavigationService.Navigate(pageLog);
             }
 
             e.Handled = true;
@@ -281,7 +283,10 @@ namespace Warp9
                 return;
 
             ProjectJobContext ctx = new ProjectJobContext(model.Project);
+            ctx.LogMessage += (s,e) => pageLog.AddMessage(e);
             Job job = Job.Create(DcaJob.Create(config, model.Project), ctx);
+
+            frameMain.NavigationService.Navigate(pageLog);
             JobEngine.Run(job);
         }
 
