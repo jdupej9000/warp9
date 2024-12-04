@@ -64,6 +64,7 @@ namespace Warp9.Native
         {
             CpdInfo info = cpdInfo;
             info.n = pclTarget.VertexCount;
+            info.sigma2init = -1;
 
             CpdResult cpdRes = new CpdResult();
             int sizeBytesT = info.d * info.m * Marshal.SizeOf<float>();
