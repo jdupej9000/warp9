@@ -62,7 +62,7 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
     float* dpt1 = dt + 3 * m; // dpt1, dp1, dpx must be in the correct sequence, we'll be copying them in one operation
     float* dp1 = dpt1 + n;
     float* dpx = dp1 + m;  
-    float* dpsum = dpx + 3 * m;
+    //float* dpsum = dpx + 3 * m;
     cudaMemcpy(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice);
     cudaMemset(dpx, 0, sizeof(float) * (3 * m + m + n + n));
 

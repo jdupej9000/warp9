@@ -141,7 +141,10 @@
       <TypeInfo>false</TypeInfo>
     </CudaCompile>
     <CudaCompile>
-      <Warning>Wall</Warning>
+      <Warning>InheritFromHost</Warning>
+      <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
+      <AdditionalCompilerOptions>
+      </AdditionalCompilerOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -203,7 +206,10 @@
       <TypeInfo>false</TypeInfo>
     </CudaCompile>
     <CudaCompile>
-      <Warning>Wall</Warning>
+      <Warning>InheritFromHost</Warning>
+      <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
+      <AdditionalCompilerOptions>
+      </AdditionalCompilerOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
