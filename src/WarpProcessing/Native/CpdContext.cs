@@ -57,6 +57,9 @@ namespace Warp9.Native
         PointCloud pclFloating;
         CpdInitMethod initMethod;
 
+        public int NumVertices => cpdInfo.m;
+        public int NumEigenvectors => cpdInfo.neigen;
+
         public WarpCoreStatus Register(PointCloud pclTarget, out PointCloud? pclBent, out CpdResult result)
         {
             CpdInfo info = cpdInfo;

@@ -26,7 +26,7 @@ namespace Warp9.Jobs
     {
         public JobEngine()
         {
-            workerCount = Environment.ProcessorCount;
+            workerCount = 1;// Environment.ProcessorCount;
 
             workers = new Thread[workerCount];
             contexts = new BackgroundWorkerContext[workerCount];

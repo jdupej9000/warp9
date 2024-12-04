@@ -187,7 +187,7 @@ namespace Warp9
             ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);
             entry.Name = "Imported";
             entry.Payload.Table = specTab;
-
+            
             model.ViewModel.Update();
         }
 
@@ -245,7 +245,6 @@ namespace Warp9
                                     frameMain.NavigationService.Navigate(pageSpecimenTable);
                                     pageSpecimenTable.ShowEntry(item.EntryIndex);
                                     break;
-
                             }
                         }
                         else
@@ -256,7 +255,7 @@ namespace Warp9
                         break;
 
                     default:
-                        frameMain.NavigationService.Navigate(pageViewer);
+                        frameMain.NavigationService.Navigate(pageLog);
                         break;
                 }
             }

@@ -31,6 +31,10 @@ namespace Warp9.JobItems
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
+            ctx.WriteLog(ItemIndex, MessageKind.Error,
+                    string.Format("Initializing CPD for mesh '{0}.", BaseMeshIndex));
+
+
             SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
                 ctx.Project, SpecimenTableKey, MeshColumn);
             if (column is null)
@@ -72,7 +76,8 @@ namespace Warp9.JobItems
             }
 
             ctx.Workspace.Set(InitObjectItem, cpdCtx);
-            ctx.WriteLog(ItemIndex, MessageKind.Information, "CPD-LR initialization complete.");
+            ctx.WriteLog(ItemIndex, MessageKind.Information, 
+                string.Format("CPD-LR initialization complete (m={0}, eigs={1}).", cpdCtx.NumVertices, cpdCtx.NumEigenvectors));
             return true;
         }
     }
