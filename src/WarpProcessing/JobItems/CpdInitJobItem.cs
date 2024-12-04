@@ -32,7 +32,7 @@ namespace Warp9.JobItems
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
             ctx.WriteLog(ItemIndex, MessageKind.Error,
-                    string.Format("Initializing CPD for mesh '{0}.", BaseMeshIndex));
+                    string.Format("Initializing CPD for mesh '{0}'.", BaseMeshIndex));
 
 
             SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(

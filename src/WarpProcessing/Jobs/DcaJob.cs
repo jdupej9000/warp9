@@ -85,6 +85,22 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
+            switch (cfg.RigidPostRegistration)
+            {
+                case DcaRigidPostRegistrationKind.None:
+                    break;
+
+                case DcaRigidPostRegistrationKind.Gpa:
+                    yield return new PclGpaJobItem(index++, CorrespondenceRegKey, CorrespondenceRegKey);
+                    break;
+
+                case DcaRigidPostRegistrationKind.GpaOnWhitelisted:
+                    throw new NotImplementedException();
+
+                default:
+                    throw new NotImplementedException();
+            }
+
             yield return new WorkspaceCleanupJobItem(index, NonrigidInitKey, NonrigidRegKey);
 
             // TODO
