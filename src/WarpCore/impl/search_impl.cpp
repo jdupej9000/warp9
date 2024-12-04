@@ -7,6 +7,7 @@ namespace warpcore::impl
 {
     void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept;
     __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept;
+    __m256 blend_in(__m256 x, __m256 y, __m256 mask) noexcept;
 
     void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept
     {
@@ -18,6 +19,11 @@ namespace warpcore::impl
     __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept
     {
         return _mm256_fmadd_ps(ax, bx, _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
+    }
+
+    __m256 blend_in(__m256 x, __m256 y, __m256 mask) noexcept
+    {
+         return _mm256_blendv_ps(x, y, mask);
     }
 
     void _raytri(const float* orig, const float* dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept
@@ -133,12 +139,11 @@ namespace warpcore::impl
             __m256 d1 = dot(abx, aby, abz, apx, apy, apz);
             __m256 d2 = dot(acx, acy, acz, apx, apy, apz);
 
-            // TODO: disable - the selected lanes are already set to zero
             // if (d1 <= 0.f && d2 <= 0.f) return a;
             __m256 m1 = _mm256_and_ps(_mm256_cmp_ps(d1, _mm256_setzero_ps(), _CMP_LE_OQ),
                 _mm256_cmp_ps(d2, _mm256_setzero_ps(), _CMP_LE_OQ));
-            u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m1);
-            v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m1);
+            //u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m1); // these lanes are already zero
+            //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m1);
 
             // bp = p - b
             const __m256 bpx = _mm256_sub_ps(_mm256_broadcast_ss(orig), _mm256_loadu_ps(vert + i + 3 * stride));
@@ -152,8 +157,8 @@ namespace warpcore::impl
             // if (d3 >= 0.f && d4 <= d3) return b;
             __m256 m2 = _mm256_and_ps(_mm256_cmp_ps(d3, _mm256_setzero_ps(), _CMP_GE_OQ),
                 _mm256_cmp_ps(d4, d3, _CMP_LE_OQ));
-            u = _mm256_blendv_ps(u, _mm256_set1_ps(1.0f), m2);
-            v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m2);
+            u = blend_in(u, _mm256_set1_ps(1.0f), m2);
+            //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m2); // these lanes are already zero
 
             // cp = p - c
             const __m256 cpx = _mm256_sub_ps(_mm256_broadcast_ss(orig), _mm256_loadu_ps(vert + i + 6 * stride));
@@ -167,8 +172,8 @@ namespace warpcore::impl
             // if (d6 >= 0.f && d5 <= d6) return c;
             __m256 m3 = _mm256_and_ps(_mm256_cmp_ps(d6, _mm256_setzero_ps(), _CMP_GE_OQ),
                 _mm256_cmp_ps(d5, d6, _CMP_LE_OQ));
-            u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m3);
-            v = _mm256_blendv_ps(v, _mm256_set1_ps(1.0f), m3);
+            v = blend_in(v, _mm256_set1_ps(1.0f), m3);
+            //u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m3); // these lanes are already zero
 
             // const float vc = d1 * d4 - d3 * d2;
             __m256 vc = _mm256_fmsub_ps(d1, d4, _mm256_mul_ps(d3, d2));
@@ -179,8 +184,8 @@ namespace warpcore::impl
                                         _mm256_cmp_ps(d3, _mm256_setzero_ps(), _CMP_LE_OQ)));
             if (!_mm256_testz_ps(m4, mask)) {
                 __m256 t = _mm256_div_ps(d1, _mm256_sub_ps(d1, d3));
-                u = _mm256_blendv_ps(u, t, m4);
-                v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m4);
+                u = blend_in(u, t, m4);
+                //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m4); // these lanes are already zero
             }
 
             // const float vb = d5 * d2 - d1 * d6;
@@ -192,8 +197,8 @@ namespace warpcore::impl
                                         _mm256_cmp_ps(d6, _mm256_setzero_ps(), _CMP_LE_OQ)));
             if (!_mm256_testz_ps(m5, mask)) {
                 __m256 t = _mm256_div_ps(d2, _mm256_sub_ps(d2, d6));
-                u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m5);
-                v = _mm256_blendv_ps(v, t, m5);
+                v = blend_in(v, t, m5);
+                //u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m5); // these lanes are already zero
             }
 
             // const float va = d3 * d6 - d5 * d4;
@@ -206,8 +211,8 @@ namespace warpcore::impl
             if (!_mm256_testz_ps(m6, mask)) {
                 __m256 t = _mm256_div_ps(_mm256_sub_ps(d4, d3),
                     _mm256_add_ps(_mm256_sub_ps(d4, d3), _mm256_sub_ps(d5, d6)));
-                u = _mm256_blendv_ps(u, _mm256_sub_ps(_mm256_set1_ps(1.0f), t), m6);
-                v = _mm256_blendv_ps(v, t, m6);
+                u = blend_in(u, _mm256_sub_ps(_mm256_set1_ps(1.0f), t), m6);
+                v = blend_in(v, t, m6);
             }
 
             // m7 = mask & ~(m1 | m2 | ... | m6)
@@ -221,8 +226,8 @@ namespace warpcore::impl
             __m256 denom = _mm256_rcp_ps(_mm256_add_ps(_mm256_add_ps(va, vb), vc));
             __m256 s = _mm256_mul_ps(vb, denom);
             __m256 t = _mm256_mul_ps(vc, denom);
-            u = _mm256_blendv_ps(u, s, m7);
-            v = _mm256_blendv_ps(v, t, m7);
+            u = blend_in(u, s, m7);
+            v = blend_in(v, t, m7);
 
             // convert from barycentric to cartesian
             __m256 rx = _mm256_fmadd_ps(u, abx, _mm256_fmadd_ps(v, acx, ax));
