@@ -92,6 +92,8 @@ namespace Warp9.Forms
             foreach (var col in AllowedLandmarksColumns)
                 cmbLandmarks.Items.Add(col);
 
+            cmbLandmarks.Items.Add("No landmarks");
+
             cmbBase.Items.Clear();
             for (int i = 0; i < specTable?.SpecimenTable.Count; i++)
                 cmbBase.Items.Add(i);
@@ -102,13 +104,38 @@ namespace Warp9.Forms
             if (cmbLandmarks.Items.Count > 0)
                 cmbLandmarks.SelectedIndex = 0;
 
-            if(cmbBase.Items.Count > 0)
+            if (cmbBase.Items.Count > 0)
                 cmbBase.SelectedIndex = 0;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: capture results from specimen table and column selectors
+            if (cmbSpecTable.SelectedValue is SpecimenTableInfo sti)
+            {
+                configuration.SpecimenTableKey = sti.SpecTableId;
+            }
+            else
+            {
+                MessageBox.Show("There is no specimen table selected.");
+                return;
+            }
+
+            if (cmbLandmarks.SelectedValue is SpecimenTableColumnInfo stcilm)
+            {
+                configuration.LandmarkColumnName = stcilm.ColumnName;
+            }
+
+            if (cmbLandmarks.SelectedValue is SpecimenTableColumnInfo stcimesh)
+            {
+                configuration.MeshColumnName = stcimesh.ColumnName;
+            }
+            else
+            {
+                MessageBox.Show("There is no mesh column selected from the specimen table.");
+                return;
+            }
+
+            configuration.BaseMeshIndex = cmbBase.SelectedIndex;
 
             DialogResult = true;
         }

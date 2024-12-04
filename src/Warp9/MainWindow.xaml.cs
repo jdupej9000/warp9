@@ -276,6 +276,13 @@ namespace Warp9
             DcaConfigWindow cfgWnd = new DcaConfigWindow();
             cfgWnd.Attach(model.Project, config);
             cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            ProjectJobContext ctx = new ProjectJobContext(model.Project);
+            Job job = Job.Create(DcaJob.Create(config, model.Project), ctx);
+            JobEngine.Run(job);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
