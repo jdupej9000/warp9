@@ -103,7 +103,7 @@ namespace Warp9.Jobs
 
             yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
-            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, CorrespondenceRegKey, null, cfg.ResultEntryName);
+            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, CorrespondenceRegKey, null, cfg.ResultEntryName, cfg);
         }
     }
 }

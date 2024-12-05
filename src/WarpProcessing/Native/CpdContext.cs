@@ -1,19 +1,34 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using Warp9.Data;
 
 namespace Warp9.Native
 {
     public class CpdConfiguration
     {
+        [JsonPropertyName("beta")]
         public float Beta { get; set; } = 2.0f;
+
+        [JsonPropertyName("lambda")]
         public float Lambda { get; set; } = 2.0f;
+
+        [JsonPropertyName("w")]
         public float W { get; set; } = 0.1f;
+
+        [JsonPropertyName("maxit")]
         public int MaxIterations { get; set; } = 200;
+
+        [JsonPropertyName("tol")]
         public float Tolerance { get; set; } = 5e-3f;
+
+        [JsonPropertyName("init-method")]
         public CpdInitMethod InitMethod { get; set; } = CpdInitMethod.CPD_INIT_CLUSTERED;
+
+        [JsonPropertyName("use-gpu")]
         public bool UseGpu { get; set; } = true;
 
+        [JsonIgnore]
         public CpdFlags Flags
         {
             get

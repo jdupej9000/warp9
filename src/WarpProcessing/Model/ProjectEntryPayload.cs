@@ -12,6 +12,10 @@ namespace Warp9.Model
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public SpecimenTable? Table { get; set; }
 
+        [JsonPropertyName("mesh-corr-extra")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public MeshCorrespondenceExtraInfo? MeshCorrExtra { get; set; }
+
         [JsonIgnore]
         public static readonly ProjectEntryPayload Empty = new ProjectEntryPayload();
     }

@@ -6,25 +6,28 @@ using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Model;
+using Warp9.Processing;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string corrPclsItem, string? corrLmsItem, string resultEntryName) :
+        public DcaToProjectJobItem(int index, long specTableKey, string corrPclsItem, string? corrLmsItem, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
             CorrespondencePclItem = corrPclsItem;
             CorrespondenceLandmarksItem = corrLmsItem;
             ResultEntryName = resultEntryName;
+            DcaConfig = cfg;
         }
 
         public long SpecimenTableKey { get; init; }
         public string CorrespondencePclItem { get; init; }
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
+        public DcaConfiguration DcaConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
@@ -76,6 +79,7 @@ namespace Warp9.JobItems
             entry.Name = ResultEntryName;
             entry.Deps.Add(SpecimenTableKey);
             entry.Payload.Table = specTab;
+            entry.Payload.MeshCorrExtra = new MeshCorrespondenceExtraInfo() { DcaConfig = DcaConfig };
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, 
                 string.Format("The entry '{0}' has been added to the project.", ResultEntryName));
