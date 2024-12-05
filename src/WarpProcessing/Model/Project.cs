@@ -101,7 +101,7 @@ namespace Warp9.Model
             {
                 ProjectReferenceFormat.W9Mesh => string.Format("ref-{0:x}.w9mesh", index),
                 ProjectReferenceFormat.W9Pcl => string.Format("ref-{0:x}.w9pcl", index),
-                ProjectReferenceFormat.W9Matrix => string.Format("ref-{0:x}.w9mat", index),
+                ProjectReferenceFormat.W9Matrix => string.Format("ref-{0:x}.w9mx", index),
                 _ => throw new ArgumentException(nameof(fmt))
             };
 
