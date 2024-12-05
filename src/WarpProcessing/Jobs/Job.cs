@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Warp9.Jobs
 {
@@ -15,6 +16,11 @@ namespace Warp9.Jobs
 
     public class Job : IJob
     {
+        private Job(string title)
+        {
+            Title = title;
+        }
+
         object stateLock = new object();
         readonly List<IJobItem> jobItems = new List<IJobItem>();
         readonly HashSet<int> runningJobs = new HashSet<int>();
@@ -22,6 +28,10 @@ namespace Warp9.Jobs
 
         int nextItemIdx = 0, itemsDone = 0, itemsFailed = 0;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Title { get; private init; }
+        public string StatusText { get; private set; } = "Waiting";
         public IJobContext? Context { get; private set; }
         public int NumItems => jobItems.Count;
         public int NumItemsDone => itemsDone;
@@ -109,6 +119,7 @@ namespace Warp9.Jobs
                     runningJobs.Remove(itemIndex);
                 }
 
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumItemsDone)));
                 return true;
             }
 
@@ -122,9 +133,9 @@ namespace Warp9.Jobs
             return ctx;
         }
 
-        public static Job Create(IEnumerable<IJobItem> items, IJobContext ctx)
+        public static Job Create(IEnumerable<IJobItem> items, IJobContext ctx, string? title=null)
         {
-            Job ret = new Job();
+            Job ret = new Job(title ?? "Job");
             ret.jobItems.AddRange(items);
             ret.Context = ctx;
             return ret;

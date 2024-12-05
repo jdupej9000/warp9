@@ -1,7 +1,12 @@
-﻿namespace Warp9.Jobs
+﻿using System.ComponentModel;
+
+namespace Warp9.Jobs
 {
-    public interface IJob
+    public interface IJob : INotifyPropertyChanged
     {
+        public string Title { get; }
+        public string StatusText { get; }
+
         public int NumItems { get; }
         public int NumItemsDone { get; }
         public int NumItemsFailed { get; }

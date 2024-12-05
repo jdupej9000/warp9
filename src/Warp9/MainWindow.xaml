@@ -7,6 +7,7 @@
         xmlns:projexp ="clr-namespace:Warp9.ProjectExplorer"
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:utils="clr-namespace:Warp9.Utils"
+        xmlns:jobs="clr-namespace:Warp9.Jobs"
         xmlns:local="clr-namespace:Warp9"
         mc:Ignorable="d"
         Style="{StaticResource CustomWindowStyle2}"
@@ -81,7 +82,7 @@
                         <TextBlock FontWeight="Bold"  DockPanel.Dock="Top">Task List</TextBlock>
                         <Label DockPanel.Dock="Top" Height="12" />
                         
-                        <ListView x:Name="lstTasks" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=5}">
+                        <ListView x:Name="lstTasks" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="Height" Value="76" />
@@ -89,10 +90,10 @@
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <ListView.ItemTemplate>
-                                <DataTemplate DataType="utils:BackgroundJob">
+                                <DataTemplate DataType="jobs:IJob">
                                     <DockPanel Margin="2">
                                         <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
-                                        <TextBlock Text="{Binding Status, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
+                                        <TextBlock Text="{Binding StatusText, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
                                         <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
                                     </DockPanel>
                                 </DataTemplate>

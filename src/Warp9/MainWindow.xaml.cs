@@ -283,7 +283,7 @@ namespace Warp9
 
             ProjectJobContext ctx = new ProjectJobContext(model.Project);
             ctx.LogMessage += (s,e) => pageLog.AddMessage(e);
-            Job job = Job.Create(DcaJob.Create(config, model.Project), ctx);
+            Job job = Job.Create(DcaJob.Create(config, model.Project), ctx, "DCA");
 
             frameMain.NavigationService.Navigate(pageLog);
             JobEngine.Run(job);

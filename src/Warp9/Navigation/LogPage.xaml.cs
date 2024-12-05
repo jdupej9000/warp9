@@ -32,7 +32,8 @@ namespace Warp9.Navigation
         {
             Application.Current.Dispatcher.Invoke(new Action(() => 
             { 
-                txtLog.Text += message + Environment.NewLine; 
+                txtLog.AppendText(message + Environment.NewLine);
+                txtLog.ScrollToEnd();
             }));
         }
 

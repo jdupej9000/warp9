@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 
 namespace Warp9.Jobs
@@ -42,10 +43,10 @@ namespace Warp9.Jobs
         private readonly int workerCount;
         private readonly Thread[] workers;
         private BackgroundWorkerContext[] contexts;
-        private List<IJob> jobs = new List<IJob>();
+        private ObservableCollection<IJob> jobs = new ObservableCollection<IJob>();
         private List<IJob> finishedJobs = new List<IJob>();
 
-        public List<IJob> Jobs => jobs;
+        public ObservableCollection<IJob> Jobs => jobs;
         public List<IJob> FinishedJobs => finishedJobs;
 
         public void Run(IJob job)
