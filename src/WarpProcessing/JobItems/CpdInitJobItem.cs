@@ -34,7 +34,6 @@ namespace Warp9.JobItems
             ctx.WriteLog(ItemIndex, MessageKind.Error,
                     string.Format("Initializing CPD for mesh '{0}'.", BaseMeshIndex));
 
-
             SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
                 ctx.Project, SpecimenTableKey, MeshColumn);
             if (column is null)

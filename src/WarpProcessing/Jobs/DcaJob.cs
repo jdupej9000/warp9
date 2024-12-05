@@ -101,9 +101,9 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
-            yield return new WorkspaceCleanupJobItem(index, NonrigidInitKey, NonrigidRegKey);
+            yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
-            // TODO
+            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, CorrespondenceRegKey, null, cfg.ResultEntryName);
         }
     }
 }

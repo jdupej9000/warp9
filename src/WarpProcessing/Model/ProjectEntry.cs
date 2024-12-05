@@ -34,7 +34,7 @@ namespace Warp9.Model
         public List<int> Refs { get; set; } = new List<int>();
 
         [JsonPropertyName("deps")]
-        public List<int> Deps { get; set; } = new List<int>();
+        public List<long> Deps { get; set; } = new List<long>();
 
         [JsonPropertyName("payload")]
         public ProjectEntryPayload Payload { get; set; } = ProjectEntryPayload.Empty;

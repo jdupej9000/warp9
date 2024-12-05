@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.IO;
 
@@ -91,6 +92,23 @@ namespace Warp9.Model
                 value = default;
                 return false;
             }
+        }
+        public long AddReferenceDirect<T>(ProjectReferenceFormat fmt, T val)
+        {
+            long index = objectIdGen.Next();
+
+            string fileName = fmt switch
+            {
+                ProjectReferenceFormat.W9Mesh => string.Format("ref-{0:x}.w9mesh", index),
+                ProjectReferenceFormat.W9Pcl => string.Format("ref-{0:x}.w9pcl", index),
+                ProjectReferenceFormat.W9Matrix => string.Format("ref-{0:x}.w9mat", index),
+                _ => throw new ArgumentException(nameof(fmt))
+            };
+
+            ProjectReference reference = new ProjectReference(index,
+                 new ProjectReferenceInfo() { FileName = fileName, Format = fmt, IsInternal = true }, val);
+            references.Add(index, reference);
+            return index;
         }
 
         public long AddReferenceDirect<T>(string fileName, ProjectReferenceFormat fmt, T val)
