@@ -93,6 +93,7 @@ namespace Warp9.Model
                 return false;
             }
         }
+
         public long AddReferenceDirect<T>(ProjectReferenceFormat fmt, T val)
         {
             long index = objectIdGen.Next();
@@ -102,6 +103,8 @@ namespace Warp9.Model
                 ProjectReferenceFormat.W9Mesh => string.Format("ref-{0:x}.w9mesh", index),
                 ProjectReferenceFormat.W9Pcl => string.Format("ref-{0:x}.w9pcl", index),
                 ProjectReferenceFormat.W9Matrix => string.Format("ref-{0:x}.w9mx", index),
+                ProjectReferenceFormat.JpegImage => string.Format("ref-{0:x}.jpg", index),
+                ProjectReferenceFormat.PngImage => string.Format("ref-{0:x}.png", index),
                 _ => throw new ArgumentException(nameof(fmt))
             };
 
