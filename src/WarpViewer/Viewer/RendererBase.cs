@@ -32,6 +32,11 @@ namespace Warp9.Viewer
             renderItems.Add(renderItem, null);
         }
 
+        public void ClearRenderItems()
+        {
+            renderItems.Clear();
+        }
+
         protected void Render()
         {
             if (device is null || ctx is null || stateCache is null)
