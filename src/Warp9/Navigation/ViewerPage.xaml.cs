@@ -3,7 +3,9 @@ using System.IO;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Media.TextFormatting;
 using Warp9.Controls;
 using Warp9.Data;
@@ -22,15 +24,35 @@ namespace Warp9.Navigation
         {
             InitializeComponent();
             this.owner = owner;
+
+            SetCameraControl(new ArcBallCameraControl());
         }
 
         Window owner;
         WpfInteropRenderer? renderer = null;
         IViewerContent? content = null;
+        ICameraControl? cameraControl = null;
+        ViewProjConst vpc = new ViewProjConst();
+        CameraLightConst clp = new CameraLightConst();
         RenderItemMesh? meshRend;
         TimeSpan lastRender = TimeSpan.Zero;
         bool mustMakeTarget = false;
         private Random rnd = new Random();
+        int viewDirty = 1;
+
+        public void SetCameraControl(ICameraControl cctl)
+        {
+            if (cameraControl is not null)
+            {
+                cameraControl.UpdateView -= CameraControl_UpdateView;
+                cameraControl.Get(out Matrix4x4 mat);
+                cctl.Set(mat);
+            }
+
+            cameraControl = cctl;
+            cameraControl.ResizeViewport(new Vector2((float)Width, (float)Height));
+            cameraControl.UpdateView += CameraControl_UpdateView;
+        }
 
         public void SetContent(IViewerContent content)
         {
@@ -45,13 +67,40 @@ namespace Warp9.Navigation
             this.content = content;
         }
 
+        public void AttachViewModel(Warp9ViewModel vm)
+        {
+
+        }
+
+        public void DetachViewModel()
+        {
+            content = null;
+        }
+
+        private void CameraControl_UpdateView(object? sender, CameraInfo e)
+        {
+            if (renderer is null)
+                return;
+
+            vpc.viewProj = Matrix4x4.Transpose(e.ViewMat *
+                Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
+            vpc.camera = new Vector4(e.CameraPos, 1);
+            renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
+
+            clp.cameraPos = e.CameraPos;
+            clp.lightPos = e.CameraPos;
+            renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
+
+            Interlocked.Exchange(ref viewDirty, 1);
+        }
+
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Size size = WpfSizeToPixels(ImageGrid);
             InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
 
-            if (content != null)
-                content.ViewportResized(new System.Drawing.Size((int)size.Width, (int)size.Height));
+            content?.ViewportResized(new System.Drawing.Size((int)size.Width, (int)size.Height));
+            cameraControl?.ResizeViewport(new Vector2((float)size.Width, (float)size.Height));
         }
 
         private void EnsureRenderer()
@@ -78,14 +127,13 @@ namespace Warp9.Navigation
                 Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
                 Vector3 at = new Vector3(0, 0, 0);
                 Vector3 up = new Vector3(0, 1, 0);
-                ViewProjConst vpc = new ViewProjConst();
+                //ViewProjConst vpc = new ViewProjConst();
                 vpc.viewProj = Matrix4x4.Transpose(Matrix4x4.CreateLookAtLeftHanded(camera, at, up) *
                     Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
 
                 vpc.camera = new Vector4(camera, 1);
                 renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
 
-                CameraLightConst clp = new CameraLightConst();
                 clp.cameraPos = camera;
                 clp.lightPos = camera;
                 renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
@@ -123,7 +171,8 @@ namespace Warp9.Navigation
             // It's possible for Rendering to call back twice in the same frame 
             // so only render when we haven't already rendered in this frame.
             // Also, limit to 60 fps
-            if ((args.RenderingTime - lastRender).TotalSeconds >= 1.0)
+            if (Interlocked.Exchange(ref viewDirty, 0) != 0 ||
+                (args.RenderingTime - lastRender).TotalSeconds >= 1.0)
             {
                 if (meshRend is not null)
                     meshRend.Color = System.Drawing.Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
@@ -186,14 +235,36 @@ namespace Warp9.Navigation
             return (Size)transformToDevice.Transform(new System.Windows.Vector(element.ActualWidth, element.ActualHeight));
         }
 
-        public void AttachViewModel(Warp9ViewModel vm)
-        {
 
+        private void InteropImage_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Point pos = e.GetPosition(this);
+            if (e.ChangedButton != MouseButton.Right) return;
+
+            bool shiftPressed = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+
+            cameraControl?.Grab(new Vector2((float)pos.X, (float)pos.Y), shiftPressed);
         }
 
-        public void DetachViewModel()
+        private void InteropImage_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            content = null;
+            Point pos = e.GetPosition(this);
+            if (e.ChangedButton != MouseButton.Right) return;
+
+            cameraControl?.Release(new Vector2((float)pos.X, (float)pos.Y));
+        }
+
+        private void InteropImage_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point pos = e.GetPosition(this);
+            if (!e.RightButton.HasFlag(MouseButtonState.Pressed)) return;
+
+            cameraControl?.Move(new Vector2((float)pos.X, (float)pos.Y));
+        }
+
+        private void InteropImage_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            cameraControl?.Scroll(e.Delta);
         }
     }
 }

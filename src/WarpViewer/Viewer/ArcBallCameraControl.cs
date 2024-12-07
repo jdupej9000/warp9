@@ -1,44 +1,109 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Warp9.Viewer
 {
     public class ArcBallCameraControl : ICameraControl
     {
-        // https://github.com/mharrys/arcball/blob/master/src/arcball.hpp
+        // https://stackoverflow.com/questions/23747013/arcball-controls-with-qt-and-opengl
         public event EventHandler<CameraInfo> UpdateView;
 
         Vector2 viewportSize = Vector2.One;
+        Vector3 st;
+        Vector3 camera = Vector3.Normalize(new Vector3(1, 1, 1));
+        Vector3 up = Vector3.UnitY;
+        Vector3 offset = Vector3.Zero;
+        float radius = 4f;
 
         public void Grab(Vector2 pt, bool translate)
         {
-            Vector2 ptn = 2.0f * (pt / viewportSize - Vector2.One);
-
-            throw new NotImplementedException();
+            st = ToSphere(ToScreenRelative(pt));
         }
 
         public void Move(Vector2 pt)
         {
-            throw new NotImplementedException();
+            Quaternion rot = GetRotation(pt);
+            Vector3 camera2 = Vector3.Transform(camera, rot);
+            Vector3 up2 = Vector3.Transform(up, rot);
+            Vector3 camera2full = radius * camera2 + offset;
+
+            Matrix4x4 view = Matrix4x4.CreateLookAtLeftHanded(camera2full, offset, up2);
+            UpdateView?.Invoke(this, new CameraInfo(view, camera2full));
         }
+
 
         public void Release(Vector2 pt)
         {
-            viewportSize = pt;
+            Quaternion rot = GetRotation(pt);
+            Vector3 camera2 = Vector3.Transform(camera, rot);
+            Vector3 up2 = Vector3.Transform(up, rot);
+            Vector3 camera2full = radius * camera2 + offset;
+
+            Matrix4x4 view = Matrix4x4.CreateLookAtLeftHanded(camera2full, offset, up2);
+            UpdateView?.Invoke(this, new CameraInfo(view, camera2full));
+
+            camera = camera2;
+            up = up2;
         }
+
+        public void Scroll(float delta)
+        {
+            radius *= MathF.Pow(1.05f, delta / 100.0f);
+            Vector3 camera2full = radius * camera + offset;
+            Matrix4x4 view = Matrix4x4.CreateLookAtLeftHanded(camera2full, offset, up);
+            UpdateView?.Invoke(this, new CameraInfo(view, camera2full));
+        }
+
 
         public void ResizeViewport(Vector2 size)
         {
-            throw new NotImplementedException();
+            viewportSize = size;
         }
 
-        public void Set(Vector3 camera, Vector3 lookat, Vector3 up)
+        public void Set(Matrix4x4 view)
         {
-            throw new NotImplementedException();
+            
+        }
+       
+        public void Get(out Matrix4x4 view)
+        {
+            view = Matrix4x4.Identity;
+        }
+
+        private Quaternion GetRotation(Vector2 pt)
+        {
+            Vector3 en = ToSphere(ToScreenRelative(pt));
+            
+            float alpha = MathF.Acos(MathF.Min(1, Vector3.Dot(en, st)));
+            Vector3 axis = Vector3.Normalize(Vector3.Cross(st, en));
+
+            return Quaternion.CreateFromAxisAngle(axis, alpha);
+        }
+
+        private Vector2 ToScreenRelative(Vector2 pt)
+        {
+            return 2.0f * pt / viewportSize - Vector2.One;
+        }
+
+        private Vector3 ToSphere(Vector2 pt)
+        {
+            float len = pt.LengthSquared();
+            Vector2 ptyx = new Vector2(pt.X, -pt.Y);
+
+            if (len > 1)
+            {
+                return new Vector3(Vector2.Normalize(ptyx), 0);
+            }
+            else
+            {
+                return new Vector3(ptyx, MathF.Sqrt(1.0f - len));
+            }
         }
     }
 }

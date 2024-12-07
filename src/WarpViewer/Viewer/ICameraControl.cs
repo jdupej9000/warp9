@@ -9,7 +9,14 @@ namespace Warp9.Viewer
 {
     public struct CameraInfo
     {
-        public Vector3 Camera, LookAt, Up;
+        public CameraInfo(Matrix4x4 view, Vector3 cam)
+        {
+            ViewMat = view;
+            CameraPos = cam;
+        }
+
+        public Matrix4x4 ViewMat;
+        public Vector3 CameraPos;
     }
 
     public interface ICameraControl
@@ -17,10 +24,12 @@ namespace Warp9.Viewer
         void Grab(Vector2 pt, bool translate);
         void Move(Vector2 pt);
         void Release(Vector2 pt);
+        void Scroll(float delta);
         void ResizeViewport(Vector2 size);
 
         event EventHandler<CameraInfo> UpdateView;
 
-        void Set(Vector3 camera, Vector3 lookat, Vector3 up);
+        void Set(Matrix4x4 view);
+        void Get(out Matrix4x4 view);
     }
 }

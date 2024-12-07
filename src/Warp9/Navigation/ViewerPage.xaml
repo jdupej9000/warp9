@@ -24,9 +24,9 @@
         <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Border}" ShowsPreview="True" Width="5" />
 
         <Grid x:Name="ImageGrid" Grid.Column="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
-            <Image x:Name="ImageHost" Stretch="Fill">
+            <Image x:Name="ImageHost" Stretch="Fill" Mouse.MouseDown="InteropImage_MouseDown" Mouse.MouseUp="InteropImage_MouseUp" Mouse.MouseMove="InteropImage_MouseMove" Mouse.MouseWheel="InteropImage_MouseWheel">
                 <Image.Source>
-                    <dx:D3D11Image x:Name="InteropImage"/>
+                    <dx:D3D11Image x:Name="InteropImage" />
                 </Image.Source>
             </Image>
         </Grid>
