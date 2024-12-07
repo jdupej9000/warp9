@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System.CodeDom;
+using System.IO;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.TextFormatting;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
@@ -24,18 +26,35 @@ namespace Warp9.Navigation
 
         Window owner;
         WpfInteropRenderer? renderer = null;
+        IViewerContent? content = null;
         RenderItemMesh? meshRend;
         TimeSpan lastRender = TimeSpan.Zero;
         bool mustMakeTarget = false;
         private Random rnd = new Random();
 
+        public void SetContent(IViewerContent content)
+        {
+            EnsureRenderer();
+            if (renderer is null)
+                throw new InvalidOperationException();
+
+            renderer.ClearRenderItems();
+            content.AttachRenderer(renderer);
+            Page? sidebar = content.GetSidebar();
+
+            this.content = content;
+        }
+
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Size size = WpfSizeToPixels(ImageGrid);
             InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
+
+            if (content != null)
+                content.ViewportResized(new System.Drawing.Size((int)size.Width, (int)size.Height));
         }
 
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        private void EnsureRenderer()
         {
             if (renderer is null)
             {
@@ -43,13 +62,9 @@ namespace Warp9.Navigation
                     throw new InvalidOperationException();
 
                 if (owner.Background is SolidColorBrush bkb)
-                {
-                    renderer.CanvasColor = System.Drawing.Color.FromArgb(bkb.Color.R, bkb.Color.G, bkb.Color.B); 
-                }
+                    renderer.CanvasColor = System.Drawing.Color.FromArgb(bkb.Color.R, bkb.Color.G, bkb.Color.B);
                 else
-                {
                     renderer.CanvasColor = System.Drawing.Color.Black;
-                }
 
                 renderer.Fussy = false;
                 renderer.Shaders.AddShader(StockShaders.VsDefault);
@@ -81,17 +96,15 @@ namespace Warp9.Navigation
                 pc.flags = 0;
                 renderer.SetConstant(StockShaders.Name_PshConst, pc);
 
-                meshRend = new RenderItemMesh();
-                meshRend.Mesh = LoadObjAsset("suzanne.obj", ObjImportMode.AllUnshared);
-                meshRend.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn;
-                meshRend.ModelMatrix = Matrix4x4.CreateScale(1.5f);
-                meshRend.Color = System.Drawing.Color.Gray;
-                renderer.AddRenderItem(meshRend);
-
                 InteropImage.WindowOwner = (new System.Windows.Interop.WindowInteropHelper(owner)).Handle;
                 InteropImage.IsFrontBufferAvailableChanged += InteropImage_IsFrontBufferAvailableChanged;
                 InteropImage.OnRender += OnRender;
             }
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            EnsureRenderer();
 
             CompositionTarget.Rendering += CompositionTarget_Rendering;
             mustMakeTarget = true;
@@ -180,7 +193,7 @@ namespace Warp9.Navigation
 
         public void DetachViewModel()
         {
-
+            content = null;
         }
     }
 }

@@ -10,6 +10,7 @@ using Warp9.Navigation;
 using Warp9.Processing;
 using Warp9.ProjectExplorer;
 using Warp9.Utils;
+using Warp9.Viewer;
 
 namespace Warp9
 {
@@ -244,6 +245,11 @@ namespace Warp9
                                 case ProjectEntryKind.Specimens:
                                     frameMain.NavigationService.Navigate(pageSpecimenTable);
                                     pageSpecimenTable.ShowEntry(item.EntryIndex);
+                                    break;
+
+                                case ProjectEntryKind.MeshCorrespondence:
+                                    frameMain.NavigationService.Navigate(pageViewer);
+                                    pageViewer.SetContent(new DcaViewerContent(model.Project, item.EntryIndex));
                                     break;
                             }
                         }

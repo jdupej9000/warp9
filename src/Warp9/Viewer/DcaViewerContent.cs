@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Warp9.Controls;
+using Warp9.Data;
 using Warp9.Model;
 
 namespace Warp9.Viewer
@@ -32,8 +34,26 @@ namespace Warp9.Viewer
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
-            renderer.ClearRenderItems();
             renderer.AddRenderItem(meshRend);
+
+            SpecimenTable tab = dcaEntry.Payload.Table!;
+            long corrPclRef = tab.Columns["corrPcl"].GetData<ProjectReferenceLink>()[0].ReferenceIndex;
+
+            int baseIndex = dcaEntry.Payload.MeshCorrExtra.DcaConfig.BaseMeshIndex;
+            SpecimenTable mainSpecTable = project.Entries[dcaEntry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey].Payload.Table;
+            long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
+
+            if (!project.TryGetReference(corrPclRef, out PointCloud corrPcl))
+                throw new InvalidOperationException();
+
+            if (!project.TryGetReference(baseMeshRef, out Mesh baseMesh))
+                throw new InvalidOperationException();
+
+            Mesh corrMesh = Mesh.FromPointCloud(corrPcl, baseMesh);
+
+            meshRend.Mesh = corrMesh;
+            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
+            meshRend.Color = Color.Gray;
         }
 
         public Page? GetSidebar()
