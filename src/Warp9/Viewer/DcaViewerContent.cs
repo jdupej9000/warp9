@@ -14,7 +14,7 @@ namespace Warp9.Viewer
 {
     public class DcaViewerContent : IViewerContent
     {
-        public DcaViewerContent(Project proj, long dcaEntityKey)
+        public DcaViewerContent(Project proj, long dcaEntityKey, string name)
         {
             project = proj;
             entityKey = dcaEntityKey;
@@ -24,6 +24,7 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException();
 
             dcaEntry = entry;
+            Name = name;
         }
 
         Project project;
@@ -31,6 +32,8 @@ namespace Warp9.Viewer
         long entityKey;
 
         RenderItemMesh meshRend = new RenderItemMesh();
+
+        public string Name { get; private init; }
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
@@ -64,6 +67,11 @@ namespace Warp9.Viewer
         public void ViewportResized(Size size)
         {
             
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

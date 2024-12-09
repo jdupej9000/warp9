@@ -54,17 +54,15 @@ namespace Warp9.Navigation
             cameraControl.UpdateView += CameraControl_UpdateView;
         }
 
-        public void SetContent(IViewerContent content)
+        public void SetContent(params IViewerContent[] content)
         {
-            EnsureRenderer();
-            if (renderer is null)
-                throw new InvalidOperationException();
+            cmbVis.Items.Clear();
+            
+            foreach (var item in content)
+                cmbVis.Items.Add(item);
 
-            renderer.ClearRenderItems();
-            content.AttachRenderer(renderer);
-            Page? sidebar = content.GetSidebar();
-
-            this.content = content;
+            if(cmbVis.Items.Count > 0)
+                cmbVis.SelectedIndex = 0;
         }
 
         public void AttachViewModel(Warp9ViewModel vm)
@@ -265,6 +263,32 @@ namespace Warp9.Navigation
         private void InteropImage_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             cameraControl?.Scroll(e.Delta);
+        }
+
+
+        public void DisplayContent(IViewerContent content)
+        {
+            EnsureRenderer();
+            if (renderer is null)
+                throw new InvalidOperationException();
+
+            renderer.ClearRenderItems();
+            content.AttachRenderer(renderer);
+            Page? sidebar = content.GetSidebar();
+
+            this.content = content;
+        }
+
+        private void cmbVis_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbVis.SelectedItem is IViewerContent vc)
+            {
+                DisplayContent(vc);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 }

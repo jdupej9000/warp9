@@ -249,7 +249,7 @@ namespace Warp9
 
                                 case ProjectEntryKind.MeshCorrespondence:
                                     frameMain.NavigationService.Navigate(pageViewer);
-                                    pageViewer.SetContent(new DcaViewerContent(model.Project, item.EntryIndex));
+                                    pageViewer.SetContent(new DcaViewerContent(model.Project, item.EntryIndex, "Correspondence meshes"));
                                     break;
                             }
                         }
