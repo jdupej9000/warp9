@@ -25,13 +25,13 @@ namespace Warp9.Navigation
             InitializeComponent();
             this.owner = owner;
 
-            SetCameraControl(new ArcBallCameraControl());
+            SetCameraControl(new EulerCameraControl());
         }
 
         Window owner;
         WpfInteropRenderer? renderer = null;
         IViewerContent? content = null;
-        ICameraControl? cameraControl = null;
+        ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
         CameraLightConst clp = new CameraLightConst();
         RenderItemMesh? meshRend;
@@ -124,11 +124,11 @@ namespace Warp9.Navigation
                 mc.model = Matrix4x4.Identity;
                 renderer.SetConstant(StockShaders.Name_ModelConst, mc);
 
-                Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
-                Vector3 at = new Vector3(0, 0, 0);
-                Vector3 up = new Vector3(0, 1, 0);
-                //ViewProjConst vpc = new ViewProjConst();
-                vpc.viewProj = Matrix4x4.Transpose(Matrix4x4.CreateLookAtLeftHanded(camera, at, up) *
+                cameraControl.Get(out Matrix4x4 viewMat);
+                Matrix4x4.Invert(viewMat, out Matrix4x4 viewMati);
+                Vector3 camera = new Vector3(viewMati.M41, viewMati.M42, viewMati.M43);
+               
+                vpc.viewProj = Matrix4x4.Transpose(viewMat *
                     Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
 
                 vpc.camera = new Vector4(camera, 1);
