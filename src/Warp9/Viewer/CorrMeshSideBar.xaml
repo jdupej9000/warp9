@@ -12,8 +12,8 @@
         <TextBlock>Specimen</TextBlock>
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="txtSpecimen" Width="160" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="20" Height="20" Click="btnSpecimenInc_Click"/>
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphRight}" Width="20" Height="20" Click="btnSpecimenDec_Click"/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="20" Height="20" Click="btnSpecimenDec_Click"/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphRight}" Width="20" Height="20" Click="btnSpecimenInc_Click"/>
         </StackPanel>
     </StackPanel>
 </Page>
