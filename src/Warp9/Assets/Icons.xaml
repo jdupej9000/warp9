@@ -523,4 +523,46 @@
         </Rectangle.Fill>
     </Rectangle>
 
+    <Rectangle x:Key="GlyphLeft" Width="16 " Height="16">
+        <Rectangle.Resources>
+            <SolidColorBrush x:Key="canvas" Opacity="0" />
+            <SolidColorBrush x:Key="light-defaultgrey" Color="{DynamicResource AColour.Foreground.Deeper}" Opacity="1" />
+        </Rectangle.Resources>
+        <Rectangle.Fill>
+            <DrawingBrush Stretch="None">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <DrawingGroup x:Name="canvas">
+                            <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                        </DrawingGroup>
+                        <DrawingGroup x:Name="level_1">
+                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M6,8l4-5V13Z" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
+
+    <Rectangle x:Key="GlyphRight" Width="16 " Height="16">
+        <Rectangle.Resources>
+            <SolidColorBrush x:Key="canvas" Opacity="0" />
+            <SolidColorBrush x:Key="light-defaultgrey" Color="{DynamicResource AColour.Foreground.Deeper}" Opacity="1" />
+        </Rectangle.Resources>
+        <Rectangle.Fill>
+            <DrawingBrush Stretch="None">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <DrawingGroup x:Name="canvas">
+                            <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                        </DrawingGroup>
+                        <DrawingGroup x:Name="level_1">
+                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M6,13V3l4,5Z" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
+
 </ResourceDictionary>

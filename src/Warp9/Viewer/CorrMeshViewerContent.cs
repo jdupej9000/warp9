@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -12,9 +13,9 @@ using Warp9.Model;
 
 namespace Warp9.Viewer
 {
-    public class DcaViewerContent : IViewerContent
+    public class CorrMeshViewerContent : IViewerContent, INotifyPropertyChanged
     {
-        public DcaViewerContent(Project proj, long dcaEntityKey, string name)
+        public CorrMeshViewerContent(Project proj, long dcaEntityKey, string name)
         {
             project = proj;
             entityKey = dcaEntityKey;
@@ -25,22 +26,52 @@ namespace Warp9.Viewer
 
             dcaEntry = entry;
             Name = name;
+
+            sidebar = new CorrMeshSideBar(this);
         }
 
         Project project;
         ProjectEntry dcaEntry;
+        Page sidebar;
         long entityKey;
 
         RenderItemMesh meshRend = new RenderItemMesh();
 
+        int meshIndex = 0;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public string Name { get; private init; }
+
+        public int MeshIndex
+        {
+            get { return meshIndex; }
+            set { ShowMesh(value); OnPropertyChanged("MeshIndex"); }
+        }
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
             renderer.AddRenderItem(meshRend);
+            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
+            meshRend.Color = Color.Gray;
 
+            ShowMesh(0);
+        }
+
+        public Page? GetSidebar()
+        {
+            return sidebar;
+        }
+
+        public void ViewportResized(Size size)
+        {
+            
+        }
+
+        private void ShowMesh(int index)
+        {
             SpecimenTable tab = dcaEntry.Payload.Table!;
-            long corrPclRef = tab.Columns["corrPcl"].GetData<ProjectReferenceLink>()[0].ReferenceIndex;
+            long corrPclRef = tab.Columns["corrPcl"].GetData<ProjectReferenceLink>()[index].ReferenceIndex;
 
             int baseIndex = dcaEntry.Payload.MeshCorrExtra.DcaConfig.BaseMeshIndex;
             SpecimenTable mainSpecTable = project.Entries[dcaEntry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey].Payload.Table;
@@ -55,18 +86,12 @@ namespace Warp9.Viewer
             Mesh corrMesh = Mesh.FromPointCloud(corrPcl, baseMesh);
 
             meshRend.Mesh = corrMesh;
-            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
-            meshRend.Color = Color.Gray;
+            meshIndex = index;
         }
 
-        public Page? GetSidebar()
+        protected void OnPropertyChanged(string name)
         {
-            return null;
-        }
-
-        public void ViewportResized(Size size)
-        {
-            
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         public override string ToString()

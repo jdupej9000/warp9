@@ -212,7 +212,7 @@ namespace Warp9.Navigation
 
         public static Stream OpenAsset(string name)
         {
-            string path = System.IO.Path.Combine(AssetsPath, name);
+            string path = Path.Combine(AssetsPath, name);
 
             return new FileStream(path, FileMode.Open, FileAccess.Read);
         }
@@ -274,7 +274,12 @@ namespace Warp9.Navigation
 
             renderer.ClearRenderItems();
             content.AttachRenderer(renderer);
+            
             Page? sidebar = content.GetSidebar();
+            if (sidebar is not null)
+            {
+                frmSidebar.Content = sidebar;
+            }
 
             this.content = content;
         }
