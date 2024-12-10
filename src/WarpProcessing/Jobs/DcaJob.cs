@@ -46,14 +46,14 @@ namespace Warp9.Jobs
             {
                 case DcaNonrigidRegistrationKind.None:
                     for (int i = 0; i < numSpecs; i++)
-                        yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
+                        yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, i, NonrigidRegKey);
                     break;
 
                 case DcaNonrigidRegistrationKind.LandmarkFittedTps:
                     throw new NotImplementedException();
 
                 case DcaNonrigidRegistrationKind.LowRankCpd:
-                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, cfg.BaseMeshIndex, meshColumn, NonrigidInitKey);
+                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, baseMeshIndex, meshColumn, NonrigidInitKey);
                     yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     for (int i = 0; i < numSpecs; i++)
                     {

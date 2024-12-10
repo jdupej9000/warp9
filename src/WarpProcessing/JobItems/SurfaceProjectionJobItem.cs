@@ -78,8 +78,10 @@ namespace Warp9.JobItems
                 for (int i = 0; i < nv; i++)
                     posProj.Add(new Vector3(proj[i].x, proj[i].y, proj[i].z));
 
-                Mesh corrMesh = Mesh.FromPointCloud(mb.ToPointCloud(), baseMesh);
-                ctx.Workspace.Set(ResultItem, MeshIndex, corrMesh);
+                //Mesh corrMesh = Mesh.FromPointCloud(mb.ToPointCloud(), baseMesh);
+                //ctx.Workspace.Set(ResultItem, MeshIndex, corrMesh);
+                PointCloud pcl = mb.ToPointCloud();
+                ctx.Workspace.Set(ResultItem, MeshIndex, pcl);
 
                 ctx.WriteLog(ItemIndex, MessageKind.Information, "Surface projection complete.");
 

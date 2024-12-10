@@ -36,6 +36,9 @@ namespace Warp9.JobItems
             }
 
             PointCloud? pcl = ModelUtils.LoadSpecimenTableRef<Mesh>(ctx.Project, column, MeshIndex);
+            if(pcl is null)
+                pcl = ModelUtils.LoadSpecimenTableRef<PointCloud>(ctx.Project, column, MeshIndex);
+
             if (pcl is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error,

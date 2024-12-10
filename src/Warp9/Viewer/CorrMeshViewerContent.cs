@@ -97,6 +97,9 @@ namespace Warp9.Viewer
             if (!project.TryGetReference(baseMeshRef, out Mesh baseMesh))
                 throw new InvalidOperationException();
 
+            if (corrPcl.VertexCount != baseMesh.VertexCount)
+                throw new InvalidOperationException("Vertex count");
+
             Mesh corrMesh = Mesh.FromPointCloud(corrPcl, baseMesh);
 
             meshRend.Mesh = corrMesh;
