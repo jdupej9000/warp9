@@ -35,8 +35,8 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            Mesh? mesh = ModelUtils.LoadSpecimenTableRef<Mesh>(ctx.Project, column, MeshIndex);
-            if (mesh is null)
+            PointCloud? pcl = ModelUtils.LoadSpecimenTableRef<Mesh>(ctx.Project, column, MeshIndex);
+            if (pcl is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error,
                    string.Format("Cannot load mesh '{0}'.", MeshIndex));
@@ -52,17 +52,18 @@ namespace Warp9.JobItems
                 }
 
                 Rigid3 transform = gpa.GetTransform(MeshIndex);
-                PointCloud? transformed = RigidTransform.TransformPosition(mesh, transform);
+                PointCloud? transformed = RigidTransform.TransformPosition(pcl, transform);
                 if (transformed is null)
                 {
                     ctx.WriteLog(ItemIndex, MessageKind.Error, "Failed to transform mesh.");
                     return false;
                 }
 
-                mesh = Mesh.FromPointCloud(transformed, mesh);
+                //mesh = Mesh.FromPointCloud(transformed, mesh);
+                pcl = transformed;
             }
 
-            ctx.Workspace.Set(ResultItem, MeshIndex, mesh);
+            ctx.Workspace.Set(ResultItem, MeshIndex, pcl);
             ctx.WriteLog(ItemIndex, MessageKind.Information, "Applied rigid transform to mesh.");
 
             return true;

@@ -14,7 +14,7 @@ namespace Warp9.Jobs
         {
             if (repository.TryGetValue(src, out object? x) && x is not null)
             {
-                repository[dest] = src;
+                repository[dest] = x;
                 return true;
             }
 
