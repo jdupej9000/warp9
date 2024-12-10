@@ -268,6 +268,9 @@ namespace Warp9.Navigation
 
         public void DisplayContent(IViewerContent content)
         {
+            if (this.content is not null)
+                this.content.ViewUpdated -= Content_ViewUpdated;
+
             EnsureRenderer();
             if (renderer is null)
                 throw new InvalidOperationException();
@@ -282,6 +285,12 @@ namespace Warp9.Navigation
             }
 
             this.content = content;
+            this.content.ViewUpdated += Content_ViewUpdated;
+        }
+
+        private void Content_ViewUpdated(object? sender, EventArgs e)
+        {
+            Interlocked.Exchange(ref viewDirty, 1);
         }
 
         private void cmbVis_SelectionChanged(object sender, SelectionChangedEventArgs e)

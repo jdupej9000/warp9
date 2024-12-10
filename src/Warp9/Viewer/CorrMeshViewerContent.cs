@@ -40,6 +40,7 @@ namespace Warp9.Viewer
         int meshIndex = 0;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+        public event EventHandler ViewUpdated;
 
         public string Name { get; private init; }
 
@@ -92,6 +93,7 @@ namespace Warp9.Viewer
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            ViewUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public override string ToString()
