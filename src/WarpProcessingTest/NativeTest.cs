@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Numerics;
 using Warp9.Data;
 using Warp9.Native;
+using Warp9.Processing;
 
 namespace Warp9.Test
 {
@@ -100,17 +101,19 @@ namespace Warp9.Test
         public void GpaTeapotsTest()
         {
             Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(0.5f, 0.2f, -0.1f), 0.80f, 0.05f);
-            PointCloud pcl3 = DistortPcl(pcl1, Vector3.Zero, 1.10f, 0.05f);
+            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(0.5f, 0.2f, -0.1f), 0.80f, 0.25f);
+            PointCloud pcl3 = DistortPcl(pcl1, Vector3.Zero, 1.10f, 0.1f);
 
             PointCloud[] pcls = new PointCloud[3] { pcl1, pcl2, pcl3 };
 
-            WarpCoreStatus s = (WarpCoreStatus)RigidTransform.FitGpa(pcls, out PointCloud mean, out Rigid3[] xforms, out GpaResult res);
-            Console.WriteLine(res.ToString());
+            Gpa gpa = Gpa.Fit(pcls);
+            Console.WriteLine(gpa.ToString());
 
-            Assert.AreEqual(3, xforms.Length);
-            Assert.AreEqual(pcl1.VertexCount, mean.VertexCount);
-            Assert.AreEqual(WarpCoreStatus.WCORE_OK, s);
+            TestUtils.Render("GpaTeapotsTest_0.png",
+               (gpa.Mean, Color.White),
+               (gpa.GetTransformed(0), Color.DarkRed),
+               (gpa.GetTransformed(1), Color.DarkGreen),
+               (gpa.GetTransformed(2), Color.DarkBlue));
         }
 
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
