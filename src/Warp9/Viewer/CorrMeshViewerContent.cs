@@ -38,6 +38,7 @@ namespace Warp9.Viewer
         RenderItemMesh meshRend = new RenderItemMesh();
 
         int meshIndex = 0;
+        bool renderWireframe = false, renderFill = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler ViewUpdated;
@@ -50,12 +51,24 @@ namespace Warp9.Viewer
             set { ShowMesh(value); OnPropertyChanged("MeshIndex"); }
         }
 
+        public bool RenderWireframe
+        {
+            get { return renderWireframe; }
+            set { renderWireframe = value; OnPropertyChanged("RenderWireframe"); }
+        }
+
+        public bool RenderFil
+        {
+            get { return renderFill; }
+            set { renderFill = value; OnPropertyChanged("RenderFill"); }
+        }
+
+
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
             renderer.AddRenderItem(meshRend);
-            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
-            meshRend.Color = Color.Gray;
-
+           
+            UpdateRendererConfig();
             ShowMesh(0);
         }
 
@@ -88,6 +101,15 @@ namespace Warp9.Viewer
 
             meshRend.Mesh = corrMesh;
             meshIndex = index;
+        }
+
+        private void UpdateRendererConfig()
+        {
+            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
+
+           
+
+            meshRend.Color = Color.Gray;
         }
 
         protected void OnPropertyChanged(string name)

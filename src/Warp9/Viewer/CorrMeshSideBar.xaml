@@ -9,11 +9,18 @@
       Title="CorrMeshSideBar">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock>Specimen</TextBlock>
+        <TextBlock Style="{DynamicResource TextBlockDimmed}">Specimen</TextBlock>        
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="txtSpecimen" Width="160" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="20" Height="20" Click="btnSpecimenDec_Click"/>
             <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphRight}" Width="20" Height="20" Click="btnSpecimenInc_Click"/>
+        </StackPanel>
+        <Label Height="4" />
+
+        <TextBlock Style="{DynamicResource TextBlockDimmed}">Rendering</TextBlock>
+        <StackPanel Orientation="Horizontal">
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="20" Height="20"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="20" Height="20" IsChecked="True"/>
         </StackPanel>
     </StackPanel>
 </Page>
