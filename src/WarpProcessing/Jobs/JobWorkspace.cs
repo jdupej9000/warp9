@@ -2,12 +2,24 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Warp9.Jobs
 {
     public class JobWorkspace
     {
         Dictionary<string, object?> repository = new Dictionary<string, object?>();
+
+        public bool TryCopy(string src, string dest)
+        {
+            if (repository.TryGetValue(src, out object? x) && x is not null)
+            {
+                repository[dest] = src;
+                return true;
+            }
+
+            return false;
+        }
 
         public void Set<T>(string key, int index, T value)
         {

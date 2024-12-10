@@ -69,7 +69,8 @@ namespace Warp9.Jobs
             switch (cfg.SurfaceProjection)
             {
                 case DcaSurfaceProjectionKind.None:
-                    throw new NotImplementedException();
+                    yield return new CopyJobItem(index++, NonrigidRegKey, CorrespondenceRegKey);
+                    break;
 
                 case DcaSurfaceProjectionKind.ClosestPoint:
                 case DcaSurfaceProjectionKind.RaycastWithFallback:
