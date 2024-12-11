@@ -99,6 +99,23 @@ namespace Warp9.Native
         public Vector3 offset;
         public float cs;
         public Vector3 rot0, rot1, rot2;
+
+        public override readonly string ToString()
+        {
+            Matrix4x4 m = new Matrix4x4(rot0.X, rot0.Y, rot0.Z, 0,
+                rot1.X, rot1.Y, rot1.Z, 0,
+                rot2.X, rot2.Y, rot2.Z, 0,
+                0, 0, 0, 1);
+
+            Matrix4x4.Decompose(m, out Vector3 msc, out Quaternion mrot, out _);
+            mrot.Decompose(out Vector3 rotAxis, out float deg);
+
+            return string.Format("offs=({0},{1},{2}), cs={3}, rot=({4} deg about ({5},{6},{7}), scale=({8},{9},{10}))",
+                offset.X, offset.Y, offset.Z,
+                cs, deg,
+                rotAxis.X, rotAxis.Y, rotAxis.Z,
+                msc.X, msc.Y, msc.Z);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

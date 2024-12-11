@@ -53,6 +53,9 @@ namespace Warp9.JobItems
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA complete: " + res.ToString());
 
+            for (int i = 0; i < res.NumData; i++)
+                ctx.WriteLog(ItemIndex, MessageKind.Information, string.Format("   GPA {0}:", i) +  res.GetTransform(i).ToString());
+
             return true;
         }
     }
