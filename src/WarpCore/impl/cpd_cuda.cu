@@ -55,7 +55,8 @@ float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int
 void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
 {
     const float factor = -1.0f / (2.0f * sigma2);
-    const float thresh = std::max(-20.0f / factor, 2.0f * sqrtf(sigma2));
+    //const float thresh = std::max(-20.0f / factor, 2.0f * sqrtf(sigma2));
+    const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
     float* dx = (float*)pDevCtx;
     float* dt = dx + 3 * n;

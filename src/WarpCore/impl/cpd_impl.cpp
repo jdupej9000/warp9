@@ -71,7 +71,7 @@ namespace warpcore::impl
     void cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
     {
         const float factor = -1.0f / (2.0f * sigma2);
-        const float thresh = std::max(-20.0f / factor, 2.0f * sqrtf(sigma2));
+        const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
         cpd_psumpt1(m, n, thresh, factor, denom, x, t, psum, pt1);
         cpd_p1px(m, n, thresh, factor, denom, x, t, psum, p1, px);
