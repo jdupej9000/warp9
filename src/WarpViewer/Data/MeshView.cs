@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Warp9.Viewer;
 
 namespace Warp9.Data
@@ -16,13 +18,11 @@ namespace Warp9.Data
         public MeshView(MeshViewKind kind, byte[] data, Type t)
         {
             Kind = kind;
-            //Format = MeshUtils.TypeToDxgi[t];
             RawData = data;
             dataType = t;
         }
 
         public MeshViewKind Kind { get; private init; }
-        //public SharpDX.DXGI.Format Format { get; private init; }
 
         public byte[] RawData { get; private init; }
 
@@ -63,5 +63,37 @@ namespace Warp9.Data
 
             return ret;
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (Kind)
+            {
+                case MeshViewKind.Pos3f:
+                case MeshViewKind.Normal3f:
+                    if (AsTypedData(out ReadOnlySpan<Vector3> vec3))
+                    {
+                        for (int i = 0; i < vec3.Length; i++)
+                            sb.AppendLine(vec3[i].ToString());
+                    }
+                    break;
+
+                case MeshViewKind.Indices3i:
+                    if (AsTypedData(out ReadOnlySpan<FaceIndices> f))
+                    {
+                        for (int i = 0; i < f.Length; i++)
+                            sb.AppendLine(f.ToString());
+                    }
+                    break;
+
+                default:
+                    sb.Append("Unsupported type.");
+                    break;
+            }
+
+            return sb.ToString();
+        }
+
+       
     }
 }

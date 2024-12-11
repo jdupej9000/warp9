@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Warp9.Data;
 using Warp9.Native;
 
@@ -47,6 +49,12 @@ namespace Warp9.Processing
                 throw new InvalidOperationException();
 
             return transformed;
+        }
+
+        public IEnumerable<PointCloud> EnumerateTransformed()
+        {
+            for (int i = 0; i < pointClouds.Length; i++)
+                yield return GetTransformed(i);
         }
 
         public Rigid3 GetTransform(int idx)
