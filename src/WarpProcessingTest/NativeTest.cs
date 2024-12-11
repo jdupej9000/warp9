@@ -10,6 +10,18 @@ namespace Warp9.Test
     [TestClass]
     public class NativeTest
     {
+        private static void AssertMatrixEqual(Matrix4x4 expected, Matrix4x4 got, float tol = 1e-6f)
+        {
+            Matrix4x4 d = expected - got;
+
+            if (d.FrobeniusNorm() > tol)
+            {
+                Console.WriteLine("Wanted: " + expected.ToString());
+                Console.WriteLine("Got   : " + got.ToString());
+                Assert.Fail(string.Format("Matrices are not equal within {0}.", tol));
+            }
+        }
+
         private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
         {
             MeshBuilder mb = pcl.ToBuilder();
@@ -214,7 +226,20 @@ namespace Warp9.Test
 
             Console.WriteLine(string.Format("x0={0}, x1={1}, center={2}, cs={3}",
                 stat.x0.ToString(), stat.x1.ToString(), stat.center.ToString(), stat.size));
+        }
 
+        [TestMethod]
+        public void RigidToMatrixTest()
+        {
+            AssertMatrixEqual(Matrix4x4.Identity, Rigid3.Identity.ToMatrix());
+
+            Rigid3 scale2 = new Rigid3() { offset = Vector3.Zero, cs = 0.5f, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
+            AssertMatrixEqual(Matrix4x4.CreateScale(2.0f), scale2.ToMatrix());
+
+            Rigid3 shift124 = new Rigid3() { offset = new Vector3(-1,-2,-4), cs = 1, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
+            AssertMatrixEqual(Matrix4x4.CreateTranslation(1,2,4), shift124.ToMatrix());
+
+            // TODO: more complex cases
         }
     }
 }

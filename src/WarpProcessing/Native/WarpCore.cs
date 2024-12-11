@@ -100,6 +100,27 @@ namespace Warp9.Native
         public float cs;
         public Vector3 rot0, rot1, rot2;
 
+        public Matrix4x4 ToMatrix()
+        {
+            float csr = 1.0f / cs;
+            return new Matrix4x4(csr * rot0.X, csr * rot0.Y, csr * rot0.Z, 0,
+               csr * rot1.X, csr * rot1.Y, csr * rot1.Z, 0,
+               csr * rot2.X, csr * rot2.Y, csr * rot2.Z, 0,
+               0, 0, 0, 1) * Matrix4x4.CreateTranslation(-offset);
+        }
+
+       /* public static Rigid3 FromMatrix(Matrix4x4 m)
+        {
+            Matrix4x4 mrs = m; // m without translation
+            mrs.Translation = Vector3.Zero;
+
+            Matrix4x4.Invert(mrs, out Matrix4x4 mrsi);
+            Vector3 offs = Vector3.Transform(m.Translation, mrsi);
+
+            float csr = m.M11 + m.M21 + m.M31 + m.M12 + m.M22 + m.M32 + m.M13 + m.M23 + m.M33;
+            Matrix4x4 mr = mrs * csr;
+        }*/
+
         public override readonly string ToString()
         {
             Matrix4x4 m = new Matrix4x4(rot0.X, rot0.Y, rot0.Z, 0,
@@ -116,6 +137,8 @@ namespace Warp9.Native
                 rotAxis.X, rotAxis.Y, rotAxis.Z,
                 msc.X, msc.Y, msc.Z);
         }
+
+        public static Rigid3 Identity = new Rigid3() { offset = Vector3.Zero, cs = 1, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
     }
 
     [StructLayout(LayoutKind.Sequential)]
