@@ -57,15 +57,8 @@ namespace Warp9.JobItems
             //    ctx.WriteLog(ItemIndex, MessageKind.Information, string.Format("   GPA {0}:", i) +  res.GetTransform(i).ToString());
 
             float[] dispPost = LandmarkDispersion.Calculate(res.Mean, res.EnumerateTransformed());
-
             ctx.WriteLog(ItemIndex, MessageKind.Information, "Landmark dispersions: " +
                 string.Join(", ", dispPost.Select((t) => t.ToString("F3"))));
-
-            foreach (PointCloud lms in res.EnumerateTransformed())
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Information, "---");
-                ctx.WriteLog(ItemIndex, MessageKind.Information, lms.GetView(MeshViewKind.Pos3f, false).ToString());
-            }
 
             return true;
         }

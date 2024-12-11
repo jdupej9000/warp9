@@ -66,7 +66,8 @@ namespace warpcore::impl
         int info = LAPACKE_sgesvd(LAPACK_COL_MAJOR, 'A', 'A', d, d, cov, d, s, u, d, vt, d, superb);
         if(info == 0) {
             memset(rot, 0, sizeof(float) * d * d);
-            cblas_sgemm(CblasColMajor, CblasTrans, CblasTrans, d, d, d, 1.0f, vt, d, u, d, 0.0f, rot, d);
+            //cblas_sgemm(CblasColMajor, CblasNoTrans, CblasTrans, d, d, d, 1.0f, vt, d, u, d, 0.0f, rot, d);
+            cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, d, d, d, 1.0f, u, d, vt, d, 0.0f, rot, d);
             return 0;
         } 
 
