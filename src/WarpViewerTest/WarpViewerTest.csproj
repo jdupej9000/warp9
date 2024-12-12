@@ -11,7 +11,7 @@
 	  <UseWindowsForms>true</UseWindowsForms>
 	  <Platforms>Any CPU;x64</Platforms>
     <Configurations>Debug;Release</Configurations>
-	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	  <GenerateRuntimeConfigDevFile>True</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <ItemGroup>
