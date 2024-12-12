@@ -1,7 +1,11 @@
-﻿using Warp9.JobItems;
+﻿using System.Drawing;
+using System.Numerics;
+using Warp9.Data;
+using Warp9.JobItems;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Processing;
+using Warp9.Viewer;
 
 namespace Warp9.Test
 {
@@ -19,8 +23,25 @@ namespace Warp9.Test
             return ret;
         }
 
+        private static Mesh GetMeshFromProject(Project proj, long specTableKey, string columnName, int index)
+        {
+            SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
+               proj, specTableKey, columnName);
+
+            if (column is null)
+                Assert.Fail("Column is missing in project.");
+
+            if (column.ColumnType != SpecimenTableColumnType.Mesh)
+                Assert.Fail("Column does not contain meshes.");
+
+            Mesh? ret = ModelUtils.LoadSpecimenTableRef<Mesh>(proj, column, index);
+            Assert.IsNotNull(ret);
+
+            return ret;
+        }
+
         [TestMethod]
-        public void SkullsCpdDca()
+        public void FacesCpdDcaTest()
         {
             string facesFile = GetExternalDependency("faces.w9");
 
@@ -33,19 +54,42 @@ namespace Warp9.Test
             cfg.MeshColumnName = "Mesh";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.ClosestPoint;
-            cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.GpaOnWhitelisted;
+            cfg.SurfaceProjection = DcaSurfaceProjectionKind.None;
+            cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
 
-            IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project);
+            IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project, true);
             ProjectJobContext jobCtx = new ProjectJobContext(project);
             Job job = Job.Create(jobItems, jobCtx);
 
-            JobEngine.RunImmediately(job);
+            IJobContext ctx = JobEngine.RunImmediately(job);
 
             Assert.AreEqual(0, job.NumItemsFailed);
             Assert.AreEqual(job.NumItemsDone, job.NumItems);
-            Assert.AreEqual(true, job.IsCompleted);
+
+            Console.WriteLine("Workspace contents: ");
+            foreach (var kvp in ctx.Workspace.Items)
+                Console.WriteLine("   " + kvp.Key + " = " + kvp.Value.ToString());
+
+            if (!ctx.Workspace.TryGet("corr.reg", out List<PointCloud>? corrPcls) ||
+                corrPcls is null)
+                Assert.Fail("corr.reg is not present in the workspace");
+
+            if (!ctx.Workspace.TryGet("rigid.reg", out List<Mesh>? rigidPcls) ||
+               corrPcls is null)
+                Assert.Fail("corr.reg is not present in the workspace");
+
+            Mesh baseMesh = GetMeshFromProject(project, cfg.SpecimenTableKey, cfg.MeshColumnName, cfg.BaseMeshIndex);
+            HeadlessRenderer rend = TestUtils.CreateRenderer();
+            rend.RasterFormat = new RasterInfo(1024, 1024);
+            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);
+            for (int i = 0; i < corrPcls.Count; i++)
+            {
+                TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
+                    (Mesh.FromPointCloud(corrPcls[i], baseMesh), Color.Gray),
+                    (rigidPcls[i], Color.FromArgb(64, Color.DodgerBlue)));
+            }
+           
         }
     }
 }

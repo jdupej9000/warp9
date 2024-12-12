@@ -9,11 +9,12 @@ namespace Warp9.Jobs
     public static class DcaJob
     {
         private static readonly string GpaPreregKey = "rigid";
+        private static readonly string GpaPreregMeshKey = "rigid.reg";
         private static readonly string NonrigidInitKey = "nonrigid.init";
         private static readonly string NonrigidRegKey = "nonrigid.reg";
         private static readonly string CorrespondenceRegKey = "corr.reg";
 
-        public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj)
+        public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj, bool debug=false)
         {
             int index = 0;
             SpecimenTable? specTable = ModelUtils.TryGetSpecimenTable(proj, cfg.SpecimenTableKey);
@@ -40,6 +41,12 @@ namespace Warp9.Jobs
 
                 default:
                     throw new NotImplementedException();
+            }
+
+            if (debug)
+            {
+                for (int i = 0; i < numSpecs; i++)
+                    yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, i, GpaPreregMeshKey, true);
             }
 
             switch (cfg.NonrigidRegistration)
@@ -102,7 +109,8 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
-            yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
+            if(!debug)
+                yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
             yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, CorrespondenceRegKey, null, cfg.ResultEntryName, cfg);
         }

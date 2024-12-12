@@ -10,6 +10,8 @@ namespace Warp9.Jobs
     {
         Dictionary<string, object?> repository = new Dictionary<string, object?>();
 
+        public IReadOnlyDictionary<string, object?> Items => repository;
+
         public bool TryCopy(string src, string dest)
         {
             if (repository.TryGetValue(src, out object? x) && x is not null)

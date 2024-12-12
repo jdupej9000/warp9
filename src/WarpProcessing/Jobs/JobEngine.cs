@@ -57,11 +57,11 @@ namespace Warp9.Jobs
             NotifyWorkers();
         }
 
-        public static void RunImmediately(IJob job)
+        public static IJobContext RunImmediately(IJob job)
         {
             IJobContext ctx = job.Context ?? throw new ArgumentNullException(nameof(job));
             while (!job.IsCompleted && job.TryExecuteNext()) ;
-
+            return ctx;
         }
 
         public void Dispose()

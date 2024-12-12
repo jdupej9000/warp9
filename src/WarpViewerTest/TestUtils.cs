@@ -77,7 +77,7 @@ namespace Warp9.Test
             return bmp;
         }
 
-        private static HeadlessRenderer CreateRenderer()
+        public static HeadlessRenderer CreateRenderer()
         {
             int adapterIdx = FindAdapter();
             Assert.IsTrue(HeadlessRenderer.TryCreate(adapterIdx, out HeadlessRenderer? r));
@@ -121,12 +121,16 @@ namespace Warp9.Test
 
         public static void Render(string fileName, params (PointCloud, Color)[] items)
         {
-            HeadlessRenderer rend = CreateRenderer();
+            Render(CreateRenderer(), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
+        }
 
+        public static void Render(HeadlessRenderer rend, string fileName, Matrix4x4 modelMat, params (PointCloud, Color)[] items)
+        {
+            rend.ClearRenderItems();
             foreach (var i in items)
             {
                 RenderItemMesh renderItemMesh = new RenderItemMesh();
-                renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+                renderItemMesh.ModelMatrix = modelMat;
 
                 if (i.Item1 is Mesh m)
                 {
@@ -143,7 +147,6 @@ namespace Warp9.Test
                 renderItemMesh.Color = i.Item2;
                 rend.AddRenderItem(renderItemMesh);
 
-
                 rend.CanvasColor = Color.Black;
                 rend.Present();
 
@@ -152,7 +155,6 @@ namespace Warp9.Test
                 {
                     bmp.Save(Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName)));
                 }
-
             }
         }
 
