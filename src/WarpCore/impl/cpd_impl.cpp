@@ -44,10 +44,10 @@ namespace warpcore::impl
         }
 
         // Sample matrix G at centerIdx.
-        cpd_samplefirst_g(y, m, beta, q);
+        //cpd_samplefirst_g(y, m, beta, q);
 
-        for(int i = 0; i < k - 1; i++)
-            cpd_sample_g(y, m, centerIdx[i], beta, q + (i + 1)*m);
+        for(int i = 0; i < k; i++)
+            cpd_sample_g(y, m, centerIdx[i], beta, q + i * m);
 
         // Orthogonalize q with a QR decomposition.
         LAPACKE_sgeqrf(LAPACK_COL_MAJOR, m, k, q, m, tau);
@@ -201,7 +201,7 @@ namespace warpcore::impl
                 __m256 d2 = _mm256_setzero_ps();
 
                 for(int l = 0; l < 3; l++) {
-                    const __m256 dj = _mm256_sub_ps(_mm256_broadcast_ss(y + l*m + i), _mm256_loadu_ps(y + l*m + j));
+                    const __m256 dj = _mm256_sub_ps(_mm256_broadcast_ss(yi + l), _mm256_loadu_ps(y + l*m + j));
                     d2 = _mm256_fmadd_ps(dj, dj, d2);
                 }
 
@@ -219,7 +219,7 @@ namespace warpcore::impl
             for(int j = m8; j < m; j++) {
                 float d2 = 0;
                 for(int l = 0; l < 3; l++) {
-                    const float dj = y[i + l*m] - y[j + l*m];
+                    const float dj = yi[l] - y[j + l*m];
                     d2 += dj * dj;
                 }
                 float g = expf(ef * d2);
