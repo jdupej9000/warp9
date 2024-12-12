@@ -40,7 +40,7 @@ namespace Warp9.Viewer
 
             if (stateCache.DepthStateCache.LastState != DepthMode)
                 ctx.OutputMerger.DepthStencilState = stateCache.DepthStateCache.Get(DepthMode);
-
+            
             if (IsInstanced)
             {
                 if (IsIndexed)

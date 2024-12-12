@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Warp9.Data;
 
 namespace Warp9.Viewer
@@ -139,6 +140,8 @@ namespace Warp9.Viewer
                 dcMain = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.VertexCount);
             }
+
+            dcMain.BlendMode = BlendMode.AlphaBlend;
 
             if (lut is not null)
                 job.SetTexture(ctx, 1, lut, false);

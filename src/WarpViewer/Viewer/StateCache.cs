@@ -20,6 +20,8 @@ namespace Warp9.Viewer
     {
         Default = 0x0,
 
+        AlphaBlend = 0x1,
+
         Invalid = 0x7fffffff
     }
 
@@ -79,7 +81,7 @@ namespace Warp9.Viewer
         public static RasterizerState CreateRasterizerState(Device device, RasterizerMode mode)
         {
             RasterizerStateDescription desc = new RasterizerStateDescription();
-
+            
             if (mode.HasFlag(RasterizerMode.Wireframe))
                 desc.FillMode = FillMode.Wireframe;
             else
@@ -96,6 +98,18 @@ namespace Warp9.Viewer
         public static BlendState CreateBlendState(Device device, BlendMode mode)
         {
             BlendStateDescription desc = new BlendStateDescription();
+
+            if (mode.HasFlag(BlendMode.AlphaBlend))
+            {
+                desc.RenderTarget[0].IsBlendEnabled = true;
+                desc.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+                desc.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
+                desc.RenderTarget[0].BlendOperation = BlendOperation.Add;
+                desc.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
+                desc.RenderTarget[0].DestinationAlphaBlend = BlendOption.One;
+                desc.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
+                desc.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+            }
 
             return new BlendState(device, desc);
         }

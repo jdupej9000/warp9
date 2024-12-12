@@ -86,7 +86,7 @@ namespace Warp9.Test
 
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
-        private bool wireframe = false, instances = false, valueNotch = false;
+        private bool wireframe = false, instances = false, valueNotch = false, alphaBlend = false;
         private bool buffDirty = true;
         private float valueLevel = 0.5f;
         private Lut lut = Lut.Create(256, Lut.FastColors);
@@ -128,6 +128,11 @@ namespace Warp9.Test
             set { instances = value; Commit(); }
         }
 
+        public bool AlphaBlend
+        {
+            get { return alphaBlend; }
+            set { alphaBlend = value; Commit(); }
+        }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
         {
@@ -203,7 +208,7 @@ namespace Warp9.Test
                 job.SetTexture(ctx, 1, lut);
             }
 
-
+            dcMain.BlendMode = alphaBlend ? BlendMode.AlphaBlend : BlendMode.Default;
             dcWire.RastMode = RasterizerMode.Wireframe | RasterizerMode.CullBack;
             dcWire.DepthMode = DepthMode.NoDepth;
 

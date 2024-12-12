@@ -154,6 +154,23 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void ColorCubePhongAlphaTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.FlatColorPhong;
+            cube.Color = Color.FromArgb(128, Color.DarkOliveGreen);
+            cube.AlphaBlend = true;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubePhongAlphaTest_0.png", bmp);
+        }
+
+        [TestMethod]
         public void ColorCubeInstancedTest()
         {
             (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);

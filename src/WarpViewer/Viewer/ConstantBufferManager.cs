@@ -13,8 +13,10 @@ namespace Warp9.Viewer
 
         public void Set(DeviceContext ctx, int idx, ConstantBufferPayload payload)
         {
+#if DEBUG
             System.Console.WriteLine(string.Format("Updating buff #{0}, length={1}",
                 idx, payload.StructSize));
+#endif
 
             if (!constBuffers.TryGetValue(idx, out Buffer? buffer))
                 constBuffers[idx] = Buffer.CreateConstant(ctx.Device, payload.RawData);
