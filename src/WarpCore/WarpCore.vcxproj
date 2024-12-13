@@ -210,6 +210,8 @@
       <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
+      <FastMath>true</FastMath>
+      <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
