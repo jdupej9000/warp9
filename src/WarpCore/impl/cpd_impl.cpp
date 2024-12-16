@@ -353,25 +353,28 @@ namespace warpcore::impl
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
         const __m256 denomAdd8 = _mm256_broadcast_ss(&denomAdd);
+        const __m256i loop_max = _mm256_sub_epi32(_mm256_set1_epi32(m),  _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
         const int n8 = n >> 3;
 
         #pragma omp parallel for schedule(dynamic, 8)
-        for(int i8 = 0; i8 < n8; i8++) {	
-            const int i = i8 * 8;
+        for(int i = 0; i < n; i++) {	
             __m256 accum = _mm256_setzero_ps();
-            const __m256 x0 = _mm256_loadu_ps(x + i);
-            const __m256 x1 = _mm256_loadu_ps(x + i + n);
-            const __m256 x2 = _mm256_loadu_ps(x + i + 2*n);
+            const __m256 x0 = _mm256_broadcast_ss(x + i);
+            const __m256 x1 = _mm256_broadcast_ss(x + i + n);
+            const __m256 x2 = _mm256_broadcast_ss(x + i + 2*n);
 
-            for(int j = 0; j < m; j++) {
-                const __m256 d0 = _mm256_sub_ps(_mm256_broadcast_ss(t + j), x0);
-                const __m256 d1 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + m), x1);
-                const __m256 d2 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + 2*m), x2);
+            for(int j8 = 0; j8 < m; j8+=8) {
+                const __m256 loop_mask = _mm256_castsi256_ps(_mm256_cmpgt_epi32(loop_max, _mm256_set1_epi32(j8)));
+
+                const __m256 d0 = _mm256_sub_ps(_mm256_loadu_ps(t + j8), x0);
+                const __m256 d1 = _mm256_sub_ps(_mm256_loadu_ps(t + j8 + m), x1);
+                const __m256 d2 = _mm256_sub_ps(_mm256_loadu_ps(t + j8 + 2*m), x2);
+
                 __m256 dist = _mm256_mul_ps(d0, d0);
                 dist = _mm256_fmadd_ps(d1, d1, dist);
                 dist = _mm256_fmadd_ps(d2, d2, dist);
 
-                const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
+                const __m256 compareMask = _mm256_and_ps(loop_mask, _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ));
                 int mask = _mm256_movemask_epi8(_mm256_castps_si256(compareMask));
                 if (mask != 0) {
                     __m256 affinity = _mm256_and_ps(expf_fast(_mm256_mul_ps(dist, factor8)), compareMask);
@@ -379,27 +382,14 @@ namespace warpcore::impl
                 }
             }
             
-            const __m256 denom = _mm256_rcp_ps(_mm256_add_ps(accum, denomAdd8));
-            _mm256_storeu_ps(psum + i, denom);
-            _mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
-        }
+            float a = reduce_add(accum);
+            float denom = 1.0f / (denomAdd + a);
+            psum[i] = denom;
+            pt1[i] = denom * a;
 
-        for(int i = 8*n8; i < n; i++) {
-            float sumAccum = 0.0f;
-
-            for(int j = 0; j<m; j++) {			
-                const float dd1 = x[0*n+i] - t[0*m+j];
-                const float dd2 = x[1*n+i] - t[1*m+j];
-                const float dd3 = x[2*n+i] - t[2*m+j];
-                float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
-
-                if(dist < thresh)			
-                    sumAccum += expf(expFactor * dist);			
-            }
-
-            const float rcp = 1.0f / (sumAccum + denomAdd);
-            psum[i] = rcp;
-            pt1[i] = sumAccum * rcp;
+            //const __m256 denom = _mm256_rcp_ps(_mm256_add_ps(accum, denomAdd8));
+            //_mm256_storeu_ps(psum + i, denom);
+            //_mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
         }
     }
 
