@@ -113,11 +113,13 @@ namespace warpcore::impl
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 0.0f, _p0, m);
         // _p0 (m,3): q * [inner] * tf^2 * q^T * diag(p1) * right
 
-        dxa(_p0, p1, m, 3, _p0);
-        // _p0 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
-        // _p3 avail.
+        dxa(_p0, p1, m, 3, _p3);
+        // _p3 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
 
-        cblas_saxpy(m*3, -1.0f, _p0, 1, _p2, 1);
+        memcpy(_p0, _p2, m * 3 * sizeof(float));
+        // _p0 (m,3): [w]
+
+        cblas_saxpy(m*3, -1.0f, _p3, 1, _p2, 1);
         // _p2 (m,3): [w] - [solve1]
 
         cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k); 
@@ -125,11 +127,11 @@ namespace warpcore::impl
 
         float ret = lambda / 2 * tratdba(_p3, k, 3, l);
 
-        dxa(_p3, l, k, 3, _p3);
-        // _p3 (k,3): diag(l) * q^T * w
+        dxa(_p3, l, k, 3, _p0);
+        // _p0 (k,3): diag(l) * q^T * w
 
         std::memcpy(t, y, m * 3 * sizeof(float));
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 1.0f, t, m); 
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p0, k, 1.0f, t, m); 
         // T (m,3): q * diag(l) * q^t * w + y
 
         return ret;

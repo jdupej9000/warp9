@@ -10,6 +10,8 @@ namespace Warp9.Test
     [TestClass]
     public class NativeTest
     {
+        public object PointCloudBuilder { get; private set; }
+
         private static void AssertMatrixEqual(Matrix4x4 expected, Matrix4x4 got, float tol = 1e-6f)
         {
             Matrix4x4 d = expected - got;
@@ -242,6 +244,29 @@ namespace Warp9.Test
             AssertMatrixEqual(Matrix4x4.CreateTranslation(1,2,4), shift124.ToMatrix());
 
             // TODO: more complex cases
+        }
+
+        [TestMethod]
+        public void TeapotKMeansTest()
+        {
+            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly).ToPointCloud();
+            Clustering.FitKMeans(pcl, 100, out int[] labels, out Vector3[] centers);
+
+            foreach (Vector3 c in centers)
+                Console.WriteLine(c.ToString());
+
+            int n = pcl.VertexCount;
+            for (int i = 0; i < n; i++)
+                Assert.IsTrue(labels[i] >= 0 && labels[i] < n);
+
+            MeshBuilder builder = new MeshBuilder();
+            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            verts.AddRange(centers);
+            PointCloud pclK = builder.ToPointCloud();
+
+            TestUtils.Render("TeapotKMeansTest_0.png",
+              (pcl, Color.FromArgb(16,16,16)),
+              (pclK, Color.Red));
         }
     }
 }

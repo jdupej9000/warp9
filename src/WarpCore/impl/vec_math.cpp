@@ -167,6 +167,8 @@ namespace warpcore::impl
     void dxa(const float* x, const float* v, int n, int m, float* y)
     {
         // diag(V) * X
+        //   X is n x m (col. major)
+        //   V is n
         const int n8 = round_down(n, 8);
 
         for(int i = 0; i < m; i++) {
@@ -204,7 +206,21 @@ namespace warpcore::impl
         int n8 = round_down(n, 8);
         __m256 alpha8 = _mm256_set1_ps(alpha);
 
-        for(int i = 0; i < m; i++) {
+        for (int i = 0; i < m; i++) {
+            for (int j = i; j < m; j++) {
+                float acc = 0;
+
+                for (int k = 0; k < n; k++)
+                    acc += b[k] * a[i * n + k] * a[j * n + k];
+
+                acc *= alpha;
+
+                y[i * m + j] = acc;
+                y[j * m + i] = acc;
+            }
+        }
+
+       /* for(int i = 0; i < m; i++) {
             int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
             //int m2i = 0;
             for(int j = i; j < m2i; j+=2) {
@@ -252,7 +268,7 @@ namespace warpcore::impl
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }
-        }
+        }*/
     }
 
     float tratdba(const float* a, int n, int m, const float* b)
@@ -260,8 +276,14 @@ namespace warpcore::impl
         // trace(A' * diag(B) * A)
 
         float ret = 0;
+        for (int i = 0; i < m; i++) {
+            for (int k = 0; k < n; k++) {
+                float ak = a[i * n + k];
+                ret += ak * ak * b[k];
+            }                
+        }
 
-        int n16 = round_down(n, 16);
+        /*int n16 = round_down(n, 16);
         for(int i = 0; i < m; i++) {
             __m256 accum = _mm256_setzero_ps();
             
@@ -285,7 +307,7 @@ namespace warpcore::impl
             }
 
             ret += part;
-        }
+        }*/
 
         return ret;
     }

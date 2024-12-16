@@ -4,6 +4,8 @@
 #include <string.h>
 #include <openblas_config.h>
 #include <cuda_runtime.h>
+#include "impl/kmeans.h"
+#include "defs.h"
 
 using namespace std;
 
@@ -63,4 +65,14 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         strncpy_s(buffer, bufferSize, ss.str().c_str(), std::min(sslen, (size_t)bufferSize));
     
     return (int)sslen;
+}
+
+extern "C" int clust_kmeans(const float* x, int d, int n, int k, float* cent, int* label)
+{
+    if (x == nullptr || d != 3 || cent == nullptr || label == nullptr)
+        return WCORE_INVALID_ARGUMENT;
+
+    warpcore::impl::kmeans<3>(x, n, k, cent, label);
+
+    return WCORE_OK;
 }
