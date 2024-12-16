@@ -193,7 +193,7 @@ namespace warpcore::impl
                 bmin++;
 
             while (bmin < bmax && sortedxcol[bmax] > tcol[i] + thresh)
-                bmin--;
+                bmax--;
 
             bounds[0] = bmin;
             bounds[1] = bmax;
@@ -394,25 +394,27 @@ namespace warpcore::impl
     void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px, const int* trunc_wnd)
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
-        const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
-        const int m8 = m >> 3;
+        const __m256 thresh8 = _mm256_broadcast_ss(&thresh);
+        const __m256i seq8 = _mm256_setr_epi32(1, 2, 3, 4, 5, 6, 7, 8); // starting from 1, we simulate a '>=' comparison with '>', for loop_mask
 
         #pragma omp parallel for schedule(dynamic, 8)
-        for(int j8 = 0; j8 < m8; j8++) {
-            int j = j8 * 8;		
-            const __m256 t0 = _mm256_loadu_ps(t + j);
-            const __m256 t1 = _mm256_loadu_ps(t + j + m);
-            const __m256 t2 = _mm256_loadu_ps(t + j + 2*m);
+        for (int j = 0; j < m; j++) {
+            const __m256 t0 = _mm256_broadcast_ss(t + j);
+            const __m256 t1 = _mm256_broadcast_ss(t + j + m);
+            const __m256 t2 = _mm256_broadcast_ss(t + j + 2 * m);
 
             __m256 px0 = _mm256_setzero_ps();
             __m256 px1 = _mm256_setzero_ps();
             __m256 px2 = _mm256_setzero_ps();
             __m256 p1a = _mm256_setzero_ps();
+            const __m256i loop_max = _mm256_set1_epi32(trunc_wnd[2 * j + 1]);
 
-            for(int i = 0; i < n; i++) {
-                const __m256 x0 = _mm256_broadcast_ss(x + 0*n+i);
-                const __m256 x1 = _mm256_broadcast_ss(x + 1*n+i);
-                const __m256 x2 = _mm256_broadcast_ss(x + 2*n+i);
+            for (int i8 = trunc_wnd[2 * j]; i8 <= trunc_wnd[2 * j + 1]; i8+=8) {
+                const __m256i loop_mask = _mm256_cmpgt_epi32(_mm256_sub_epi32(loop_max, seq8), _mm256_set1_epi32(i8));
+
+                const __m256 x0 = _mm256_loadu_ps(x + 0 * n + i8);
+                const __m256 x1 = _mm256_loadu_ps(x + 1 * n + i8);
+                const __m256 x2 = _mm256_loadu_ps(x + 2 * n + i8);
                 const __m256 dd1 = _mm256_sub_ps(x0, t0);
                 const __m256 dd2 = _mm256_sub_ps(x1, t1);
                 const __m256 dd3 = _mm256_sub_ps(x2, t2);
@@ -421,11 +423,12 @@ namespace warpcore::impl
                 dist = _mm256_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
                 dist = _mm256_fmadd_ps(dd3, dd3, dist);
 
-                const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
+                const __m256 compareMask = _mm256_and_ps(_mm256_castsi256_ps(seq8), _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ));
+            
                 const int mask = _mm256_movemask_ps(compareMask);
                 if (mask != 0) {
                     __m256 pmn = expf_fast(_mm256_mul_ps(dist, factor8));
-                    pmn = _mm256_mul_ps(pmn, _mm256_broadcast_ss(psum + i));
+                    pmn = _mm256_mul_ps(pmn, _mm256_loadu_ps(psum + i8));
                     pmn = _mm256_and_ps(pmn, compareMask);
 
                     px0 = _mm256_fmadd_ps(x0, pmn, px0);
@@ -434,39 +437,11 @@ namespace warpcore::impl
                     p1a = _mm256_add_ps(p1a, pmn);
                 }
             }
-            
-            _mm256_storeu_ps(p1 + j, p1a);
-            _mm256_storeu_ps(px + j, px0);
-            _mm256_storeu_ps(px + j + m, px1);
-            _mm256_storeu_ps(px + j + 2*m, px2);
-        }
 
-        for(int j = 8 * m8; j < m; j++) {
-            float px0 = 0, px1 = 0, px2 = 0;
-            float p1a = 0.0f;
-            const float t0 = t[j],
-                t1 = t[m+j],
-                t2 = t[2*m+j];
-
-            for(int i = 0; i < n; i++) {
-                const float dd1 = x[0*n+i] - t0;
-                const float dd2 = x[1*n+i] - t1;
-                const float dd3 = x[2*n+i] - t2;
-                float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
-
-                if( dist < thresh) {
-                    const float pmn = expf(expFactor * dist) * psum[i];
-                    px0 += pmn * x[0*n+i];
-                    px1 += pmn * x[1*n+i];
-                    px2 += pmn * x[2*n+i];
-                    p1a += pmn;	
-                }
-            }
-
-            p1[j] = p1a;
-            px[0*m+j] = px0;
-            px[1*m+j] = px1;
-            px[2*m+j] = px2;
+            p1[j] = reduce_add(p1a);
+            px[j] = reduce_add(px0);
+            px[j + m] = reduce_add(px1);
+            px[j + 2 * m] = reduce_add(px2);
         }
     }
 };

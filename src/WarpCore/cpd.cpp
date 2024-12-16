@@ -130,7 +130,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         if (use_cuda) {
             cpd_estep_cuda(cuda_ctx, (const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, pt1);
         } else {
-            cpd_estep((const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
+            cpd_estep(sortedx, (const float*)t, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px, trunc_wnd, sortx_by);
         }
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
