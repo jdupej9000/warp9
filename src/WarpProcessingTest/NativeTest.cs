@@ -77,13 +77,15 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        public void CpdRegDefaultTest()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void CpdRegDefaultTest(bool useGpu)
         {
             Mesh pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pclTarget = DistortPcl(pcl, Vector3.Zero, 1.10f, 0.25f);
 
             CpdConfiguration cpdCfg = new CpdConfiguration();
-            cpdCfg.UseGpu = true;
+            cpdCfg.UseGpu = useGpu;
             WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, cpdCfg);
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
             Assert.IsNotNull(ctx);
@@ -103,7 +105,7 @@ namespace Warp9.Test
             Console.WriteLine("T-Y:");
             ComparePcls(pclBent, pcl);
 
-            TestUtils.Render("CpdRegDefaultTest_0.png",
+            TestUtils.Render(string.Format("CpdRegDefaultTest_{0}_0.png", useGpu ? "cuda" : "cpu"),
                 (pcl.ToPointCloud(), Color.Red),
                 (pclTarget, Color.Green),
                 (pclBent, Color.White));
