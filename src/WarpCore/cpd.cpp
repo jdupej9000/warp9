@@ -63,13 +63,8 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     auto t0 = std::chrono::high_resolution_clock::now();
 
     bool use_cuda = cpd->flags & CPD_USE_GPU;
-
     const int m = cpd->m, n = cpd->n;
-    //auto t0 = std::chrono::high_resolution_clock::now();
-
-    const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : 
-        cpd_lowrank_numcols(m);
-
+    const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : cpd_lowrank_numcols(m);
     const int tmp_size = cpd_tmp_size(m, n, num_eigs);
 
     // Do not change the order of these arrays. CUDA part relies on this structure.
@@ -131,7 +126,6 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
         memset(tmp, 0, tmp_size * sizeof(float));
         l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
-        
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
             break;
@@ -140,7 +134,6 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         tol = abs((l0 - l0_old) / l0);
         const float sigma2_old = sigma2;
         sigma2 = cpd_update_sigma2((const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
-        
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
             break;
