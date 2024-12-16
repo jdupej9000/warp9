@@ -75,7 +75,7 @@ namespace warpcore::impl
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        cpd_narrow_trunc_window(sortedx + n * xsort_by, t + m * xsort_by, m, n, thresh, trunc_wnd);
+        cpd_narrow_trunc_window(sortedx + n * xsort_by, t + m * xsort_by, m, n, sqrtf(thresh), trunc_wnd);
         cpd_psumpt1(m, n, thresh, factor, denom, sortedx, t, psum, pt1, trunc_wnd);
         cpd_p1px(m, n, thresh, factor, denom, sortedx, t, psum, p1, px, trunc_wnd);
     }
@@ -187,7 +187,8 @@ namespace warpcore::impl
     void cpd_narrow_trunc_window(const float* sortedxcol, const float* tcol, int m, int n, float thresh, int* bounds)
     {
         for (int i = 0; i < m; i++) {
-            int bmin = bounds[0], bmax = bounds[1];
+            //int bmin = bounds[2 * i], bmax = bounds[2 * i + 1];
+            int bmin = 0, bmax = n - 1;
 
             while (bmin < bmax && sortedxcol[bmin] < tcol[i] - thresh)
                 bmin++;
@@ -195,16 +196,14 @@ namespace warpcore::impl
             while (bmin < bmax && sortedxcol[bmax] > tcol[i] + thresh)
                 bmax--;
 
-            bounds[0] = bmin;
-            bounds[1] = bmax;
-            bounds += 2;
+            bounds[2 * i] = bmin;
+            bounds[2 * i + 1] = bmax;
         }
     }
 
     void cpd_init_trunc_window(int n, int m, int* bounds)
     {
-        for (int i = 0; i < m; i++)
-        {
+        for (int i = 0; i < m; i++) {
             bounds[2 * i] = 0;
             bounds[2 * i + 1] = n - 1;
         }
@@ -395,7 +394,7 @@ namespace warpcore::impl
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);
-        const __m256i seq8 = _mm256_setr_epi32(1, 2, 3, 4, 5, 6, 7, 8); // starting from 1, we simulate a '>=' comparison with '>', for loop_mask
+        const __m256i seq8 = _mm256_setr_epi32(-1, 0, 1, 2, 3, 4, 5, 6); // starting from -1; we simulate a '>=' comparison with '>', for loop_mask
 
         #pragma omp parallel for schedule(dynamic, 8)
         for (int j = 0; j < m; j++) {
@@ -410,7 +409,7 @@ namespace warpcore::impl
             const __m256i loop_max = _mm256_set1_epi32(trunc_wnd[2 * j + 1]);
 
             for (int i8 = trunc_wnd[2 * j]; i8 <= trunc_wnd[2 * j + 1]; i8+=8) {
-                const __m256i loop_mask = _mm256_cmpgt_epi32(_mm256_sub_epi32(loop_max, seq8), _mm256_set1_epi32(i8));
+                const __m256i loop_mask = _mm256_cmpgt_epi32(loop_max, _mm256_add_epi32(_mm256_set1_epi32(i8), seq8));
 
                 const __m256 x0 = _mm256_loadu_ps(x + 0 * n + i8);
                 const __m256 x1 = _mm256_loadu_ps(x + 1 * n + i8);
@@ -423,8 +422,8 @@ namespace warpcore::impl
                 dist = _mm256_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
                 dist = _mm256_fmadd_ps(dd3, dd3, dist);
 
-                const __m256 compareMask = _mm256_and_ps(_mm256_castsi256_ps(seq8), _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ));
-            
+                //const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
+                const __m256 compareMask = _mm256_and_ps(_mm256_castsi256_ps(loop_mask), _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ));
                 const int mask = _mm256_movemask_ps(compareMask);
                 if (mask != 0) {
                     __m256 pmn = expf_fast(_mm256_mul_ps(dist, factor8));

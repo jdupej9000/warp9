@@ -86,15 +86,6 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         }
     }
 
-    // Truncation window is used only for the CPU implementation.
-    int* trunc_wnd = nullptr;
-    int sortx_by = 0;
-    if (use_sortedx) {
-        trunc_wnd = new int[2 * m];
-        cpd_init_trunc_window(n, m, trunc_wnd);
-        sortx_by = cpd_make_sortedx((const float*)x, n, sortedx);
-    }
-
     float sigma2 = cpd->sigma2init;
 
     if (cpd->sigma2init <= 0.0f) {
@@ -104,10 +95,16 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
             sigma2 = cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
     }
 
-    //float sigma2 = (cpd->sigma2init > 0.0f) ? cpd->sigma2init : 
-    //    cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
-
     std::memset(pp, 0, sizeof(float) * (2 * n + 4 * m + tmp_size));
+
+    // Truncation window is used only for the CPU implementation.
+    int* trunc_wnd = nullptr;
+    int sortx_by = 0;
+    if (use_sortedx) {
+        trunc_wnd = new int[2 * m];
+        cpd_init_trunc_window(n, m, trunc_wnd);
+        sortx_by = cpd_make_sortedx((const float*)x, n, sortedx);
+    }
 
     const float* q = (const float*)init + 2 * m;
     const float* l = (const float*)init;
@@ -144,7 +141,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         
         tol = abs((l0 - l0_old) / l0);
         const float sigma2_old = sigma2;
-        sigma2 = cpd_update_sigma2((const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
+        sigma2 = cpd_update_sigma2(use_sortedx ? sortedx : (const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
             break;
