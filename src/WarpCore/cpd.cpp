@@ -12,6 +12,7 @@ extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx);
 extern void cpd_deinit_cuda(void* pDevCtx);
 extern void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
 extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int m, int n);
+int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err);
 
 using namespace warpcore::impl;
 
@@ -146,23 +147,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         }
 
         std::memcpy(t, ttemp, sizeof(float) * 3 * m);
-
-        if (it >= maxit)
-            conv |= CPD_CONV_ITER;
-        
-        if (sigma2 < 1e-8)
-            conv |= CPD_CONV_SIGMA;
-
-        if (abs(sigma2 - sigma2_old) < 1e-10f ||
-            abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
-            conv |= CPD_CONV_DSIGMA;
-
-        if (isnan(abs(sigma2 - sigma2_old) / sigma2))
-            conv |= CPD_CONV_NUMERIC_ERROR;
-
-        if (tol < cpd->tol)
-            conv |= CPD_CONV_TOL;
-
+        conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol);
         it++;
     }
 
@@ -183,4 +168,26 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     }
 
     return (it < maxit) ? WCORE_OK : WCORE_NONCONVERGENCE;
+}
+
+int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_old, float err)
+{
+    int conv = 0;
+    if (it >= cpd->maxit)
+        conv |= CPD_CONV_ITER;
+
+    if (sigma2 < 1e-8)
+        conv |= CPD_CONV_SIGMA;
+
+    if (abs(sigma2 - sigma2_old) < 1e-10f ||
+        abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
+        conv |= CPD_CONV_DSIGMA;
+
+    if (isnan(abs(sigma2 - sigma2_old) / sigma2))
+        conv |= CPD_CONV_NUMERIC_ERROR;
+
+    if (err < cpd->tol)
+        conv |= CPD_CONV_TOL;
+
+    return conv;
 }
