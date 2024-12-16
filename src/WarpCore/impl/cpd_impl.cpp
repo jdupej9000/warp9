@@ -187,14 +187,27 @@ namespace warpcore::impl
     void cpd_narrow_trunc_window(const float* sortedxcol, const float* tcol, int m, int n, float thresh, int* bounds)
     {
         for (int i = 0; i < m; i++) {
-            //int bmin = bounds[2 * i], bmax = bounds[2 * i + 1];
-            int bmin = 0, bmax = n - 1;
+            int bmin = bounds[2 * i], bmax = bounds[2 * i + 1];
+            //int bmin = 0, bmax = n - 1;
 
-            while (bmin < bmax && sortedxcol[bmin] < tcol[i] - thresh)
-                bmin++;
+            // We must be able to shift the bounds in both directions as T will shift during registration.
+            if (sortedxcol[bmin] < tcol[i] - thresh) {
+                while (bmin < bmax && sortedxcol[bmin] < tcol[i] - thresh)
+                    bmin++;
+            }
+            else {
+                while (bmin > 0 && sortedxcol[bmin] > tcol[i] - thresh)
+                    bmin--;
+            }
 
-            while (bmin < bmax && sortedxcol[bmax] > tcol[i] + thresh)
-                bmax--;
+            if (sortedxcol[bmax] > tcol[i] + thresh) {
+                while (bmin < bmax && sortedxcol[bmax] > tcol[i] + thresh)
+                    bmax--;
+            }
+            else {
+                while (bmax < n && sortedxcol[bmax] < tcol[i] + thresh)
+                    bmax++;
+            }
 
             bounds[2 * i] = bmin;
             bounds[2 * i + 1] = bmax;
