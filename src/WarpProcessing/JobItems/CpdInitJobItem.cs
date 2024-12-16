@@ -10,10 +10,10 @@ namespace Warp9.JobItems
     public class CpdInitJobItem : ProjectJobItem
     {
         public CpdInitJobItem(int index, long specTableKey, int baseIndex, string meshColumn, string result) :
-            this(index, specTableKey, null, baseIndex, meshColumn, result)
+            this(index, specTableKey, null, baseIndex, meshColumn, result, null)
         { }
 
-        public CpdInitJobItem(int index, long specTableKey, string? gpaItem, int baseIndex, string meshColumn, string result) :
+        public CpdInitJobItem(int index, long specTableKey, string? gpaItem, int baseIndex, string meshColumn, string result, CpdConfiguration? cpdCfg) :
             base(index, "CPD initialization", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
@@ -21,6 +21,16 @@ namespace Warp9.JobItems
             BaseMeshIndex = baseIndex;
             InitObjectItem = result;
             MeshColumn = meshColumn;
+
+            if (cpdCfg is null)
+            {
+                CpdConfig = new CpdConfiguration();
+                CpdConfig.UseGpu = true;
+            }
+            else
+            {
+                CpdConfig = cpdCfg;
+            }
         }
 
         public long SpecimenTableKey { get; init; }
@@ -28,6 +38,7 @@ namespace Warp9.JobItems
         public string MeshColumn { get; init; }
         public int BaseMeshIndex { get; init; }
         public string InitObjectItem { get; init; }
+        public CpdConfiguration CpdConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
@@ -64,9 +75,7 @@ namespace Warp9.JobItems
                 }
             }
 
-            CpdConfiguration cpdCfg = new CpdConfiguration();
-            cpdCfg.UseGpu = true;
-
+            CpdConfiguration cpdCfg = CpdConfig;
             WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, cpdCfg);
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
             {
