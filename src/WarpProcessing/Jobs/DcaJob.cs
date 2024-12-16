@@ -60,7 +60,7 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
 
                 case DcaNonrigidRegistrationKind.LowRankCpd:
-                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, baseMeshIndex, meshColumn, NonrigidInitKey);
+                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, baseMeshIndex, meshColumn, NonrigidInitKey, cfg.CpdConfig);
                     yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     for (int i = 0; i < numSpecs; i++)
                     {
