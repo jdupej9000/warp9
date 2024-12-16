@@ -63,18 +63,20 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     auto t0 = std::chrono::high_resolution_clock::now();
 
     bool use_cuda = cpd->flags & CPD_USE_GPU;
+    bool use_sortedx = !use_cuda;
     const int m = cpd->m, n = cpd->n;
     const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : cpd_lowrank_numcols(m);
     const int tmp_size = cpd_tmp_size(m, n, num_eigs);
 
     // Do not change the order of these arrays. CUDA part relies on this structure.
-    float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m];
+    float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m + 3 * n];
     float* psum = pp;
     float* pt1 = psum + n;
     float* p1 = pt1 + n;
     float* px = p1 + m;
     float* tmp = px + 3 * m;
     float* ttemp = tmp + tmp_size;
+    float* sortedx = ttemp + 3 * m;
 
     float* cuda_ctx = nullptr;
     if (use_cuda) {
@@ -82,6 +84,15 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
             delete[] pp;
             return CPD_CONV_INTERNAL_ERROR;
         }
+    }
+
+    // Truncation window is used only for the CPU implementation.
+    int* trunc_wnd = nullptr;
+    int sortx_by = 0;
+    if (use_sortedx) {
+        trunc_wnd = new int[2 * m];
+        cpd_init_trunc_window(n, m, trunc_wnd);
+        sortx_by = cpd_make_sortedx((const float*)x, n, sortedx);
     }
 
     float sigma2 = cpd->sigma2init;
@@ -147,6 +158,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     auto t1 = std::chrono::high_resolution_clock::now();
 
     delete[] pp;
+    if (trunc_wnd) delete[] trunc_wnd;
 
     if (use_cuda)
         cpd_deinit_cuda(cuda_ctx);

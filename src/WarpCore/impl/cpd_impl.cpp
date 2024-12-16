@@ -1,4 +1,5 @@
 #include "cpd_impl.h"
+#include "pcl_utils.h"
 #include "vec_math.h"
 #include "kmeans.h"
 #include "utils.h"
@@ -7,6 +8,7 @@
 #include <cblas.h>
 #include <algorithm>
 #include <immintrin.h>
+#include <stdlib.h>
 
 namespace warpcore::impl
 {
@@ -14,8 +16,8 @@ namespace warpcore::impl
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
-    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
-    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
+    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1, const int* trunc_wnd);
+    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px, const int* trunc_wnd);
 
 
     int cpd_lowrank_numcols(int m) 
@@ -68,13 +70,14 @@ namespace warpcore::impl
         return reduce_add(tmp, n) / (3 * m * n);
     }
 
-    void cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
+    void cpd_estep(const float* sortedx, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px, int* trunc_wnd, int xsort_by)
     {
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        cpd_psumpt1(m, n, thresh, factor, denom, x, t, psum, pt1);
-        cpd_p1px(m, n, thresh, factor, denom, x, t, psum, p1, px);
+        cpd_narrow_trunc_window(sortedx + n * xsort_by, t + m * xsort_by, m, n, thresh, trunc_wnd);
+        cpd_psumpt1(m, n, thresh, factor, denom, sortedx, t, psum, pt1, trunc_wnd);
+        cpd_p1px(m, n, thresh, factor, denom, sortedx, t, psum, p1, px, trunc_wnd);
     }
 
     float cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
@@ -140,6 +143,71 @@ namespace warpcore::impl
         float ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
         ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
         return ret / (3 * reduce_add(p1, m));
+    }
+
+    int cpd_make_sortedx(const float* x, int n, float* sortedx)
+    {
+        float x01[6]{ FLT_MAX, FLT_MAX, FLT_MAX, FLT_MIN, FLT_MIN, FLT_MIN };
+        pcl_aabb(x, 3, n, x01, x01 + 3);
+
+        float dx[3]{ x01[3] - x01[0], x01[4] - x01[1],x01[5] - x01[2] };
+
+        int sortby = 0;
+        if (dx[1] > dx[sortby]) sortby = 1;
+        if (dx[2] > dx[sortby]) sortby = 2;
+
+        int* order = new int[n];
+        for (int i = 0; i < n; i++)
+            order[i] = i;
+
+        const float* pcol = x + sortby * n;
+        ::qsort_s(order, n, sizeof(int),
+            [](void* pcol, const void* p0, const void* p1) -> int {
+                int i0 = *(const int*)p0;
+                int i1 = *(const int*)p1;
+                const float* pfcol = (const float*)pcol;
+
+                if (pfcol[i0] < pfcol[i1]) return -1;
+                if (pfcol[i0] > pfcol[i1]) return 1;
+                return 0;
+            }, const_cast<float*>(pcol));
+
+        for (int d = 0; d < 3; d++) {
+            const float* col = x + d * n;
+            float* sortedcol = sortedx + d * n;
+
+            for (int i = 0; i < n; i++)
+                sortedcol[i] = col[order[i]];
+        }
+
+        delete[] order;
+        return sortby;
+    }
+
+    void cpd_narrow_trunc_window(const float* sortedxcol, const float* tcol, int m, int n, float thresh, int* bounds)
+    {
+        for (int i = 0; i < m; i++) {
+            int bmin = bounds[0], bmax = bounds[1];
+
+            while (bmin < bmax && sortedxcol[bmin] < tcol[i] - thresh)
+                bmin++;
+
+            while (bmin < bmax && sortedxcol[bmax] > tcol[i] + thresh)
+                bmin--;
+
+            bounds[0] = bmin;
+            bounds[1] = bmax;
+            bounds += 2;
+        }
+    }
+
+    void cpd_init_trunc_window(int n, int m, int* bounds)
+    {
+        for (int i = 0; i < m; i++)
+        {
+            bounds[2 * i] = 0;
+            bounds[2 * i + 1] = n - 1;
+        }
     }
 
     void cpd_samplefirst_g(const float* y, int m, float beta, float* gi)
@@ -268,7 +336,7 @@ namespace warpcore::impl
         }
     }
 
-    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
+    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1, const int* trunc_wnd)
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
@@ -323,7 +391,7 @@ namespace warpcore::impl
         }
     }
 
-    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
+    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px, const int* trunc_wnd)
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
