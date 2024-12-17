@@ -4,6 +4,7 @@ using System.Numerics;
 using Warp9.Data;
 using Warp9.Native;
 using Warp9.Processing;
+using Warp9.Viewer;
 
 namespace Warp9.Test
 {
@@ -126,7 +127,10 @@ namespace Warp9.Test
             Gpa gpa = Gpa.Fit(pcls);
             Console.WriteLine(gpa.ToString());
 
-            TestUtils.Render("GpaTeapotsTest_0.png",
+            HeadlessRenderer rend = TestUtils.CreateRenderer();
+            rend.RasterFormat = new RasterInfo(512, 512);
+            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.5f, 0f, -0.5f);
+            TestUtils.Render(rend, "GpaTeapotsTest_0.png", modelMat,
                (gpa.Mean, Color.White),
                (gpa.GetTransformed(0), Color.DarkRed),
                (gpa.GetTransformed(1), Color.DarkGreen),
