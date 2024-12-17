@@ -122,6 +122,11 @@ namespace Warp9.Test
             return r;
         }
 
+        public static string MakeResultPath(string fileName)
+        {
+            return Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName));
+        }
+
         public static void Render(string fileName, params (PointCloud, Color)[] items)
         {
             Render(CreateRenderer(false), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
@@ -156,7 +161,7 @@ namespace Warp9.Test
                 Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
                 using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 {
-                    string fullPath = Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName));
+                    string fullPath = MakeResultPath(fileName);
                     bmp.Save(fullPath);
                     Console.WriteLine("Saved " + fullPath);
                 }

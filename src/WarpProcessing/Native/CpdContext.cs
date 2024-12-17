@@ -75,6 +75,8 @@ namespace Warp9.Native
         public int NumVertices => cpdInfo.m;
         public int NumEigenvectors => cpdInfo.neigen;
 
+        public ReadOnlySpan<byte> NativeInitData => cpdInitData.AsSpan();
+
         public WarpCoreStatus Register(PointCloud pclTarget, out PointCloud? pclBent, out CpdResult result)
         {
             CpdInfo info = cpdInfo;

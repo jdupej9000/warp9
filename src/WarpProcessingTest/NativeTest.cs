@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 using Warp9.Data;
 using Warp9.Native;
 using Warp9.Processing;
@@ -77,6 +80,27 @@ namespace Warp9.Test
             Assert.IsNotNull(ctx);
 
             Console.WriteLine(ctx.ToString());
+
+            int neig = ctx.NumEigenvectors;
+            int m = pcl.VertexCount;
+            ReadOnlySpan<float> initData = MemoryMarshal.Cast<byte, float>(ctx.NativeInitData);
+            ReadOnlySpan<float> lambda = initData.Slice(0, neig);
+            ReadOnlySpan<float> q = initData.Slice(m * 2);
+
+            Console.WriteLine("Eigenvalues: " +
+                string.Join(", ", lambda.ToArray().Select((l) => l.ToString())));
+
+            /*StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < neig - 1; j++)
+                    sb.Append(q[j * m + i].ToString() + ",");
+
+                sb.Append(q[(neig-1) * m + i].ToString());
+                sb.AppendLine();
+            }
+
+            File.WriteAllText(TestUtils.MakeResultPath("CpdInitDefaultTest_0.txt"), sb.ToString());*/
         }
 
         [TestMethod]

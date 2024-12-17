@@ -43,9 +43,6 @@ namespace warpcore::impl
             centerIdx[i] = nearest<3>(y, m, ci);
         }
 
-        // Sample matrix G at centerIdx.
-        //cpd_samplefirst_g(y, m, beta, q);
-
         for(int i = 0; i < k; i++)
             cpd_sample_g(y, m, centerIdx[i], beta, q + i * m);
 
