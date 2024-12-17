@@ -91,6 +91,7 @@ namespace Warp9.Test
             WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, cpdCfg);
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
             Assert.IsNotNull(ctx);
+            Console.WriteLine(ctx.ToString());
 
             WarpCoreStatus regStat = ctx.Register(pclTarget, out PointCloud? pclBent, out CpdResult result);
             Console.WriteLine(result.ToString());
@@ -251,9 +252,6 @@ namespace Warp9.Test
         {
             PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly).ToPointCloud();
             Clustering.FitKMeans(pcl, 100, out int[] labels, out Vector3[] centers);
-
-            foreach (Vector3 c in centers)
-                Console.WriteLine(c.ToString());
 
             int n = pcl.VertexCount;
             for (int i = 0; i < n; i++)

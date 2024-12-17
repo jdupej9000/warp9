@@ -4,6 +4,7 @@
 #include <float.h>
 #include "random.h"
 #include <cstring>
+#include <stdio.h>
 #include "utils.h"
 
 namespace warpcore::impl
@@ -84,6 +85,7 @@ namespace warpcore::impl
         if(convCount < 0)
             convCount = n / 1000;
 
+        float row[NDim];
         int* ci = new int[k];
         float* d = new float[2 * n];
         float* dc = d + n;
@@ -111,7 +113,9 @@ namespace warpcore::impl
 
             changed = 0;
             for(int i = 0; i < n; i++) {
-                const int j = nearest<NDim>(x, ci, n, k, i);
+                get_row<float, NDim>(x, n, i, row);
+                const int j = nearest<NDim>(cent, k, row);
+                //const int j = nearest<NDim>(x, ci, n, k, i); // ci are not centroid indices!!!
                 if(j != label[i]) {
                     label[i] = j;
                     changed++;
