@@ -156,7 +156,9 @@ namespace Warp9.Test
                 Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
                 using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 {
-                    bmp.Save(Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName)));
+                    string fullPath = Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName));
+                    bmp.Save(fullPath);
+                    Console.WriteLine("Saved " + fullPath);
                 }
             }
         }
