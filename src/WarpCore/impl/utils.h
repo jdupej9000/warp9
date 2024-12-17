@@ -117,7 +117,6 @@ namespace warpcore::impl
 		}
     }
 
-    
     template<int NDim>
     inline float distsq(const float* x, int n, int i0, int i1)
     {
@@ -181,5 +180,21 @@ namespace warpcore::impl
         }
 
         return retIdx;
+    }
+
+    template<int NDim>
+    inline int nearest(const float* x, int* ci, int n, int k, int i)
+    {
+        float d = FLT_MAX;
+        int c = 0;
+        for (int j = 0; j < k; j++) {
+            const float d0 = distsq<NDim>(x, n, i, ci[j]);
+            if (d0 < d) {
+                d = d0;
+                c = j;
+            }
+        }
+
+        return c;
     }
 }

@@ -115,7 +115,6 @@ namespace warpcore::impl
         }
         
         rms += reduce_add(rms_accum);
-
         return sqrtf(rms / m);
     }
 
@@ -125,5 +124,4 @@ namespace warpcore::impl
             reduce_minmax(x + i * m, m, x0 + i, x1 + i);
         }
     }
-
 };

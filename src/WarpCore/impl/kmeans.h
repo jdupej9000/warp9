@@ -9,35 +9,17 @@
 
 namespace warpcore::impl
 {
-    template<int NDim>
-    inline int nearest(const float* x, int* ci, int n, int k, int i)
-    {
-        float d = FLT_MAX;
-        int c = 0;
-
-        for(int j = 0; j < k; j++) {
-            const float d0 = distsq<NDim>(x, n, i, ci[j]);
-
-            if(d0 < d) {
-                d = d0;
-                c = j;
-            }
-        }
-
-        return c;  
-    }
-
-/**
- * @brief K-means++ initialization algorithm. Adapted from https://rosettacode.org/wiki/K-means%2B%2B_clustering#C
- * 
- * @param x Input data organized as a column-major matrix where rows are data points.
- * @param n Number of data points.
- * @param k Number of clusters.
- * @param ci Cluster center indices. This must be preallocated to k integers.
- * @param label Output cluster labels. This must be preallocated to n integers.
- * @param d Temporary storage for distances. This must be preallocated to n floats.
- * @param dc Temporary storage for cumulative distances. This must be preallocated to n floats.
- */
+    /**
+     * @brief K-means++ initialization algorithm. Adapted from https://rosettacode.org/wiki/K-means%2B%2B_clustering#C
+     * 
+     * @param x Input data organized as a column-major matrix where rows are data points.
+     * @param n Number of data points.
+     * @param k Number of clusters.
+     * @param ci Cluster center indices. This must be preallocated to k integers.
+     * @param label Output cluster labels. This must be preallocated to n integers.
+     * @param d Temporary storage for distances. This must be preallocated to n floats.
+     * @param dc Temporary storage for cumulative distances. This must be preallocated to n floats.
+     */
     template<int NDim>
     void kmeanspp(const float* x, int n, int k, int* ci, int* label, float* d, float* dc)
     {
@@ -48,17 +30,13 @@ namespace warpcore::impl
             d[i] = FLT_MAX;
 
         for(int c = 1; c < k; c++) {
-
-            // For each point find its closest distance to any of the previous cluster centers.
             for(int j = 0; j < n; j++) {
                 const float dd = distsq<NDim>(x, n, j, ci[c-1]);
-
                 if(dd < d[j])
                     d[j] = dd;
             }
 
             const float sum = cumsum(d, n, dc);
-
             const float r = rand_xorshift32(rnd) / (float)UINT32_MAX * sum;
             ci[c] = binary_search(dc, n, r);
         }
@@ -92,7 +70,6 @@ namespace warpcore::impl
 
         kmeanspp<NDim>(x, n, k, ci, label, d, dc);
         int it = 0, changed = 0;
-
         do {
             std::memset(cent, 0, sizeof(float) * NDim * k);
             std::memset(ci, 0, sizeof(int) * k);
@@ -115,7 +92,6 @@ namespace warpcore::impl
             for(int i = 0; i < n; i++) {
                 get_row<float, NDim>(x, n, i, row);
                 const int j = nearest<NDim>(cent, k, row);
-                //const int j = nearest<NDim>(x, ci, n, k, i); // ci are not centroid indices!!!
                 if(j != label[i]) {
                     label[i] = j;
                     changed++;
