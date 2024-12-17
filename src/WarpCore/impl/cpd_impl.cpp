@@ -163,7 +163,7 @@ namespace warpcore::impl
         const __m256 ef8 = _mm256_set1_ps(ef);
       
         const int mch = round_down(m, 8);
-        for(int i = 0; i < mch; i += 8) {
+       /* for(int i = 0; i < mch; i += 8) {
             __m256 d = _mm256_setzero_ps();
             
             for(int j = 0; j < 3; j++) {
@@ -173,9 +173,9 @@ namespace warpcore::impl
 
             const __m256 t = expf_fast(_mm256_mul_ps(d, ef8));
             _mm256_storeu_ps(gi + i, t);
-        }
+        }*/
 
-        for(int i = mch; i < m; i++) {
+        for(int i = 0/*mch*/; i < m; i++) {
             float d = 0;
             for(int j = 0; j < 3; j++) {
                 const float dj = y[j*m+i] - y[j*m+col];
@@ -196,7 +196,7 @@ namespace warpcore::impl
         for(int i = 0; i < m; i++) {
             get_row<float, 3>(y, m, i, yi);
 
-            for(int j = 0; j < m8; j+= 8) {
+            /*for(int j = 0; j < m8; j+= 8) {
                 __m256 d2 = _mm256_setzero_ps();
 
                 for(int l = 0; l < 3; l++) {
@@ -213,9 +213,9 @@ namespace warpcore::impl
 
                     lambda[l] += reduce_add(lj);
                 }
-            }
+            }*/
 
-            for(int j = m8; j < m; j++) {
+            for(int j = 0 /* m8*/; j < m; j++) {
                 float d2 = 0;
                 for(int l = 0; l < 3; l++) {
                     const float dj = yi[l] - y[j + l*m];
