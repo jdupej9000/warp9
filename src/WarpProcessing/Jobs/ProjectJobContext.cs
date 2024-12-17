@@ -21,9 +21,16 @@ namespace Warp9.Jobs
 
         public void WriteLog(int jobItemIndex, MessageKind kind, string message)
         {
-            string fmtMsg = string.Format("{0}: {1}> {2}", 
-                DateTime.Now.ToString("HH:mm:ss.fff"),
-                jobItemIndex, message);
+            string fmtMsg;
+
+            if (jobItemIndex < 0)
+                fmtMsg = string.Format("{0}: {1}",
+                    DateTime.Now.ToString("HH:mm:ss.fff"),
+                    message);
+            else
+                fmtMsg = string.Format("{0}: {1}> {2}",
+                    DateTime.Now.ToString("HH:mm:ss.fff"),
+                    jobItemIndex, message);
 
             if (LogMessage != null)
                 LogMessage(this, fmtMsg);

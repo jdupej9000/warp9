@@ -61,6 +61,7 @@ namespace Warp9.Jobs
         {
             IJobContext ctx = job.Context ?? throw new ArgumentNullException(nameof(job));
             while (!job.IsCompleted && job.TryExecuteNext()) ;
+            WriteCompletionToLog(job);
             return ctx;
         }
 
@@ -75,12 +76,27 @@ namespace Warp9.Jobs
                 contexts[i].Notification.Set();
         }
 
+        private static void WriteCompletionToLog(IJob job)
+        {
+            if (job.Context is null)
+                return;
+
+            job.Context.WriteLog(-1, MessageKind.Information,
+                string.Format("{0} job items queued, {1} succeeded, {2} failed.", job.NumItems, job.NumItemsDone, job.NumItemsFailed));
+
+            if (job.IsFatallyFailed)
+                job.Context.WriteLog(-1, MessageKind.Error, "The job has FAILED.");
+            else
+                job.Context.WriteLog(-1, MessageKind.Information, "The job has finished successfully.");
+        }
+
         private void JobStatusChanged(IJob job)
         {
             lock (contextLock)
             {
                 if (job.IsCompleted)
                 {
+                    WriteCompletionToLog(job);
                     job.DetachContext();
                     finishedJobs.Add(job);
                     jobs.Remove(job);

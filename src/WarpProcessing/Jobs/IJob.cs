@@ -11,6 +11,7 @@ namespace Warp9.Jobs
         public int NumItemsDone { get; }
         public int NumItemsFailed { get; }
         public bool IsCompleted { get; }
+        public bool IsFatallyFailed { get; }
 
         public IJobContext? Context { get; }
 

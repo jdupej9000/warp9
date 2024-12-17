@@ -37,6 +37,7 @@ namespace Warp9.Jobs
         public int NumItemsDone => itemsDone;
         public int NumItemsFailed => itemsFailed;
         public bool IsCompleted => status == JobExecutionStatus.Done || status == JobExecutionStatus.Failed;
+        public bool IsFatallyFailed => status == JobExecutionStatus.Failed;
 
         /// <summary>
         /// Tries to pick the next job item to be executed and execute it.
