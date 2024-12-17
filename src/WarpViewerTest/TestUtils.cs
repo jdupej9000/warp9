@@ -14,17 +14,20 @@ namespace Warp9.Test
     {
         public static readonly string AssetsPath = @"../../test/data/";
 
-        public static int FindAdapter()
+        public static int FindAdapter(bool prefeerNvidia = true)
         {
             var adapters = RendererBase.EnumAdapters();
             int adapterIdx = 0;
 
-            foreach (var kvp in adapters)
+            if (prefeerNvidia)
             {
-                if (kvp.Value.Contains("nvidia", StringComparison.InvariantCultureIgnoreCase))
+                foreach (var kvp in adapters)
                 {
-                    adapterIdx = kvp.Key;
-                    break;
+                    if (kvp.Value.Contains("nvidia", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        adapterIdx = kvp.Key;
+                        break;
+                    }
                 }
             }
 
@@ -77,9 +80,9 @@ namespace Warp9.Test
             return bmp;
         }
 
-        public static HeadlessRenderer CreateRenderer()
+        public static HeadlessRenderer CreateRenderer(bool preferNvidia=true)
         {
-            int adapterIdx = FindAdapter();
+            int adapterIdx = FindAdapter(preferNvidia);
             Assert.IsTrue(HeadlessRenderer.TryCreate(adapterIdx, out HeadlessRenderer? r));
             Assert.IsNotNull(r);
 
@@ -121,7 +124,7 @@ namespace Warp9.Test
 
         public static void Render(string fileName, params (PointCloud, Color)[] items)
         {
-            Render(CreateRenderer(), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
+            Render(CreateRenderer(false), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
         }
 
         public static void Render(HeadlessRenderer rend, string fileName, Matrix4x4 modelMat, params (PointCloud, Color)[] items)
