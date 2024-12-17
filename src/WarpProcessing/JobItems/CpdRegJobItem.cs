@@ -37,26 +37,9 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            PointCloud? pcl = ModelUtils.LoadSpecimenTableRef<PointCloud>(ctx.Project, column, MeshIndex);
-            if (pcl is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error,
-                    string.Format("Cannot load point cloud '{0}'.", MeshIndex));
+            if(!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? pcl) || pcl is null)
                 return false;
-            }
-
-            if (GpaItem is not null)
-            {
-                if (!ctx.Workspace.TryGet(GpaItem, out Gpa? gpa) || gpa is null)
-                {
-                    ctx.WriteLog(ItemIndex, MessageKind.Error, "GPA is invalid.");
-                    return false;
-                }
-
-                Rigid3 transform = gpa.GetTransform(MeshIndex);
-                pcl = RigidTransform.TransformPosition(pcl, transform);
-            }
-
+         
             if (!ctx.Workspace.TryGet(InitItem, out CpdContext? cpdContext) || cpdContext is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization is invalid.");

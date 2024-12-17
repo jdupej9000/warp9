@@ -54,26 +54,8 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            PointCloud? baseMesh = ModelUtils.LoadSpecimenTableRef<Mesh>(ctx.Project, column, BaseMeshIndex);
-            if (baseMesh is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load base mesh.");
+            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, BaseMeshIndex, GpaItem, out Mesh? baseMesh) || baseMesh is null)
                 return false;
-            }
-
-            if (GpaItem is not null)
-            {
-                if (!ctx.Workspace.TryGet(GpaItem, out Gpa? gpa) || gpa is null)
-                    return false;
-
-                Rigid3 transform = gpa.GetTransform(BaseMeshIndex);
-                baseMesh = RigidTransform.TransformPosition(baseMesh, transform);
-                if (baseMesh is null)
-                {
-                    ctx.WriteLog(ItemIndex, MessageKind.Error, "Failed to transform base mesh.");
-                    return false;
-                }
-            }
 
             CpdConfiguration cpdCfg = CpdConfig;
             WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, cpdCfg);

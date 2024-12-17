@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Native;
@@ -42,12 +43,12 @@ namespace Warp9.JobItems
             }
 
             // we need this to copy triangle indices from (only the reference is copied)
-            if (!ctx.TryGetSpecTableMesh(SpecimenTableKey, MeshColumn, MeshIndex, out Mesh? baseMesh) ||
+            /*if (!ctx.TryGetSpecTableMesh(SpecimenTableKey, MeshColumn, MeshIndex, out Mesh? baseMesh) ||
                 baseMesh is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load base mesh.");
                 return false;
-            }
+            }*/
 
             if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, GridSize, out SearchContext? searchCtx) || searchCtx is null)
             {
@@ -67,6 +68,8 @@ namespace Warp9.JobItems
             int nv = pclNonrigid.VertexCount;
             ResultInfoDPtBary[] proj = new ResultInfoDPtBary[nv];
             int[] hitIndex = new int[nv];
+
+            MeshView view = pclNonrigid.GetView(MeshViewKind.Pos3f, false);
 
             bool ret = false;
             if (pclNonrigid.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
