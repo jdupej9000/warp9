@@ -188,46 +188,44 @@ namespace warpcore::impl
 
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda)
     {
+        const __m256i order = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         const float ef = -0.5f / (beta * beta);
         const __m256 ef8 = _mm256_set1_ps(ef);
-        const int m8 = round_down(m, 8);
-        float yi[3];
 
-        for(int i = 0; i < m; i++) {
-            get_row<float, 3>(y, m, i, yi);
+        __m256* lambda8 = new __m256[k];
+        memset(lambda8, 0, sizeof(__m256) * k);
+      
+        for (int i = 0; i < m; i++) {
+            const __m256 yi0 = _mm256_broadcast_ss(y + i);
+            const __m256 yi1 = _mm256_broadcast_ss(y + i + m);
+            const __m256 yi2 = _mm256_broadcast_ss(y + i + 2 * m);
 
-            /*for(int j = 0; j < m8; j+= 8) {
-                __m256 d2 = _mm256_setzero_ps();
+            for (int j = 0; j < m; j+=8) {
+                const __m256 jmask = _mm256_castsi256_ps(_mm256_cmpgt_epi32(_mm256_set1_epi32(m - j), order));
 
-                for(int l = 0; l < 3; l++) {
-                    const __m256 dj = _mm256_sub_ps(_mm256_broadcast_ss(yi + l), _mm256_loadu_ps(y + l*m + j));
-                    d2 = _mm256_fmadd_ps(dj, dj, d2);
-                }
+                const __m256 d0 = _mm256_sub_ps(yi0, _mm256_loadu_ps(y + j));
+                const __m256 d1 = _mm256_sub_ps(yi1, _mm256_loadu_ps(y + j + m));
+                const __m256 d2 = _mm256_sub_ps(yi2, _mm256_loadu_ps(y + j + 2 * m));
 
-                const __m256 g = expf_fast(_mm256_mul_ps(d2, ef8));
+                __m256 dist = _mm256_mul_ps(d0, d0);
+                dist = _mm256_fmadd_ps(d1, d1, dist);
+                dist = _mm256_fmadd_ps(d2, d2, dist);
 
-                for(int l = 0; l < k; l++) {
-                    __m256 lj = _mm256_mul_ps(
-                        _mm256_mul_ps(g, _mm256_loadu_ps(q + j + l*m)),
-                        _mm256_broadcast_ss(q + i + l*m));
+                __m256 g = expf_fast(_mm256_mul_ps(dist, ef8));
+                g = _mm256_and_ps(g, jmask); // g[m..] := 0
 
-                    lambda[l] += reduce_add(lj);
-                }
-            }*/
-
-            for(int j = 0 /* m8*/; j < m; j++) {
-                float d2 = 0;
-                for(int l = 0; l < 3; l++) {
-                    const float dj = yi[l] - y[j + l*m];
-                    d2 += dj * dj;
-                }
-                float g = expf(ef * d2);
-
-                for(int l = 0; l < k; l++) {
-                    lambda[l] += g * q[j + l*m] * q[i + l*m];
+                for (int l = 0; l < k; l++) {
+                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(q + j + l * m)), 
+                        _mm256_broadcast_ss(q + i + l * m), 
+                        lambda8[l]);
                 }
             }
         }
+
+        for (int l = 0; l < k; l++)
+            lambda[l] = reduce_add(lambda8[l]);
+
+        delete[] lambda8;
     }
 
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial)
