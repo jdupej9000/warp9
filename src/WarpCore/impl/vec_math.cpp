@@ -201,36 +201,16 @@ namespace warpcore::impl
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A
-
         int m2 = round_down(m, 2);
         int n8 = round_down(n, 8);
-        __m256 alpha8 = _mm256_set1_ps(alpha);
-
-        /*for (int i = 0; i < m; i++) {
-            for (int j = i; j < m; j++) {
-                float acc = 0;
-
-                for (int k = 0; k < n; k++)
-                    acc += b[k] * a[i * n + k] * a[j * n + k];
-
-                acc *= alpha;
-
-                y[i * m + j] = acc;
-                y[j * m + i] = acc;
-            }
-        }*/
-
+      
         for(int i = 0; i < m; i++) {
             int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
-            //int m2i = 0;
             for(int j = i; j < m2i; j+=2) {
                 __m256 a0 = _mm256_setzero_ps();
                 __m256 a1 = _mm256_setzero_ps();
-                
                 for(int k = 0; k < n8; k+=8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), 
-                        _mm256_mul_ps(alpha8, _mm256_loadu_ps(b + k)));
-
+                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                     a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j+1) * n), a1);
                 }
@@ -238,10 +218,13 @@ namespace warpcore::impl
                 float aa0 = reduce_add(a0);
                 float aa1 = reduce_add(a1);
                 for(int k = n8; k < n; k++) {
-                    const float aai = alpha * a[k + i * n] * b[k];
+                    const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
                 }
+
+                aa0 *= alpha;
+                aa1 *= alpha;
 
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
@@ -251,19 +234,18 @@ namespace warpcore::impl
 
             for(int j = m2i; j < m; j++) {
                 __m256 a0 = _mm256_setzero_ps();
-                
                 for(int k = 0; k < n8; k+=8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), 
-                        _mm256_mul_ps(alpha8, _mm256_loadu_ps(b + k)));
-
+                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                 }
 
                 float aa0 = reduce_add(a0);
                 for(int k = n8; k < n; k++) {
-                    const float aai = alpha * a[k + i * n] * b[k];
+                    const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
+
+                aa0 *= alpha;
 
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
