@@ -82,31 +82,55 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
 
 __global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, float denomAdd, float* ctx)
 {
-    int i = threadIdx.x + blockIdx.x * BLOCK_SIZE;
+    __shared__ float t012[4 * BLOCK_SIZE];
 
+    int thread = threadIdx.x;
+    int i = thread + blockIdx.x * BLOCK_SIZE;
+
+    float* x = ctx;
+    float* t = x + 3 * n;
+    float* pt1 = t + 3 * m;
+    float* p1 = pt1 + n;
+    float* px = p1 + m;
+    float* psum = px + 3 * m;
+
+    float sum = 0;
+    float x0 = 0, x1 = 0, x2 = 0;
     if (i < n) {
-        float* x = ctx;
-        float* t = x + 3 * n;
-        float* pt1 = t + 3 * m;
-        float* p1 = pt1 + n;
-        float* px = p1 + m;
-        float* psum = px + 3 * m;
+        x0 = x[0 * n + i];
+        x1 = x[1 * n + i];
+        x2 = x[2 * n + i];
+    }
 
-        float sum = 0;
-        const float x0 = x[0 * n + i];
-        const float x1 = x[1 * n + i];
-        const float x2 = x[2 * n + i];
+    for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
+        int mb = __min(m, jb + BLOCK_SIZE);
 
-        for (int j = 0; j < m; j++) {
-            float d0 = x0 - t[0 * m + j];
-            float d1 = x1 - t[1 * m + j];
-            float d2 = x2 - t[2 * m + j];
-            float dist = __fmaf_rz(d0, d0, __fmaf_rz(d1, d1, __fmul_rz(d2, d2)));
+        int jthread = jb + thread;
+        t012[4 * thread + 0] = t[0 * m + jthread];
+        t012[4 * thread + 1] = t[1 * m + jthread];
+        t012[4 * thread + 2] = t[2 * m + jthread];
+        // 4th element is a dummy
 
-            if (dist < thresh)
-                sum += __expf(expFactor * dist);
+        __syncthreads();
+
+        if (i < n) {
+            for (int j = jb; j < mb; j++) {
+                int jj = j - jb;
+
+                float d0 = x0 - t012[4 * jj + 0];
+                float d1 = x1 - t012[4 * jj + 1];
+                float d2 = x2 - t012[4 * jj + 2];
+                float dist = __fmaf_rz(d0, d0, __fmaf_rz(d1, d1, __fmul_rz(d2, d2)));
+
+                if (dist < thresh)
+                    sum += __expf(expFactor * dist);
+            }
         }
 
+        __syncthreads();
+    }
+
+    if (i < n) {
         psum[i] = 1.0f / (sum + denomAdd);
         pt1[i] = sum / (sum + denomAdd);
     }
