@@ -134,9 +134,9 @@ namespace Warp9.Test
             ComparePcls(pclBent, pcl);
 
             TestUtils.Render(string.Format("CpdRegDefaultTest_{0}_0.png", useGpu ? "cuda" : "cpu"),
-                (pcl.ToPointCloud(), Color.Red),
-                (pclTarget, Color.Green),
-                (pclBent, Color.White));
+                new TestRenderItem(TriStyle.PointCloud, pcl, wireCol:Color.Red),
+                new TestRenderItem(TriStyle.PointCloud, pclTarget, wireCol:Color.Green),
+                new TestRenderItem(TriStyle.PointCloud, pclBent, wireCol:Color.White));
         }
 
         [TestMethod]
@@ -155,10 +155,10 @@ namespace Warp9.Test
             rend.RasterFormat = new RasterInfo(512, 512);
             Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.5f, 0f, -0.5f);
             TestUtils.Render(rend, "GpaTeapotsTest_0.png", modelMat,
-               (gpa.Mean, Color.White),
-               (gpa.GetTransformed(0), Color.DarkRed),
-               (gpa.GetTransformed(1), Color.DarkGreen),
-               (gpa.GetTransformed(2), Color.DarkBlue));
+               new TestRenderItem(TriStyle.PointCloud, gpa.Mean, wireCol: Color.White),
+               new TestRenderItem(TriStyle.PointCloud, gpa.GetTransformed(0), wireCol: Color.DarkRed),
+               new TestRenderItem(TriStyle.PointCloud, gpa.GetTransformed(1), wireCol: Color.DarkGreen),
+               new TestRenderItem(TriStyle.PointCloud, gpa.GetTransformed(2), wireCol: Color.DarkBlue));
         }
 
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
@@ -278,7 +278,7 @@ namespace Warp9.Test
         [TestMethod]
         public void TeapotKMeansTest()
         {
-            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly).ToPointCloud();
+            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             Clustering.FitKMeans(pcl, 100, out int[] labels, out Vector3[] centers);
 
             int n = pcl.VertexCount;
@@ -291,8 +291,8 @@ namespace Warp9.Test
             PointCloud pclK = builder.ToPointCloud();
 
             TestUtils.Render("TeapotKMeansTest_0.png",
-              (pcl, Color.FromArgb(16,16,16)),
-              (pclK, Color.Red));
+              new TestRenderItem(TriStyle.PointCloud, pcl, wireCol: Color.FromArgb(16,16,16)),
+              new TestRenderItem(TriStyle.PointCloud, pclK, wireCol:Color.Red));
         }
     }
 }

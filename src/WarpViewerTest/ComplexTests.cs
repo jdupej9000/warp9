@@ -63,7 +63,7 @@ namespace Warp9.Test
             renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
             renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
-            renderItemMesh.Color = Color.LimeGreen;
+            renderItemMesh.FillColor = Color.LimeGreen;
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;
@@ -83,8 +83,9 @@ namespace Warp9.Test
             renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
             renderItemMesh.Style = MeshRenderStyle.ColorFlat;
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
-            renderItemMesh.Color = Color.White;
-            renderItemMesh.RenderAsPoints = true;
+            renderItemMesh.PointWireColor = Color.White;
+            renderItemMesh.RenderFace = false;
+            renderItemMesh.RenderPoints = true;
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;
@@ -92,6 +93,29 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderTeapotPointsTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderTeapotWithPointTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            renderItemMesh.FillColor = Color.DimGray;
+            renderItemMesh.PointWireColor = Color.Red;
+            renderItemMesh.RenderFace = true;
+            renderItemMesh.RenderPoints = true;
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotWithPointTest_0.png", bmp);
         }
 
         [TestMethod]
@@ -114,7 +138,7 @@ namespace Warp9.Test
             renderItemMesh.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals | MeshRenderStyle.ShowValueLevel;
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
             renderItemMesh.LevelValue = 0.65f;
-            renderItemMesh.Color = Color.Red;
+            renderItemMesh.FillColor = Color.Red;
             renderItemMesh.SetValueField(v);
             rend.AddRenderItem(renderItemMesh);
 
@@ -134,7 +158,7 @@ namespace Warp9.Test
             renderItemMesh.Mesh = TestUtils.LoadObjAsset("suzanne.obj", IO.ObjImportMode.AllUnshared);
             renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn;
             renderItemMesh.ModelMatrix = Matrix4x4.CreateScale(1.5f);
-            renderItemMesh.Color = Color.Gray;
+            renderItemMesh.FillColor = Color.Gray;
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;

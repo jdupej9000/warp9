@@ -117,6 +117,7 @@ namespace Warp9.Viewer
         public static DepthStencilState CreateDepthState(Device device, DepthMode mode)
         {
             DepthStencilStateDescription desc = new DepthStencilStateDescription();
+            desc.DepthComparison = Comparison.LessEqual;
 
             if (mode.HasFlag(DepthMode.NoDepth))
                 desc.IsDepthEnabled = false;

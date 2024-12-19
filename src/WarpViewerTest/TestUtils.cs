@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SharpDX.Diagnostics;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -10,6 +11,73 @@ using Warp9.Viewer;
 
 namespace Warp9.Test
 {
+    public enum TriStyle
+    {
+        PointCloud,
+        MeshFilled,
+        MeshWire,
+        Landmarks
+    }
+
+    public class TestRenderItem
+    {
+        public TestRenderItem(TriStyle style, object data, Color? col = null, Color? wireCol = null, MeshRenderStyle? mrs = null)
+        {
+            Data = data;
+            Style = style;
+            Color = col ?? Color.Gray;
+            WireColor = wireCol ?? Color.White;
+
+            MeshStyle = mrs ?? style switch
+            {
+                TriStyle.PointCloud => MeshRenderStyle.ColorFlat,
+                TriStyle.MeshFilled => MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals,
+                TriStyle.MeshWire => MeshRenderStyle.ColorFlat,
+                TriStyle.Landmarks => MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals,
+                _ => throw new ArgumentException()
+            };
+        }
+
+        object Data;
+        TriStyle Style;
+        Color Color, WireColor;
+        MeshRenderStyle MeshStyle;
+
+        public RenderItemBase ToRenderItem()
+        {
+            if (Style == TriStyle.PointCloud || Style == TriStyle.MeshFilled || Style == TriStyle.MeshWire)
+            {
+                RenderItemMesh ri = new RenderItemMesh();
+
+                if (Data is Mesh m)
+                {
+                    ri.Mesh = m;
+                }
+                else if (Data is PointCloud pcl)
+                {
+                    if (Style != TriStyle.PointCloud)
+                        throw new InvalidOperationException();
+
+                    ri.Mesh = Mesh.FromPointCloud(pcl);
+                }
+
+                ri.RenderPoints = Style == TriStyle.PointCloud;
+                ri.RenderWireframe = Style == TriStyle.MeshWire;
+                ri.RenderFace = Style == TriStyle.MeshFilled;
+                ri.RenderBlend = true;
+                ri.RenderCull = true;
+                ri.RenderDepth = true;
+                ri.Style = MeshStyle;                
+                ri.FillColor = Color;
+                ri.PointWireColor = WireColor;
+                return ri;
+            }
+
+            throw new InvalidOperationException();
+        }
+    }
+
+
     public static class TestUtils
     {
         public static readonly string AssetsPath = @"../../test/data/";
@@ -127,37 +195,25 @@ namespace Warp9.Test
             return Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName));
         }
 
-        public static void Render(string fileName, params (PointCloud, Color)[] items)
+        public static void Render(string fileName, params TestRenderItem[] items)
         {
             Render(CreateRenderer(false), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
         }
 
-        public static void Render(HeadlessRenderer rend, string fileName, Matrix4x4 modelMat, params (PointCloud, Color)[] items)
+        public static void Render(HeadlessRenderer rend, string fileName, Matrix4x4 modelMat, params TestRenderItem[] items)
         {
             rend.ClearRenderItems();
             foreach (var i in items)
             {
-                RenderItemMesh renderItemMesh = new RenderItemMesh();
-                renderItemMesh.ModelMatrix = modelMat;
-
-                if (i.Item1 is Mesh m)
-                {
-                    renderItemMesh.Mesh = m;
-                    renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
-                }
-                else if (i.Item1 is PointCloud p)
-                {
-                    renderItemMesh.Mesh = Mesh.FromPointCloud(p);
-                    renderItemMesh.Style = MeshRenderStyle.ColorFlat;
-                    renderItemMesh.RenderAsPoints = true;
-                }
-
-                renderItemMesh.Color = i.Item2;
-                rend.AddRenderItem(renderItemMesh);
-
-                rend.CanvasColor = Color.Black;
-                rend.Present();
+                RenderItemBase rib = i.ToRenderItem();
+                if (rib is RenderItemMesh rim)
+                    rim.ModelMatrix = modelMat;
+               
+                rend.AddRenderItem(rib);
             }
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
 
             Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
             using (Bitmap bmp = rend.ExtractColorAsBitmap())

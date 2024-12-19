@@ -112,7 +112,7 @@ namespace Warp9.Viewer
 
            
 
-            meshRend.Color = Color.Gray;
+            meshRend.FillColor = Color.Gray;
         }
 
         protected void OnPropertyChanged(string name)

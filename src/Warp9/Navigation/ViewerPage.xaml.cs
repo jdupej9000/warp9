@@ -173,7 +173,7 @@ namespace Warp9.Navigation
                 (args.RenderingTime - lastRender).TotalSeconds >= 1.0)
             {
                 if (meshRend is not null)
-                    meshRend.Color = System.Drawing.Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
+                    meshRend.FillColor = System.Drawing.Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
 
                 InteropImage.RequestRender();
                 lastRender = args.RenderingTime;

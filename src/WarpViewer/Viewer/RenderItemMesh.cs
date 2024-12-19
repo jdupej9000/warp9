@@ -33,16 +33,47 @@ namespace Warp9.Viewer
         Lut? lut;
         float[]? valueBuffer;
         float levelValue;
-        Color color;
+        Color fillColor, pointWireColor;
         Matrix4x4? modelMatrix;
         MeshRenderStyle style;
         bool constBuffDirty = true;
-        bool renderAsPoints = false;
 
-        public bool RenderAsPoints
+        bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderBlend = false;
+
+        public bool RenderPoints
         {
-            get { return renderAsPoints; }
-            set { renderAsPoints = value; Commit(); }
+            get { return renderPoints; }
+            set { renderPoints = value; constBuffDirty = true; ; }
+        }
+
+        public bool RenderWireframe
+        {
+            get { return renderWire; }
+            set { renderWire = value; constBuffDirty = true; ; }
+        }
+
+        public bool RenderFace
+        {
+            get { return renderFace; }
+            set { renderFace = value; constBuffDirty = true; ; }
+        }
+
+        public bool RenderCull
+        {
+            get { return renderCull; }
+            set { renderCull = value; constBuffDirty = true; ; }
+        }
+
+        public bool RenderDepth
+        {
+            get { return renderDepth; }
+            set { renderDepth = value; constBuffDirty = true; ; }
+        }
+
+        public bool RenderBlend
+        {
+            get { return renderDepth; }
+            set { renderDepth = value; constBuffDirty = true; ; }
         }
 
         public Mesh? Mesh
@@ -68,10 +99,16 @@ namespace Warp9.Viewer
             get { return style; }
             set { style = value; constBuffDirty = true; }
         }
-        public Color Color
+        public Color FillColor
         {
-            get { return color; }
-            set { color = value; constBuffDirty = true; }
+            get { return fillColor; }
+            set { fillColor = value; constBuffDirty = true; }
+        }
+
+        public Color PointWireColor
+        {
+            get { return pointWireColor; }
+            set { pointWireColor = value; constBuffDirty = true; }
         }
 
         public Matrix4x4? ModelMatrix
@@ -116,13 +153,8 @@ namespace Warp9.Viewer
                 job.SetVertexBuffer(ctx, 1, MemoryMarshal.Cast<float, byte>(valueBuffer.AsSpan()), layoutValue);
             }
 
-            DrawCall dcMain;
-            if (renderAsPoints)
-            {
-                dcMain = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.PointList,
-                   0, mesh.VertexCount);
-            }
-            else if (mesh.IsIndexed)
+            DrawCall dcFace, dcWire;
+            if (mesh.IsIndexed)
             {
                 MeshView? indexView = mesh.GetView(MeshViewKind.Indices3i);
                 if (indexView is null)
@@ -132,16 +164,23 @@ namespace Warp9.Viewer
                 }
 
                 job.SetIndexBuffer(ctx, indexView.RawData, SharpDX.DXGI.Format.R32_UInt);
-                dcMain = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                dcFace = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.FaceCount * 3);
+                dcWire = job.SetDrawCall(1, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                   0, mesh.FaceCount * 3);
             }
             else
             {
-                dcMain = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                dcFace = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.VertexCount);
+                dcWire = job.SetDrawCall(1, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
+                   0, mesh.VertexCount);
             }
 
-            dcMain.BlendMode = BlendMode.AlphaBlend;
+            DrawCall dcPoints = job.SetDrawCall(2, false, SharpDX.Direct3D.PrimitiveTopology.PointList,
+                0, mesh.VertexCount);
+
+            UpdateDrawCallSettings(job);
 
             if (lut is not null)
                 job.SetTexture(ctx, 1, lut, false);
@@ -157,12 +196,24 @@ namespace Warp9.Viewer
 
             if (constBuffDirty)
             {
-                PshConst pshConst = new PshConst();
-                pshConst.color = RenderUtils.ToNumColor(color);
-                pshConst.valueLevel = levelValue;
-                pshConst.flags = (uint)style;
-                pshConst.ambStrength = 0.1f;
+                PshConst pshConst = new PshConst
+                {
+                    color = RenderUtils.ToNumColor(fillColor),
+                    valueLevel = levelValue,
+                    flags = (uint)style,
+                    ambStrength = 0.1f
+                };
                 job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
+
+                PshConst pshConstWirePoint = new PshConst
+                {
+                    color = RenderUtils.ToNumColor(pointWireColor),
+                    valueLevel = levelValue,
+                    flags = (uint)(MeshRenderStyle.ColorFlat),
+                    ambStrength = 0.1f
+                };
+                job.SetConstBuffer(1, StockShaders.Name_PshConst, pshConstWirePoint);
+                job.SetConstBuffer(2, StockShaders.Name_PshConst, pshConstWirePoint);
 
                 ModelConst mc = new ModelConst();
                 if (modelMatrix is not null)
@@ -170,7 +221,40 @@ namespace Warp9.Viewer
                 else
                     mc.model = Matrix4x4.Identity;
                 job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
-               
+
+                UpdateDrawCallSettings(job);
+            }
+        }
+
+        private void UpdateDrawCallSettings(RenderJob job)
+        {
+            job.EnableDrawCall(0, renderFace);
+            job.EnableDrawCall(1, renderWire);
+            job.EnableDrawCall(2, renderPoints);
+
+            if (job.TryGetDrawCall(0, out DrawCall? dcFace) && dcFace is not null)
+            {
+                dcFace.RastMode = RasterizerMode.Solid;
+                if (renderCull) dcFace.RastMode |= RasterizerMode.CullBack;
+
+                dcFace.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
+                dcFace.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+            }
+
+            if (job.TryGetDrawCall(1, out DrawCall? dcWire) && dcWire is not null)
+            {
+                dcWire.RastMode = RasterizerMode.Wireframe;
+                if (renderCull) dcWire.RastMode |= RasterizerMode.CullBack;
+
+                dcWire.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
+                dcWire.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+            }
+
+            if (job.TryGetDrawCall(2, out DrawCall? dcPoint) && dcPoint is not null)
+            {
+                dcPoint.RastMode = RasterizerMode.Solid;
+                dcPoint.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
+                dcPoint.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
             }
         }
 

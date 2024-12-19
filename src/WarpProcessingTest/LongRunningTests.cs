@@ -86,8 +86,8 @@ namespace Warp9.Test
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    (Mesh.FromPointCloud(corrPcls[i], baseMesh), Color.Gray),
-                    (rigidPcls[i], Color.FromArgb(64, Color.DodgerBlue)));
+                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col:Color.Gray),
+                    new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
             }
            
         }

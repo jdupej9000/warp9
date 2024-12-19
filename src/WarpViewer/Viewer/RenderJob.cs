@@ -159,6 +159,11 @@ namespace Warp9.Viewer
             return dc;
         }
 
+        public bool TryGetDrawCall(int slot, out DrawCall? dc)
+        {
+            return drawCalls.TryGetValue(slot, out dc);
+        }
+
         public DrawCall SetInstancedDrawCall(int slot, bool indexed, PrimitiveTopology topo, int firstInst, int numInst, int firstElem, int numElems)
         {
             if(firstElem != 0) 
