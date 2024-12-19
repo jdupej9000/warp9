@@ -54,13 +54,13 @@ namespace Warp9.Viewer
         public bool RenderWireframe
         {
             get { return renderWireframe; }
-            set { renderWireframe = value; OnPropertyChanged("RenderWireframe"); }
+            set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
         }
 
         public bool RenderFil
         {
             get { return renderFill; }
-            set { renderFill = value; OnPropertyChanged("RenderFill"); }
+            set { renderFill = value; UpdateRendererConfig();  OnPropertyChanged("RenderFill"); }
         }
 
 
@@ -104,14 +104,15 @@ namespace Warp9.Viewer
 
             meshRend.Mesh = corrMesh;
             meshIndex = index;
+            UpdateRendererConfig();
         }
 
         private void UpdateRendererConfig()
         {
             meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
-
-           
-
+            meshRend.RenderWireframe = renderWireframe;
+            meshRend.RenderFace = renderFill;
+            meshRend.RenderCull = false;
             meshRend.FillColor = Color.Gray;
         }
 
