@@ -157,14 +157,14 @@ namespace Warp9.Test
 
                 rend.CanvasColor = Color.Black;
                 rend.Present();
+            }
 
-                Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
-                using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                {
-                    string fullPath = MakeResultPath(fileName);
-                    bmp.Save(fullPath);
-                    Console.WriteLine("Saved " + fullPath);
-                }
+            Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+            {
+                string fullPath = MakeResultPath(fileName);
+                bmp.Save(fullPath);
+                Console.WriteLine("Saved " + fullPath);
             }
         }
 
