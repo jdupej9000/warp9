@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpDX.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -21,12 +22,13 @@ namespace Warp9.Test
 
     public class TestRenderItem
     {
-        public TestRenderItem(TriStyle style, object data, Color? col = null, Color? wireCol = null, MeshRenderStyle? mrs = null)
+        public TestRenderItem(TriStyle style, object data, Color? col = null, Color? wireCol = null, MeshRenderStyle? mrs = null, float lmScale=0.1f)
         {
             Data = data;
             Style = style;
             Color = col ?? Color.Gray;
             WireColor = wireCol ?? Color.White;
+            LandmarkScale = lmScale;
 
             MeshStyle = mrs ?? style switch
             {
@@ -39,6 +41,7 @@ namespace Warp9.Test
         }
 
         object Data;
+        float LandmarkScale;
         TriStyle Style;
         Color Color, WireColor;
         MeshRenderStyle MeshStyle;
@@ -67,10 +70,19 @@ namespace Warp9.Test
                 ri.RenderBlend = true;
                 ri.RenderCull = true;
                 ri.RenderDepth = true;
-                ri.Style = MeshStyle;                
+                ri.Style = MeshStyle;
                 ri.FillColor = Color;
                 ri.PointWireColor = WireColor;
                 return ri;
+            }
+            else if (Style == TriStyle.Landmarks)
+            {
+                RenderItemInstancedMesh renderItemLm = new RenderItemInstancedMesh();
+                renderItemLm.Mesh = TestUtils.MakeCubeIndexed(LandmarkScale);
+                renderItemLm.Instances = Data as PointCloud;
+                renderItemLm.Style = MeshStyle;
+                renderItemLm.FillColor = Color;
+                return renderItemLm;
             }
 
             throw new InvalidOperationException();
@@ -208,6 +220,8 @@ namespace Warp9.Test
                 RenderItemBase rib = i.ToRenderItem();
                 if (rib is RenderItemMesh rim)
                     rim.ModelMatrix = modelMat;
+                else if (rib is RenderItemInstancedMesh riim)
+                    riim.BaseModelMatrix = modelMat;
                
                 rend.AddRenderItem(rib);
             }
@@ -238,6 +252,52 @@ namespace Warp9.Test
                     p[i + nx * j] = p00 + (float)i * dx + (float)j * dy;
                 }
             }
+        }
+
+        public static Mesh MakeCubeIndexed(float scale = 1)
+        {
+            float[] vb = {
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f
+            };
+
+            int[] ib = {
+                1,2,3,7,6,5,4,5,1,5,6,2,2,6,7,0,3,7,0,1,3,4,7,5,0,4,1,1,5,2,3,2,7,4,0,7
+            };
+
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            for (int i = 0; i < vb.Length; i += 3)
+                pos.Add(new Vector3(scale * vb[i], scale * vb[i + 1], scale * vb[i + 2]));
+
+            List<FaceIndices> faces = mb.GetIndexSegmentForEditing<FaceIndices>();
+            for(int i = 0; i < ib.Length; i+=3)
+                faces.Add(new FaceIndices(ib[i], ib[i + 1], ib[i + 2]));
+
+            return mb.ToMesh();
+        }
+
+        public static PointCloud SelectIndices(PointCloud pcl, Predicate<int> sel)
+        {
+            int nv = pcl.VertexCount;
+            MeshView posView = pcl.GetView(MeshViewKind.Pos3f, true) ?? throw new InvalidOperationException();
+            posView.AsTypedData(out ReadOnlySpan<Vector3> posAll);
+
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            for (int i = 0; i < nv; i++)
+            {
+                if (sel(i))
+                    pos.Add(posAll[i]);
+            }
+
+            return mb.ToPointCloud();
         }
 
         public static void GenerateRays(Vector3 camera, int nx, int ny, out Vector3[] p0, out Vector3[] d)

@@ -34,7 +34,7 @@ namespace Warp9.Viewer
         float[]? valueBuffer;
         float levelValue;
         Color fillColor, pointWireColor;
-        Matrix4x4? modelMatrix;
+        Matrix4x4 modelMatrix;
         MeshRenderStyle style;
         bool constBuffDirty = true;
 
@@ -111,7 +111,7 @@ namespace Warp9.Viewer
             set { pointWireColor = value; constBuffDirty = true; }
         }
 
-        public Matrix4x4? ModelMatrix
+        public Matrix4x4 ModelMatrix
         {
             get { return modelMatrix; }
             set { modelMatrix = value; constBuffDirty = true; }
@@ -216,10 +216,8 @@ namespace Warp9.Viewer
                 job.SetConstBuffer(2, StockShaders.Name_PshConst, pshConstWirePoint);
 
                 ModelConst mc = new ModelConst();
-                if (modelMatrix is not null)
-                    mc.model = Matrix4x4.Transpose(modelMatrix.Value);
-                else
-                    mc.model = Matrix4x4.Identity;
+                mc.model = Matrix4x4.Transpose(modelMatrix);
+             
                 job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
 
                 UpdateDrawCallSettings(job);

@@ -208,8 +208,6 @@ namespace Warp9.Test
                 job.SetTexture(ctx, 1, lut);
             }
 
-
-
             dcMain.DepthMode = alphaBlend ? DepthMode.NoDepth : DepthMode.UseDepth;
             dcMain.RastMode = RasterizerMode.NoCull;
             dcMain.BlendMode = alphaBlend ? BlendMode.AlphaBlend : BlendMode.Default;

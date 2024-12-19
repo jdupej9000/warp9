@@ -149,6 +149,36 @@ namespace Warp9.Test
                 BitmapAsserts.AssertEqual("RenderTeapotPhongScalarFieldValueTest_0.png", bmp);
         }
 
+
+        [TestMethod]
+        public void RenderTeapotPhongWithLandmarksTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = teapot;
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            renderItemMesh.FillColor = Color.Gray;
+            rend.AddRenderItem(renderItemMesh);
+
+            RenderItemInstancedMesh renderItemLm = new RenderItemInstancedMesh();
+            renderItemLm.Mesh = TestUtils.MakeCubeIndexed(0.2f);
+            renderItemLm.Instances = TestUtils.SelectIndices(teapot, (i) => i % 100 == 0);
+            renderItemLm.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
+            renderItemLm.BaseModelMatrix = renderItemMesh.ModelMatrix;
+            renderItemLm.FillColor = Color.Red;
+            rend.AddRenderItem(renderItemLm);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotPhongWithLandmarksTest_0.png", bmp);
+        }
+
+
         [TestMethod]
         public void RenderSuzannePhongTest()
         {
