@@ -81,13 +81,13 @@
     </PostBuildEvent>
     <CudaCompile>
       <Optimization>O2</Optimization>
-      <Runtime>MT</Runtime>
+      <Runtime>MTd</Runtime>
       <RuntimeChecks>Default</RuntimeChecks>
       <TypeInfo>false</TypeInfo>
-      <Warning>InheritFromHost</Warning>
       <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
+      <Warning>InheritFromHost</Warning>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -187,7 +187,7 @@
       <Runtime>MT</Runtime>
       <RuntimeChecks>Default</RuntimeChecks>
       <TypeInfo>false</TypeInfo>
-      <Warning>Wall</Warning>
+      <Warning>W3</Warning>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MT</Runtime>
     </CudaCompile>
