@@ -34,7 +34,7 @@ namespace Warp9.Viewer
         float[]? valueBuffer;
         float levelValue;
         Color fillColor, pointWireColor;
-        Matrix4x4 modelMatrix;
+        Matrix4x4 modelMatrix = Matrix4x4.Identity;
         MeshRenderStyle style;
         bool constBuffDirty = true;
 
@@ -167,14 +167,14 @@ namespace Warp9.Viewer
                 dcFace = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.FaceCount * 3);
                 dcWire = job.SetDrawCall(1, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                   0, mesh.FaceCount * 3);
+                    0, mesh.FaceCount * 3);
             }
             else
             {
                 dcFace = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.VertexCount);
                 dcWire = job.SetDrawCall(1, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                   0, mesh.VertexCount);
+                    0, mesh.VertexCount);
             }
 
             DrawCall dcPoints = job.SetDrawCall(2, false, SharpDX.Direct3D.PrimitiveTopology.PointList,

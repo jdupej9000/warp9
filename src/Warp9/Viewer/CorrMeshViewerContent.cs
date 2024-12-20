@@ -58,7 +58,7 @@ namespace Warp9.Viewer
             set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
         }
 
-        public bool RenderFil
+        public bool RenderFill
         {
             get { return renderFill; }
             set { renderFill = value; UpdateRendererConfig();  OnPropertyChanged("RenderFill"); }
@@ -113,6 +113,7 @@ namespace Warp9.Viewer
             meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
             meshRend.RenderWireframe = renderWireframe;
             meshRend.RenderFace = renderFill;
+            meshRend.RenderPoints = false;
             meshRend.RenderCull = false;
             meshRend.FillColor = Color.Gray;
         }

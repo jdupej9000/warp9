@@ -19,8 +19,8 @@
 
         <TextBlock Style="{DynamicResource TextBlockDimmed}">Rendering</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="20" Height="20"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="20" Height="20" IsChecked="True"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="20" Height="20" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="20" Height="20" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
         </StackPanel>
     </StackPanel>
 </Page>
