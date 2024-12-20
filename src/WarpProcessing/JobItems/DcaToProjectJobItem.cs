@@ -13,13 +13,14 @@ namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string corrPclsItem, string? corrLmsItem, string resultEntryName, DcaConfiguration cfg) :
+        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
             CorrespondencePclItem = corrPclsItem;
             CorrespondenceLandmarksItem = corrLmsItem;
             ResultEntryName = resultEntryName;
+            GpaItem = gpaItem;
             DcaConfig = cfg;
         }
 
@@ -27,12 +28,15 @@ namespace Warp9.JobItems
         public string CorrespondencePclItem { get; init; }
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
+        public string? GpaItem { get; init; }
         public DcaConfiguration DcaConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
             Project proj = ctx.Project;
             SpecimenTable specTab = new SpecimenTable();
+
+            PointCloud pclBase;
 
             int n = 0;
             if (ctx.Workspace.TryGet(CorrespondencePclItem, out List<PointCloud>? corrPcls) && corrPcls is not null)
@@ -44,6 +48,8 @@ namespace Warp9.JobItems
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrPcls[i]);
                     colCorrPcl.Add(new ProjectReferenceLink(referenceKey));
                 }
+
+                pclBase = corrPcls[DcaConfig.BaseMeshIndex];
             }
             else if (ctx.Workspace.TryGet(CorrespondencePclItem, out List<Mesh>? corrMeshes) && corrMeshes is not null)
             {
@@ -54,6 +60,8 @@ namespace Warp9.JobItems
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrMeshes[i].ToPointCloud());
                     colCorrPcl.Add(new ProjectReferenceLink(referenceKey));
                 }
+
+                pclBase = corrMeshes[DcaConfig.BaseMeshIndex];
             }
             else
             {
@@ -73,13 +81,31 @@ namespace Warp9.JobItems
                 }
             }
 
-            // TODO: additional data
+            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
+                return false;
+
+            Mesh baseMeshCorr = Mesh.FromPointCloud(pclBase, baseMesh);
+            long baseMeshCorrRef = proj.AddReferenceDirect(ProjectReferenceFormat.W9Mesh, baseMeshCorr);
+
+            long meanLandmarksKey = default;
+
+            if (GpaItem is not null &&
+                ctx.Workspace.TryGet(GpaItem, out Gpa? gpa) &&
+                gpa is not null)
+            {
+                meanLandmarksKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, gpa.Mean);
+            }
 
             ProjectEntry entry = proj.AddNewEntry(ProjectEntryKind.MeshCorrespondence);
             entry.Name = ResultEntryName;
             entry.Deps.Add(SpecimenTableKey);
             entry.Payload.Table = specTab;
-            entry.Payload.MeshCorrExtra = new MeshCorrespondenceExtraInfo() { DcaConfig = DcaConfig };
+            entry.Payload.MeshCorrExtra = new MeshCorrespondenceExtraInfo() 
+            { 
+                DcaConfig = DcaConfig, 
+                BaseMeshCorrKey = baseMeshCorrRef,
+                MeanLandmarksKey = meanLandmarksKey
+            };
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, 
                 string.Format("The entry '{0}' has been added to the project.", ResultEntryName));

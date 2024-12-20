@@ -94,9 +94,10 @@ namespace Warp9.Viewer
             SpecimenTable tab = dcaEntry.Payload.Table!;
             long corrPclRef = tab.Columns["corrPcl"].GetData<ProjectReferenceLink>()[index].ReferenceIndex;
 
-            int baseIndex = dcaEntry.Payload.MeshCorrExtra.DcaConfig.BaseMeshIndex;
+            //int baseIndex = dcaEntry.Payload.MeshCorrExtra.DcaConfig.BaseMeshIndex;
             SpecimenTable mainSpecTable = project.Entries[dcaEntry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey].Payload.Table;
-            long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
+            //long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
+            long baseMeshRef = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey;
 
             if (!project.TryGetReference(corrPclRef, out PointCloud corrPcl))
                 throw new InvalidOperationException();

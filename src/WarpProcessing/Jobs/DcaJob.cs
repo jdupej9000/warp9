@@ -13,7 +13,7 @@ namespace Warp9.Jobs
         private static readonly string NonrigidInitKey = "nonrigid.init";
         private static readonly string NonrigidRegKey = "nonrigid.reg";
         private static readonly string CorrespondenceRegKey = "corr.reg";
-
+        
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj, bool debug=false)
         {
             int index = 0;
@@ -112,7 +112,7 @@ namespace Warp9.Jobs
             if(!debug)
                 yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
-            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, CorrespondenceRegKey, null, cfg.ResultEntryName, cfg);
+            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, GpaPreregKey, CorrespondenceRegKey, null, cfg.ResultEntryName, cfg);
         }
     }
 }
