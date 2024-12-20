@@ -34,11 +34,9 @@ namespace Warp9.Navigation
         ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
         CameraLightConst clp = new CameraLightConst();
-        RenderItemMesh? meshRend;
         TimeSpan lastRender = TimeSpan.Zero;
         Vector2 viewportSize = Vector2.One;
         bool mustMakeTarget = false;
-        private Random rnd = new Random();
         int viewDirty = 1;
 
         public void SetCameraControl(ICameraControl cctl)
@@ -176,9 +174,6 @@ namespace Warp9.Navigation
             if (Interlocked.Exchange(ref viewDirty, 0) != 0 ||
                 (args.RenderingTime - lastRender).TotalSeconds >= 1.0)
             {
-                if (meshRend is not null)
-                    meshRend.FillColor = System.Drawing.Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
-
                 InteropImage.RequestRender();
                 lastRender = args.RenderingTime;
             }
@@ -220,14 +215,7 @@ namespace Warp9.Navigation
 
             return new FileStream(path, FileMode.Open, FileAccess.Read);
         }
-        public static Mesh LoadObjAsset(string name, ObjImportMode mode)
-        {
-            using Stream s = OpenAsset(name);
-            if (!ObjImport.TryImport(s, mode, out Mesh m, out string errMsg))
-                throw new InvalidOperationException();
-
-            return m;
-        }
+      
 
         private static Size WpfSizeToPixels(FrameworkElement element)
         {

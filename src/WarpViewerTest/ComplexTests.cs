@@ -211,30 +211,5 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderGridTest_0.png", bmp);
         }
-
-        [TestMethod]
-        public void WithNormalsTest()
-        {
-            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
-
-            Mesh teapotNorm = MeshUtils.WithNormals(teapot);
-            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentType.Normal));
-
-            HeadlessRenderer rend = CreateRenderer();
-
-            RenderItemMesh renderItemMesh = new RenderItemMesh();
-            renderItemMesh.Mesh = teapotNorm;
-            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn;
-            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
-            renderItemMesh.FillColor = Color.Gray;
-            rend.AddRenderItem(renderItemMesh);
-
-            rend.CanvasColor = Color.Black;
-            rend.Present();
-
-            using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("WithNormalsTest_0.png", bmp);
-        }
     }
 }

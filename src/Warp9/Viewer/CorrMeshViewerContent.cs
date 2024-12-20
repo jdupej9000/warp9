@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Model;
+using Warp9.Processing;
 
 namespace Warp9.Viewer
 {
@@ -106,7 +107,7 @@ namespace Warp9.Viewer
             if (corrPcl.VertexCount != baseMesh.VertexCount)
                 throw new InvalidOperationException("Vertex count");
 
-            Mesh corrMesh = MeshUtils.WithNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
+            Mesh corrMesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
 
             meshRend.Mesh = corrMesh;
             meshIndex = index;
