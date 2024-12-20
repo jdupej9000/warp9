@@ -36,6 +36,7 @@ namespace Warp9.Viewer
         long entityKey;
 
         RenderItemMesh meshRend = new RenderItemMesh();
+        RenderItemGrid gridRend = new RenderItemGrid();
 
         int meshIndex = 0;
         bool renderWireframe = false, renderFill = true;
@@ -67,7 +68,7 @@ namespace Warp9.Viewer
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
             renderer.AddRenderItem(meshRend);
-           
+            renderer.AddRenderItem(gridRend);
             UpdateRendererConfig();
             ShowMesh(0);
         }

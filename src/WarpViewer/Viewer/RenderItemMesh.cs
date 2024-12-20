@@ -221,6 +221,7 @@ namespace Warp9.Viewer
                 job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
 
                 UpdateDrawCallSettings(job);
+                constBuffDirty = false;
             }
         }
 

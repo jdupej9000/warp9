@@ -197,5 +197,19 @@ namespace Warp9.Test
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderSuzannePhongTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void RenderGridTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemGrid renderItemGrid = new RenderItemGrid();
+            rend.AddRenderItem(renderItemGrid);
+
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderGridTest_0.png", bmp);
+        }
     }
 }

@@ -323,7 +323,7 @@ namespace Warp9.Viewer
                 foreach (SemanticAssgn sem in semantics)
                 {
                     if (!listInputElems.Any((ie) => ie.SemanticName == sem.Semantic && ie.SemanticIndex == sem.Slot))
-                        listInputElems.Add(new InputElement(sem.Semantic, sem.Slot, sem.Format, 0)); 
+                        listInputElems.Add(new InputElement(sem.Semantic, sem.Slot, sem.Format, 0, 0)); 
                 }
                
                 inputLayout = new InputLayout(ctx.Device, shaderSignatureVert, listInputElems.ToArray());

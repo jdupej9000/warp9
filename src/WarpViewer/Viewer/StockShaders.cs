@@ -228,7 +228,7 @@ float4 main(VsOutput input) : SV_TARGET
       float level = saturate((abs(input.value - valueLevel) - dlevel) / dlevel);
       ret = lerp(color, ret, level);
    }
-   ret.a = color.a;
+   //ret.a = color.a;
    return ret;
 }
 ");
