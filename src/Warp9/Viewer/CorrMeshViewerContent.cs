@@ -39,7 +39,7 @@ namespace Warp9.Viewer
         RenderItemGrid gridRend = new RenderItemGrid();
 
         int meshIndex = 0;
-        bool renderWireframe = false, renderFill = true;
+        bool renderWireframe = false, renderFill = true, renderSmooth = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler ViewUpdated;
@@ -62,6 +62,12 @@ namespace Warp9.Viewer
         {
             get { return renderFill; }
             set { renderFill = value; UpdateRendererConfig();  OnPropertyChanged("RenderFill"); }
+        }
+
+        public bool RenderSmoothNormals
+        {
+            get { return renderSmooth; }
+            set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
         }
 
 
@@ -100,7 +106,7 @@ namespace Warp9.Viewer
             if (corrPcl.VertexCount != baseMesh.VertexCount)
                 throw new InvalidOperationException("Vertex count");
 
-            Mesh corrMesh = Mesh.FromPointCloud(corrPcl, baseMesh);
+            Mesh corrMesh = MeshUtils.WithNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
 
             meshRend.Mesh = corrMesh;
             meshIndex = index;
@@ -109,7 +115,7 @@ namespace Warp9.Viewer
 
         private void UpdateRendererConfig()
         {
-            meshRend.Style = MeshRenderStyle.EstimateNormals | MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
+            meshRend.Style = MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat | (renderSmooth ? 0:  MeshRenderStyle.EstimateNormals);
             meshRend.RenderWireframe = renderWireframe;
             meshRend.RenderFace = renderFill;
             meshRend.RenderPoints = false;
