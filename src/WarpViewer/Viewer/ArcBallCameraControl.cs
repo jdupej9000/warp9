@@ -88,7 +88,9 @@ namespace Warp9.Viewer
 
         private Vector2 ToScreenRelative(Vector2 pt)
         {
-            return 2.0f * pt / viewportSize - Vector2.One;
+            Vector2 t = 2.0f * pt / viewportSize - Vector2.One;
+            return new Vector2(t.X, -t.Y);
+            //return t;
         }
 
         private Vector3 ToSphere(Vector2 pt)

@@ -36,6 +36,7 @@ namespace Warp9.Navigation
         CameraLightConst clp = new CameraLightConst();
         RenderItemMesh? meshRend;
         TimeSpan lastRender = TimeSpan.Zero;
+        Vector2 viewportSize = Vector2.One;
         bool mustMakeTarget = false;
         private Random rnd = new Random();
         int viewDirty = 1;
@@ -80,8 +81,10 @@ namespace Warp9.Navigation
             if (renderer is null)
                 return;
 
+            float aspect = viewportSize.X / viewportSize.Y;
             vpc.viewProj = Matrix4x4.Transpose(e.ViewMat *
-                Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
+                Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
+                    MathF.PI / 3, aspect, 0.01f, 100.0f));
             vpc.camera = new Vector4(e.CameraPos, 1);
             renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
 
@@ -96,6 +99,7 @@ namespace Warp9.Navigation
         {
             Size size = WpfSizeToPixels(ImageGrid);
             InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
+            viewportSize = new Vector2((float)size.Width, (float)size.Height);
 
             content?.ViewportResized(new System.Drawing.Size((int)size.Width, (int)size.Height));
             cameraControl?.ResizeViewport(new Vector2((float)size.Width, (float)size.Height));
