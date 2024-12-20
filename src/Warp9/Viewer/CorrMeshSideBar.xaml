@@ -9,7 +9,7 @@
       Title="CorrMeshSideBar">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock Style="{DynamicResource TextBlockDimmed}">Specimen</TextBlock>        
+        <TextBlock Style="{DynamicResource TextBlockDimmed}">Correspondence mesh</TextBlock>        
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="txtSpecimen" Width="160" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="20" Height="20" Click="btnSpecimenDec_Click"/>
@@ -17,11 +17,16 @@
         </StackPanel>
         <Label Height="4" />
 
-        <TextBlock Style="{DynamicResource TextBlockDimmed}">Rendering</TextBlock>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="20" Height="20" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="20" Height="20" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="20" Height="20" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"/>
+        </StackPanel>
+        <Label Height="12" />
+
+        <TextBlock Style="{DynamicResource TextBlockDimmed}">Miscellaneous</TextBlock>
+        <StackPanel Orientation="Horizontal">
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="20" Height="20" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"/>
         </StackPanel>
     </StackPanel>
 </Page>

@@ -27,7 +27,14 @@ namespace Warp9.Viewer
         Vector2 spanXYMin = new Vector2(-5, -5);
         Vector2 spanXYMax = new Vector2(5, 5);
 
-      
+        bool visible = true;
+
+        public bool Visible
+        {
+            get { return visible; }
+            set { visible = value; Commit() ; }
+        }
+
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
         {
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
@@ -39,6 +46,7 @@ namespace Warp9.Viewer
             DrawCall dcGrid = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.LineList, 0, numVertices);
             dcGrid.RastMode = RasterizerMode.Wireframe;
             dcGrid.BlendMode = BlendMode.Default;
+            dcGrid.Enabled = visible; // TODO: Do this without recreating the buffers
 
             return true;
         }

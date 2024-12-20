@@ -40,7 +40,7 @@ namespace Warp9.Viewer
         RenderItemGrid gridRend = new RenderItemGrid();
 
         int meshIndex = 0;
-        bool renderWireframe = false, renderFill = true, renderSmooth = true;
+        bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler ViewUpdated;
@@ -69,6 +69,12 @@ namespace Warp9.Viewer
         {
             get { return renderSmooth; }
             set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
+        }
+
+        public bool RenderGrid
+        {
+            get { return renderGrid; }
+            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
         }
 
 
@@ -124,6 +130,8 @@ namespace Warp9.Viewer
             meshRend.RenderCull = false;
             meshRend.FillColor = Color.LightGray;
             meshRend.PointWireColor = Color.Black;
+
+            gridRend.Visible = renderGrid;
         }
 
         protected void OnPropertyChanged(string name)

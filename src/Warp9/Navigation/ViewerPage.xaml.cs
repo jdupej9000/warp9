@@ -257,6 +257,19 @@ namespace Warp9.Navigation
             cameraControl?.Scroll(e.Delta);
         }
 
+        private void DisplayBlank()
+        {
+            if (this.content is not null)
+                this.content.ViewUpdated -= Content_ViewUpdated;
+
+            EnsureRenderer();
+            if (renderer is null)
+                throw new InvalidOperationException();
+
+            renderer.ClearRenderItems();
+
+            frmSidebar.Content = null;
+        }
 
         public void DisplayContent(IViewerContent content)
         {
@@ -291,9 +304,14 @@ namespace Warp9.Navigation
             {
                 DisplayContent(vc);
             }
+            else if (cmbVis.Items.Count > 0 && cmbVis.Items[0] is IViewerContent vc0)
+            {
+                cmbVis.SelectedIndex = 0;
+                DisplayContent(vc0);
+            }
             else
             {
-                throw new InvalidOperationException();
+                DisplayBlank();
             }
         }
     }
