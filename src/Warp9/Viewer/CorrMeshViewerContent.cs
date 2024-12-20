@@ -80,7 +80,6 @@ namespace Warp9.Viewer
 
         public void ViewportResized(Size size)
         {
-            
         }
 
         private void ShowMesh(int index)
@@ -115,7 +114,8 @@ namespace Warp9.Viewer
             meshRend.RenderFace = renderFill;
             meshRend.RenderPoints = false;
             meshRend.RenderCull = false;
-            meshRend.FillColor = Color.Gray;
+            meshRend.FillColor = Color.LightGray;
+            meshRend.PointWireColor = Color.Black;
         }
 
         protected void OnPropertyChanged(string name)
