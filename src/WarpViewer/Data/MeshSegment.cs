@@ -29,7 +29,7 @@ namespace Warp9.Data
         public int NumItems => GetNumItems();
 
         public abstract void EnsureAosData(ReadOnlySpan<byte> raw);
-        public abstract void CopyAsSoa(Span<byte> raw);
+        public abstract void CopyAsSoa(Span<byte> raw, byte[]? soaSource = null);
         public abstract void RemoveAosData();
         public abstract void Copy(Span<byte> raw, byte[]? soaSource = null);
         public abstract MeshSegment Clone();
@@ -87,11 +87,15 @@ namespace Warp9.Data
             AosData = null;
         }
 
-        public override void CopyAsSoa(Span<byte> raw)
+        public override void CopyAsSoa(Span<byte> raw, byte[]? soaSource = null)
         {
             if (AosData is not null)
             {
                 MeshUtils.CopyAosToSoa<T>(raw, CollectionsMarshal.AsSpan(AosData));
+            }
+            else if (soaSource is not null)
+            {
+                soaSource.AsSpan().Slice(Offset, TotalLength).CopyTo(raw);
             }
             else
             {
@@ -124,8 +128,8 @@ namespace Warp9.Data
         {
             MeshSegment<T> ret = new MeshSegment<T>();
             ret.Offset = Offset;
-            ret.numItems = numItems;
-
+            ret.numItems = GetNumItems();
+            ret.AosData = null;
             return ret;
         }
 

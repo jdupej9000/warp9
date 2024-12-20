@@ -154,7 +154,7 @@ namespace Warp9.Data
                     newSegments.Add(seg.Key, seg.Value.CloneWith(offs));
                     if (seg.Value.IsDirty)
                     {
-                        seg.Value.CopyAsSoa(ret.AsSpan().Slice(offs, segSize));
+                        seg.Value.CopyAsSoa(ret.AsSpan().Slice(offs, segSize), data);
                     }
                     else
                     {  
