@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Warp9.Forms;
@@ -9,6 +10,7 @@ using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.Processing;
 using Warp9.ProjectExplorer;
+using Warp9.Themes;
 using Warp9.Utils;
 using Warp9.Viewer;
 
@@ -298,6 +300,31 @@ namespace Warp9
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             jobEngine.Dispose();
+        }
+
+        private void ChangeTheme_Click(object sender, RoutedEventArgs e)
+        {
+            switch (((MenuItem)sender).Tag.ToString())
+            {
+                case "0":
+                    ThemesController.SetTheme(ThemeType.SoftDark);
+                    break;
+                case "1":
+                    ThemesController.SetTheme(ThemeType.DeepDark);
+                    break;
+                case "2":
+                    ThemesController.SetTheme(ThemeType.DarkGreyTheme);
+                    break;
+                case "3":
+                    ThemesController.SetTheme(ThemeType.GreyTheme);
+                    break;
+                case "4":
+                    ThemesController.SetTheme(ThemeType.LightTheme);
+                    break;
+                case "5":
+                    ThemesController.SetTheme(ThemeType.RedBlackTheme);
+                    break;
+            }
         }
     }
 }

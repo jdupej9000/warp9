@@ -36,6 +36,18 @@
                 <MenuItem Header="Compute DCA..." Click="mnuProjectComputeDca_Click"/> 
             </MenuItem>
 
+            <MenuItem Header="_Tools">
+                <MenuItem Header="Theme">
+                    <MenuItem Header="Soft dark" Click="ChangeTheme_Click" Tag="0"/>
+                    <MenuItem Header="Deep dark" Click="ChangeTheme_Click" Tag="1"/>
+                    <MenuItem Header="Dark grey" Click="ChangeTheme_Click" Tag="2"/>
+                    <MenuItem Header="Grey" Click="ChangeTheme_Click" Tag="3"/>
+                    <MenuItem Header="Light" Click="ChangeTheme_Click" Tag="4"/>
+                    <MenuItem Header="RedBlack" Click="ChangeTheme_Click" Tag="5"/>
+                </MenuItem>
+                <MenuItem Header="Options" />
+            </MenuItem>
+
             <MenuItem Header="_Help">
                 <MenuItem Name="mnuHelpAbout" Header="_About" Click="mnuHelpAbout_Click" />
             </MenuItem>
