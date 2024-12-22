@@ -42,6 +42,7 @@ namespace Warp9.Processing
             MeshBuilder mb = m.ToBuilder();
 
             List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+            normalsSeg.Clear();
             for (int i = 0; i < nv; i++)
                 normalsSeg.Add(Vector3.Normalize(normal[i]));
 
