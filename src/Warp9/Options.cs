@@ -59,7 +59,10 @@ namespace Warp9
 
     public class OptionsInst
     {
-        [JsonPropertyName("theme-index")]
+        [JsonPropertyName("appearance.theme-index")]
         public int ThemeIndex { get; set; } = 0;
+
+        [JsonPropertyName("viewer.camera-control-index")]
+        public int CameraControlIndex { get; set; } = 0;
     }
 }

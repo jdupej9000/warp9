@@ -25,7 +25,13 @@ namespace Warp9.Navigation
             InitializeComponent();
             this.owner = owner;
 
-            SetCameraControl(new EulerCameraControl());
+            ICameraControl ctl = Options.Instance.CameraControlIndex switch
+            {
+                0 => new EulerCameraControl(),
+                1 => new ArcBallCameraControl(),
+                _ => new EulerCameraControl()
+            };
+            SetCameraControl(ctl);
         }
 
         Window owner;
