@@ -303,13 +303,6 @@ namespace Warp9
             jobEngine.Dispose();
         }
 
-        private void ChangeTheme_Click(object sender, RoutedEventArgs e)
-        {
-            int themeIndex = int.Parse(((MenuItem)sender).Tag.ToString());
-            ThemesController.SetTheme((ThemeType)themeIndex);
-            Options.Instance.ThemeIndex = themeIndex;
-        }
-
         private void mnuToolsOptions_Click(object sender, RoutedEventArgs e)
         {
             OptionsWindow wnd = new OptionsWindow();

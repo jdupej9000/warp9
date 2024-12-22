@@ -48,6 +48,12 @@ namespace Warp9
         public static void Set(OptionsInst oi)
         {
             inst = new Lazy<OptionsInst>(oi);
+            Apply(oi);
+        }
+
+        private static void Apply(OptionsInst oi)
+        {
+            Themes.ThemesController.SetTheme((Themes.ThemeType)oi.ThemeIndex);
         }
     }
 
