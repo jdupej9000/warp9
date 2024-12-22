@@ -83,7 +83,7 @@ namespace Warp9.Processing
                     float bestRay = MathF.Min(projRay0[i], projRay1[i]);
 
                     Vector3 pt;
-                    if (2 * bestRay < projNN[i].d)
+                    if (bestRay > 2 * projNN[i].d)
                     {
                         pt = new Vector3(projNN[i].x, projNN[i].y, projNN[i].z);
                     }
