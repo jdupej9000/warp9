@@ -60,7 +60,20 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            PointCloud? pclProj = MeshSnap.ProjectToNearest(pclNonrigid, floatingMesh);
+            PointCloud? pclProj;
+            if (UseRaycast)
+            {
+                if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
+                    return false;
+
+                Mesh nonrigidWithNorm = MeshNormals.MakeNormals(Mesh.FromPointCloud(pclNonrigid, baseMesh));
+                pclProj = MeshSnap.ProjectWithRaycastNearest(MeshNormals.MakeNormals(nonrigidWithNorm), floatingMesh);
+            }
+            else
+            {
+                pclProj = MeshSnap.ProjectToNearest(pclNonrigid, floatingMesh);           
+            }
+
             if (pclProj is not null)
             {
                 ctx.Workspace.Set(ResultItem, MeshIndex, pclProj);

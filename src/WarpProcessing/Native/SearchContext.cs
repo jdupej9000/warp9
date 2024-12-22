@@ -70,12 +70,15 @@ namespace Warp9.Native
             }
         }
 
-        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT)
+        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
             SearchQueryConfig cfg = new SearchQueryConfig();
+            int kind = invertDir ? 
+                (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_INVERT_DIRECTION) : 
+                (int)SEARCH_KIND.SEARCH_RAYCAST_T;
 
             unsafe
             {
@@ -85,7 +88,7 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_T, ref cfg,
+                        nativeContext, kind, ref cfg,
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }

@@ -65,7 +65,8 @@ namespace Warp9.Native
         SEARCH_RAYCAST_T = 1,
         SEARCH_RAYCAST_TBARY = 2,
 
-        SEARCH_SOURCE_IS_AOS = 0x10000000
+        SEARCH_SOURCE_IS_AOS = 0x10000000,
+        SEARCH_INVERT_DIRECTION = 0x20000000
     };
 
 
@@ -108,18 +109,6 @@ namespace Warp9.Native
                csr * rot2.X, csr * rot2.Y, csr * rot2.Z, 0,
                0, 0, 0, 1) * Matrix4x4.CreateTranslation(-offset);
         }
-
-       /* public static Rigid3 FromMatrix(Matrix4x4 m)
-        {
-            Matrix4x4 mrs = m; // m without translation
-            mrs.Translation = Vector3.Zero;
-
-            Matrix4x4.Invert(mrs, out Matrix4x4 mrsi);
-            Vector3 offs = Vector3.Transform(m.Translation, mrsi);
-
-            float csr = m.M11 + m.M21 + m.M31 + m.M12 + m.M22 + m.M32 + m.M13 + m.M23 + m.M33;
-            Matrix4x4 mr = mrs * csr;
-        }*/
 
         public override readonly string ToString()
         {

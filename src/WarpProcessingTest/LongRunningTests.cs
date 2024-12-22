@@ -54,7 +54,7 @@ namespace Warp9.Test
             cfg.MeshColumnName = "Mesh";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.ClosestPoint;
+            cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
 
