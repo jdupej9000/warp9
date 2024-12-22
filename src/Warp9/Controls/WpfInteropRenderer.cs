@@ -98,8 +98,13 @@ namespace Warp9.Controls
 
             try
             {
-                Device device = new Device(a, DeviceCreationFlags.BgraSupport | DeviceCreationFlags.Debug,
-                    SharpDX.Direct3D.FeatureLevel.Level_11_0);
+                DeviceCreationFlags devFlags = DeviceCreationFlags.BgraSupport;
+
+            #if DEBUG
+                devFlags |= DeviceCreationFlags.Debug;
+            #endif
+
+                Device device = new Device(a, devFlags, SharpDX.Direct3D.FeatureLevel.Level_11_0);
 
                 ret = new WpfInteropRenderer(a.Description, device);
                 return true;
