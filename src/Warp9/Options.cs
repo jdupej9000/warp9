@@ -45,6 +45,10 @@ namespace Warp9
             File.Move(fileTemp, FilePath, true);
         }
 
+        public static void Set(OptionsInst oi)
+        {
+            inst = new Lazy<OptionsInst>(oi);
+        }
     }
 
     public class OptionsInst

@@ -45,7 +45,7 @@
                     <MenuItem Header="Light" Click="ChangeTheme_Click" Tag="4"/>
                     <MenuItem Header="RedBlack" Click="ChangeTheme_Click" Tag="5"/>
                 </MenuItem>
-                <MenuItem Header="Options" />
+                <MenuItem Header="Options" Click="mnuToolsOptions_Click" />
             </MenuItem>
 
             <MenuItem Header="_Help">

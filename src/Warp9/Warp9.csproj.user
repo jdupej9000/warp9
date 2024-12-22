@@ -13,6 +13,9 @@
     <Compile Update="Forms\ImportCsvWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\OptionsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\SpecimenTableImportWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -43,6 +46,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Forms\ImportCsvWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Forms\OptionsWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Forms\SpecimenTableImportWindow.xaml">

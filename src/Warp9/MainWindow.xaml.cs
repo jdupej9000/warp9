@@ -309,5 +309,11 @@ namespace Warp9
             ThemesController.SetTheme((ThemeType)themeIndex);
             Options.Instance.ThemeIndex = themeIndex;
         }
+
+        private void mnuToolsOptions_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsWindow wnd = new OptionsWindow();
+            wnd.ShowDialog();
+        }
     }
 }
