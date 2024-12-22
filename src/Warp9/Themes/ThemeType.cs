@@ -4,12 +4,12 @@ namespace Warp9.Themes
 {
     public enum ThemeType
     {
-        SoftDark,
-        RedBlackTheme,
+        SoftDark = 0,
         DeepDark,
-        GreyTheme,
         DarkGreyTheme,
+        GreyTheme,
         LightTheme,
+        RedBlackTheme
     }
 
     public static class ThemeTypeExtension

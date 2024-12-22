@@ -299,32 +299,15 @@ namespace Warp9
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            Options.Save();
             jobEngine.Dispose();
         }
 
         private void ChangeTheme_Click(object sender, RoutedEventArgs e)
         {
-            switch (((MenuItem)sender).Tag.ToString())
-            {
-                case "0":
-                    ThemesController.SetTheme(ThemeType.SoftDark);
-                    break;
-                case "1":
-                    ThemesController.SetTheme(ThemeType.DeepDark);
-                    break;
-                case "2":
-                    ThemesController.SetTheme(ThemeType.DarkGreyTheme);
-                    break;
-                case "3":
-                    ThemesController.SetTheme(ThemeType.GreyTheme);
-                    break;
-                case "4":
-                    ThemesController.SetTheme(ThemeType.LightTheme);
-                    break;
-                case "5":
-                    ThemesController.SetTheme(ThemeType.RedBlackTheme);
-                    break;
-            }
+            int themeIndex = int.Parse(((MenuItem)sender).Tag.ToString());
+            ThemesController.SetTheme((ThemeType)themeIndex);
+            Options.Instance.ThemeIndex = themeIndex;
         }
     }
 }

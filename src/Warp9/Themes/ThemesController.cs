@@ -39,6 +39,9 @@ namespace Warp9.Themes
 
         public static void SetTheme(ThemeType theme)
         {
+            if(theme == CurrentTheme) 
+                return;
+
             string themeName = theme.GetName();
             if (string.IsNullOrEmpty(themeName))
             {
