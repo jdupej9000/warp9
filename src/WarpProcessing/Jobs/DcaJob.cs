@@ -85,7 +85,7 @@ namespace Warp9.Jobs
                     for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
-                            yield return new SurfaceProjectionJobItem(index++, cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, CorrespondenceRegKey);
+                            yield return new SurfaceProjectionJobItem(index++, cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, cfg.SurfaceProjection== DcaSurfaceProjectionKind.RaycastWithFallback, CorrespondenceRegKey);
                     }
                     break;
 

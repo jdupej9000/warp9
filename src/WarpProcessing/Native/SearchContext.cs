@@ -70,7 +70,7 @@ namespace Warp9.Native
             }
         }
 
-        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa,  int n, Span<int> hitIndex, Span<float> hitT)
+        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -160,6 +160,7 @@ namespace Warp9.Native
             bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<byte> idxRaw);
             nint ctx = nint.Zero;
 
+            // TODO: use views
             int nt = m.FaceCount;
             int[] idxt = new int[nt * 3];
             ReadOnlySpan<int> idx = MemoryMarshal.Cast<byte, int>(idxRaw);

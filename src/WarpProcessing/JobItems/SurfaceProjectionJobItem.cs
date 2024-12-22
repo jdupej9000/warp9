@@ -5,12 +5,13 @@ using System.Runtime.InteropServices;
 using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Native;
+using Warp9.Processing;
 
 namespace Warp9.JobItems
 {
     public class SurfaceProjectionJobItem : ProjectJobItem
     {
-        public SurfaceProjectionJobItem(int index, long specTableKey, string meshCol, int meshIndex, int baseMeshIndex, string nonrigidItem, string? gpaItem, string resultItem) :
+        public SurfaceProjectionJobItem(int index, long specTableKey, string meshCol, int meshIndex, int baseMeshIndex, string nonrigidItem, string? gpaItem, bool useRayCast, string resultItem) :
             base(index, "Surface projection", JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
@@ -20,6 +21,7 @@ namespace Warp9.JobItems
             NonrigidMeshesItem = nonrigidItem;
             GpaItem = gpaItem;
             ResultItem = resultItem;
+            UseRaycast = useRayCast;
         }
 
         public int MeshIndex { get; init; }
@@ -29,6 +31,7 @@ namespace Warp9.JobItems
         public long SpecimenTableKey { get; init; }
         public string ResultItem { get; init; }
         public string MeshColumn { get; init; }
+        public bool UseRaycast { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
@@ -41,14 +44,6 @@ namespace Warp9.JobItems
                    string.Format("Cannot load transformed mesh '{0}'.", MeshIndex));
                 return false;
             }
-
-            // we need this to copy triangle indices from (only the reference is copied)
-            /*if (!ctx.TryGetSpecTableMesh(SpecimenTableKey, MeshColumn, MeshIndex, out Mesh? baseMesh) ||
-                baseMesh is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load base mesh.");
-                return false;
-            }*/
 
             if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, GridSize, out SearchContext? searchCtx) || searchCtx is null)
             {
@@ -65,39 +60,16 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            int nv = pclNonrigid.VertexCount;
-            ResultInfoDPtBary[] proj = new ResultInfoDPtBary[nv];
-            int[] hitIndex = new int[nv];
-
-            MeshView view = pclNonrigid.GetView(MeshViewKind.Pos3f, false);
-
-            bool ret = false;
-            if (pclNonrigid.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
-                searchCtx.NearestSoa(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
+            PointCloud? pclProj = MeshSnap.ProjectToNearest(pclNonrigid, floatingMesh);
+            if (pclProj is not null)
             {
-                MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
-
-                for (int i = 0; i < nv; i++)
-                    posProj.Add(new Vector3(proj[i].x, proj[i].y, proj[i].z));
-
-                //Mesh corrMesh = Mesh.FromPointCloud(mb.ToPointCloud(), baseMesh);
-                //ctx.Workspace.Set(ResultItem, MeshIndex, corrMesh);
-                PointCloud pcl = mb.ToPointCloud();
-                ctx.Workspace.Set(ResultItem, MeshIndex, pcl);
-
+                ctx.Workspace.Set(ResultItem, MeshIndex, pclProj);
                 ctx.WriteLog(ItemIndex, MessageKind.Information, "Surface projection complete.");
-
-                ret = true;
-            }
-            else
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "Spatial searching failed.");
+                return true;
             }
 
-            searchCtx.Dispose();
-
-            return ret;
+            ctx.WriteLog(ItemIndex, MessageKind.Error, "Spatial searching failed.");
+            return false;
         }
     }
 }
