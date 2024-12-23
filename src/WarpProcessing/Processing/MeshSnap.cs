@@ -92,14 +92,10 @@ namespace Warp9.Processing
                         Vector3 p0 = new Vector3(pclNrPosF[i], pclNrPosF[i + nv], pclNrPosF[i + 2 * nv]);
                         Vector3 n = new Vector3(pclNrNormF[i], pclNrNormF[i + nv], pclNrNormF[i + 2 * nv]);
 
-                        if (projRay0[i] < projRay1[i])
-                        {
-                            pt = p0 + projRay0[i] * n;
-                        }
+                        if (projRay0[i] < projRay1[i])                       
+                            pt = p0 + projRay0[i] * n;                      
                         else
-                        {
                             pt = p0 - projRay1[i] * n;
-                        }
                     }
 
                     posProj.Add(pt);

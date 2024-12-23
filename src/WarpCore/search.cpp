@@ -15,6 +15,7 @@ struct query_info {
     const search_query_config* cfg;
     int* hit;
     void* info;
+    bool invert_dir;
 };
 
 extern "C" int search_build(int structure, const float* vert, const int* idx, int nv, int nt, const void* config, void** ctx)
@@ -51,9 +52,13 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
 
     int structure = *(const int*)ctx;
     if(structure == SEARCH_TRIGRID3) {
-        query_info qi { .g = (const trigrid*)ctx, .cfg = cfg, .hit = hit, .info = info };
-
-        bool invert_dir = kind & SEARCH_INVERT_DIRECTION;
+        query_info qi { 
+            .g = (const trigrid*)ctx, 
+            .cfg = cfg, 
+            .hit = hit, 
+            .info = info, 
+            .invert_dir = (kind & SEARCH_INVERT_DIRECTION) != 0 
+        };
 
         switch(kind & ~SEARCH_INVERT_DIRECTION) {
         case SEARCH_NN_DPTBARY:
@@ -64,56 +69,48 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
             return WCORE_OK;
 
         case SEARCH_NN_DPTBARY | SEARCH_SOURCE_IS_AOS:
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, cfg->max_dist, (float*)qi.info + 8 * i);
             }
             return WCORE_OK;
 
-        case SEARCH_RAYCAST_T:
-            if (invert_dir) {
-                foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                    [](const float* o, const float* d, int i, query_info& qi) {
-                        float dd[3]{ -d[0], -d[1], -d[2] };
+        case SEARCH_RAYCAST_T:            
+            foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
+                [](const float* o, const float* d, int i, query_info& qi) {
+                    if (qi.invert_dir) {
+                        alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
                         qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, dd, ((float*)qi.info) + i);
-                    });
-            }
-            else {
-                foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                    [](const float* o, const float* d, int i, query_info& qi) {
+                    }
+                    else {
                         qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
-                    });
-            }
+                    }
+                });
             return WCORE_OK;
 
         case SEARCH_RAYCAST_T | SEARCH_SOURCE_IS_AOS:
-            if (invert_dir) {
+            if (qi.invert_dir) {
                 for (int i = 0; i < n; i++) {
                     float dd[3]{ -dir[3 * i], -dir[3 * i + 1], -dir[3 * i + 2] };
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dd, ((float*)qi.info) + i);
                 }
             }
-            else
-            {
+            else {
                 for (int i = 0; i < n; i++)
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
             }
             return WCORE_OK;
 
-        case SEARCH_RAYCAST_TBARY:
-            if (invert_dir) {
-                foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                    [](const float* o, const float* d, int i, query_info& qi) {
-                        float dd[3]{ -d[0], -d[1], -d[2] };
+        case SEARCH_RAYCAST_TBARY:           
+            foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
+                [](const float* o, const float* d, int i, query_info& qi) {
+                    if (qi.invert_dir) {
+                        alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
                         qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, dd, ((float*)qi.info) + 4 * i);
-                    });
-            } 
-            else {
-                foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                    [](const float* o, const float* d, int i, query_info& qi) {
+                    }
+                    else {
                         qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
-                    });
-            }
+                    }                      
+                });           
             return WCORE_OK;
 
         default:
