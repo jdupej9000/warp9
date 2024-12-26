@@ -105,10 +105,10 @@ namespace Warp9.Viewer
             //long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
             long baseMeshRef = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey;
 
-            if (!project.TryGetReference(corrPclRef, out PointCloud corrPcl))
+            if (!project.TryGetReference(corrPclRef, out PointCloud? corrPcl) || corrPcl is null)
                 throw new InvalidOperationException();
 
-            if (!project.TryGetReference(baseMeshRef, out Mesh baseMesh))
+            if (!project.TryGetReference(baseMeshRef, out Mesh? baseMesh) || baseMesh is null)
                 throw new InvalidOperationException();
 
             if (corrPcl.VertexCount != baseMesh.VertexCount)
