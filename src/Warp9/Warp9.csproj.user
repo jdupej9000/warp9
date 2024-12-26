@@ -37,6 +37,9 @@
     <Compile Update="Navigation\ViewerPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Viewer\CompareGroupsSideBar.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Viewer\CorrMeshSideBar.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -76,6 +79,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Navigation\ViewerPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Viewer\CompareGroupsSideBar.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Viewer\CorrMeshSideBar.xaml">

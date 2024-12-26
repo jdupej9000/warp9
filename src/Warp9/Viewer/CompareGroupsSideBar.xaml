@@ -1,4 +1,4 @@
-﻿<Page x:Class="Warp9.Viewer.CorrMeshSideBar"
+﻿<Page x:Class="Warp9.Viewer.CompareGroupsSideBar"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,17 +6,19 @@
       xmlns:local="clr-namespace:Warp9.Viewer"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="200"
-      Title="CorrMeshSideBar">
+      Title="CompareGroupsSideBar">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock>Correspondence mesh</TextBlock>        
+        <TextBlock>Specimen groups</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <TextBox x:Name="txtSpecimen" Width="150" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="24" Height="24" Click="btnSpecimenDec_Click"/>
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphRight}" Width="24" Height="24" Click="btnSpecimenInc_Click"/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" />
+            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" />
+            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" />
         </StackPanel>
-        <Label Height="4" />
+        <Label Height="12" />
 
+        <TextBlock>Model</TextBlock>
+        <ComboBox></ComboBox>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
@@ -24,7 +26,11 @@
         </StackPanel>
         <Label Height="12" />
 
-        <TextBlock>Miscellaneous</TextBlock>
+        <TextBlock>Mapped field</TextBlock>
+        <ComboBox></ComboBox>
+        <Label Height="12" />
+
+        <TextBlock >Miscellaneous</TextBlock>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"/>
         </StackPanel>
