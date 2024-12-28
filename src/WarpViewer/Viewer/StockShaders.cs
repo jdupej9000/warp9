@@ -32,7 +32,8 @@ namespace Warp9.Viewer
         public float ambStrength;
         public float valueLevel;
         public uint flags;
-        private uint reserved0;
+        public float valueMin, valueScale;
+        private uint reserved0, reserved1, reserved2;
     };
 
     public static class StockShaders
@@ -192,6 +193,7 @@ cbuffer PshConst : register(b1)
    float ambStrength;
    float valueLevel;
    uint flags;
+   float valueMin, valueScale;
 };
 
 Texture2D tex0 : register(t0);
@@ -210,10 +212,11 @@ float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
 
 float4 main(VsOutput input) : SV_TARGET
 {
+   float val = (input.value - valueMin) * valueScale;
    float4 ret = color;
    if((flags & 0xf) == 1) ret = input.color;
    if((flags & 0xf) == 2) ret = tex0.Sample(sam0, input.tex0);
-   if((flags & 0xf) == 3) ret = texScale.Sample(sam0, input.value);
+   if((flags & 0xf) == 3) ret = texScale.Sample(sam0, val);
  
    float3 normal = input.normal;
    if((flags & 0x100) == 0x100)
@@ -224,8 +227,8 @@ float4 main(VsOutput input) : SV_TARGET
 
    if((flags & 0x200) == 0x200)
    {
-      float dlevel = 0.5 * length(float2(ddx(input.value), ddy(input.value)));
-      float level = saturate((abs(input.value - valueLevel) - dlevel) / dlevel);
+      float dlevel = 0.5 * valueScale * length(float2(ddx(input.value), ddy(input.value)));
+      float level = saturate((abs(val - valueLevel) - dlevel) / dlevel);
       ret = lerp(color, ret, level);
    }
    //ret.a = color.a;

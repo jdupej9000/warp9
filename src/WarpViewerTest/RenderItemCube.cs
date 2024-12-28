@@ -234,6 +234,8 @@ namespace Warp9.Test
                 PshConst pshConst = new PshConst();
                 pshConst.color = RenderUtils.ToNumColor(color);
                 pshConst.valueLevel = valueLevel;
+                pshConst.valueMin = 0;
+                pshConst.valueScale = 1;
 
                 switch (style)
                 {

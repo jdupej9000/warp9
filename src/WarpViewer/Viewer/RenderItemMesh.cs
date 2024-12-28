@@ -32,7 +32,7 @@ namespace Warp9.Viewer
         Mesh? mesh;
         Lut? lut;
         float[]? valueBuffer;
-        float levelValue;
+        float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
         Matrix4x4 modelMatrix = Matrix4x4.Identity;
         MeshRenderStyle style;
@@ -74,6 +74,18 @@ namespace Warp9.Viewer
         {
             get { return renderDepth; }
             set { renderDepth = value; constBuffDirty = true; ; }
+        }
+
+        public float ValueMin
+        {
+            get { return valueMin; }
+            set { valueMin = value; constBuffDirty = true; }
+        }
+
+        public float ValueMax
+        {
+            get { return valueMax; }
+            set { valueMax = value; constBuffDirty = true; }
         }
 
         public Mesh? Mesh
@@ -201,7 +213,9 @@ namespace Warp9.Viewer
                     color = RenderUtils.ToNumColor(fillColor),
                     valueLevel = levelValue,
                     flags = (uint)style,
-                    ambStrength = 0.1f
+                    ambStrength = 0.1f,
+                    valueMin = valueMin,
+                    valueScale = 1.0f / (valueMax - valueMin)
                 };
                 job.TrySetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
 
