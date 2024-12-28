@@ -195,7 +195,7 @@ namespace Warp9.Viewer
             UpdateDrawCallSettings(job);
 
             if (lut is not null)
-                job.SetTexture(ctx, 1, lut, false);
+                job.SetTexture(ctx, 1, lut, true);
 
             constBuffDirty = true;
 

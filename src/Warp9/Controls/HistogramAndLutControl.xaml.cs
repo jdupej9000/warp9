@@ -73,16 +73,36 @@ namespace Warp9.Controls
         {
             base.OnRender(ctx);
 
-            Pen pen = new Pen(new SolidColorBrush(Color.FromRgb(255, 255, 255)), 1);
+            const int NumGradientStops = 64;
+            GradientStopCollection stops = new GradientStopCollection();
+            for (int i = 0; i < NumGradientStops; i++) {
+                float t = (float)i / (float)(NumGradientStops - 1);
+                System.Drawing.Color col = lut.Sample(t);
+                stops.Add(new GradientStop(Color.FromRgb(col.R, col.G, col.B), t));
+            }
 
+            Brush grad = new LinearGradientBrush(stops, 0);
+                        
+            StreamGeometry sg = new StreamGeometry();
             int w = Math.Min((int)gridMain.ActualWidth, hist.Length);
             double h = ActualHeight;
-            for (int i = 0; i < w; i++)
+
+            using (StreamGeometryContext sgc = sg.Open())
             {
-                ctx.DrawLine(pen,
-                    new Point(i, h),
-                    new Point(i, h - h * (double)hist[i] / histMax));
+                sgc.BeginFigure(new Point(0, h), true, true);
+                
+                Point[] pts = new Point[w + 1];
+                for (int i = 0; i < w; i++)
+                {                    
+                    double barHeight = h * (double)hist[i] / histMax;
+                    pts[i] = new Point(i, h - h * (double)hist[i] / histMax);
+                }
+                pts[w] = new Point(w, h);
+
+                sgc.PolyLineTo(pts, false, true);
             }
+
+            ctx.DrawGeometry(grad, null, sg);
         }
 
         private void Control_MouseMove(object sender, MouseEventArgs e)

@@ -55,6 +55,7 @@ namespace Warp9.Viewer
         ProjectEntry dcaEntry;
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null, pclB = null;
+        Lut? lut = Lut.Create(256, Lut.FastColors);
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
         long entityKey;
@@ -233,7 +234,7 @@ namespace Warp9.Viewer
             meshRend.RenderCull = false;
             meshRend.FillColor = Color.LightGray;
             meshRend.PointWireColor = Color.Black;
-            meshRend.Lut = Lut.Create(256, Lut.ViridisColors);
+            meshRend.Lut = lut;
             meshRend.ValueMin = valueMin;
             meshRend.ValueMax = valueMax;
             gridRend.Visible = renderGrid;
