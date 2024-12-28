@@ -19,6 +19,7 @@ namespace Warp9.Viewer
         protected StateCache? stateCache;
         Dictionary<int, ConstantBufferPayload> constantBuffers = new Dictionary<int, ConstantBufferPayload>();
         readonly Dictionary<RenderItemBase, RenderJob?> renderItems = new Dictionary<RenderItemBase, RenderJob?>();
+        protected bool jobsDirty = false;
 
         public ShaderRegistry Shaders => shaders;
 
@@ -29,12 +30,20 @@ namespace Warp9.Viewer
 
         public void AddRenderItem(RenderItemBase renderItem)
         {
-            renderItems.Add(renderItem, null);
+            lock (renderItems)
+            {
+                renderItems.Add(renderItem, null);
+                jobsDirty = true;
+            }
         }
 
         public void ClearRenderItems()
         {
-            renderItems.Clear();
+            lock (renderItems)
+            {
+                renderItems.Clear();
+                jobsDirty = true;
+            }
         }
 
         protected void Render()
@@ -44,35 +53,40 @@ namespace Warp9.Viewer
 
             List<(RenderItemBase, RenderJob?)> updates = new List<(RenderItemBase, RenderJob?)>();
 
-            foreach (var kvp in renderItems)
+            lock (renderItems)
             {
-                RenderItemBase ri = kvp.Key;
-                RenderJob? job = kvp.Value;
-
-                if (job is null || job.NeedsUpdate(ri.Version))
+                foreach (var kvp in renderItems)
                 {
-                    if (ri.UpdateRenderJob(ref job, ctx, shaders, constantBufferManager))
-                        updates.Add((ri, job));
+                    RenderItemBase ri = kvp.Key;
+                    RenderJob? job = kvp.Value;
+
+                    if (job is null || job.NeedsUpdate(ri.Version) || jobsDirty)
+                    {
+                        if (ri.UpdateRenderJob(ref job, ctx, shaders, constantBufferManager))
+                            updates.Add((ri, job));
+                    }
                 }
-            }
 
-            foreach (var update in updates)
-                renderItems[update.Item1] = update.Item2;
+                jobsDirty = false;
 
-            // Restore constant buffer baselines for all render items.
-            foreach (var kvp in constantBuffers)
-                constantBufferManager.Set(ctx, kvp.Key, kvp.Value);
+                foreach (var update in updates)
+                    renderItems[update.Item1] = update.Item2;
 
-            // force setting the rasterizer state at least once
-            stateCache.ResetLastState();
+                // Restore constant buffer baselines for all render items.
+                foreach (var kvp in constantBuffers)
+                    constantBufferManager.Set(ctx, kvp.Key, kvp.Value);
 
-            foreach (var kvp in renderItems)
-            {
-                if (kvp.Value is not null)
+                // force setting the rasterizer state at least once
+                stateCache.ResetLastState();
+
+                foreach (var kvp in renderItems)
                 {
-                    // Update individual or per-drawcall vertex buffers.
-                    kvp.Key.UpdateConstantBuffers(kvp.Value);
-                    kvp.Value.Render(ctx, stateCache);
+                    if (kvp.Value is not null)
+                    {
+                        // Update individual or per-drawcall vertex buffers.
+                        kvp.Key.UpdateConstantBuffers(kvp.Value);
+                        kvp.Value.Render(ctx, stateCache);
+                    }
                 }
             }
         }

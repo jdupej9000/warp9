@@ -143,12 +143,12 @@ namespace Warp9.Viewer
                     flags = (uint)style,
                     ambStrength = 0.1f
                 };
-                job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
+                job.TrySetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
 
                 ModelConst mc = new ModelConst();
                 mc.model = Matrix4x4.Transpose(modelMatrix);
 
-                job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
+                job.TrySetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
 
                 UpdateDrawCallSettings(job);
 

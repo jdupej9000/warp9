@@ -312,7 +312,7 @@ namespace Warp9.Navigation
             }
             else if (cmbVis.Items.Count > 0 && cmbVis.Items[0] is IViewerContent vc0)
             {
-                cmbVis.SelectedIndex = 0;
+                //cmbVis.SelectedIndex = 0;
                 DisplayContent(vc0);
             }
             else

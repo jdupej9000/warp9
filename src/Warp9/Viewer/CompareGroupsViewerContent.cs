@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -7,8 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Warp9.Controls;
+using Warp9.Data;
 using Warp9.Model;
 using Warp9.Native;
+using Warp9.Processing;
 
 namespace Warp9.Viewer
 {
@@ -69,9 +72,12 @@ namespace Warp9.Viewer
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
+            UpdateRendererConfig();
+            meshRend.Mesh = GetVisibleMesh();
+           // meshRend.Commit();
+           // gridRend.Commit();
             renderer.AddRenderItem(meshRend);
             renderer.AddRenderItem(gridRend);
-            UpdateRendererConfig();
         }
 
         public Page? GetSidebar()
@@ -81,6 +87,20 @@ namespace Warp9.Viewer
 
         public void ViewportResized(Size size)
         {
+        }
+
+        private Mesh? GetVisibleMesh()
+        {
+            if (!dcaEntry.Payload.Table!.Columns.TryGetValue("corrPcl", out SpecimenTableColumn? col) ||
+                col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
+                throw new InvalidOperationException();
+
+            PointCloud meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
+
+            if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
+                throw new InvalidOperationException();
+
+            return MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
         }
 
         private void UpdateRendererConfig()

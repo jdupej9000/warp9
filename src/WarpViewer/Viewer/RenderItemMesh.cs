@@ -203,7 +203,7 @@ namespace Warp9.Viewer
                     flags = (uint)style,
                     ambStrength = 0.1f
                 };
-                job.SetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
+                job.TrySetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
 
                 PshConst pshConstWirePoint = new PshConst
                 {
@@ -212,13 +212,13 @@ namespace Warp9.Viewer
                     flags = (uint)(MeshRenderStyle.ColorFlat),
                     ambStrength = 0.1f
                 };
-                job.SetConstBuffer(1, StockShaders.Name_PshConst, pshConstWirePoint);
-                job.SetConstBuffer(2, StockShaders.Name_PshConst, pshConstWirePoint);
+                job.TrySetConstBuffer(1, StockShaders.Name_PshConst, pshConstWirePoint);
+                job.TrySetConstBuffer(2, StockShaders.Name_PshConst, pshConstWirePoint);
 
                 ModelConst mc = new ModelConst();
                 mc.model = Matrix4x4.Transpose(modelMatrix);
              
-                job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
+                job.TrySetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
 
                 UpdateDrawCallSettings(job);
                 constBuffDirty = false;
@@ -227,9 +227,9 @@ namespace Warp9.Viewer
 
         private void UpdateDrawCallSettings(RenderJob job)
         {
-            job.EnableDrawCall(0, renderFace);
-            job.EnableDrawCall(1, renderWire);
-            job.EnableDrawCall(2, renderPoints);
+            job.TryEnableDrawCall(0, renderFace);
+            job.TryEnableDrawCall(1, renderWire);
+            job.TryEnableDrawCall(2, renderPoints);
 
             if (job.TryGetDrawCall(0, out DrawCall? dcFace) && dcFace is not null)
             {

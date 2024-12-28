@@ -26,13 +26,15 @@ namespace Warp9.Processing
                 dest[i] *= factor;
         }
 
-        public static PointCloud Mean(IEnumerable<PointCloud> pcls)
+        public static PointCloud Mean(IEnumerable<PointCloud?> pcls)
         {
             byte[] meanPos = Array.Empty<byte>();
 
             int n = 0;
-            foreach (PointCloud pcl in pcls)
+            foreach (PointCloud? pcl in pcls)
             {
+                if (pcl is null) continue;
+
                 if (n == 0)
                     meanPos = new byte[pcl.VertexCount * 3 * 4];
                 else if (3 * 4 * pcl.VertexCount != meanPos.Length)

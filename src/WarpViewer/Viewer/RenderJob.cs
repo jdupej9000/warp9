@@ -50,7 +50,7 @@ namespace Warp9.Viewer
             itemVersion = masterItemVersion;
         }
 
-        public void SetConstBuffer<T>(int drawCallId, int buffId, T value) where T : struct
+        public bool TrySetConstBuffer<T>(int drawCallId, int buffId, T value) where T : struct
         {
             if (drawCallId < 0)
             {
@@ -68,8 +68,10 @@ namespace Warp9.Viewer
             }
             else
             {
-                throw new InvalidOperationException();
+                return false;
             }
+
+            return true;
         }
 
         public void Render(DeviceContext ctx, StateCache stateCache)
@@ -179,7 +181,7 @@ namespace Warp9.Viewer
             return dc;
         }
 
-        public void EnableDrawCall(int slot, bool enable)
+        public bool TryEnableDrawCall(int slot, bool enable)
         {
             if (drawCalls.TryGetValue(slot, out DrawCall? dc))
             {
@@ -187,8 +189,10 @@ namespace Warp9.Viewer
             }
             else
             {
-                throw new InvalidOperationException();
+                return false;
             }
+
+            return true;
         }
 
         public void ClearVertexBuffers()
@@ -294,7 +298,6 @@ namespace Warp9.Viewer
         { 
             shaderGeom = null; 
         }
-
 
         protected void EnsureInputLayout(DeviceContext ctx, ShaderSignature shaderSignatureVert, SemanticAssgn[] semantics)
         {

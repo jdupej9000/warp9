@@ -57,14 +57,14 @@ namespace Warp9.Viewer
 
             ModelConst mc = new ModelConst();
             mc.model = Matrix4x4.Identity;
-            job.SetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
+            job.TrySetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
 
             PshConst pshConst = new PshConst
             {
                 flags = (uint)MeshRenderStyle.ColorArray,
                 ambStrength = 0.1f
             };
-            job.SetConstBuffer(-1, StockShaders.Name_PshConst, pshConst);
+            job.TrySetConstBuffer(-1, StockShaders.Name_PshConst, pshConst);
         }
 
         [StructLayout(LayoutKind.Sequential)]
