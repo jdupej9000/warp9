@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -24,8 +25,23 @@ namespace Warp9.Viewer
             entityKey = dcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
+                entry is null ||
                 entry.Kind != ProjectEntryKind.MeshCorrespondence)
+            {
                 throw new InvalidOperationException();
+            }
+
+            long specTableKey = entry.Payload.MeshCorrExtra!.DcaConfig.SpecimenTableKey;
+            if (!project.Entries.TryGetValue(specTableKey, out ProjectEntry? specTableEntry) ||
+                specTableEntry is null ||
+                specTableEntry.Kind != ProjectEntryKind.Specimens ||
+                specTableEntry.Payload.Table is null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            selectionA = new SpecimenTableSelection(specTableEntry.Payload.Table);
+            selectionB = new SpecimenTableSelection(specTableEntry.Payload.Table);
 
             dcaEntry = entry;
             Name = name;
@@ -35,6 +51,7 @@ namespace Warp9.Viewer
 
         Project project;
         ProjectEntry dcaEntry;
+        SpecimenTableSelection selectionA, selectionB;
         Page sidebar;
         long entityKey;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true;
@@ -109,7 +126,7 @@ namespace Warp9.Viewer
             if (group != 0 && group != 1)
                 throw new ArgumentException();
 
-            SpecimenSelectorWindow ssw = new SpecimenSelectorWindow();
+            SpecimenSelectorWindow ssw = new SpecimenSelectorWindow(group == 0 ? selectionA : selectionB);
             ssw.ShowDialog();
         }
 

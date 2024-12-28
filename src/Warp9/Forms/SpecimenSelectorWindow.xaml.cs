@@ -26,43 +26,31 @@ namespace Warp9.Forms
     /// </summary>
     public partial class SpecimenSelectorWindow : Window
     {
-        public SpecimenSelectorWindow()
+        public SpecimenSelectorWindow(SpecimenTableSelection sts)
         {
+            table = sts;
             InitializeComponent();
         }
 
-        long entryIndex = -1;
-        Project? project;
+        SpecimenTableSelection table;
 
-        SpecimenTable Table
-        {
-            get
-            {
-                if (entryIndex < 0 || project is null || !project.Entries.TryGetValue(entryIndex, out ProjectEntry? entry))
-                    throw new InvalidOperationException();
-
-                return entry.Payload.Table ?? throw new InvalidOperationException();
-            }
-        }
-
-        public void ShowEntry(long idx)
+   
+        private void ShowEntry()
         {
             dataMain.Columns.Clear();
-
-            entryIndex = idx;
-            SpecimenTable table = Table;
             dataMain.ItemsSource = table;
 
-            DataGridTextColumn colId = new DataGridTextColumn
+            DataGridCheckBoxColumn colSel = new DataGridCheckBoxColumn
             {
-                Header = new SpecimenTableColumnTextInfo("ID", ""),
-                Binding = new Binding("[!index]"),
+                Header = new SpecimenTableColumnTextInfo("Selected", ""),
                 CanUserReorder = false,
-                IsReadOnly = true
+                IsReadOnly = false,
+                IsThreeState = false,
+                Binding = new Binding("IsSelected")
             };
-            dataMain.Columns.Add(colId);
+            dataMain.Columns.Add(colSel);
 
-            foreach (var kvp in table.Columns)
+            foreach (var kvp in table.TableColumns)
             {
                 switch (kvp.Value.ColumnType)
                 {
@@ -73,7 +61,8 @@ namespace Warp9.Forms
                             DataGridTextColumn col = new DataGridTextColumn
                             {
                                 Header = new SpecimenTableColumnTextInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
-                                Binding = new Binding("[" + kvp.Key + "]")
+                                Binding = new Binding("ParentRow[" + kvp.Key + "]"),
+                                IsReadOnly = true
                             };
                             dataMain.Columns.Add(col);
                         }
@@ -84,8 +73,9 @@ namespace Warp9.Forms
                             DataGridComboBoxColumn col = new DataGridComboBoxColumn
                             {
                                 Header = new SpecimenTableColumnTextInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
-                                SelectedItemBinding = new Binding("[" + kvp.Key + "]"),
-                                ItemsSource = kvp.Value.Names
+                                SelectedItemBinding = new Binding("ParentRow[" + kvp.Key + "]"),
+                                ItemsSource = kvp.Value.Names,
+                                IsReadOnly = true
                             };
                             dataMain.Columns.Add(col);
                         }
@@ -96,7 +86,8 @@ namespace Warp9.Forms
                             DataGridCheckBoxColumn col = new DataGridCheckBoxColumn
                             {
                                 Header = new SpecimenTableColumnTextInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
-                                Binding = new Binding("[" + kvp.Key + "]")
+                                Binding = new Binding("ParentRow[" + kvp.Key + "]"),
+                                IsReadOnly = true
                             };
                             dataMain.Columns.Add(col);
                         }
@@ -113,6 +104,19 @@ namespace Warp9.Forms
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            ShowEntry();
+        }
+
+        private void txtQuery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // TODO: handle query
+            }
         }
     }
 }

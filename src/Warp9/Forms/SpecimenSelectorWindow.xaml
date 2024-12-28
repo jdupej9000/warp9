@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
         Style="{StaticResource CustomWindowStyle}"
+        Loaded="Window_Loaded"
         mc:Ignorable="d"
-        Title="SpecimenSelectorWindow" Height="450" Width="800">
+        Title="Select Specimens" Height="450" Width="800">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
@@ -20,29 +21,29 @@
         </StackPanel>
 
         <GroupBox Header="Query (press Enter to apply)" Margin="4" DockPanel.Dock="Bottom">
-            <TextBox x:Name="txtQuery" Height="60" VerticalScrollBarVisibility="Visible" BorderBrush="Transparent" Style="{DynamicResource NoHoverTextBox}" FontFamily="Cascadia Mono Light" Padding="4" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True">
+            <TextBox x:Name="txtQuery" Height="60" VerticalScrollBarVisibility="Visible" BorderBrush="Transparent" Style="{DynamicResource NoHoverTextBox}" FontFamily="Cascadia Mono Light" Padding="4" TextWrapping="Wrap" AcceptsReturn="False" AcceptsTab="True" KeyDown="txtQuery_KeyDown" >
                 <TextBox.Text>Sex = 'F'</TextBox.Text>
             </TextBox>
         </GroupBox>
 
-        <GroupBox Header="Specimens" Margin="4">
-            <DataGrid x:Name="dataMain" Margin="4" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate>
-                                    <StackPanel Margin="4">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                        <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
-                                    </StackPanel>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
-            </DataGrid>
-        </GroupBox>
-        
+
+        <DataGrid x:Name="dataMain" Margin="4" BorderThickness="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <StackPanel Margin="4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
+                                </StackPanel>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+
+
     </DockPanel>
 </Window>
