@@ -8,7 +8,7 @@ using Warp9.Data;
 
 namespace Warp9
 {
-    public static class Utils
+    public static class MiscUtils
     {
         public static void Decompose(this Quaternion q, out Vector3 axis, out float angleDegrees)
         {
@@ -25,6 +25,24 @@ namespace Warp9
                 m.M21 * m.M21 + m.M22 * m.M22 + m.M23 * m.M23 + m.M24 * m.M24 +
                 m.M31 * m.M31 + m.M32 * m.M32 + m.M33 * m.M33 + m.M34 * m.M34 +
                 m.M41 * m.M41 + m.M32 * m.M42 + m.M43 * m.M43 + m.M44 * m.M44;
+        }
+
+        public static void Histogram(ReadOnlySpan<float> x, int bins, float x0, float x1, Span<int> hist, out int below, out int above)
+        {
+            float dx = (float)bins / (x1 - x0);
+            int numBelow = 0, numAbove = 0;
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                int bin = (int)((x[i] - x0) * dx);
+
+                if (bin < 0) numBelow++;
+                else if (bin >= bins) numAbove++;
+                else hist[bin]++;
+            }
+
+            below = numBelow;
+            above = numAbove;
         }
     }
 }

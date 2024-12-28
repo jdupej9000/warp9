@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
 using System.Drawing;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,9 +54,11 @@ namespace Warp9.Viewer
         ProjectEntry dcaEntry;
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null, pclB = null;
-        Page sidebar;
+        Mesh? meshMean = null;
+        CompareGroupsSideBar sidebar;
         long entityKey;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderPhong = true;
+        float valueMin = 0, valueMax = 1;
         int mappedFieldIndex = 0;
 
         RenderItemMesh meshRend = new RenderItemMesh();
@@ -109,12 +112,25 @@ namespace Warp9.Viewer
             set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
         }
 
+        public float ValueMin
+        {
+            get { return valueMin; }
+            set { valueMin = value; UpdateMappedField(); OnPropertyChanged("ValueMin"); }
+        }
+
+        public float ValueMax
+        {
+            get { return valueMax; }
+            set { valueMax = value; UpdateMappedField(); OnPropertyChanged("ValueMax"); }
+        }
+
         public List<string> MappedFieldsList => mappedFieldsList;
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
             UpdateRendererConfig();
-            meshRend.Mesh = GetVisibleMesh();
+            meshMean = GetVisibleMesh();
+            meshRend.Mesh = meshMean;
             renderer.AddRenderItem(meshRend);
             renderer.AddRenderItem(gridRend);
         }
@@ -204,6 +220,8 @@ namespace Warp9.Viewer
             meshRend.FillColor = Color.LightGray;
             meshRend.PointWireColor = Color.Black;
             meshRend.Lut = Lut.Create(256, Lut.ViridisColors);
+            meshRend.ValueMin = valueMin;
+            meshRend.ValueMax = valueMax;
             gridRend.Visible = renderGrid;
         }
 
@@ -216,9 +234,15 @@ namespace Warp9.Viewer
             int nv = pclA.VertexCount;
             float[] field = new float[nv];
 
-            HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, pclB);
+            switch (mappedFieldIndex)
+            {
+                case 0: // vertex distance
+                    HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, pclB);
+                    break;
+            }
 
             meshRend.SetValueField(field);
+            sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
         }
 
         protected void OnPropertyChanged(string name)

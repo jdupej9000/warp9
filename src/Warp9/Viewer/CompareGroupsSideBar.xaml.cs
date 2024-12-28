@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -42,6 +43,11 @@ namespace Warp9.Viewer
         private void GroupSwap_Click(object sender, RoutedEventArgs e)
         {
             Content.SwapGroups();
+        }
+
+        public void SetHist(float[] values, Lut lut, float x0, float x1)
+        {
+            histField.SetAll(values, lut, x0, x1);
         }
     }
 }

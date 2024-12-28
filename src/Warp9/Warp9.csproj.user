@@ -7,6 +7,9 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Controls\HistogramAndLutControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\DcaConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -46,6 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Assets\Icons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\HistogramAndLutControl.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Forms\DcaConfigWindow.xaml">

@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Warp9.Viewer"
+      xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="200"
       Title="CompareGroupsSideBar">
@@ -28,6 +29,14 @@
 
         <TextBlock>Mapped field</TextBlock>
         <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+        <Label Height="4" />
+        <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" />
+        <Label Height="4" />
+        <StackPanel Orientation="Horizontal">
+            <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <Label Width="99" />
+            <TextBox Width="50" Height="24" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
         <Label Height="12" />
 
         <TextBlock >Miscellaneous</TextBlock>
