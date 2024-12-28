@@ -22,6 +22,7 @@
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderPhong, Mode=TwoWay}"/>
         </StackPanel>
         <Label Height="12" />
 

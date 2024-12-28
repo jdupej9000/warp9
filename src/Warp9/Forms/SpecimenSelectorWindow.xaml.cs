@@ -48,6 +48,7 @@ namespace Warp9.Forms
                 IsThreeState = false,
                 Binding = new Binding("IsSelected")
             };
+
             dataMain.Columns.Add(colSel);
 
             foreach (var kvp in table.TableColumns)

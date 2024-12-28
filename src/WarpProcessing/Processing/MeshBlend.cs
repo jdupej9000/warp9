@@ -26,7 +26,7 @@ namespace Warp9.Processing
                 dest[i] *= factor;
         }
 
-        public static PointCloud Mean(IEnumerable<PointCloud?> pcls)
+        public static PointCloud? Mean(IEnumerable<PointCloud?> pcls)
         {
             byte[] meanPos = Array.Empty<byte>();
 
@@ -47,7 +47,7 @@ namespace Warp9.Processing
             }
 
             if (n == 0)
-                return PointCloud.Empty;
+                return null;
 
             Scale(MemoryMarshal.Cast<byte, float>(meanPos), 1.0f / n);
 

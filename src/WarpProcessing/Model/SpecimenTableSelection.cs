@@ -77,7 +77,7 @@ namespace Warp9.Model
             selected = new bool[tab.Count];
         }
 
-        private SpecimenTable specTable;
+        private readonly SpecimenTable specTable;
         bool[] selected;
 
         public int Count => selected.Length;
