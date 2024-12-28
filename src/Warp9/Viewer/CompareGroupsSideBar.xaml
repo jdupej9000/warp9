@@ -18,7 +18,6 @@
         <Label Height="12" />
 
         <TextBlock>Model</TextBlock>
-        <ComboBox></ComboBox>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
@@ -27,7 +26,7 @@
         <Label Height="12" />
 
         <TextBlock>Mapped field</TextBlock>
-        <ComboBox></ComboBox>
+        <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
         <Label Height="12" />
 
         <TextBlock >Miscellaneous</TextBlock>

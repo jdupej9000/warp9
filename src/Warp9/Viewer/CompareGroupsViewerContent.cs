@@ -29,7 +29,7 @@ namespace Warp9.Viewer
             dcaEntry = entry;
             Name = name;
 
-            sidebar = new CompareGroupsSideBar();
+            sidebar = new CompareGroupsSideBar(this);
         }
 
         Project project;
@@ -37,9 +37,17 @@ namespace Warp9.Viewer
         Page sidebar;
         long entityKey;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true;
+        int mappedFieldIndex = 0;
 
         RenderItemMesh meshRend = new RenderItemMesh();
         RenderItemGrid gridRend = new RenderItemGrid();
+
+        static readonly List<string> mappedFieldsList = new List<string>
+        {
+            "Vertex distance", "Signed vertex distance",
+            "Surface distance", "Signed surface distance",
+            "Triangle expansion", "Triangle shape"
+        };
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler ViewUpdated;
@@ -70,12 +78,18 @@ namespace Warp9.Viewer
             set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
         }
 
+        public int MappedFieldIndex
+        {
+            get { return mappedFieldIndex; }
+            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+        }
+
+        public List<string> MappedFieldsList => mappedFieldsList;
+
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
             UpdateRendererConfig();
             meshRend.Mesh = GetVisibleMesh();
-           // meshRend.Commit();
-           // gridRend.Commit();
             renderer.AddRenderItem(meshRend);
             renderer.AddRenderItem(gridRend);
         }
@@ -114,6 +128,10 @@ namespace Warp9.Viewer
             meshRend.PointWireColor = Color.Black;
 
             gridRend.Visible = renderGrid;
+        }
+
+        private void UpdateMappedField()
+        {
         }
 
         protected void OnPropertyChanged(string name)

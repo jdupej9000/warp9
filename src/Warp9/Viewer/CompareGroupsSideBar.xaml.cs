@@ -20,9 +20,13 @@ namespace Warp9.Viewer
     /// </summary>
     public partial class CompareGroupsSideBar : Page
     {
-        public CompareGroupsSideBar()
+        public CompareGroupsSideBar(CompareGroupsViewerContent content)
         {
             InitializeComponent();
+            Content = content;
+            DataContext = content;
         }
+
+        CompareGroupsViewerContent Content { get; init; }
     }
 }
