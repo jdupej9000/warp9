@@ -88,7 +88,7 @@ namespace Warp9.Test
         private Color color = Color.Green;
         private bool wireframe = false, instances = false, valueNotch = false, alphaBlend = false;
         private bool buffDirty = true;
-        private float valueLevel = 0.5f;
+        private float valueLevel = 0.5f, valueMin = 0, valueMax = 1;
         private Lut lut = Lut.Create(256, Lut.FastColors);
 
 
@@ -120,6 +120,18 @@ namespace Warp9.Test
         {
             get { return valueLevel; }
             set { valueLevel = value; buffDirty = true; }
+        }
+
+        public float ValueMin
+        {
+            get { return valueMin; }
+            set { valueMin = value; buffDirty = true; }
+        }
+
+        public float ValueMax
+        {
+            get { return valueMax; }
+            set { valueMax = value; buffDirty = true; }
         }
 
         public bool UseInstances
@@ -234,8 +246,8 @@ namespace Warp9.Test
                 PshConst pshConst = new PshConst();
                 pshConst.color = RenderUtils.ToNumColor(color);
                 pshConst.valueLevel = valueLevel;
-                pshConst.valueMin = 0;
-                pshConst.valueScale = 1;
+                pshConst.valueMin = valueMin;
+                pshConst.valueScale = 1.0f / (valueMax - valueMin);
 
                 switch (style)
                 {

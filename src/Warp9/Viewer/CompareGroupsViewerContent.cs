@@ -48,6 +48,7 @@ namespace Warp9.Viewer
             Name = name;
 
             sidebar = new CompareGroupsSideBar(this);
+            
         }
 
         Project project;
@@ -59,6 +60,7 @@ namespace Warp9.Viewer
         long entityKey;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderPhong = true;
         float valueMin = 0, valueMax = 1;
+        float? valueShow = null; 
         int mappedFieldIndex = 0;
 
         RenderItemMesh meshRend = new RenderItemMesh();
@@ -165,7 +167,13 @@ namespace Warp9.Viewer
 
         public void SwapGroups()
         {
+        }
 
+        public void MeshScaleHover(float? value)
+        {
+            valueShow = value;
+            UpdateRendererConfig();
+            ViewUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         private Mesh? GetVisibleMesh()
@@ -212,6 +220,12 @@ namespace Warp9.Viewer
             else
                 style |= MeshRenderStyle.ColorLut;
 
+            if (valueShow.HasValue)
+            {
+                style |= MeshRenderStyle.ShowValueLevel;
+                meshRend.LevelValue = valueShow.Value;
+            }
+
             meshRend.Style = style;
             meshRend.RenderWireframe = renderWireframe;
             meshRend.RenderFace = renderFill;
@@ -244,6 +258,8 @@ namespace Warp9.Viewer
             meshRend.SetValueField(field);
             sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
         }
+        
+       
 
         protected void OnPropertyChanged(string name)
         {

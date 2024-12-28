@@ -34,6 +34,8 @@ namespace Warp9.Controls
         int[] hist = Array.Empty<int>();
         int histMax = 1;
 
+        public event EventHandler<float?> ScaleHover;
+
         public float X0
         {
             get { return x0; }
@@ -81,6 +83,17 @@ namespace Warp9.Controls
                     new Point(i, h),
                     new Point(i, h - h * (double)hist[i] / histMax));
             }
+        }
+
+        private void Control_MouseMove(object sender, MouseEventArgs e)
+        {
+            float t = (float)(x0 + e.GetPosition(this).X / ActualWidth * (x1 - x0));
+            ScaleHover?.Invoke(this, t);
+        }
+
+        private void Control_MouseLeave(object sender, MouseEventArgs e)
+        {
+            ScaleHover?.Invoke(this, null);
         }
 
         private void Updated()

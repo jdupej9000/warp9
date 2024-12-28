@@ -30,7 +30,7 @@
         <TextBlock>Mapped field</TextBlock>
         <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
         <Label Height="4" />
-        <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" />
+        <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover"/>
         <Label Height="4" />
         <StackPanel Orientation="Horizontal">
             <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

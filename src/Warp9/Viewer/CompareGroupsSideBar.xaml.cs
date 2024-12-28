@@ -49,5 +49,10 @@ namespace Warp9.Viewer
         {
             histField.SetAll(values, lut, x0, x1);
         }
+
+        private void histField_ScaleHover(object sender, float? e)
+        {
+            Content.MeshScaleHover(e);
+        }
     }
 }
