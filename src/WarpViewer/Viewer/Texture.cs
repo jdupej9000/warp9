@@ -56,6 +56,7 @@ namespace Warp9.Viewer
         public void Dispose()
         {
             Utilities.Dispose(ref texture);
+            resourceView.Dispose();
         }
 
         internal static Texture Create(Device device, Lut lut, bool dynamic=false)

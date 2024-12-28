@@ -173,7 +173,7 @@ namespace Warp9.Viewer
         public void MeshScaleHover(float? value)
         {
             valueShow = value;
-            UpdateRendererConfig();
+            UpdateRendererStyle();
             ViewUpdated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -206,7 +206,7 @@ namespace Warp9.Viewer
                     .Select((t) => t.Item));
         }
 
-        private void UpdateRendererConfig()
+        private void UpdateRendererStyle()
         {
             MeshRenderStyle style = 0;
 
@@ -228,6 +228,11 @@ namespace Warp9.Viewer
             }
 
             meshRend.Style = style;
+        }
+
+        private void UpdateRendererConfig()
+        {
+            UpdateRendererStyle();
             meshRend.RenderWireframe = renderWireframe;
             meshRend.RenderFace = renderFill;
             meshRend.RenderPoints = false;
