@@ -11,9 +11,9 @@
     <StackPanel Orientation="Vertical">
         <TextBlock>Specimen groups</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" />
+            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" />
+            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" Click="GroupSwap_Click" />
+            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" Click="GroupB_Click"/>
         </StackPanel>
         <Label Height="12" />
 

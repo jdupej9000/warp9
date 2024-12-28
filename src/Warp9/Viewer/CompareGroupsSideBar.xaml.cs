@@ -28,5 +28,20 @@ namespace Warp9.Viewer
         }
 
         CompareGroupsViewerContent Content { get; init; }
+
+        private void GroupA_Click(object sender, RoutedEventArgs e)
+        {
+            Content.InvokeGroupSelectionDialog(0);
+        }
+
+        private void GroupB_Click(object sender, RoutedEventArgs e)
+        {
+            Content.InvokeGroupSelectionDialog(1);
+        }
+
+        private void GroupSwap_Click(object sender, RoutedEventArgs e)
+        {
+            Content.SwapGroups();
+        }
     }
 }

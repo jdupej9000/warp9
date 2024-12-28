@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
+using Warp9.Forms;
 using Warp9.Model;
 using Warp9.Native;
 using Warp9.Processing;
@@ -101,6 +102,20 @@ namespace Warp9.Viewer
 
         public void ViewportResized(Size size)
         {
+        }
+
+        public void InvokeGroupSelectionDialog(int group)
+        {
+            if (group != 0 && group != 1)
+                throw new ArgumentException();
+
+            SpecimenSelectorWindow ssw = new SpecimenSelectorWindow();
+            ssw.ShowDialog();
+        }
+
+        public void SwapGroups()
+        {
+
         }
 
         private Mesh? GetVisibleMesh()
