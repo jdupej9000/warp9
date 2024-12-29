@@ -22,8 +22,33 @@
             <TabItem Header="Acknowledgments">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBlock TextWrapping="Wrap" Margin="8,8,8,8">Scrolling is enabled when it is necessary. 
-      Resize the window, making it larger and smaller.</TextBlock>
+                        <TextBlock TextWrapping="Wrap" Margin="8,8,8,8">
+                            <Bold>OpenBLAS</Bold>
+                            <LineBreak/>
+                            http://www.openmathlib.org/OpenBLAS/
+                            
+                            <LineBreak/>
+                            <LineBreak/>
+                            
+                            <Bold>WPFDarkTheme</Bold>
+                            <LineBreak/>
+                            https://github.com/AngryCarrot789/WPFDarkTheme
+                            
+                            <LineBreak/>
+                            <LineBreak/>
+                            
+                            <Bold>SharpDX</Bold>
+                            <LineBreak/>
+                            https://github.com/sharpdx/SharpDX
+                            
+                            <LineBreak/>
+                            <LineBreak/>
+                            
+                            <Bold>TqkLibrary.Wpf.Interop.DirectX</Bold>
+                            <LineBreak/>
+                            https://github.com/tqk2811/TqkLibrary.Wpf.Interop.DirectX
+                            
+                        </TextBlock>
                         
                     </StackPanel>
                 </ScrollViewer>
