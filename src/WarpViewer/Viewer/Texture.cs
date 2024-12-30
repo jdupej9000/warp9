@@ -70,7 +70,7 @@ namespace Warp9.Viewer
                 CpuAccessFlags = dynamic ? CpuAccessFlags.Write : CpuAccessFlags.None,
                 OptionFlags = ResourceOptionFlags.None,
                 Usage = dynamic ? ResourceUsage.Dynamic : ResourceUsage.Default,
-                Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm
+                Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm
             };
 
             using DataStream ds = new DataStream(4 * lut.NumPixels, true, true);
