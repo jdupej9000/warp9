@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Warp9.Data
 {
-    public class Mesh : PointCloud
+    public class Mesh : PointCloud, IFaceCollection
     {
         internal Mesh(int nv, int nt, byte[] vx, Dictionary<MeshSegmentType, MeshSegment> segs, byte[] ix, MeshSegment? idxSeg) :
             base(nv, vx, segs)
@@ -47,7 +47,7 @@ namespace Warp9.Data
             return true;
         }
 
-        public new MeshBuilder ToBuilder()
+        public override MeshBuilder ToBuilder()
         {
             MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, indexData, indexSegment);
             return ret;

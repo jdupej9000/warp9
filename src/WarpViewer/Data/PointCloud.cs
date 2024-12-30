@@ -100,7 +100,7 @@ namespace Warp9.Data
             return view;
         }
 
-        public MeshBuilder ToBuilder()
+        public virtual MeshBuilder ToBuilder()
         {
             MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, Array.Empty<byte>(), null);
             return ret;

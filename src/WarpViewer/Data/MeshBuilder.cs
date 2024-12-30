@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX.Direct3D11;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,13 @@ namespace Warp9.Data
 
         public bool IsDirty => segments.Any((t) => t.Value.IsDirty);
         public int BufferSizeNeeded => segments.Sum((t) => t.Value.TotalLength);
+
+        public void CopyIndicesFrom(Mesh m)
+        {
+            MeshBuilder mb2 = m.ToBuilder();
+            indexData = mb2.indexData;
+            indexSegment = mb2.indexSegment;
+        }
 
         public List<T> GetSegmentForEditing<T>(MeshSegmentType segType) where T : struct
         {

@@ -12,7 +12,15 @@ namespace Warp9.Processing
     {
         public static Mesh MakeNormals(Mesh m)
         {
-            MeshView? pos = m.GetView(MeshViewKind.Pos3f);
+            return MakeNormals(m, m).ToMesh(); ;
+        }
+
+        public static MeshBuilder MakeNormals(PointCloud? pcl, Mesh m)
+        {
+            if (pcl is null)
+                return new MeshBuilder();
+
+            MeshView? pos = pcl.GetView(MeshViewKind.Pos3f);
             if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
@@ -20,7 +28,7 @@ namespace Warp9.Processing
             if (faces is null || !faces.AsTypedData(out ReadOnlySpan<FaceIndices> faceData))
                 throw new InvalidOperationException();
 
-            int nv = m.VertexCount;
+            int nv = pcl.VertexCount;
             int nt = m.FaceCount;
             Vector3[] normal = new Vector3[nv];
             for (int i = 0; i < nv; i++)
@@ -39,14 +47,14 @@ namespace Warp9.Processing
                 normal[f.I2] += n;
             }
 
-            MeshBuilder mb = m.ToBuilder();
+            MeshBuilder mb = pcl.ToBuilder();
 
             List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
             normalsSeg.Clear();
             for (int i = 0; i < nv; i++)
                 normalsSeg.Add(Vector3.Normalize(normal[i]));
 
-            return mb.ToMesh();
+            return mb;
         }
     }
 }

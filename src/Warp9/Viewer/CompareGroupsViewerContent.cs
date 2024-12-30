@@ -54,7 +54,8 @@ namespace Warp9.Viewer
         Project project;
         ProjectEntry dcaEntry;
         SpecimenTableSelection selectionA, selectionB;
-        PointCloud? pclA = null, pclB = null;
+        PointCloud? pclA = null;
+        Mesh? meshB = null;
         Lut? lut = Lut.Create(256, Lut.FastColors);
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
@@ -152,6 +153,9 @@ namespace Warp9.Viewer
             if (group != 0 && group != 1)
                 throw new ArgumentException();
 
+            if (meshMean is null)
+                throw new InvalidOperationException();
+
             SpecimenTableSelection sel = group == 0 ? selectionA : selectionB;
 
             SpecimenSelectorWindow ssw = new SpecimenSelectorWindow(sel);
@@ -159,9 +163,16 @@ namespace Warp9.Viewer
 
             // TODO: make Cancel have no effect
             if (group == 0)
+            {
                 pclA = GetCorrPosBlend(sel);
+            }
             else
-                pclB = GetCorrPosBlend(sel);
+            {
+                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(sel), meshMean);
+                mbB.CopyIndicesFrom(meshMean);
+                meshB = mbB.ToMesh();
+                
+            }
 
             UpdateMappedField();
         }
@@ -216,7 +227,7 @@ namespace Warp9.Viewer
             if (!renderSmooth)
                 style |= MeshRenderStyle.EstimateNormals;
 
-            if (pclA is null || pclB is null)
+            if (pclA is null || meshB is null)
                 style |= MeshRenderStyle.ColorFlat;
             else
                 style |= MeshRenderStyle.ColorLut;
@@ -248,7 +259,7 @@ namespace Warp9.Viewer
         private void UpdateMappedField()
         {
             UpdateRendererConfig();
-            if (pclA is null || pclB is null)
+            if (pclA is null || meshB is null)
                 return;
 
             int nv = pclA.VertexCount;
@@ -257,7 +268,19 @@ namespace Warp9.Viewer
             switch (mappedFieldIndex)
             {
                 case 0: // vertex distance
-                    HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, pclB);
+                    HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
+                    break;
+
+                case 1: // signed vertex distance
+                    HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
+                    break;
+
+                case 2: // surface distance
+                    HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
+                    break;
+
+                case 3: // signed surface distance
+                    HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
                     break;
             }
 
