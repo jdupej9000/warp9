@@ -228,7 +228,8 @@ float4 main(VsOutput input) : SV_TARGET
    if((flags & 0x200) == 0x200)
    {
       float dlevel = 0.5 * valueScale * length(float2(ddx(input.value), ddy(input.value)));
-      float level = saturate((abs(val - valueLevel) - dlevel) / dlevel);
+      float valueLevelNorm = (valueLevel - valueMin) * valueScale;
+      float level = saturate((abs(val - valueLevelNorm) - dlevel) / dlevel);
       ret = lerp(color, ret, level);
    }
    //ret.a = color.a;
