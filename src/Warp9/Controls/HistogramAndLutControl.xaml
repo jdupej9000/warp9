@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Warp9.Controls"
              MouseMove="Control_MouseMove"
              MouseLeave="Control_MouseLeave"
+             MouseDown="Control_MouseDown"
              mc:Ignorable="d" 
              d:DesignHeight="160" d:DesignWidth="200">
 

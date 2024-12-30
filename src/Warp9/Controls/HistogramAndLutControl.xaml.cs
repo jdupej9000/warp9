@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Warp9.Data;
 using Warp9;
+using System.Security.Policy;
+using System.Globalization;
 
 namespace Warp9.Controls
 {
@@ -28,13 +30,16 @@ namespace Warp9.Controls
             InitializeComponent();
         }
 
-        float x0 = 0, x1 = 1;
+        float x0 = 0, x1 = 1, cursorPos = -1;
+        bool cursorVisible = false;
         Lut lut = Lut.Create(256, Lut.FastColors);
         float[] scalarField = Array.Empty<float>();
         int[] hist = Array.Empty<int>();
         StreamGeometry? geomHist = null;
         Brush? brushHist = null;
         int histMax = 1;
+        const double AxisMargin = 16;
+        bool exitNoDisappear = false;
 
         public event EventHandler<float?> ScaleHover;
 
@@ -49,6 +54,9 @@ namespace Warp9.Controls
             get { return x1; }
             set { x1 = value; Updated(); }
         }
+
+        public float CursorPos => cursorPos;
+        public bool IsCursorVisible => cursorVisible;
 
         public Lut Lut
         {
@@ -77,17 +85,61 @@ namespace Warp9.Controls
 
             if(geomHist is not null && brushHist is not null)
                 ctx.DrawGeometry(brushHist, null, geomHist);
+
+            double w = ActualWidth;
+            double axisY = ActualHeight - AxisMargin + 1;
+            Brush axisBrush = Themes.ThemesController.GetBrush("ABrush.Foreground.Disabled");
+            Pen axisPen = new Pen(axisBrush, 1);
+            
+            if (Math.Min(x0, x1) < 0 && Math.Max(x0, x1) > 0)
+            {
+                double zeroAt = -X0 / (X1 - X0) * w;
+                ctx.DrawLine(axisPen, new Point(zeroAt, axisY), new Point(zeroAt, axisY + 3));
+
+                FormattedText txt = new FormattedText("0", CultureInfo.CurrentCulture,
+                   FlowDirection.LeftToRight,
+                   new Typeface(FontFamily, FontStyles.Normal, FontWeights.Regular, FontStretches.Normal),
+                   9, axisBrush, 1);
+
+                ctx.DrawText(txt, new Point(zeroAt - txt.Width * 0.5, axisY + 4));
+            }
+
+            if (cursorVisible)
+            {
+                double x = (cursorPos - X0) / (X1 - X0) * w;
+                ctx.DrawLine(axisPen, new Point(x, 0), new Point(x, axisY + 3));
+
+                FormattedText txt = new FormattedText(cursorPos.ToString("F3"), CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface(FontFamily, FontStyles.Normal, FontWeights.Regular, FontStretches.Normal),
+                    9, axisBrush, 1);
+
+                ctx.DrawText(txt, new Point(x - txt.Width * 0.5, axisY + 4));
+            }
         }
 
         private void Control_MouseMove(object sender, MouseEventArgs e)
         {
             float t = (float)(x0 + e.GetPosition(this).X / ActualWidth * (x1 - x0));
+            cursorPos = t;
+            cursorVisible = true;
             ScaleHover?.Invoke(this, t);
+            InvalidateVisual();
+        }
+
+        private void Control_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            exitNoDisappear = !exitNoDisappear;
         }
 
         private void Control_MouseLeave(object sender, MouseEventArgs e)
         {
-            ScaleHover?.Invoke(this, null);
+            if (!exitNoDisappear)
+            {
+                cursorVisible = false;
+                ScaleHover?.Invoke(this, null);
+                InvalidateVisual();
+            }
         }
 
         private void Updated()
@@ -119,7 +171,7 @@ namespace Warp9.Controls
 
             geomHist = new StreamGeometry();
             int w = Math.Min((int)gridMain.ActualWidth, hist.Length);
-            double h = ActualHeight;
+            double h = ActualHeight - AxisMargin;
 
             using (StreamGeometryContext sgc = geomHist.Open())
             {
