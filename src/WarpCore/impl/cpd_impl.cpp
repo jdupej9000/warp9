@@ -19,7 +19,7 @@ namespace warpcore::impl
     void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     
     constexpr bool cpd_is_tier_complete(int x) {
-        return (x & 0x1ff) == 0;
+        return (x & 0xff) == 0;
     }
 
     int cpd_lowrank_numcols(int m) 
