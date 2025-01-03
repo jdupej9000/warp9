@@ -57,6 +57,7 @@ namespace Warp9.Test
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
+            cfg.CpdConfig.UseGpu = true;
 
             IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project, true);
             ProjectJobContext jobCtx = new ProjectJobContext(project);

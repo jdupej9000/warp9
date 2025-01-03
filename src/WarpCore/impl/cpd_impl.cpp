@@ -240,6 +240,7 @@ namespace warpcore::impl
             const __m256 x1 = _mm256_loadu_ps(x + i + n);
             const __m256 x2 = _mm256_loadu_ps(x + i + 2*n);
 
+            __m256 accumb = _mm256_setzero_ps();
             for(int j = 0; j < m; j++) {
                 const __m256 d0 = _mm256_sub_ps(x0, _mm256_broadcast_ss(t + j));
                 const __m256 d1 = _mm256_sub_ps(x1, _mm256_broadcast_ss(t + j + m));
@@ -247,8 +248,14 @@ namespace warpcore::impl
 
                 __m256 a = _mm256_fmadd_ps(d1, d1, _mm256_mul_ps(d0, d0));
                 a = _mm256_fmadd_ps(d2, d2, a);
-                accum = _mm256_add_ps(accum, a);
+                accumb = _mm256_add_ps(accumb, a);
+
+                if ((j & 0x1ff) == 0) {
+                    accum = _mm256_add_ps(accum, accumb);
+                    accumb = _mm256_setzero_ps();
+                }
             }
+            accum = _mm256_add_ps(accum, accumb);
 
             _mm256_storeu_ps(si2partial + i, accum);
         }
