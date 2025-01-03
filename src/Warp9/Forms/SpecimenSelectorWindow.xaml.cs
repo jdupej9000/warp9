@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Warp9.Model;
+using System.Text.RegularExpressions;
 
 namespace Warp9.Forms
 {
@@ -116,7 +118,38 @@ namespace Warp9.Forms
         {
             if (e.Key == Key.Enter)
             {
-                // TODO: handle query
+                try
+                {
+                    ApplyQuery(txtQuery.Text, chkQueryClearFirst.IsChecked ?? false, chkQueryCheck.IsChecked ?? false);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+        }
+
+        private void ApplyQuery(string query, bool clearFirst, bool newSelect)
+        {
+            string code = "row => " + Regex.Replace(query,
+                @"\$([A-Za-z0-9]+)", @"row[""$1""]");
+
+            ParsingConfig cfg = new ParsingConfig();
+
+            LambdaExpression lambda = DynamicExpressionParser.ParseLambda<SpecimenTableSelectionRow, bool>(
+                cfg, true, code);
+
+
+            if (clearFirst)
+            {
+                for (int i = 0; i < table.Count; i++)
+                    table.Selected[i] = false;
+            }
+
+            // translate $Name to Row["Name"]
+            foreach (SpecimenTableSelectionRow row in table.AsQueryable().Where(lambda))
+            {
+                table.Selected[row.Index] = newSelect;
             }
         }
     }

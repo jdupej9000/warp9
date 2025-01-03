@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.5.1" />
     <PackageReference Include="TqkLibrary.Wpf.Interop.DirectX" Version="1.0.1" />
   </ItemGroup>
 

@@ -48,6 +48,12 @@
                             <LineBreak/>
                             https://github.com/tqk2811/TqkLibrary.Wpf.Interop.DirectX
                             
+                            <LineBreak/>
+                            <LineBreak/>                            
+                            
+                            <Bold>System.Linq.Dynamic</Bold>
+                            <LineBreak />
+                            https://dynamic-linq.net/
                         </TextBlock>
                         
                     </StackPanel>

@@ -54,6 +54,26 @@ namespace Warp9.Model
             }
         }
 
+        public object GetSafeTypedValue(string column)
+        {
+            if (column == "!index") 
+                return rowIndex.ToString();
+
+            if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))
+                return false;
+
+            object? val = col.GetAt(rowIndex);
+            return col.ColumnType switch
+            {
+                SpecimenTableColumnType.Integer => (val as long?) ?? -1,
+                SpecimenTableColumnType.Real => (val as double?) ?? double.NaN,
+                SpecimenTableColumnType.String => val?.ToString() ?? "(null)",
+                SpecimenTableColumnType.Factor => val is null ? "" : col.Names![(int)val],
+                SpecimenTableColumnType.Boolean => (bool)(val ?? false),
+                _ => false
+            };
+        }
+
         private static object? ParseValue(SpecimenTableColumn col, object? val)
         {
             if (val is string v)

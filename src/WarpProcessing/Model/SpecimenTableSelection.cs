@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,11 @@ namespace Warp9.Model
 
         public SpecimenTableSelection Parent { get; init; }
         public SpecimenTableRow ParentRow { get; init; }
+
+        public object? this[string colKey]
+        {
+            get => ParentRow.GetSafeTypedValue(colKey);
+        }
     }
 
     public class SpecimenTableSelectionEnumerator : IEnumerator, IEnumerator<SpecimenTableSelectionRow>
@@ -63,13 +69,19 @@ namespace Warp9.Model
         public void Dispose()
         {
         }
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class SpecimenTableSelection :
         IList<SpecimenTableSelectionRow>,
         IList,
         INotifyCollectionChanged,
-        INotifyPropertyChanged
+        INotifyPropertyChanged,
+        IQueryable
     {
         public SpecimenTableSelection(SpecimenTable tab)
         {
@@ -87,6 +99,12 @@ namespace Warp9.Model
         public object SyncRoot => throw new NotImplementedException();
         public bool[] Selected => selected;
         public IReadOnlyDictionary<string, SpecimenTableColumn> TableColumns => specTable.Columns;
+
+        public Type ElementType => typeof(SpecimenTableSelectionRow);
+
+        public Expression Expression => throw new NotImplementedException();
+
+        public IQueryProvider Provider => throw new NotImplementedException();
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
