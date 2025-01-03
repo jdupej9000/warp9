@@ -82,7 +82,7 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
 
 __global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, float denomAdd, float* ctx)
 {
-    __shared__ float t012[4 * BLOCK_SIZE];
+    __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
     int i = thread + blockIdx.x * BLOCK_SIZE;
@@ -106,20 +106,19 @@ __global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, fl
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
         int jthread = jb + thread;
-        t012[4 * thread + 0] = t[0 * m + jthread];
-        t012[4 * thread + 1] = t[1 * m + jthread];
-        t012[4 * thread + 2] = t[2 * m + jthread];
-        // 4th element is a dummy
+        t012[3 * thread + 0] = t[0 * m + jthread];
+        t012[3 * thread + 1] = t[1 * m + jthread];
+        t012[3 * thread + 2] = t[2 * m + jthread];
 
         __syncthreads();
 
         if (i < n) {
             float sumb = 0;
             for (int j = 0; j < mb; j++) {
-                float d0 = x0 - t012[4 * j + 0];
-                float d1 = x1 - t012[4 * j + 1];
-                float d2 = x2 - t012[4 * j + 2];
-                float dist = __fmaf_rz(d0, d0, __fmaf_rz(d1, d1, __fmul_rz(d2, d2)));
+                float d0 = x0 - t012[3 * j + 0];
+                float d1 = x1 - t012[3 * j + 1];
+                float d2 = x2 - t012[3 * j + 2];
+                float dist = fmaf(d0, d0, fmaf(d1, d1, d2 * d2));
 
                 if (dist < thresh)
                     sumb += __expf(expFactor * dist);
@@ -177,7 +176,7 @@ __global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float
                 float d0 = x012sum[4 * i + 0] - t0;
                 float d1 = x012sum[4 * i + 1] - t1;
                 float d2 = x012sum[4 * i + 2] - t2;
-                float dist = __fmaf_rz(d0, d0, __fmaf_rz(d1, d1, __fmul_rz(d2, d2)));
+                float dist = fmaf(d0, d0, fmaf(d1, d1, d2 * d2));
 
                 if (dist < thresh) {
                     float pmn = __expf(expFactor * dist) * x012sum[4 * i + 3];
@@ -206,7 +205,7 @@ __global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float
 
 __global__ void cpd_sigmaest_cuda(int m, int n, float* ctx)
 {
-    __shared__ float t012[4 * BLOCK_SIZE];
+    __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
     int i = thread + blockIdx.x * BLOCK_SIZE;
@@ -226,20 +225,19 @@ __global__ void cpd_sigmaest_cuda(int m, int n, float* ctx)
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
         int jthread = jb + thread;
-        t012[4 * thread + 0] = t[0 * m + jthread];
-        t012[4 * thread + 1] = t[1 * m + jthread];
-        t012[4 * thread + 2] = t[2 * m + jthread];
-        // 4th element is a dummy
-
+        t012[3 * thread + 0] = t[0 * m + jthread];
+        t012[3 * thread + 1] = t[1 * m + jthread];
+        t012[3 * thread + 2] = t[2 * m + jthread];
+        
         __syncthreads();
 
         if (i < n) {
             float accumBlock = 0;
             for (int j = 0; j < mb; j++) {
-                float dd0 = x0 - t012[4 * j + 0];
-                float dd1 = x1 - t012[4 * j + 1];
-                float dd2 = x2 - t012[4 * j + 2];
-                float dist = dd0 * dd0 + dd1 * dd1 + dd2 * dd2;
+                float dd0 = x0 - t012[3 * j + 0];
+                float dd1 = x1 - t012[3 * j + 1];
+                float dd2 = x2 - t012[3 * j + 2];
+                float dist = fmaf(dd0, dd0, fmaf(dd1, dd1, dd2 * dd2));
                 accumBlock += dist;
             }
 

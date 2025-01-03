@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <immintrin.h>
 
+
 namespace warpcore::impl
 {
     void cpd_samplefirst_g(const float* y, int m, float beta, float* gi);
@@ -16,7 +17,10 @@ namespace warpcore::impl
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
     void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
     void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
-
+    
+    constexpr bool cpd_is_tier_complete(int x) {
+        return (x & 0x1ff) == 0;
+    }
 
     int cpd_lowrank_numcols(int m) 
     {
@@ -250,7 +254,7 @@ namespace warpcore::impl
                 a = _mm256_fmadd_ps(d2, d2, a);
                 accumb = _mm256_add_ps(accumb, a);
 
-                if ((j & 0x1ff) == 0) {
+                if (cpd_is_tier_complete(j)) {
                     accum = _mm256_add_ps(accum, accumb);
                     accumb = _mm256_setzero_ps();
                 }
@@ -282,7 +286,7 @@ namespace warpcore::impl
         #pragma omp parallel for schedule(dynamic, 8)
         for(int i8 = 0; i8 < n8; i8++) {	
             const int i = i8 * 8;
-            __m256 accum = _mm256_setzero_ps();
+            __m256 accum = _mm256_setzero_ps(), accumb = _mm256_setzero_ps();
             const __m256 x0 = _mm256_loadu_ps(x + i);
             const __m256 x1 = _mm256_loadu_ps(x + i + n);
             const __m256 x2 = _mm256_loadu_ps(x + i + 2*n);
@@ -299,9 +303,15 @@ namespace warpcore::impl
                 int mask = _mm256_movemask_epi8(_mm256_castps_si256(compareMask));
                 if (mask != 0) {
                     __m256 affinity = _mm256_and_ps(expf_fast(_mm256_mul_ps(dist, factor8)), compareMask);
-                    accum = _mm256_add_ps(accum, affinity);
+                    accumb = _mm256_add_ps(accumb, affinity);
+                }
+
+                if (cpd_is_tier_complete(j)) {
+                    accum = _mm256_add_ps(accum, accumb);
+                    accumb = _mm256_setzero_ps();
                 }
             }
+            accum = _mm256_add_ps(accum, accumb);
             
             const __m256 denom = _mm256_rcp_ps(_mm256_add_ps(accum, denomAdd8));
             _mm256_storeu_ps(psum + i, denom);
@@ -311,6 +321,7 @@ namespace warpcore::impl
         for(int i = 8*n8; i < n; i++) {
             float sumAccum = 0.0f;
 
+            float sumAccumB = 0;
             for(int j = 0; j<m; j++) {			
                 const float dd1 = x[0*n+i] - t[0*m+j];
                 const float dd2 = x[1*n+i] - t[1*m+j];
@@ -318,8 +329,14 @@ namespace warpcore::impl
                 float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
 
                 if(dist < thresh)			
-                    sumAccum += expf(expFactor * dist);			
+                    sumAccumB += expf(expFactor * dist);	
+
+                if (cpd_is_tier_complete(j)) {
+                    sumAccum += sumAccumB;
+                    sumAccumB = 0;
+                }
             }
+            sumAccum += sumAccumB;
 
             const float rcp = 1.0f / (sumAccum + denomAdd);
             psum[i] = rcp;
@@ -340,10 +357,10 @@ namespace warpcore::impl
             const __m256 t1 = _mm256_loadu_ps(t + j + m);
             const __m256 t2 = _mm256_loadu_ps(t + j + 2*m);
 
-            __m256 px0 = _mm256_setzero_ps();
-            __m256 px1 = _mm256_setzero_ps();
-            __m256 px2 = _mm256_setzero_ps();
-            __m256 p1a = _mm256_setzero_ps();
+            __m256 px0 = _mm256_setzero_ps(), px0b = _mm256_setzero_ps();
+            __m256 px1 = _mm256_setzero_ps(), px1b = _mm256_setzero_ps();
+            __m256 px2 = _mm256_setzero_ps(), px2b = _mm256_setzero_ps();
+            __m256 p1a = _mm256_setzero_ps(), p1ab = _mm256_setzero_ps();
 
             for(int i = 0; i < n; i++) {
                 const __m256 x0 = _mm256_broadcast_ss(x + 0*n+i);
@@ -364,12 +381,23 @@ namespace warpcore::impl
                     pmn = _mm256_mul_ps(pmn, _mm256_broadcast_ss(psum + i));
                     pmn = _mm256_and_ps(pmn, compareMask);
 
-                    px0 = _mm256_fmadd_ps(x0, pmn, px0);
-                    px1 = _mm256_fmadd_ps(x1, pmn, px1);
-                    px2 = _mm256_fmadd_ps(x2, pmn, px2);
-                    p1a = _mm256_add_ps(p1a, pmn);
+                    px0b = _mm256_fmadd_ps(x0, pmn, px0b);
+                    px1b = _mm256_fmadd_ps(x1, pmn, px1b);
+                    px2b = _mm256_fmadd_ps(x2, pmn, px2b);
+                    p1ab = _mm256_add_ps(p1ab, pmn);
+                }
+
+                if (cpd_is_tier_complete(i)) {
+                    px0 = _mm256_add_ps(px0, px0b); px0b = _mm256_setzero_ps();
+                    px1 = _mm256_add_ps(px1, px1b); px1b = _mm256_setzero_ps();
+                    px2 = _mm256_add_ps(px2, px2b); px2b = _mm256_setzero_ps();
+                    p1a = _mm256_add_ps(p1a, p1ab); p1ab = _mm256_setzero_ps();
                 }
             }
+            px0 = _mm256_add_ps(px0, px0b);
+            px1 = _mm256_add_ps(px1, px1b);
+            px2 = _mm256_add_ps(px2, px2b);
+            p1a = _mm256_add_ps(p1a, p1ab); 
             
             _mm256_storeu_ps(p1 + j, p1a);
             _mm256_storeu_ps(px + j, px0);
