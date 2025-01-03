@@ -31,7 +31,7 @@ namespace Warp9.Model
         public SpecimenTableSelection Parent { get; init; }
         public SpecimenTableRow ParentRow { get; init; }
 
-        public object? this[string colKey]
+        public object this[string colKey]
         {
             get => ParentRow.GetSafeTypedValue(colKey);
         }
@@ -39,10 +39,10 @@ namespace Warp9.Model
 
     public class SpecimenTableSelectionEnumerator : IEnumerator, IEnumerator<SpecimenTableSelectionRow>
     {
-        public SpecimenTableSelectionEnumerator(SpecimenTableSelection sts)
+        public SpecimenTableSelectionEnumerator(SpecimenTableSelection sts, int idx = 0)
         {
             parent = sts;
-            index = 0;
+            index = idx;
             numRows = sts.Count;
         }
 
@@ -54,7 +54,7 @@ namespace Warp9.Model
 
         public bool MoveNext()
         {
-            if (index >= numRows)
+            if (index >= numRows - 1)
                 return false;
 
             index++;
@@ -72,7 +72,7 @@ namespace Warp9.Model
 
         public IEnumerator GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new SpecimenTableSelectionEnumerator(parent, index);
         }
     }
 
@@ -80,8 +80,7 @@ namespace Warp9.Model
         IList<SpecimenTableSelectionRow>,
         IList,
         INotifyCollectionChanged,
-        INotifyPropertyChanged,
-        IQueryable
+        INotifyPropertyChanged
     {
         public SpecimenTableSelection(SpecimenTable tab)
         {
@@ -99,12 +98,6 @@ namespace Warp9.Model
         public object SyncRoot => throw new NotImplementedException();
         public bool[] Selected => selected;
         public IReadOnlyDictionary<string, SpecimenTableColumn> TableColumns => specTable.Columns;
-
-        public Type ElementType => typeof(SpecimenTableSelectionRow);
-
-        public Expression Expression => throw new NotImplementedException();
-
-        public IQueryProvider Provider => throw new NotImplementedException();
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -215,6 +208,11 @@ namespace Warp9.Model
         public void CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
+        }
+
+        public void NotifyUpdated()
+        {
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 }

@@ -36,7 +36,6 @@ namespace Warp9.Forms
 
         SpecimenTableSelection table;
 
-   
         private void ShowEntry()
         {
             dataMain.Columns.Clear();
@@ -135,10 +134,12 @@ namespace Warp9.Forms
                 @"\$([A-Za-z0-9]+)", @"row[""$1""]");
 
             ParsingConfig cfg = new ParsingConfig();
+            cfg.ConvertObjectToSupportComparison = true;
 
             LambdaExpression lambda = DynamicExpressionParser.ParseLambda<SpecimenTableSelectionRow, bool>(
-                cfg, true, code);
+                typeof(Func<SpecimenTableSelectionRow, bool>), cfg, false, code);
 
+            Func<SpecimenTableSelectionRow, bool> pred = (Func<SpecimenTableSelectionRow, bool>)lambda.Compile();
 
             if (clearFirst)
             {
@@ -146,11 +147,15 @@ namespace Warp9.Forms
                     table.Selected[i] = false;
             }
 
+            
             // translate $Name to Row["Name"]
-            foreach (SpecimenTableSelectionRow row in table.AsQueryable().Where(lambda))
+            foreach (SpecimenTableSelectionRow row in table.AsQueryable().Where(pred))
             {
+               // MessageBox.Show(row.ToString());
                 table.Selected[row.Index] = newSelect;
             }
+
+            table.NotifyUpdated();
         }
     }
 }
