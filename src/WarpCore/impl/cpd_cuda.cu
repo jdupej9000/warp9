@@ -203,22 +203,49 @@ __global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float
 
 __global__ void cpd_sigmaest_cuda(int m, int n, float* ctx)
 {
-    int i = threadIdx.x + blockIdx.x * BLOCK_SIZE;
+    __shared__ float t012[4 * BLOCK_SIZE];
 
+    int thread = threadIdx.x;
+    int i = thread + blockIdx.x * BLOCK_SIZE;
+
+    float* x = ctx;
+    float* t = x + 3 * n;
+    float* temp = t + 3 * m;
+
+    float x0 = 0, x1 = 0, x2 = 0, accum = 0;
     if (i < n) {
-        float* x = ctx;
-        float* t = x + 3 * n;
-        float* temp = t + 3 * m;
+        x0 = x[i];
+        x1 = x[n + i];
+        x2 = x[2 * n + i];
+    }
 
-        float accum = 0.0f;
-        for (int j = 0; j < m; j++) {
-            float dd0 = x[0 * n + i] - t[0 * m + j];
-            float dd1 = x[1 * n + i] - t[1 * m + j];
-            float dd2 = x[2 * n + i] - t[2 * m + j];
-            float dist = dd0 * dd0 + dd1 * dd1 + dd2 * dd2;
-            accum += dist;
+    for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
+        int mb = __min(m, jb + BLOCK_SIZE) - jb;
+
+        int jthread = jb + thread;
+        t012[4 * thread + 0] = t[0 * m + jthread];
+        t012[4 * thread + 1] = t[1 * m + jthread];
+        t012[4 * thread + 2] = t[2 * m + jthread];
+        // 4th element is a dummy
+
+        __syncthreads();
+
+        if (i < n) {
+            float accumBlock = 0;
+            for (int j = 0; j < mb; j++) {
+                float dd0 = x0 - t012[4 * j + 0];
+                float dd1 = x1 - t012[4 * j + 1];
+                float dd2 = x2 - t012[4 * j + 2];
+                float dist = dd0 * dd0 + dd1 * dd1 + dd2 * dd2;
+                accum += dist;
+            }
+
+            accum += accumBlock;
         }
 
-        temp[i] = accum;
+        __syncthreads();
     }
+
+    if (i < n)
+        temp[i] = accum;
 }
