@@ -42,5 +42,6 @@ namespace Warp9.Processing
         // TODO: need eigenvectors + eigenvalues of a 3x3 symmetric matrix
         // e.g.: https://hal.science/hal-01501221/document
         // or  http://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
+        // or! https://www.geometrictools.com/GTE/Mathematics/SymmetricEigensolver3x3.h
     }
 }
