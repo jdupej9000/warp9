@@ -80,10 +80,12 @@ namespace Warp9.Processing
 
                 for (int i = 0; i < nv; i++)
                 {
-                    float bestRay = MathF.Min(projRay0[i], projRay1[i]);
+                    float ray0 = (hitIndexRay0[i] >= 0) ? projRay0[i] : float.MaxValue;
+                    float ray1 = (hitIndexRay1[i] >= 0) ? projRay1[i] : float.MaxValue;
+                    float bestRay = MathF.Min(ray0, ray1);
 
                     Vector3 pt;
-                    if (bestRay > 2 * projNN[i].d)
+                    if (bestRay > 3 * projNN[i].d)
                     {
                         pt = new Vector3(projNN[i].x, projNN[i].y, projNN[i].z);
                     }
@@ -92,10 +94,10 @@ namespace Warp9.Processing
                         Vector3 p0 = new Vector3(pclNrPosF[i], pclNrPosF[i + nv], pclNrPosF[i + 2 * nv]);
                         Vector3 n = new Vector3(pclNrNormF[i], pclNrNormF[i + nv], pclNrNormF[i + 2 * nv]);
 
-                        if (projRay0[i] < projRay1[i])                       
-                            pt = p0 + projRay0[i] * n;                      
+                        if (ray0 < ray1)                       
+                            pt = p0 + ray0 * n;                      
                         else
-                            pt = p0 - projRay1[i] * n;
+                            pt = p0 - ray1 * n;
                     }
 
                     posProj.Add(pt);

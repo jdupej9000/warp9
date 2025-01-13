@@ -186,7 +186,7 @@ namespace Warp9.Test
                 bitmapSize * bitmapSize, seconds, bitmapSize * bitmapSize / seconds));
 
             Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 6, 10,
-               (i, j) => t[j * bitmapSize + i]);
+               (i, j) => (hit[j * bitmapSize + i] < 0) ? -1 : t[j * bitmapSize + i]);
 
             BitmapAsserts.AssertEqual(referenceFileName, bmp);
 

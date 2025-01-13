@@ -149,8 +149,16 @@ namespace Warp9.Test
 
                     for (int i = 0; i < width; i++)
                     {
-                        float r = (fun(i, j) - min) / (max - min);
-                        ptrSpan[i] = lut.Sample(r).ToArgb();
+                        float rraw = fun(i, j);
+                        if (rraw < 0)
+                        {
+                            ptrSpan[i] = 0;
+                        }
+                        else
+                        {
+                            float r = (rraw - min) / (max - min);
+                            ptrSpan[i] = lut.Sample(r).ToArgb();
+                        }
                     }
                 }
 

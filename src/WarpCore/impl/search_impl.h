@@ -10,7 +10,7 @@ namespace warpcore::impl
     {
         static inline int store(__m256 bestt, __m256i besti, __m256, __m256, float* result) noexcept
         {
-             int ret = -1;
+            int ret = -1;
             float t = FLT_MAX;
             reduce_idxmin(bestt, besti, t, ret);
             *result = t;
