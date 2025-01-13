@@ -203,7 +203,7 @@ namespace Warp9.IO
             MeshBuilder builder = new MeshBuilder();
             builder.SetSegment(MeshSegmentType.Position, position);
 
-            List<FaceIndices> fidx = builder.GetIndexSegmentForEditing<FaceIndices>();
+            List<FaceIndices> fidx = builder.GetIndexSegmentForEditing();
             fidx.Clear();
             fidx.Capacity = nt;
             foreach (ObjFace f in faces)

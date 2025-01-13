@@ -122,7 +122,7 @@ namespace Warp9.IO
             {
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
-                    bufferSize = chunk.Rows * 12;
+                    bufferSize = chunk.Rows;
                     MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows/3);
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
@@ -207,7 +207,7 @@ namespace Warp9.IO
             Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
 
             TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int idxDataSize);
-            byte[] idxData = new byte[idxDataSize];
+            FaceIndices[] idxData = new FaceIndices[idxDataSize];
 
             int nv = 0, nt = 0;
             foreach (WarpBinImportChunk chunk in parsedChunks)
@@ -251,10 +251,10 @@ namespace Warp9.IO
                 if(parsedIndexChunk.Value.Chunk.Encoding != ChunkEncoding.Int32x3)
                     throw new NotSupportedException();
 
-                reader.Read(idxData);
+                reader.Read(MemoryMarshal.Cast<FaceIndices, byte>(idxData.AsSpan()));
             }
 
-            return new Mesh(nv, nt, vertData, vertSegments, idxData, parsedIndexChunk?.Segment);
+            return new Mesh(nv, nt, vertData, vertSegments, idxData);
         }
 
         public static bool TryImport(Stream s, [MaybeNullWhen(false)] out Mesh pcl)

@@ -90,7 +90,6 @@ namespace Warp9.Data
             {
                 MeshViewKind.Pos3f => MakeVertexView(MeshSegmentType.Position, kind),
                 MeshViewKind.Normal3f => MakeVertexView(MeshSegmentType.Normal, kind),
-                MeshViewKind.Indices3i => MakeIndexView(),
                 _ => throw new NotSupportedException()
             };
 
@@ -102,7 +101,7 @@ namespace Warp9.Data
 
         public virtual MeshBuilder ToBuilder()
         {
-            MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, Array.Empty<byte>(), null);
+            MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, Array.Empty<FaceIndices>());
             return ret;
         }
 

@@ -10,8 +10,7 @@ namespace Warp9.Data
     {
         public int FaceCount { get; }
         public bool IsIndexed { get; }
-        public bool TryGetIndexData(out ReadOnlySpan<byte> data);
-        public MeshView? GetView(MeshViewKind kind, bool cache = true);
+        public bool TryGetIndexData(out ReadOnlySpan<FaceIndices> data);
         public MeshBuilder ToBuilder();
     }
 }

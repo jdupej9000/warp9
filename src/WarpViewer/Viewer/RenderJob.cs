@@ -237,7 +237,7 @@ namespace Warp9.Viewer
             rebuildInputLayout = true;
         }
 
-        public void SetIndexBuffer(DeviceContext ctx, byte[] data, SharpDX.DXGI.Format format)
+        public void SetIndexBuffer(DeviceContext ctx, ReadOnlySpan<byte> data, SharpDX.DXGI.Format format)
         {
             int elemSize = RenderUtils.GetStructSizeBytes(format);
             indexBuffer = Buffer.Create(ctx.Device, data,

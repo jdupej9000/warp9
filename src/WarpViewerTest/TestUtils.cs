@@ -284,7 +284,7 @@ namespace Warp9.Test
             for (int i = 0; i < vb.Length; i += 3)
                 pos.Add(new Vector3(scale * vb[i], scale * vb[i + 1], scale * vb[i + 2]));
 
-            List<FaceIndices> faces = mb.GetIndexSegmentForEditing<FaceIndices>();
+            List<FaceIndices> faces = mb.GetIndexSegmentForEditing();
             for(int i = 0; i < ib.Length; i+=3)
                 faces.Add(new FaceIndices(ib[i], ib[i + 1], ib[i + 2]));
 

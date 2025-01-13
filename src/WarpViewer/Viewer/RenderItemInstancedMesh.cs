@@ -5,6 +5,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -106,15 +107,14 @@ namespace Warp9.Viewer
             int numVert = mesh.VertexCount;
             if (mesh.IsIndexed)
             {
-                MeshView? indexView = mesh.GetView(MeshViewKind.Indices3i);
                 int numElems = mesh.FaceCount * 3;
-                if (indexView is null)
+                if (!mesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> idxData))
                 {
                     SetError("Mesh is indexed but has no index view.");
                     return true;
                 }
 
-                job.SetIndexBuffer(ctx, indexView.RawData, SharpDX.DXGI.Format.R32_UInt);
+                job.SetIndexBuffer(ctx, MemoryMarshal.Cast<FaceIndices, byte>(idxData), SharpDX.DXGI.Format.R32_UInt);
 
                 dcMain = job.SetInstancedDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList, 0, numInst, 0, numElems);
             }

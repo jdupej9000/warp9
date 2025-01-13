@@ -12,31 +12,6 @@ namespace Warp9.Processing
 {
     public static class MeshVertexSharing
     {
-        public static IEnumerable<FaceIndices> EnumerateFaces(Mesh m)
-        {
-            if (m.IsIndexed)
-            {
-                MeshView? idxView = m.GetView(MeshViewKind.Indices3i, false);
-                if (idxView is null || !idxView.AsTypedData(out ReadOnlySpan<FaceIndices> indices))
-                    throw new InvalidOperationException();
-
-                int ni = indices.Length;
-
-                for (int i = 0; i < ni; i++)
-                {
-                    // this it to work around error CS4007: Instance of type 'System.ReadOnlySpan<Warp9.Data.FaceIndices>' cannot be preserved across 'await' or 'yield' boundary.
-                    idxView.AsTypedData(out ReadOnlySpan<FaceIndices> indices2);
-                    yield return indices2[i];
-                }
-            }
-            else
-            {
-                int nt = m.VertexCount / 3;
-                for (int i = 0; i <= nt; i++)
-                    yield return new FaceIndices(3 * i, 3 * i + 1, 3 * i + 2);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long PosHash(Vector3 x, Vector3 x0, Vector3 sc)
         {
@@ -56,11 +31,11 @@ namespace Warp9.Processing
 
             MeshBuilder mb = new MeshBuilder();
             List<Vector3> newPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
-            List<FaceIndices> newIdx = mb.GetIndexSegmentForEditing<FaceIndices>();
+            List<FaceIndices> newIdx = mb.GetIndexSegmentForEditing();
 
             int vert = 0;
             Dictionary<long, int> sharedVertices = new Dictionary<long, int>();
-            foreach (FaceIndices fi in EnumerateFaces(m))
+            foreach (FaceIndices fi in MeshUtils.EnumerateFaceIndices(m))
             {
                 long h0 = PosHash(pos[fi.I0], x0, sc);
                 if (!sharedVertices.TryGetValue(h0, out int i0))

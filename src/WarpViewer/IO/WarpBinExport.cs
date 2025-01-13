@@ -22,7 +22,15 @@ namespace Warp9.IO
             if (Mesh is not null && Semantic == ChunkSemantic.Indices)
             {
                 fmt = ChunkNativeFormat.Int32x3;
-                return Mesh.TryGetIndexData(out data);
+                if (!Mesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> dataFi))
+                {
+                    data = ReadOnlySpan<byte>.Empty;
+                    return false;
+                }
+
+                data = MemoryMarshal.Cast<FaceIndices, byte>(dataFi);
+
+                return true;
             }
             else if (Mesh is not null && Semantic != ChunkSemantic.Indices)
             {

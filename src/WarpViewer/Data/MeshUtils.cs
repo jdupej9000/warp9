@@ -26,9 +26,8 @@ namespace Warp9.Data
             int nt = faces.FaceCount;
             for (int i = 0; i < nt; i++)
             {
-                faces.TryGetIndexData(out ReadOnlySpan<byte> retBytes);
-                ReadOnlySpan<int> ret = MemoryMarshal.Cast<byte, int>(retBytes);
-                yield return new FaceIndices(ret[i], ret[i + nt], ret[i + 2 * nt]);
+                faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> ret);
+                yield return ret[i];
             }
         }
 

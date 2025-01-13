@@ -167,15 +167,14 @@ namespace Warp9.Viewer
 
             DrawCall dcFace, dcWire;
             if (mesh.IsIndexed)
-            {
-                MeshView? indexView = mesh.GetView(MeshViewKind.Indices3i);
-                if (indexView is null)
+            { 
+                if (!mesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> idxData))
                 {
                     SetError("Mesh is indexed but has no index view.");
                     return true;
                 }
 
-                job.SetIndexBuffer(ctx, indexView.RawData, SharpDX.DXGI.Format.R32_UInt);
+                job.SetIndexBuffer(ctx, MemoryMarshal.Cast<FaceIndices, byte>(idxData), SharpDX.DXGI.Format.R32_UInt);
                 dcFace = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
                     0, mesh.FaceCount * 3);
                 dcWire = job.SetDrawCall(1, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,

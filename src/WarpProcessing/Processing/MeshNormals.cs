@@ -24,8 +24,7 @@ namespace Warp9.Processing
             if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
-            MeshView? faces = m.GetView(MeshViewKind.Indices3i);
-            if (faces is null || !faces.AsTypedData(out ReadOnlySpan<FaceIndices> faceData))
+            if(!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
                 throw new InvalidOperationException();
 
             int nv = pcl.VertexCount;
@@ -36,7 +35,7 @@ namespace Warp9.Processing
 
             for (int i = 0; i < nt; i++)
             {
-                FaceIndices f = faceData[i];
+                FaceIndices f = faces[i];
                 Vector3 a = posData[f.I0];
                 Vector3 b = posData[f.I1];
                 Vector3 c = posData[f.I2];

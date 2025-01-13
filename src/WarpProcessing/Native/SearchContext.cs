@@ -160,14 +160,14 @@ namespace Warp9.Native
             if (!m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> posRaw))
                 throw new InvalidOperationException();
 
-            bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<byte> idxRaw);
+            bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<FaceIndices> idxRaw);
             nint ctx = nint.Zero;
             int nt = m.FaceCount;   
 
             unsafe
             {
                 fixed (byte* posRawPtr = &MemoryMarshal.GetReference(posRaw))
-                fixed (byte* idxRawPtr = &MemoryMarshal.GetReference(idxRaw))
+                fixed (FaceIndices* idxRawPtr = &MemoryMarshal.GetReference(idxRaw))
                 fixed (byte* cfgPtr = &MemoryMarshal.GetReference(MemoryMarshal.Cast<TriGridConfig, byte>(cfgSpan)))
                 {
                     WarpCoreStatus s = (WarpCoreStatus)WarpCore.search_build((int)SEARCH_STRUCTURE.SEARCH_TRIGRID3, (nint)posRawPtr, (nint)idxRawPtr, m.VertexCount, m.FaceCount, (nint)cfgPtr, ref ctx);

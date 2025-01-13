@@ -11,28 +11,23 @@ namespace Warp9.Data
         public MeshBuilder()
         {
             data = Array.Empty<byte>();
-            indexData = Array.Empty<byte>();
+            indexData = Array.Empty<FaceIndices>();
         }
 
-        internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, byte[] ixd, MeshSegment? idxSeg)
+        internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, FaceIndices[] ixd)
         {
             data = vxd;
             indexData = ixd;
 
             foreach (var kvp in segs)
                 segments.Add(kvp.Key, kvp.Value.CloneWith(kvp.Value.Offset));
-
-            if (idxSeg is not null)
-                indexSegment = idxSeg.Clone();
-            else
-                indexSegment = null;
         }
 
         byte[] data;
-        byte[] indexData;
+        FaceIndices[]? indexData;
+        List<FaceIndices>? indexDataEdit = null;
         bool segmentsDirty = false, idxSegmentDirty = false;
         Dictionary<MeshSegmentType, MeshSegment> segments = new Dictionary<MeshSegmentType, MeshSegment>();
-        MeshSegment? indexSegment;
 
         public bool IsDirty => segments.Any((t) => t.Value.IsDirty);
         public int BufferSizeNeeded => segments.Sum((t) => t.Value.TotalLength);
@@ -41,7 +36,6 @@ namespace Warp9.Data
         {
             MeshBuilder mb2 = m.ToBuilder();
             indexData = mb2.indexData;
-            indexSegment = mb2.indexSegment;
         }
 
         public List<T> GetSegmentForEditing<T>(MeshSegmentType segType) where T : struct
@@ -79,31 +73,28 @@ namespace Warp9.Data
             segments.Remove(segType);
         }
 
-        public List<T> GetIndexSegmentForEditing<T>() where T : struct
+        public List<FaceIndices> GetIndexSegmentForEditing()
         {
-            if (indexSegment is MeshSegment<T> iseg)
+            if (indexDataEdit is not null)
             {
-                iseg.EnsureAosData(indexData.AsSpan());
-                if(iseg.AosData is null) 
-                    throw new InvalidDataException();
-
-                return iseg.AosData;
+                return indexDataEdit;
+            }
+           
+            indexDataEdit = new List<FaceIndices>();
+            if (indexData is not null)
+            {
+                indexDataEdit.AddRange(indexData);
+                indexData = null;
             }
 
-            MeshSegment<T> ret = new MeshSegment<T>();
-            if(ret.AosData is null)
-                throw new InvalidDataException();
-
-            indexSegment = ret;
-            idxSegmentDirty = true;
-
-            return ret.AosData;
+            return indexDataEdit;
         }
 
         public void RemoveIndexSegment()
         {
             idxSegmentDirty = true;
-            indexSegment = null;
+            indexData = null;
+            indexDataEdit = null;
         }
 
         private void ValidateSegments(bool isPcl, out int nv, out int nt)
@@ -127,9 +118,13 @@ namespace Warp9.Data
 
             nv = nv0;
 
-            if (indexSegment is not null)
+            if (indexDataEdit is not null)
             {
-                nt = indexSegment.NumItems;
+                nt = indexDataEdit.Count;
+            }
+            else if (indexData is not null && indexData.Length > 0)
+            {
+                nt = indexData.Length;
             }
             else
             {
@@ -176,35 +171,23 @@ namespace Warp9.Data
             }
         }
 
-        private void ComposeIndices(out byte[] dataRaw, out MeshSegment? seg)
+        private void ComposeIndices(out FaceIndices[] dataIdx)
         {
-            if (indexSegment is null)
-            {
-                dataRaw = Array.Empty<byte>();
-                seg = null;
-                return;
-            }
-
-            if (idxSegmentDirty)
-            {
-                dataRaw = new byte[indexSegment.TotalLength];
-                indexSegment.Copy(dataRaw);
-                seg = indexSegment.Clone();
-            }
+            if (indexDataEdit is not null)
+                dataIdx = indexDataEdit.ToArray();
+            else if (indexData is not null)
+                dataIdx = indexData;
             else
-            {
-                dataRaw = indexData;
-                seg = indexSegment.Clone();
-            }
+                dataIdx = Array.Empty<FaceIndices>();
         }
 
         public Mesh ToMesh()
         {
             ValidateSegments(false, out int nv, out int nt);
             ComposeSoa(out byte[] dataRaw, out Dictionary<MeshSegmentType, MeshSegment> newSegments);
-            ComposeIndices(out byte[] indicesRaw, out MeshSegment? newIdxSeg);
+            ComposeIndices(out FaceIndices[] indices);
 
-            return new Mesh(nv, nt, dataRaw, newSegments, indicesRaw, newIdxSeg);
+            return new Mesh(nv, nt, dataRaw, newSegments, indices);
         }
 
         public PointCloud ToPointCloud()
