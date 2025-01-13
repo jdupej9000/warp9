@@ -110,7 +110,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMP>GenerateParallelCode</OpenMP>
       <Optimization>MaxSpeed</Optimization>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -133,7 +133,7 @@
     </CudaLink>
     <CudaCompile>
       <Optimization>O2</Optimization>
-      <Runtime>MT</Runtime>
+      <Runtime>MD</Runtime>
       <RuntimeChecks>Default</RuntimeChecks>
       <TypeInfo>false</TypeInfo>
       <Warning>InheritFromHost</Warning>
@@ -142,6 +142,8 @@
       </AdditionalCompilerOptions>
       <FastMath>false</FastMath>
       <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
+      <CudaRuntime>Shared</CudaRuntime>
+      <NvccCompilation>compile</NvccCompilation>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -150,6 +152,7 @@
     <ClInclude Include="defs.h" />
     <ClInclude Include="gpa.h" />
     <ClInclude Include="impl\cpd_impl.h" />
+    <ClInclude Include="impl\cpu_info.h" />
     <ClInclude Include="impl\gpa_impl.h" />
     <ClInclude Include="impl\kmeans.h" />
     <ClInclude Include="impl\pcl_utils.h" />
@@ -168,6 +171,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gpa.cpp" />
     <ClCompile Include="impl\cpd_impl.cpp" />
+    <ClCompile Include="impl\cpu_info.cpp" />
     <ClCompile Include="impl\gpa_impl.cpp" />
     <ClCompile Include="impl\pcl_utils.cpp" />
     <ClCompile Include="impl\random.cpp" />
@@ -189,7 +193,7 @@
       <TypeInfo>false</TypeInfo>
       <Warning>W3</Warning>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
-      <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MT</Runtime>
+      <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MD</Runtime>
     </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

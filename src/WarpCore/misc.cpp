@@ -3,11 +3,14 @@
 #include <cstring>
 #include <string.h>
 #include <openblas_config.h>
+#include <cblas.h>
 #include <cuda_runtime.h>
 #include "impl/kmeans.h"
+#include "impl/cpu_info.h"
 #include "defs.h"
 
 using namespace std;
+using namespace warpcore::impl;
 
 extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 {
@@ -16,7 +19,7 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 
     switch (index) {
     case WCINFO_VERSION:
-        ss << "warpcore 0.1";
+        ss << "warpcore " << (WCORE_VER / 100) % 100 << "." << WCORE_VER % 100;
         break;
     case WCINFO_COMPILER:
 #if defined(__INTEL_LLVM_COMPILER)
@@ -34,20 +37,30 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         break;
 
     case WCINFO_OPT_PATH:
-        ss << "avx2";
+        switch (get_optpath()) {
+            case OPT_PATH::AVX2:    ss << "avx2"; break;
+            case OPT_PATH::AVX512:  ss << "avx512"; break;
+            default:                ss << "unknown"; break;
+        }
+        break;
+
+    case WCINFO_CPU_NAME: 
+        ss << get_cpuname();
         break;
 
     case WCINFO_OPENBLAS_VERSION:
         ss << OPENBLAS_VERSION;
         break;
 
+    case WCINFO_OPENBLAS_CONFIG:
+        ss << openblas_get_config();
+        break;
+
     case WCINFO_CUDA_DEVICE: 
-        if (cudaGetDevice(&device) != cudaSuccess)
-        {
+        if (cudaGetDevice(&device) != cudaSuccess) {
             ss << "Cannot get a CUDA device.";
         }
-        else
-        {
+        else {
             cudaDeviceProp props;
             cudaGetDeviceProperties(&props, device);
             ss << props.name;

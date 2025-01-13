@@ -72,6 +72,9 @@
     <ClInclude Include="impl\vec_math.h">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
+    <ClInclude Include="impl\cpu_info.h">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -114,6 +117,9 @@
       <Filter>Source Files\impl</Filter>
     </ClCompile>
     <ClCompile Include="impl\vec_math.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\cpu_info.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
   </ItemGroup>

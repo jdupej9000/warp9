@@ -7,11 +7,13 @@ namespace Warp9.Native
 {
     public enum WarpCoreInfoIndex : int
     {
-        WCINFO_VERSION = 0,
-        WCINFO_COMPILER = 1,
-        WCINFO_OPT_PATH = 2,
-        WCINFO_OPENBLAS_VERSION = 1000,
-        WCINFO_CUDA_DEVICE = 2000
+        VERSION = 0,
+        COMPILER = 1,
+        OPT_PATH = 2,
+        CPU_NAME = 3,
+        OPENBLAS_VERSION = 1000,
+        OPENBLAS_CONFIG = 1001,
+        CUDA_DEVICE = 2000
     }
 
     public enum CpdInitMethod : int

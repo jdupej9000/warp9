@@ -20,6 +20,8 @@
 
 #endif
 
+#define WCORE_VER (0001)
+
 #define WCORE_ASSERT(x) assert(x)
 
 #if defined(_MSC_VER)
