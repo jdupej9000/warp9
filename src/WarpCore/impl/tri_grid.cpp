@@ -169,6 +169,8 @@ namespace warpcore::impl
         for(int i = 0; i < nt; i+=8) {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
 
+            // TODO: load three consecutive vectors of idx and demux
+
             __m256i idxi = _mm256_loadu_si256((const __m256i*)(idx + i));
             idxi = _mm256_and_si256(idxi, mask); // mask out out-of-range elements (only in the last pass)
             __m256 x = _mm256_i32gather_ps(vert, idxi, 4);
