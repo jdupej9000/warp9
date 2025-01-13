@@ -162,24 +162,12 @@ namespace Warp9.Native
 
             bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<byte> idxRaw);
             nint ctx = nint.Zero;
-
-            // TODO: use views
-            int nt = m.FaceCount;
-            int[] idxt = new int[nt * 3];
-            ReadOnlySpan<int> idx = MemoryMarshal.Cast<byte, int>(idxRaw);
-            for (int i = 0; i < nt; i++)
-            {
-                idxt[i] = idx[3 * i];
-                idxt[i + nt] = idx[3 * i + 1];
-                idxt[i + 2 * nt] = idx[3 * i + 2];
-            }
-
+            int nt = m.FaceCount;   
 
             unsafe
             {
                 fixed (byte* posRawPtr = &MemoryMarshal.GetReference(posRaw))
-                //fixed (byte* idxRawPtr = &MemoryMarshal.GetReference(idxRaw))
-                fixed (int* idxRawPtr = &MemoryMarshal.GetReference(idxt.AsSpan()))
+                fixed (byte* idxRawPtr = &MemoryMarshal.GetReference(idxRaw))
                 fixed (byte* cfgPtr = &MemoryMarshal.GetReference(MemoryMarshal.Cast<TriGridConfig, byte>(cfgSpan)))
                 {
                     WarpCoreStatus s = (WarpCoreStatus)WarpCore.search_build((int)SEARCH_STRUCTURE.SEARCH_TRIGRID3, (nint)posRawPtr, (nint)idxRawPtr, m.VertexCount, m.FaceCount, (nint)cfgPtr, ref ctx);
