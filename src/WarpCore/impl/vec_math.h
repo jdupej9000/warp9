@@ -9,6 +9,7 @@ namespace warpcore::impl
     
     double reduce_add(__m256d v);
     float reduce_add(__m256 v);
+    float reduce_add(__m512 v);
     int reduce_add_i32(__m256i v);
 
     float reduce_min(__m256 v);

@@ -71,6 +71,20 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void InfoTest()
+        {
+            const int MaxDataLen = 1024;
+            StringBuilder sb = new StringBuilder(MaxDataLen);
+
+            foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
+            {
+                int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
+                Console.WriteLine(idx.ToString() + ": " + sb.ToString());
+            }
+        }
+
+
+        [TestMethod]
         public void CpdInitDefaultTest()
         {
             PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);

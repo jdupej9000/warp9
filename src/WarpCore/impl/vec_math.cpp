@@ -1,10 +1,14 @@
 #include "vec_math.h"
 #include "utils.h"
+#include "cpu_info.h"
 
 #include <algorithm>
 
 namespace warpcore::impl
 {
+    void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y);
+
     __m256 expf_fast(__m256 x)
     {
         // adapted from http://software-lisc.fbk.eu/avx_mathfun/avx_mathfun.h
@@ -53,6 +57,15 @@ namespace warpcore::impl
     float reduce_add(__m256 v) 
     {
         __m128 reduce = _mm_add_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        reduce = _mm_hadd_ps(reduce, reduce);
+        reduce = _mm_hadd_ps(reduce, reduce);
+        return _mm_cvtss_f32(reduce);
+    }
+
+    float reduce_add(__m512 v)
+    {
+        __m128 reduce = _mm_add_ps(_mm512_extractf32x4_ps(v, 0), _mm512_extractf32x4_ps(v, 1));
+        reduce = _mm_add_ps(reduce, _mm_add_ps(_mm512_extractf32x4_ps(v, 2), _mm512_extractf32x4_ps(v, 3)));
         reduce = _mm_hadd_ps(reduce, reduce);
         reduce = _mm_hadd_ps(reduce, reduce);
         return _mm_cvtss_f32(reduce);
@@ -200,24 +213,86 @@ namespace warpcore::impl
 
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
+        if (get_optpath() >= OPT_PATH::AVX512)
+            atdba_avx512(a, n, m, b, alpha, y);
+        else
+            atdba_avx2(a, n, m, b, alpha, y);
+    }
+
+    void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
+    {
         // alpha * A' * diag(B) * A
+        constexpr int VEC_WIDTH = 16;
         int m2 = round_down(m, 2);
-        int n8 = round_down(n, 8);
+        int n16 = round_down(n, VEC_WIDTH);
       
         for(int i = 0; i < m; i++) {
             int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
             for(int j = i; j < m2i; j+=2) {
-                __m256 a0 = _mm256_setzero_ps();
-                __m256 a1 = _mm256_setzero_ps();
-                for(int k = 0; k < n8; k+=8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
-                    a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
-                    a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j+1) * n), a1);
+                __m512 a0 = _mm512_setzero_ps();
+                __m512 a1 = _mm512_setzero_ps();
+                for(int k = 0; k < n16; k+= VEC_WIDTH) {
+                    const __m512 aai = _mm512_mul_ps(_mm512_loadu_ps(a + k + i * n), _mm512_loadu_ps(b + k));
+                    a0 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + j * n), a0);
+                    a1 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + (j+1) * n), a1);
                 }
 
                 float aa0 = reduce_add(a0);
                 float aa1 = reduce_add(a1);
-                for(int k = n8; k < n; k++) {
+                for(int k = n16; k < n; k++) {
+                    const float aai = a[k + i * n] * b[k];
+                    aa0 += aai * a[k + j * n];
+                    aa1 += aai * a[k + (j + 1) * n];
+                }
+
+                aa0 *= alpha;
+                aa1 *= alpha;
+                y[i * m + j] = aa0;
+                y[j * m + i] = aa0;
+                y[i * m + j + 1] = aa1;
+                y[(j + 1) * m + i] = aa1;
+            }
+
+            for(int j = m2i; j < m; j++) {
+                __m512 a0 = _mm512_setzero_ps();
+                for(int k = 0; k < n16; k+= VEC_WIDTH) {
+                    const __m512 aai = _mm512_mul_ps(_mm512_loadu_ps(a + k + i * n), _mm512_loadu_ps(b + k));
+                    a0 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + j * n), a0);
+                }
+
+                float aa0 = reduce_add(a0);
+                for(int k = n16; k < n; k++) {
+                    const float aai = a[k + i * n] * b[k];
+                    aa0 += aai * a[k + j * n];
+                }
+
+                aa0 *= alpha;
+                y[i * m + j] = aa0;
+                y[j * m + i] = aa0;
+            }
+        }
+    }
+
+    void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y)
+    {
+        // alpha * A' * diag(B) * A
+        int m2 = round_down(m, 2);
+        int n8 = round_down(n, 8);
+
+        for (int i = 0; i < m; i++) {
+            int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
+            for (int j = i; j < m2i; j += 2) {
+                __m256 a0 = _mm256_setzero_ps();
+                __m256 a1 = _mm256_setzero_ps();
+                for (int k = 0; k < n8; k += 8) {
+                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
+                    a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
+                    a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j + 1) * n), a1);
+                }
+
+                float aa0 = reduce_add(a0);
+                float aa1 = reduce_add(a1);
+                for (int k = n8; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
@@ -232,21 +307,20 @@ namespace warpcore::impl
                 y[(j + 1) * m + i] = aa1;
             }
 
-            for(int j = m2i; j < m; j++) {
+            for (int j = m2i; j < m; j++) {
                 __m256 a0 = _mm256_setzero_ps();
-                for(int k = 0; k < n8; k+=8) {
+                for (int k = 0; k < n8; k += 8) {
                     const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                 }
 
                 float aa0 = reduce_add(a0);
-                for(int k = n8; k < n; k++) {
+                for (int k = n8; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
 
                 aa0 *= alpha;
-
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }
