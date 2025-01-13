@@ -17,7 +17,20 @@ namespace Warp9.Data
             { typeof(FaceIndices), SharpDX.DXGI.Format.R32G32B32_UInt }
         };
 
-       
+
+        public static IEnumerable<FaceIndices> EnumerateFaceIndices(IFaceCollection faces)
+        {
+            if (!faces.IsIndexed)
+                yield break;
+
+            int nt = faces.FaceCount;
+            for (int i = 0; i < nt; i++)
+            {
+                faces.TryGetIndexData(out ReadOnlySpan<byte> retBytes);
+                ReadOnlySpan<int> ret = MemoryMarshal.Cast<byte, int>(retBytes);
+                yield return new FaceIndices(ret[i], ret[i + nt], ret[i + 2 * nt]);
+            }
+        }
 
         public static void CopySoaToAos(Span<float> dest, ReadOnlySpan<byte> src)
         {

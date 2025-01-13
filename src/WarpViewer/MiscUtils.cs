@@ -44,5 +44,17 @@ namespace Warp9
             below = numBelow;
             above = numAbove;
         }
+
+        public static int CumSum(Span<int> arr, int initial = 0)
+        {
+            int sum = initial;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                int sumNew = sum + arr[i];
+                arr[i] = sum;
+                sum = sumNew;
+            }
+            return sum;
+        }
     }
 }
