@@ -15,6 +15,8 @@ namespace warpcore::impl
     float reduce_min(__m256 v);
     float reduce_max(__m256 v);
 
+    void demux(__m256i& a, __m256i& b, __m256i& c);
+
     float extract(__m256 v, int index);
     int extract(__m256i v, int index);
     int find_min_index(__m256 v);

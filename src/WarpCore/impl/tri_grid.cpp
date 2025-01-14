@@ -141,25 +141,26 @@ namespace warpcore::impl
     void populate_grid_cell(float* dest, const float* vert, const int* idx, const int* face, int nvcell, int nv, int nt)
     {
         for(int i = 0; i < nvcell; i++) {
-            const int fidx = face[i];
+            const int fidx = 3 * face[i];
 
             const int idx0 = idx[fidx];
             dest[i + 0 * nvcell] = vert[idx0 + 0 * nv];
             dest[i + 1 * nvcell] = vert[idx0 + 1 * nv];
             dest[i + 2 * nvcell] = vert[idx0 + 2 * nv];
 
-            const int idx1 = idx[fidx + nt];
+            const int idx1 = idx[fidx + 1];
             dest[i + 3 * nvcell] = vert[idx1 + 0 * nv];
             dest[i + 4 * nvcell] = vert[idx1 + 1 * nv];
             dest[i + 5 * nvcell] = vert[idx1 + 2 * nv];
 
-            const int idx2 = idx[fidx + 2 * nt];
+            const int idx2 = idx[fidx + 2];
             dest[i + 6 * nvcell] = vert[idx2 + 0 * nv];
             dest[i + 7 * nvcell] = vert[idx2 + 1 * nv];
             dest[i + 8 * nvcell] = vert[idx2 + 2 * nv];
         }
     }
 
+   
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
     {
         constexpr int ROUND_FLOOR = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
@@ -169,10 +170,13 @@ namespace warpcore::impl
         for(int i = 0; i < nt; i+=8) {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
 
-            // TODO: load three consecutive vectors of idx and demux
+            // Demultiplex a0 b0 c0 a1 b1 ... c7 into a0 a1..., b0 b1..., c0 c1...
+            __m256i idx0 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i));
+            __m256i idx1 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i + 8));
+            __m256i idx2 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i + 16));
+            demux(idx0, idx1, idx2);
 
-            __m256i idxi = _mm256_loadu_si256((const __m256i*)(idx + i));
-            idxi = _mm256_and_si256(idxi, mask); // mask out out-of-range elements (only in the last pass)
+            __m256i idxi = _mm256_and_si256(idx0, mask); // mask out out-of-range elements (only in the last pass)
             __m256 x = _mm256_i32gather_ps(vert, idxi, 4);
             __m256 xmin = x, xmax = x;
             __m256 y = _mm256_i32gather_ps(vert + nv, idxi, 4);
@@ -180,8 +184,7 @@ namespace warpcore::impl
             __m256 z = _mm256_i32gather_ps(vert + 2 * nv, idxi, 4);
             __m256 zmin = z, zmax = z;
 
-            idxi = _mm256_loadu_si256((const __m256i*)(idx + i + nt));
-            idxi = _mm256_and_si256(idxi, mask);
+            idxi = _mm256_and_si256(idx1, mask);
             x = _mm256_i32gather_ps(vert, idxi, 4);
             xmin = _mm256_min_ps(xmin, x);
             xmax = _mm256_max_ps(xmax, x);
@@ -192,8 +195,7 @@ namespace warpcore::impl
             zmin = _mm256_min_ps(zmin, z);
             zmax = _mm256_max_ps(zmax, z);
 
-            idxi = _mm256_loadu_si256((const __m256i*)(idx + i + 2 * nt));
-            idxi = _mm256_and_si256(idxi, mask);
+            idxi = _mm256_and_si256(idx2, mask);
             x = _mm256_i32gather_ps(vert, idxi, 4);
             xmin = _mm256_min_ps(xmin, x);
             xmax = _mm256_max_ps(xmax, x);

@@ -125,6 +125,22 @@ namespace warpcore::impl
         return _mm_cvtss_f32(reduce);
     }
 
+    void demux(__m256i& a, __m256i& b, __m256i& c)
+    {
+        __m256i a0 = _mm256_blend_epi32(a, b, 0b10010010);
+        __m256i a1 = _mm256_blend_epi32(a0, c, 0b00100100);
+        __m256i ax = _mm256_permutevar8x32_epi32(a1, _mm256_setr_epi32(0, 3, 6, 1, 4, 7, 2, 5));
+        __m256i b0 = _mm256_blend_epi32(a, b, 0b00100100);
+        __m256i b1 = _mm256_blend_epi32(b0, c, 0b01001001);
+        __m256i bx = _mm256_permutevar8x32_epi32(b1, _mm256_setr_epi32(1, 4, 7, 2, 5, 0, 3, 6));
+        __m256i c0 = _mm256_blend_epi32(a, b, 0b01001001);
+        __m256i c1 = _mm256_blend_epi32(c0, c, 0b10010010);
+        __m256i cx = _mm256_permutevar8x32_epi32(c1, _mm256_setr_epi32(2, 5, 0, 3, 6, 1, 4, 7));
+        a = ax;
+        b = bx;
+        c = cx;
+    }
+
     float extract(__m256 v, int index)
     {
         alignas(32) float vv[8];
