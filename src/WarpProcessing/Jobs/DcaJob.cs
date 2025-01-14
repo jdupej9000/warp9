@@ -13,6 +13,7 @@ namespace Warp9.Jobs
         private static readonly string NonrigidInitKey = "nonrigid.init";
         private static readonly string NonrigidRegKey = "nonrigid.reg";
         private static readonly string CorrespondenceRegKey = "corr.reg";
+        private static readonly string CorrespondenceSizeKey = "corr.size";
         
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj, bool debug=false)
         {
@@ -35,7 +36,7 @@ namespace Warp9.Jobs
                 case DcaRigidPreregKind.LandmarkFittedGpa:
                     yield return new LandmarkGpaJobItem(index++, cfg.SpecimenTableKey,
                         cfg.LandmarkColumnName ?? throw new InvalidOperationException(),
-                        GpaPreregKey, null);
+                        GpaPreregKey, CorrespondenceSizeKey, null);
                     gpaRegItem = GpaPreregKey;
                     break;
 
@@ -99,7 +100,7 @@ namespace Warp9.Jobs
                     break;
 
                 case DcaRigidPostRegistrationKind.Gpa:
-                    yield return new PclGpaJobItem(index++, CorrespondenceRegKey, CorrespondenceRegKey);
+                    yield return new PclGpaJobItem(index++, CorrespondenceRegKey, CorrespondenceSizeKey, CorrespondenceRegKey);
                     break;
 
                 case DcaRigidPostRegistrationKind.GpaOnWhitelisted:
@@ -112,7 +113,7 @@ namespace Warp9.Jobs
             if(!debug)
                 yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
-            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, GpaPreregKey, CorrespondenceRegKey, null, cfg.ResultEntryName, cfg);
+            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, GpaPreregKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, cfg.ResultEntryName, cfg);
         }
     }
 }

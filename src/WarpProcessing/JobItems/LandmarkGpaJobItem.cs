@@ -14,12 +14,13 @@ namespace Warp9.JobItems
     /// </summary>
     public class LandmarkGpaJobItem : ProjectJobItem
     {
-        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, GpaConfiguration? cfg) :
+        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, string sizeResultKey, GpaConfiguration? cfg) :
             base(index, "Landmark GPA", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
             LandmarkColumnName = colName;
             WorkspaceResultKey = resultKey;
+            SizeResultKey = sizeResultKey;
 
             Config = cfg ?? new GpaConfiguration();
         }
@@ -27,6 +28,7 @@ namespace Warp9.JobItems
         public long SpecimenTableKey { get; init; }
         public string LandmarkColumnName { get; init; }
         public string WorkspaceResultKey { get; init; }
+        public string SizeResultKey { get; init; }
         public GpaConfiguration Config { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
@@ -50,6 +52,9 @@ namespace Warp9.JobItems
 
             Gpa res = Gpa.Fit(pcls!, Config);
             ctx.Workspace.Set(WorkspaceResultKey, res);
+
+            for (int i = 0; i < pcls.Length; i++)
+                ctx.Workspace.Set(SizeResultKey, i, res.GetTransform(i).cs);
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA complete: " + res.ToString());
 

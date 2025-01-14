@@ -55,7 +55,7 @@ namespace Warp9.Processing
         public DcaNonrigidRegistrationKind NonrigidRegistration { get; set; } = DcaNonrigidRegistrationKind.LowRankCpd;
 
         [JsonPropertyName("projection")]
-        public DcaSurfaceProjectionKind SurfaceProjection { get; set; } = DcaSurfaceProjectionKind.ClosestPoint;
+        public DcaSurfaceProjectionKind SurfaceProjection { get; set; } = DcaSurfaceProjectionKind.RaycastWithFallback;
 
         [JsonPropertyName("rigid-postreg")]
         public DcaRigidPostRegistrationKind RigidPostRegistration { get; set; } = DcaRigidPostRegistrationKind.Gpa;

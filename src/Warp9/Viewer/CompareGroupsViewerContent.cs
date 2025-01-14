@@ -61,6 +61,7 @@ namespace Warp9.Viewer
         CompareGroupsSideBar sidebar;
         long entityKey;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderPhong = true;
+        bool compareForm = false;
         float valueMin = 0, valueMax = 1;
         float? valueShow = null; 
         int mappedFieldIndex = 0;
@@ -128,6 +129,12 @@ namespace Warp9.Viewer
             set { valueMax = value; UpdateMappedField(); OnPropertyChanged("ValueMax"); }
         }
 
+        public bool ModelsForm
+        {
+            get { return compareForm; }
+            set { compareForm = value; UpdateGroups(true, true); OnPropertyChanged("ModelsForm"); }
+        }
+
         public List<string> MappedFieldsList => mappedFieldsList;
 
         public void AttachRenderer(WpfInteropRenderer renderer)
@@ -161,17 +168,21 @@ namespace Warp9.Viewer
             SpecimenSelectorWindow ssw = new SpecimenSelectorWindow(sel);
             ssw.ShowDialog();
 
-            // TODO: make Cancel have no effect
-            if (group == 0)
+            UpdateGroups(group == 0, group == 1);
+        }
+
+        public void UpdateGroups(bool a, bool b)
+        {
+            if (a)
             {
-                pclA = GetCorrPosBlend(sel);
+                pclA = GetCorrPosBlend(selectionA, compareForm);
             }
-            else
+
+            if (b)
             {
-                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(sel), meshMean);
+                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm), meshMean);
                 mbB.CopyIndicesFrom(meshMean);
                 meshB = mbB.ToMesh();
-                
             }
 
             UpdateMappedField();
@@ -204,17 +215,36 @@ namespace Warp9.Viewer
             return MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
         }
 
-        private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel)
+        private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form)
         {
             if (!dcaEntry.Payload.Table!.Columns.TryGetValue("corrPcl", out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
                 throw new InvalidOperationException();
 
-            return MeshBlend.Mean(
-                ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
-                    .Index()
-                    .Where((t) => sel.Selected[t.Index])
-                    .Select((t) => t.Item));
+            float[]? cs = null;
+            if (form &&
+                dcaEntry.Payload.Table!.Columns.TryGetValue("cs", out SpecimenTableColumn? col2) &&
+                col2 is SpecimenTableColumn<double> csCol)
+            {
+                cs = csCol.Data.Select((t) => (float)t).ToArray();
+            }
+
+            if (cs is not null)
+            {
+                return MeshBlend.WeightedMean(
+                    ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
+                        .Index()
+                        .Where((t) => sel.Selected[t.Index])
+                        .Select((t) => (t.Item, cs[t.Index])));
+            }
+            else
+            {
+                return MeshBlend.WeightedMean(
+                    ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
+                        .Index()
+                        .Where((t) => sel.Selected[t.Index])
+                        .Select((t) => (t.Item, 1.0f)));
+            }
         }
 
         private void UpdateRendererStyle()

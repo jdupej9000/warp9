@@ -13,19 +13,21 @@ namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string resultEntryName, DcaConfiguration cfg) :
+        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
             CorrespondencePclItem = corrPclsItem;
             CorrespondenceLandmarksItem = corrLmsItem;
             ResultEntryName = resultEntryName;
+            CorrespondenceSizeItem = corrSizeItem;
             GpaItem = gpaItem;
             DcaConfig = cfg;
         }
 
         public long SpecimenTableKey { get; init; }
         public string CorrespondencePclItem { get; init; }
+        public string CorrespondenceSizeItem { get; init; }
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
         public string? GpaItem { get; init; }
@@ -79,6 +81,13 @@ namespace Warp9.JobItems
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrLms[i]);
                     colCorrLms.Add(new ProjectReferenceLink(referenceKey));
                 }
+            }
+
+            if (ctx.Workspace.TryGet(CorrespondenceSizeItem, out List<float>? cs) && cs is not null)
+            {
+                SpecimenTableColumn<double> colCs = specTab.AddColumn<double>("cs", SpecimenTableColumnType.Real);
+                for (int i = 0; i < n; i++)
+                    colCs.Add((double)cs[i]);
             }
 
             if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)

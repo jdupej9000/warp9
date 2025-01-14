@@ -11,14 +11,16 @@ namespace Warp9.JobItems
 {
     public class PclGpaJobItem : ProjectJobItem
     {
-        public PclGpaJobItem(int index, string meshListWorkspaceItem, string resultItem) :
+        public PclGpaJobItem(int index, string meshListWorkspaceItem, string sizeItem, string resultItem) :
             base(index, "Mesh GPA", Jobs.JobItemFlags.FailuesAreFatal | Jobs.JobItemFlags.RunsAlone)
         {
             ResultItem = resultItem;
+            SizeItem = sizeItem;
             MeshListItem = meshListWorkspaceItem;
         }
 
         public string ResultItem { get; init; }
+        public string SizeItem { get; init; }
         public string MeshListItem { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
@@ -47,7 +49,17 @@ namespace Warp9.JobItems
             ctx.WriteLog(ItemIndex, MessageKind.Information,
                     string.Format("Mesh GPA complete ({0}).", res.ToString()));
 
-            
+            if (ctx.Workspace.TryGet(SizeItem, out List<float>? corrCs) && corrCs is not null)
+            {
+                for (int i = 0; i < n; i++)
+                    corrCs[i] *= res.GetTransform(i).cs;
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                    ctx.Workspace.Set(SizeItem, i, res.GetTransform(i).cs);
+            }
+
             if (meshes is null)
             {
                 for (int i = 0; i < n; i++)
