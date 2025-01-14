@@ -49,6 +49,7 @@ namespace Warp9.Viewer
         public const uint PshConst_Flags_ColorScale = 3;
 
         public const uint PshConst_Flags_PhongBlinn = 0x10;
+        public const uint PshConst_Flags_DiffuseLighting = 0x20;
 
         public const uint PshConst_Flags_EstimateNormals = 0x100;
         public const uint PshConst_Flags_ValueLevel = 0x200;
@@ -200,13 +201,13 @@ Texture2D tex0 : register(t0);
 SamplerState sam0 : register(s0);
 Texture1D texScale : register(t1);
 
-float4 phong(float4 amb, float4 diff, float3 normal, float3 posw)
+float4 phong(float4 amb, float4 diff, float3 normal, float3 posw, float spec)
 {
    float3 l = normalize(lightpos - posw);
    float3 v = normalize(camerapos - posw);
    float3 h = normalize(l + v);
    float4 pl = lit(dot(normal, l), dot(normal, h), 40);
-   float4 ret = pl.x * amb + pl.y * diff + pl.z * float4(1,1,1,0);
+   float4 ret = pl.x * amb + pl.y * diff + spec * pl.z * float4(1,1,1,0);
    return saturate(ret);
 }
 
@@ -223,7 +224,10 @@ float4 main(VsOutput input) : SV_TARGET
       normal = normalize(cross(ddx(input.posw), ddy(input.posw))); // ideally this should be posw-cameraPos calculated in vert shader
 
    if((flags & 0xf0) == 0x10)
-      ret = phong(float4(ambStrength.rrr,1) * ret, ret, normal, input.posw);
+      ret = phong(float4(ambStrength.rrr,1) * ret, ret, normal, input.posw, 1);
+   
+   if((flags & 0xf0) == 0x20)
+      ret = phong(float4(ambStrength.rrr,1) * ret, ret, normal, input.posw, 0);
 
    if((flags & 0x200) == 0x200)
    {

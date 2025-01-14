@@ -199,6 +199,25 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void RenderSuzanneDiffuseTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = TestUtils.LoadObjAsset("suzanne.obj", IO.ObjImportMode.AllUnshared);
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateScale(1.5f);
+            renderItemMesh.FillColor = Color.Gray;
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderSuzanneDiffuseTest_0.png", bmp);
+        }
+
+        [TestMethod]
         public void RenderGridTest()
         {
             HeadlessRenderer rend = CreateRenderer();

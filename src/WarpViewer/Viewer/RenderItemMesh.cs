@@ -17,6 +17,7 @@ namespace Warp9.Viewer
         ColorLut = StockShaders.PshConst_Flags_ColorScale,
 
         PhongBlinn = StockShaders.PshConst_Flags_PhongBlinn,
+        DiffuseLighting = StockShaders.PshConst_Flags_DiffuseLighting,
 
         EstimateNormals = StockShaders.PshConst_Flags_EstimateNormals,
 
