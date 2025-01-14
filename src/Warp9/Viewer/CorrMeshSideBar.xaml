@@ -18,15 +18,19 @@
         <Label Height="4" />
 
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+                          ToolTip="Add wireframe."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                          ToolTip="Fill faces."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                          ToolTip="Use vertex normals. If disabled, face normals are used."/>
         </StackPanel>
         <Label Height="12" />
 
         <TextBlock>Miscellaneous</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                          ToolTip="Add grid."/>
         </StackPanel>
     </StackPanel>
 </Page>

@@ -12,18 +12,25 @@
     <StackPanel Orientation="Vertical">
         <TextBlock>Specimen groups</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" Click="GroupSwap_Click" />
-            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" Click="GroupB_Click"/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" 
+                    ToolTip="Select the A group subjects."/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" Click="GroupSwap_Click" 
+                    ToolTip="Swap the A and B group subjects."/>
+            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" Click="GroupB_Click"
+                    ToolTip="Select the B group subjects."/>
         </StackPanel>
         <Label Height="12" />
 
         <TextBlock>Rendering</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderPhong, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+                          ToolTip="Add wireframe."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                          ToolTip="Fill faces."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                          ToolTip="Use vertex normals. If disabled, face normals are used."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderPhong, Mode=TwoWay}"
+                          ToolTip="Use Phong-Blinn lighting."/>
         </StackPanel>
         <Label Height="12" />
         
@@ -31,7 +38,8 @@
         <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
         <Label Height="4" />
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Resize}" Width="24" Height="24" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Resize}" Width="24" Height="24" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
+                          ToolTip="Restore size when computing mean group models. This compares form and the mapped units are the same as the units of the original models if enabled." />
         </StackPanel>
         <Label Height="4" />
         <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover"/>
@@ -45,7 +53,8 @@
 
         <TextBlock >Miscellaneous</TextBlock>
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                          ToolTip="Show grid."/>
         </StackPanel>
     </StackPanel>
 </Page>
