@@ -17,6 +17,10 @@ namespace warpcore::impl
 
     void demux(__m256i& a, __m256i& b, __m256i& c);
 
+    void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept;
+    __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept;
+    __m256 blend_in(__m256 x, __m256 y, __m256 mask) noexcept;
+
     float extract(__m256 v, int index);
     int extract(__m256i v, int index);
     int find_min_index(__m256 v);

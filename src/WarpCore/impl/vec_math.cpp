@@ -141,6 +141,23 @@ namespace warpcore::impl
         c = cx;
     }
 
+    void cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept
+    {
+        cx = _mm256_fmsub_ps(ay, bz, _mm256_mul_ps(az, by));
+        cy = _mm256_fmsub_ps(az, bx, _mm256_mul_ps(ax, bz));
+        cz = _mm256_fmsub_ps(ax, by, _mm256_mul_ps(ay, bx));
+    }
+
+    __m256 dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept
+    {
+        return _mm256_fmadd_ps(ax, bx, _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
+    }
+
+    __m256 blend_in(__m256 x, __m256 y, __m256 mask) noexcept
+    {
+        return _mm256_blendv_ps(x, y, mask);
+    }
+
     float extract(__m256 v, int index)
     {
         alignas(32) float vv[8];
