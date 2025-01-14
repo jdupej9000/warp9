@@ -42,6 +42,51 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void LoadExt()
+        {
+            using FileStream fs = new FileStream("D:\\ref-1.w9mesh", FileMode.Open, FileAccess.Read);
+            Assert.IsTrue(WarpBinImport.TryImport(fs, out Mesh? m));
+            Assert.IsNotNull(m);
+        }
+
+        [TestMethod]
+        public void TeapotW9MeshRoundtripTest()
+        {
+            Mesh m0 = TestUtils.LoadObjAsset("teapot.obj", ObjImportMode.PositionsOnly);
+            Assert.IsTrue(m0.IsIndexed);
+            Assert.AreEqual(6320, m0.FaceCount);
+            Assert.AreEqual(3644, m0.VertexCount);
+
+            using MemoryStream ms1 = new MemoryStream();
+            WarpBinExport.ExportMesh(ms1, m0, null);
+            ms1.Seek(0, SeekOrigin.Begin);
+            Assert.IsTrue(ms1.Length > 0);
+
+            Assert.IsTrue(WarpBinImport.TryImport(ms1, out Mesh? m2));
+            Assert.IsNotNull(m2);
+            Assert.AreEqual(6320, m2.FaceCount);
+            Assert.AreEqual(3644, m2.VertexCount);
+
+            int nt = m2.FaceCount;
+            Assert.IsTrue(m0.TryGetIndexData(out ReadOnlySpan<FaceIndices> idx0));
+            Assert.IsTrue(m2.TryGetIndexData(out ReadOnlySpan<FaceIndices> idx2));
+            for (int i = 0; i < nt; i++)
+                Assert.AreEqual(idx0[i], idx2[i]);
+
+            MeshView? v0 = m0.GetView(MeshViewKind.Pos3f);
+            Assert.IsNotNull(v0);
+            Assert.IsTrue(v0.AsTypedData(out ReadOnlySpan<Vector3> vx0));
+
+            MeshView? v2 = m2.GetView(MeshViewKind.Pos3f);
+            Assert.IsNotNull(v2);
+            Assert.IsTrue(v2.AsTypedData(out ReadOnlySpan<Vector3> vx2));
+
+            int nv = m2.VertexCount;
+            for (int i = 0; i < nv; i++)
+                Assert.IsTrue(Vector3.Distance(vx0[i], vx2[i]) < 1e-6f);
+        }
+
+        [TestMethod]
         public void EmptyPointCloudWarpBinExportTest()
         {
             using MemoryStream stream = new MemoryStream();

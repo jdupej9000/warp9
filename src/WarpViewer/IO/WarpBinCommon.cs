@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Warp9.IO
 {
@@ -50,5 +51,19 @@ namespace Warp9.IO
     internal static class WarpBinCommon
     {
         public const uint WarpBinMagic = 0xbadcaca0;
+
+        public static int GetEncodingStride(ChunkEncoding enc)
+        {
+            return enc switch
+            {
+                ChunkEncoding.Raw => 1,
+                ChunkEncoding.Int32x3 => 12,
+                ChunkEncoding.Float32 => 4,
+                ChunkEncoding.Fixed16 => 2,
+                ChunkEncoding.Normalized16 => 2,
+                ChunkEncoding.Ignore => 0,
+                _ => throw new ArgumentException()
+            };
+        }
     }
 }

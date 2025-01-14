@@ -123,7 +123,7 @@ namespace Warp9.IO
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
                     bufferSize = chunk.Rows;
-                    MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows/3);
+                    MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows);
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
                         Chunk = chunk,

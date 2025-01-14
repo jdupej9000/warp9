@@ -97,7 +97,7 @@ namespace Warp9.IO
                 if (!t.TryGetRawData(out _, out ReadOnlySpan<byte> data))
                     throw new InvalidOperationException();
 
-                int numElements = data.Length / 4;
+                int numElements = data.Length / (t.Semantic== ChunkSemantic.Indices ? 12 : 4);
 
                 if (numElements % t.MeshSegmentDimension != 0)
                     throw new InvalidOperationException();

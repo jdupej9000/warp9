@@ -15,7 +15,7 @@ namespace Warp9.Data
         internal Mesh(PointCloud pcl, int nt, FaceIndices[] ix) :
             base(pcl)
         {
-            indexData = Array.Empty<FaceIndices>();
+            indexData = ix;
             FaceCount = nt;
         }
 

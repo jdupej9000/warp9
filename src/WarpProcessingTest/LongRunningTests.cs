@@ -51,7 +51,7 @@ namespace Warp9.Test
             DcaConfiguration cfg = new DcaConfiguration();
             cfg.SpecimenTableKey = 21;
             cfg.LandmarkColumnName = "Landmarks";
-            cfg.MeshColumnName = "Mesh";
+            cfg.MeshColumnName = "Model";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
