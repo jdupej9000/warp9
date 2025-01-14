@@ -34,7 +34,7 @@ namespace warpcore::impl
 		return sum;
 	}
 
-	void reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx)
+	void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx)
 	{
 		__m128 m = _mm_min_ps(_mm256_extractf128_ps(d, 0), _mm256_extractf128_ps(d, 1));
 		m = _mm_min_ps(m, _mm_movehl_ps(m, m));

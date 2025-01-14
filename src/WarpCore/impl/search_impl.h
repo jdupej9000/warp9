@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../p3f.h"
+#include "../config.h"
 #include "utils.h"
 #include <immintrin.h>
 
@@ -8,7 +9,7 @@ namespace warpcore::impl
 {
     struct RayTri_T
     {
-        static inline int store(__m256 bestt, __m256i besti, __m256, __m256, float* result) noexcept
+        static inline int WCORE_VECCALL store(__m256 bestt, __m256i besti, __m256, __m256, float* result) noexcept
         {
             int ret = -1;
             float t = FLT_MAX;
@@ -21,7 +22,7 @@ namespace warpcore::impl
 
     struct RayTri_TBary
     {
-        static inline int store(__m256 bestt, __m256i besti, __m256 u, __m256 v, float* result) noexcept
+        static inline int WCORE_VECCALL store(__m256 bestt, __m256i besti, __m256 u, __m256 v, float* result) noexcept
         {
             int ret = -1;
             float t = FLT_MAX;
@@ -63,7 +64,7 @@ namespace warpcore::impl
     struct PtTri_DPtBary
     {
         constexpr static size_t ResultSize = 8;
-        static inline void store(p3f pt, p3f bary, float d, float* result) noexcept
+        static inline void WCORE_VECCALL store(p3f pt, p3f bary, float d, float* result) noexcept
         {
             result[0] = sqrtf(d);
             _mm_storeu_ps(result + 1, pt);

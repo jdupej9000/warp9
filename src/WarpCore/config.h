@@ -13,10 +13,14 @@
     #define WCEXPORT __declspec(dllexport)
     #endif
 
+    #define WCORE_VECCALL __vectorcall
+
 #else
 
     #define STACK_ALLOC(T,N) (T*)alloca((N) * sizeof(T))
     #define WCEXPORT
+
+    #define WCORE_VECCALL
 
 #endif
 

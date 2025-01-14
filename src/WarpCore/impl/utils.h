@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../config.h"
 #include <cstddef>
 #include <float.h>
 #include <immintrin.h>
@@ -11,7 +12,7 @@ namespace warpcore::impl
     int round_down(int x, int blk);
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
-    void reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
+    void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
     void range(const float* x, int n, float& min, float& max);
     
     template<typename T>

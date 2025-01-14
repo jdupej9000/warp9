@@ -38,7 +38,7 @@ namespace warpcore::impl
     bool is_cell_in_grid(const trigrid* g, int x, int y, int z) noexcept;
 
     template<typename TCtx>
-    bool traverse_3ddda(p3f p0, p3f p1, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
+    bool WCORE_VECCALL traverse_3ddda(p3f p0, p3f p1, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
     {
         p3i dimm1 = _mm_sub_epi32(dim, p3i_set(1));
         p3f d = p3f_sub(p1, p0);
