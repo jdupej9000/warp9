@@ -123,7 +123,7 @@ namespace Warp9.Viewer
 
         private void UpdateRendererConfig()
         {
-            meshRend.Style = MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat | (renderSmooth ? 0:  MeshRenderStyle.EstimateNormals);
+            meshRend.Style = MeshRenderStyle.DiffuseLighting | MeshRenderStyle.ColorFlat | (renderSmooth ? 0:  MeshRenderStyle.EstimateNormals);
             meshRend.RenderWireframe = renderWireframe;
             meshRend.RenderFace = renderFill;
             meshRend.RenderPoints = false;

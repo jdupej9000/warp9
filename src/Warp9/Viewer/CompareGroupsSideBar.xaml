@@ -29,8 +29,8 @@
                           ToolTip="Fill faces."/>
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
                           ToolTip="Use vertex normals. If disabled, face normals are used."/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderPhong, Mode=TwoWay}"
-                          ToolTip="Use Phong-Blinn lighting."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+                          ToolTip="Use diffuse lighting."/>
         </StackPanel>
         <Label Height="12" />
         

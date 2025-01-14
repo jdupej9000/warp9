@@ -60,7 +60,7 @@ namespace Warp9.Viewer
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
         long entityKey;
-        bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderPhong = true;
+        bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true;
         bool compareForm = false;
         float valueMin = 0, valueMax = 1;
         float? valueShow = null; 
@@ -105,10 +105,10 @@ namespace Warp9.Viewer
             set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
         }
 
-        public bool RenderPhong
+        public bool RenderDiffuse
         {
-            get { return renderPhong; }
-            set { renderPhong = value; UpdateRendererConfig(); OnPropertyChanged("RenderPhong"); }
+            get { return renderDiffuse; }
+            set { renderDiffuse = value; UpdateRendererConfig(); OnPropertyChanged("RenderDiffuse"); }
         }
 
         public int MappedFieldIndex
@@ -251,8 +251,8 @@ namespace Warp9.Viewer
         {
             MeshRenderStyle style = 0;
 
-            if (renderPhong)
-                style |= MeshRenderStyle.PhongBlinn;
+            if (renderDiffuse)
+                style |= MeshRenderStyle.DiffuseLighting;
 
             if (!renderSmooth)
                 style |= MeshRenderStyle.EstimateNormals;
