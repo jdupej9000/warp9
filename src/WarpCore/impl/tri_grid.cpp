@@ -160,7 +160,37 @@ namespace warpcore::impl
         }
     }
 
-   
+    inline static void load_safe(const int* idx, int n, __m256i& a, __m256i& b, __m256i& c)
+    {
+        if (n >= 24) {
+            a = _mm256_loadu_si256((const __m256i*)idx);
+            b = _mm256_loadu_si256((const __m256i*)(idx + 8));
+            c = _mm256_loadu_si256((const __m256i*)(idx + 16));
+            return;
+        }
+
+        if (n >= 8) {
+            a = _mm256_loadu_si256((const __m256i*)idx);
+        }
+        else {
+            const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
+            a = _mm256_maskload_epi32(idx, mask);
+            return;
+        }
+
+        if (n >= 16) {
+            b = _mm256_loadu_si256((const __m256i*)(idx + 8));
+        }
+        else {
+            const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 8), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
+            b = _mm256_maskload_epi32(idx + 8, mask);
+            return;
+        }
+
+        const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 16), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
+        c = _mm256_maskload_epi32(idx + 16, mask);           
+    }
+    
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
     {
         constexpr int ROUND_FLOOR = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
@@ -170,10 +200,8 @@ namespace warpcore::impl
         for(int i = 0; i < nt; i+=8) {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
 
-            // Demultiplex a0 b0 c0 a1 b1 ... c7 into a0 a1..., b0 b1..., c0 c1...
-            __m256i idx0 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i));
-            __m256i idx1 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i + 8));
-            __m256i idx2 = _mm256_loadu_si256((const __m256i*)(idx + 3 * i + 16));
+            __m256i idx0, idx1, idx2;
+            load_safe(idx + 3 * i, nt - i, idx0, idx1, idx2);
             demux(idx0, idx1, idx2);
 
             __m256i idxi = _mm256_and_si256(idx0, mask); // mask out out-of-range elements (only in the last pass)
