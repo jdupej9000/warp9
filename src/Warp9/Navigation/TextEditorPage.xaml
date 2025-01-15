@@ -9,16 +9,14 @@
       Title="MarkdownEditorPage">
 
     <Grid>
-        <Border BorderBrush="{DynamicResource TabItem.Selected.Border}">
-            <TextBox x:Name="txtEdit" 
-                     Style="{DynamicResource NoHoverTextBox}"
-                     VerticalScrollBarVisibility="Visible" 
-                     TextWrapping="Wrap" 
-                     AcceptsReturn="True"
-                     AcceptsTab="True"
-                     FontFamily="Cascadia Mono Light" 
-                     TextChanged="txtEdit_TextChanged"
-                     Padding="4,4,4,4" />
-        </Border>
+        <TextBox x:Name="txtEdit" 
+                    Style="{DynamicResource NoHoverTextBox}"
+                    VerticalScrollBarVisibility="Visible" 
+                    TextWrapping="Wrap" 
+                    AcceptsReturn="True"
+                    AcceptsTab="True"
+                    FontFamily="Cascadia Mono Light" 
+                    TextChanged="txtEdit_TextChanged"
+                    Padding="4,4,4,4" />
     </Grid>
 </Page>

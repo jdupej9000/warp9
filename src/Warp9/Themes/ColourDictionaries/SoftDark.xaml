@@ -2,6 +2,30 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <BitmapImage x:Key="AImage.MonoIcon" UriSource="../../Assets/warp9-logo-softdark.png" />
 
+    <Color x:Key="ThemeColor.Window.Background" R="0" G="0" B="0" A="255" />
+    <Color x:Key="ThemeColor.Window.Disabled" R="77" G="77" B="77" A="255" />
+    <Color x:Key="ThemeColor.Window.DarkText" R="146" G="146" B="146" A="255" />
+    <Color x:Key="ThemeColor.Window.LightText" R="255" G="255" B="255" A="255" />
+
+    <Color x:Key="ThemeColor.Panel.Background" R="46" G="46" B="46" A="255" />
+    <Color x:Key="ThemeColor.Panel.Highlight" R="64" G="64" B="64" A="255" />
+    <Color x:Key="ThemeColor.Panel.Disabled" R="140" G="140" B="140" A="255" />
+    <Color x:Key="ThemeColor.Panel.DarkText" R="170" G="170" B="170" A="255" />
+    <Color x:Key="ThemeColor.Panel.LightText" R="255" G="255" B="255" A="255" />
+    <Color x:Key="ThemeColor.Panel.Outline" R="0" G="0" B="0" A="255" />
+    <Color x:Key="ThemeColor.Panel.FillDark" R="131" G="131" B="131" A="255" />
+    <Color x:Key="ThemeColor.Panel.FillLight" R="160" G="160" B="160" A="255" />
+
+    <Color x:Key="ThemeColor.Control.Background" R="79" G="79" B="79" A="255" />
+    <Color x:Key="ThemeColor.Control.BorderDark" R="0" G="0" B="0" A="255" />
+    <Color x:Key="ThemeColor.Control.BorderLight" R="62" G="62" B="62" A="255" />
+    <Color x:Key="ThemeColor.Control.Text" R="220" G="220" B="220" A="255" />
+    <Color x:Key="ThemeColor.Control.Gridline" R="87" G="87" B="87" A="255"/>
+    <Color x:Key="ThemeColor.Control.SelectedFill" R="87" G="87" B="87" A="255" />
+    <Color x:Key="ThemeColor.Control.SelectedText" R="220" G="220" B="220" A="255" />
+
+   
+
     <Color x:Key="AColour.Foreground.Static" R="240" G="240" B="240" A="255"/>
     <Color x:Key="AColour.Foreground.Deeper" R="220" G="220" B="220" A="255"/>
     <Color x:Key="AColour.Foreground.Disabled" R="190" G="190" B="190" A="255"/>
@@ -192,21 +216,4 @@
     <SolidColorBrush x:Key="ABrush.Tone8.Border.Selected.Inactive" Color="{StaticResource AColour.Tone8.Border.Selected.Inactive}"/>
     <SolidColorBrush x:Key="ABrush.Tone8.Border.Disabled" Color="{StaticResource AColour.Tone8.Border.Disabled}"/>
 
-    <DrawingBrush x:Key="ABrush.DitherBackground" Viewbox="0,0,1,1" ViewboxUnits="Absolute" TileMode="Tile">
-        <DrawingBrush.Drawing>
-            <GeometryDrawing>
-                <GeometryDrawing.Geometry>
-                    <GeometryGroup>
-                       
-                        <LineGeometry StartPoint="0,0.5" EndPoint="1,0.5" />
-                       
-                    </GeometryGroup>
-                </GeometryDrawing.Geometry>
-
-                <GeometryDrawing.Pen>
-                    <Pen Thickness="0.02" Brush="{StaticResource ABrush.Tone8.Background.Static}"/>
-                </GeometryDrawing.Pen>
-            </GeometryDrawing>
-        </DrawingBrush.Drawing>
-    </DrawingBrush>
 </ResourceDictionary>

@@ -1,6 +1,7 @@
 ﻿using System.CodeDom;
 using System.IO;
 using System.Numerics;
+using System.Runtime.ConstrainedExecution;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -116,10 +117,11 @@ namespace Warp9.Navigation
                 if (!WpfInteropRenderer.TryCreate(0, out renderer) || renderer is null)
                     throw new InvalidOperationException();
 
-                if (owner.Background is SolidColorBrush bkb)
-                    renderer.CanvasColor = System.Drawing.Color.FromArgb(bkb.Color.R, bkb.Color.G, bkb.Color.B);
-                else
-                    renderer.CanvasColor = System.Drawing.Color.Black;
+                renderer.CanvasColor = System.Drawing.Color.FromArgb(146, 146, 146);
+                //if (FindResource("ThemeColors.Window.Background") is Color clr)
+                //    renderer.CanvasColor = System.Drawing.Color.FromArgb(clr.R, clr.G, clr.B);
+                //else
+                //    renderer.CanvasColor = System.Drawing.Color.Black;
 
                 renderer.Fussy = false;
                 renderer.Shaders.AddShader(StockShaders.VsDefault);

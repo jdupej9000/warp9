@@ -277,8 +277,26 @@
     <SolidColorBrush x:Key="DataGrid.CellItem.Static.Background" Color="{DynamicResource AColour.Tone5.Background.Static}"/>
     <SolidColorBrush x:Key="DataGrid.CellItem.MouseOver.Background" Color="{DynamicResource AColour.Tone5.Background.MouseOver}"/>
 
-    <SolidColorBrush x:Key="Window.Static.Background" Color="{DynamicResource AColour.Tone3.Background.Static}"/>
-    <SolidColorBrush x:Key="Window.Static.Border" Color="{DynamicResource AColour.Tone5.Border.Static}"/>
-    <SolidColorBrush x:Key="Window.Static.Foreground" Color="{DynamicResource AColour.Foreground.Static}"/>
-    <SolidColorBrush x:Key="Window.Static.Title.Background" Color="{DynamicResource AColour.Tone4.Background.Static}"/>
+    <!-- -->
+    
+    <SolidColorBrush x:Key="Window.Static.Background" Color="{DynamicResource ThemeColor.Window.Background}"/>
+    <SolidColorBrush x:Key="Window.Static.Border" Color="{DynamicResource ThemeColor.Window.Disabled}"/>
+    <SolidColorBrush x:Key="Window.Static.Foreground" Color="{DynamicResource ThemeColor.Window.DarkText}"/>
+    <SolidColorBrush x:Key="Window.Static.Title.Background" Color="{DynamicResource ThemeColor.Window.Background}"/>
+    <SolidColorBrush x:Key="Window.Static.Highlight" Color="{DynamicResource ThemeColor.Window.LightText}" />
+
+    <SolidColorBrush x:Key="Panel.Background" Color="{DynamicResource ThemeColor.Panel.Background}" />
+    <SolidColorBrush x:Key="Panel.Disabled" Color="{DynamicResource ThemeColor.Panel.Disabled}" />
+    <SolidColorBrush x:Key="Panel.DarkText" Color="{DynamicResource ThemeColor.Panel.DarkText}" />
+    <SolidColorBrush x:Key="Panel.LightText" Color="{DynamicResource ThemeColor.Panel.LightText}" />
+    <SolidColorBrush x:Key="Panel.Highlight" Color="{DynamicResource ThemeColor.Panel.Highlight}" />
+
+    <SolidColorBrush x:Key="Control.Background" Color="{DynamicResource ThemeColor.Control.Background}" />
+    <SolidColorBrush x:Key="Control.Border" Color="{DynamicResource ThemeColor.Control.BorderLight}" />
+    <SolidColorBrush x:Key="Control.DarkBorder" Color="{DynamicResource ThemeColor.Control.BorderDark}"/>
+    <SolidColorBrush x:Key="Control.Text" Color="{DynamicResource ThemeColor.Control.Text}" />
+    <SolidColorBrush x:Key="Control.Gridline" Color="{DynamicResource ThemeColor.Control.Gridline}" />
+    <SolidColorBrush x:Key="Control.SelectedFill" Color="{DynamicResource ThemeColor.Control.SelectedFill}" />
+    <SolidColorBrush x:Key="Control.SelectedText" Color="{DynamicResource ThemeColor.Control.SelectedText}" />
+
 </ResourceDictionary>

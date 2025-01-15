@@ -6,55 +6,69 @@
       xmlns:local="clr-namespace:Warp9.Viewer"
       xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="200"
+      d:DesignHeight="450" d:DesignWidth="218"
+      Background="{DynamicResource Panel.Background}"
       Title="CompareGroupsSideBar">
 
-    <StackPanel Orientation="Vertical">
-        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Specimen groups</TextBlock>
-        <StackPanel Orientation="Horizontal">
-            <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" 
-                    ToolTip="Select the A group subjects."/>
-            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" Click="GroupSwap_Click" 
-                    ToolTip="Swap the A and B group subjects."/>
-            <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" Click="GroupB_Click"
-                    ToolTip="Select the B group subjects."/>
-        </StackPanel>
-        <Label Height="12" />
+    <StackPanel Orientation="Vertical" Margin="4">
+        <Border Style="{DynamicResource GroupBorder}">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Specimen groups</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" 
+                        ToolTip="Select the A group subjects."/>
+                    <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource Swap}" Width="24" Height="24" Click="GroupSwap_Click" 
+                        ToolTip="Swap the A and B group subjects."/>
+                    <Button Style="{DynamicResource NoBorderButton}" Content="B" Width="24" Height="24" Click="GroupB_Click"
+                        ToolTip="Select the B group subjects."/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>
-        <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+        <Border Style="{DynamicResource GroupBorder}">
+            <StackPanel Orientation="Vertical">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
                           ToolTip="Add wireframe."/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeFill}" Width="24" Height="24" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
                           ToolTip="Fill faces."/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Shader}" Width="24" Height="24" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
                           ToolTip="Use vertex normals. If disabled, face normals are used."/>
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource DirectionLight}" Width="24" Height="24" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
                           ToolTip="Use diffuse lighting."/>
-        </StackPanel>
-        <Label Height="12" />
+            </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
-        <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
-        <Label Height="4" />
-        <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Resize}" Width="24" Height="24" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
+        <Border Style="{DynamicResource GroupBorder}">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
+                <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+                <Label Height="4" />
+                <StackPanel Orientation="Horizontal">
+                    <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Resize}" Width="24" Height="24" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
                           ToolTip="Restore size when computing mean group models. This compares form and the mapped units are the same as the units of the original models if enabled." />
-        </StackPanel>
-        <Label Height="4" />
-        <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover"/>
-        <Label Height="4" />
-        <StackPanel Orientation="Horizontal">
-            <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <Label Width="99" />
-            <TextBox Width="50" Height="24" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        </StackPanel>
-        <Label Height="12" />
+                </StackPanel>
+                <Label Height="4" />
+                <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover"/>
+                <Label Height="4" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Width="99" />
+                    <TextBox Width="50" Height="24" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
-        <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+        <Border Style="{DynamicResource GroupBorder}">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
                           ToolTip="Show grid."/>
-        </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
     </StackPanel>
 </Page>

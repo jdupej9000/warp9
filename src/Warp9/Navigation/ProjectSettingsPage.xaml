@@ -8,7 +8,7 @@
       d:DesignHeight="450" d:DesignWidth="600"
       Title="ProjectSettingsPage">
 
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" BorderThickness="0">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" BorderThickness="0" Background="{DynamicResource Panel.Background}" Padding="6">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
             
             <StackPanel Orientation="Horizontal">                

@@ -34,172 +34,208 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
             <StackPanel Orientation="Vertical" Width="500">
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Data</TextBlock>
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Data</TextBlock>
+                        <Label Height="4" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="24"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
 
-                <TextBlock Margin="2">Name of result</TextBlock>
-                <TextBox Margin="2" Height="24" Text="{Binding Path=ResultEntryName, Mode=TwoWay}" />
-                <Label Height="8" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">Name of result</TextBlock>
+                            <TextBox Grid.Row="0" Grid.Column="2" Height="24" Text="{Binding Path=ResultEntryName, Mode=TwoWay}" BorderThickness="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
 
-                <TextBlock Margin="2">Specimen table</TextBlock>
-                <ComboBox x:Name="cmbSpecTable" Margin="2" SelectionChanged="cmbSpecTable_SelectionChanged"/>
-                <Label Height="8" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">Specimen table</TextBlock>
+                            <ComboBox Grid.Row="1" Grid.Column="2" x:Name="cmbSpecTable" SelectionChanged="cmbSpecTable_SelectionChanged" VerticalAlignment="Center"/>
 
-                <TextBlock Margin="2">Mesh column</TextBlock>
-                <ComboBox x:Name="cmbMeshes" Margin="2"/>
-                <Label Height="8" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">Mesh column</TextBlock>
+                            <ComboBox Grid.Row="2" Grid.Column="2" x:Name="cmbMeshes" VerticalAlignment="Center"/>
 
-                <TextBlock Margin="2">Landmarks column</TextBlock>
-                <ComboBox x:Name="cmbLandmarks" Margin="2"/>
-                <Label Height="8" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">Landmarks column</TextBlock>
+                            <ComboBox Grid.Row="3" Grid.Column="2" x:Name="cmbLandmarks" VerticalAlignment="Center"/>
 
-                <TextBlock Margin="2">Base specimen</TextBlock>
-                <ComboBox Margin="2" x:Name="cmbBase"/>
-                <Label Height="8" />
-                <Separator/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" VerticalAlignment="Center">Base specimen</TextBlock>
+                            <ComboBox Grid.Row="4" Grid.Column="2" x:Name="cmbBase" VerticalAlignment="Center"/>
+                        </Grid>
+                            
+                        
+                        
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid prealignment</TextBlock>
-                <RadioButton GroupName="prealign" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertDcaPreregKind}, ConverterParameter=None}">
-                    No prealignment
-                </RadioButton>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes initial prealignment. This option makes landmarks optional, but may hinder convergence of nonrigid algorithms.</TextBlock>
-                <Label Height="8" />
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid prealignment</TextBlock>
+                        <RadioButton GroupName="prealign" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertDcaPreregKind}, ConverterParameter=None}">
+                            No prealignment
+                        </RadioButton>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes initial prealignment. This option makes landmarks optional, but may hinder convergence of nonrigid algorithms.</TextBlock>
+                        
+                        <RadioButton GroupName="prealign" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertDcaPreregKind}, ConverterParameter=LandmarkFittedGpa}">
+                            Landmark-fitted GPA
+                        </RadioButton>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Uses landmarks to rigidly prealign the meshes. It is generally recommended to use this setting.</TextBlock>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="prealign" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertDcaPreregKind}, ConverterParameter=LandmarkFittedGpa}">
-                    Landmark-fitted GPA
-                </RadioButton>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Uses landmarks to rigidly prealign the meshes. It is generally recommended to use this setting.</TextBlock>
-                <Label Height="8" />
+                        <RadioButton GroupName="prealign" Margin="2" IsEnabled="False">
+                            ICP
+                        </RadioButton>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Prealigns the meshes with a basic Iterative closest point algorithm. This is useful for improving nonrigid convergence with data where landmarks are unavailable.</TextBlock>
+                        <Label Height="8" />
+                    </StackPanel>
+                </Border>
 
-                <RadioButton GroupName="prealign" Margin="2" IsEnabled="False">ICP</RadioButton>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Prealigns the meshes with a basic Iterative closest point algorithm. This is useful for improving nonrigid convergence with data where landmarks are unavailable.</TextBlock>
-                <Label Height="8" />
-                <Separator/>
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Nonrigid registration</TextBlock>
+                        <RadioButton GroupName="nonrigid" Margin="2" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=None}">
+                            No registration
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Nonrigid registration</TextBlock>
-                <RadioButton GroupName="nonrigid" Margin="2" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=None}">
-                    No registration
-                </RadioButton>
-                <Label Height="8" />
+                        <RadioButton GroupName="nonrigid" Margin="2" IsEnabled="False" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=LandmarkFittedTps}">
+                            Landmark-fitted thin plate spline
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="nonrigid" Margin="2" IsEnabled="False" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=LandmarkFittedTps}">
-                    Landmark-fitted thin plate spline
-                </RadioButton>
-                <Label Height="8" />
+                        <RadioButton GroupName="nonrigid" Margin="2" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=LowRankCpd}">
+                            Coherent point drift (nonrigid, low-rank)
+                        </RadioButton>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,4">A nonrigid point cloud registration algorithm that does not use landmarks. Convergence is sensitive to initial alignment. Computation is accelerated with a GPU if available.</TextBlock>
+                        <Grid Margin="12,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="80" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="24"/>
+                            </Grid.RowDefinitions>
 
-                <RadioButton GroupName="nonrigid" Margin="2" IsChecked="{Binding Path=NonrigidRegistration, Mode=TwoWay, Converter={StaticResource convertDcaNonrigidRegistrationKind}, ConverterParameter=LowRankCpd}">
-                    Coherent point drift (nonrigid, low-rank)
-                </RadioButton>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,4">A nonrigid point cloud registration algorithm that does not use landmarks. Convergence is sensitive to initial alignment. Computation is accelerated with a GPU if available.</TextBlock>
-                <Grid Margin="12,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="80" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="24"/>
-                    </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0">Beta</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Path=CpdConfig.Beta, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="0">Beta</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Path=CpdConfig.Beta, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1">Lambda</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=CpdConfig.Lambda, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="1">Lambda</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=CpdConfig.Lambda, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="2">w</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Path=CpdConfig.W, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="2">w</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Path=CpdConfig.W, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="3">Tolerance</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Path=CpdConfig.Tolerance, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="3">Tolerance</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Path=CpdConfig.Tolerance, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="4">Max. iterations</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="4" Text="{Binding Path=CpdConfig.MaxIterations, Mode=TwoWay}" />
+                        </Grid>
+                        <Label Height="8" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="4">Max. iterations</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="4" Text="{Binding Path=CpdConfig.MaxIterations, Mode=TwoWay}" />
-                </Grid>
-                <Label Height="8" />
-                
-                <Separator/>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Surface projection</TextBlock>
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=None}">
-                    Use nonrigid result
-                </RadioButton>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes projection to the floating surface. If a registration algorithm results in a sufficiently tight fitting, this option may help reduce noise in the correspondence meshes.</TextBlock>
-                <Label Height="8" />
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Surface projection</TextBlock>
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=None}">
+                            Use nonrigid result
+                        </RadioButton>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Forgoes projection to the floating surface. If a registration algorithm results in a sufficiently tight fitting, this option may help reduce noise in the correspondence meshes.</TextBlock>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=ClosestPoint}">
-                    Closest point
-                </RadioButton>
-                <Label Height="8" />
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=ClosestPoint}">
+                            Closest point
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=RaycastWithFallback}">
-                    Raycast along surface normal or closest point
-                </RadioButton>
-                <Label Height="8" />
-                <Separator/>
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=SurfaceProjection, Mode=TwoWay, Converter={StaticResource convertDcaSurfaceProjectionKind}, ConverterParameter=RaycastWithFallback}">
+                            Raycast along surface normal or closest point
+                        </RadioButton>
+                        <Label Height="8" />
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Correspondence rejection</TextBlock>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">This step creates a blacklist of vertices whose correspondences are unreliable. It is useful to generate better rigid registrations and cleaner PCAs. Blacklisted vertices can be corrected using imputation if the statistical implicaitons are understood.</TextBlock>
-                <CheckBox Margin="2" IsChecked="{Binding RejectDistant, Mode=TwoWay}">Reject distant vertices</CheckBox>
-                <Label Height="8" />
-                <CheckBox Margin="2,0,0,8" IsChecked="{Binding RejectExpanded, Mode=TwoWay}">Reject triangles by expansion</CheckBox>
-                <Grid Margin="12,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100" />
-                        <ColumnDefinition Width="100" />
-                        <ColumnDefinition Width="100" />
-                        <ColumnDefinition Width="100" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="24"/>
-                    </Grid.RowDefinitions>
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Correspondence rejection</TextBlock>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">This step creates a blacklist of vertices whose correspondences are unreliable. It is useful to generate better rigid registrations and cleaner PCAs. Blacklisted vertices can be corrected using imputation if the statistical implicaitons are understood.</TextBlock>
+                        <CheckBox Margin="2" IsChecked="{Binding RejectDistant, Mode=TwoWay}">Reject distant vertices</CheckBox>
+                        <Label Height="8" />
+                        <CheckBox Margin="2,0,0,8" IsChecked="{Binding RejectExpanded, Mode=TwoWay}">Reject triangles by expansion</CheckBox>
+                        <Grid Margin="12,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="100" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="24"/>
+                            </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0">Max. distance</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Path=RejectDistanceThreshold, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="0">Max. distance</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Path=RejectDistanceThreshold, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="1">Min. expansion</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=RejectExpandedLowThreshold, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1">Min. expansion</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=RejectExpandedLowThreshold, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="2">Max. expansion</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Path=RejectExpandedHighThreshold, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="0" Grid.Column="2">Max. expansion</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Path=RejectExpandedHighThreshold, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="3">Threshold (%)</TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Path=RejectCountPercent, Mode=TwoWay}" />
-                </Grid>
-                <Label Height="8" />
+                            <TextBlock Grid.Row="0" Grid.Column="3">Threshold (%)</TextBlock>
+                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Path=RejectCountPercent, Mode=TwoWay}" />
+                        </Grid>
+                        <Label Height="8" />
 
-                <TextBlock Margin="2">Imputation method</TextBlock>
-                <ComboBox Margin="2"/>
-                <Label Height="8" />
-                <Separator/>
+                        <TextBlock Margin="2">Imputation method</TextBlock>
+                        <ComboBox Margin="2"/>
+                        <Label Height="8" />
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid registration</TextBlock>
-                <Label Height="8" />
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=None}">
-                    No registration
-                </RadioButton>
-                <Label Height="8" />
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Rigid registration</TextBlock>
+                        <Label Height="8" />
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=None}">
+                            No registration
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=Gpa}">
-                    GPA on all vertices
-                </RadioButton>
-                <Label Height="8" />
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=Gpa}">
+                            GPA on all vertices
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=GpaOnWhitelisted}">
-                    GPA excluding blacklisted vertices
-                </RadioButton>
-                <Label Height="8" />
+                        <RadioButton GroupName="proj" Margin="2" IsChecked="{Binding Path=RigidPostRegistration, Mode=TwoWay, Converter={StaticResource convertDcaRigidPostRegistrationKind}, ConverterParameter=GpaOnWhitelisted}">
+                            GPA excluding blacklisted vertices
+                        </RadioButton>
+                        <Label Height="8" />
 
-                <CheckBox Margin="2,0,0,8" IsChecked="{Binding RestoreSize, Mode=TwoWay}">Restore specimen size (create form)</CheckBox>
-                <Separator/>
+                        <CheckBox Margin="2,0,0,8" IsChecked="{Binding RestoreSize, Mode=TwoWay}">Restore specimen size (create form)</CheckBox>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Advanced</TextBlock>
-                <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">[NOT IMPLEMENTED] These settings should generally not be changed unless troubleshooting issues.</TextBlock>
-                <CheckBox Margin="2,0,0,8">Do not use GPU for acceleration</CheckBox>
-                <CheckBox Margin="2,0,0,8">Do not run tasks in parallel</CheckBox>
+                <Border Style="{DynamicResource GroupBorder}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Advanced</TextBlock>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">[NOT IMPLEMENTED] These settings should generally not be changed unless troubleshooting issues.</TextBlock>
+                        <CheckBox Margin="2,0,0,8">Do not use GPU for acceleration</CheckBox>
+                        <CheckBox Margin="2,0,0,8">Do not run tasks in parallel</CheckBox>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

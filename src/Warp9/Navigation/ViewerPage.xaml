@@ -12,25 +12,27 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <!--<ColumnDefinition Width="Auto" /> -->
             <ColumnDefinition  />
-            <ColumnDefinition Width="232" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="250" />
         </Grid.ColumnDefinitions>
 
-        <GroupBox Grid.Column="1" Header="Viewer">
-        <DockPanel>
+        <GroupBox Grid.Column="2">
+            <GroupBox.Header>
+                <TextBlock Text="Viewer" Style="{DynamicResource GroupBoxHeaderBlock}"/>
+            </GroupBox.Header>
+        <DockPanel Background="{DynamicResource Panel.Background}">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="4">
                 <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource CaptureFrame}" Width="28" Height="28"/> 
             </StackPanel>
-            <ComboBox x:Name="cmbVis" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="4" SelectionChanged="cmbVis_SelectionChanged"/>
+            <ComboBox x:Name="cmbVis" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="4" SelectionChanged="cmbVis_SelectionChanged" Background="Transparent"/>
             <ScrollViewer DockPanel.Dock="Bottom" Padding="8">
                     <Frame x:Name="frmSidebar" />
             </ScrollViewer>
         </DockPanel>
         </GroupBox>
-        
 
-        <!--<GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Border}" ShowsPreview="True" Width="5" />-->
+        <Label Grid.Column="1" Background="{DynamicResource Window.Static.Background}" Width="2" />
 
         <Grid x:Name="ImageGrid" Grid.Column="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
             <Image x:Name="ImageHost" Stretch="Fill" Mouse.MouseDown="InteropImage_MouseDown" Mouse.MouseUp="InteropImage_MouseUp" Mouse.MouseMove="InteropImage_MouseMove" Mouse.MouseWheel="InteropImage_MouseWheel">
