@@ -77,7 +77,14 @@
     <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockDimmed">
         <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Disabled}"/>
     </Style>
-    
+
+    <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockSidebarSection">
+        <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource ABrush.DitherBackground}" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
     <Style TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}"/>

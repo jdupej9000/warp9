@@ -9,7 +9,7 @@
       Title="CorrMeshSideBar">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock>Correspondence mesh</TextBlock>        
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Correspondence mesh</TextBlock>
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="txtSpecimen" Width="150" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="24" Height="24" Click="btnSpecimenDec_Click"/>
@@ -27,7 +27,7 @@
         </StackPanel>
         <Label Height="12" />
 
-        <TextBlock>Miscellaneous</TextBlock>
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
                           ToolTip="Add grid."/>

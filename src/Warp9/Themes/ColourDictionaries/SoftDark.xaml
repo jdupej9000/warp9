@@ -102,7 +102,6 @@
     <!-- Primary.5 would be regular controls, aka control that are obvious and normal (they stick out)-->
     <!-- Primary.6 is like Primary.5 but it's more obvious, it sticks out a bit more -->
     <!-- Primary.7 is like Primary.6 but it's very obvious, it sticks out more (useful for popups maybe, possibly with shadows as well) -->
-
     <SolidColorBrush x:Key="ABrush.AccentTone1.Background.Static" Color="{StaticResource AColour.AccentTone1.Background.Static}"/>
     <SolidColorBrush x:Key="ABrush.AccentTone1.Border.Static" Color="{StaticResource AColour.AccentTone1.Border.Static}"/>
     <SolidColorBrush x:Key="ABrush.AccentTone2.Background.Static" Color="{StaticResource AColour.AccentTone2.Background.Static}"/>
@@ -192,4 +191,22 @@
     <SolidColorBrush x:Key="ABrush.Tone8.Border.Selected" Color="{StaticResource AColour.Tone8.Border.Selected}"/>
     <SolidColorBrush x:Key="ABrush.Tone8.Border.Selected.Inactive" Color="{StaticResource AColour.Tone8.Border.Selected.Inactive}"/>
     <SolidColorBrush x:Key="ABrush.Tone8.Border.Disabled" Color="{StaticResource AColour.Tone8.Border.Disabled}"/>
+
+    <DrawingBrush x:Key="ABrush.DitherBackground" Viewbox="0,0,1,1" ViewboxUnits="Absolute" TileMode="Tile">
+        <DrawingBrush.Drawing>
+            <GeometryDrawing>
+                <GeometryDrawing.Geometry>
+                    <GeometryGroup>
+                       
+                        <LineGeometry StartPoint="0,0.5" EndPoint="1,0.5" />
+                       
+                    </GeometryGroup>
+                </GeometryDrawing.Geometry>
+
+                <GeometryDrawing.Pen>
+                    <Pen Thickness="0.02" Brush="{StaticResource ABrush.Tone8.Background.Static}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
 </ResourceDictionary>

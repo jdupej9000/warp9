@@ -10,7 +10,7 @@
       Title="CompareGroupsSideBar">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock>Specimen groups</TextBlock>
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Specimen groups</TextBlock>
         <StackPanel Orientation="Horizontal">
             <Button Style="{DynamicResource NoBorderButton}" Content="A" Width="24" Height="24" Click="GroupA_Click" 
                     ToolTip="Select the A group subjects."/>
@@ -21,7 +21,7 @@
         </StackPanel>
         <Label Height="12" />
 
-        <TextBlock>Rendering</TextBlock>
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource CubeWire}" Width="24" Height="24" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
                           ToolTip="Add wireframe."/>
@@ -33,8 +33,8 @@
                           ToolTip="Use diffuse lighting."/>
         </StackPanel>
         <Label Height="12" />
-        
-        <TextBlock>Mapped field</TextBlock>
+
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
         <ComboBox ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
         <Label Height="4" />
         <StackPanel Orientation="Horizontal">
@@ -51,7 +51,7 @@
         </StackPanel>
         <Label Height="12" />
 
-        <TextBlock >Miscellaneous</TextBlock>
+        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
         <StackPanel Orientation="Horizontal">
             <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="{DynamicResource Grid}" Width="24" Height="24" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
                           ToolTip="Show grid."/>
