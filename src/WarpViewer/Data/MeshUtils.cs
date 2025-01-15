@@ -139,6 +139,20 @@ namespace Warp9.Data
             CopyAosToSoaI4(dest, MemoryMarshal.Cast<T, int>(src), structSize / 4);
         }
 
+        public static float TriangleArea(Vector3 a, Vector3 b, Vector3 c)
+        {
+            float ret = 0.0f;
+            float d0 = Vector3.Distance(a, b);
+            float d1 = Vector3.Distance(c, b);
+            float d2 = Vector3.Distance(a, c);
+            float s = 0.5f * (d0 + d1 + d2);
+
+            ret = MathF.Sqrt(s * (s - d0) * (s - d1) * (s - d2));
+            if (float.IsNaN(ret)) 
+                ret = 0;
+
+            return ret;
+        }
       
     }
 }
