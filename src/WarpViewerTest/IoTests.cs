@@ -41,12 +41,20 @@ namespace Warp9.Test
             Assert.AreEqual(15488 * 3, m.VertexCount);
         }
 
+
         [TestMethod]
-        public void LoadExt()
+        public void ImportBunnyPlyTest()
         {
-            using FileStream fs = new FileStream("D:\\ref-1.w9mesh", FileMode.Open, FileAccess.Read);
-            Assert.IsTrue(WarpBinImport.TryImport(fs, out Mesh? m));
-            Assert.IsNotNull(m);
+            using Stream s = TestUtils.OpenAsset("bunny.ply");
+            if (!PlyImport.TryImport(s, out Mesh m, out string errMsg))
+            {
+                Console.WriteLine(errMsg);
+                Assert.Fail();
+            }
+
+            Assert.IsTrue(m.IsIndexed);
+            Assert.AreEqual(69666, m.FaceCount);
+            Assert.AreEqual(34835, m.VertexCount);
         }
 
         [TestMethod]
