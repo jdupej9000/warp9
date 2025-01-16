@@ -4418,15 +4418,38 @@
         </Setter>
     </Style>
 
-    <Style x:Key="GroupBorder" TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="{DynamicResource Control.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Control.DarkBorder}"/>
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="4" />
-        <Setter Property="Margin" Value="0,0,0,-1" />
-        <Setter Property="Effect">
+    <Style x:Key="InsetNoTitleGroupBox" TargetType="{x:Type GroupBox}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
             <Setter.Value>
-                <DropShadowEffect ShadowDepth="4" Direction="330" Color="{DynamicResource ThemeColor.Panel.Background}" Opacity="0.5" BlurRadius="3" />
+                <ControlTemplate TargetType="{x:Type GroupBox}">
+                    <Grid SnapsToDevicePixels="true">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1"/>
+                            <ColumnDefinition Width="1"/>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="1"/>
+                            <ColumnDefinition Width="1"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1"/>
+                            <RowDefinition Height="1"/>
+                            <RowDefinition />
+                            <RowDefinition Height="1"/>
+                            <RowDefinition Height="1"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Grid.RowSpan="4" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" Grid.RowSpan="4" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" Grid.RowSpan="5" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <ContentPresenter Grid.Row="2" Grid.Column="2" x:Name="Contents" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                    </Grid>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
