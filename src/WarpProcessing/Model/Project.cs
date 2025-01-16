@@ -235,6 +235,19 @@ namespace Warp9.Model
                     }
                     break;
 
+                case ProjectReferenceFormat.PlyMesh:
+                    {
+                        string internalRefName = string.Format("ref-{0:x}.w9mesh", key);
+                        using Stream destStream = destArchive.CreateFile(internalRefName);
+
+                        if (!PlyImport.TryImport(sourceFile, out Mesh plyMesh, out _))
+                            throw new InvalidDataException("Filed to load " + sourcePath);
+
+                        WarpBinExport.ExportMesh(destStream, plyMesh);
+                        ret = ProjectReferenceInfo.CreateInternal(internalRefName, ProjectReferenceFormat.W9Mesh);
+                    }
+                    break;
+
                 case ProjectReferenceFormat.MorphoLandmarks:
                     {
                         string internalRefName = string.Format("ref-{0:x}.w9pcl", key);
