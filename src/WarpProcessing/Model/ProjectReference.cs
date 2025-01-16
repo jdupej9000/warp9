@@ -13,6 +13,7 @@ namespace Warp9.Model
         JpegImage = 5,
         W9Matrix = 6,
         MorphoLandmarks = 7,
+        PlyMesh = 8,
 
         Invalid = int.MaxValue
     }

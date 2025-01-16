@@ -20,7 +20,7 @@ namespace Warp9.Model
             CodecBank<ProjectReferenceFormat> ret = new CodecBank<ProjectReferenceFormat>();
 
             ret.Add(ProjectReferenceFormat.ObjMesh, new Codec<Mesh>(
-                null, // new objects are not to be represented as OBJ, in favor of W9
+                null,
                 (s, c) =>
                 {
                     if (ObjImport.TryImport(s, ObjImportMode.PositionsOnly, out Mesh ret, out _))
@@ -28,6 +28,16 @@ namespace Warp9.Model
                     return null;
                 }
             ));
+
+            ret.Add(ProjectReferenceFormat.PlyMesh, new Codec<Mesh>(
+               null, 
+               (s, c) =>
+               {
+                   if (PlyImport.TryImport(s, out Mesh ret, out _))
+                       return ret;
+                   return null;
+               }
+           ));
 
             ret.Add(ProjectReferenceFormat.W9Pcl, new Codec<PointCloud>(
                (s, b, c) => WarpBinExport.ExportPcl(s, b, null),

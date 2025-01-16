@@ -182,6 +182,7 @@ namespace Warp9.Utils
                 ProjectReferenceFormat fmt = Path.GetExtension(referencePath).ToLower() switch
                 {
                     ".obj" => ProjectReferenceFormat.ObjMesh,
+                    ".ply" => ProjectReferenceFormat.PlyMesh,
                     ".txt" => ProjectReferenceFormat.MorphoLandmarks,
                     ".jpg" or ".jpe" or ".jpeg" or ".jfif" => ProjectReferenceFormat.JpegImage,
                     ".png" => ProjectReferenceFormat.PngImage,
