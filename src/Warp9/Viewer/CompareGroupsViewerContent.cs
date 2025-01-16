@@ -15,6 +15,7 @@ using Warp9.Forms;
 using Warp9.Model;
 using Warp9.Native;
 using Warp9.Processing;
+using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
@@ -56,7 +57,7 @@ namespace Warp9.Viewer
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
         Mesh? meshB = null;
-        Lut? lut = Lut.Create(256, Lut.FastColors);
+        Lut? lut = null;
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
         long entityKey;
@@ -64,7 +65,7 @@ namespace Warp9.Viewer
         bool compareForm = false;
         float valueMin = 0, valueMax = 1;
         float? valueShow = null; 
-        int mappedFieldIndex = 0;
+        int mappedFieldIndex = 0, paletteIndex = 0;
 
         RenderItemMesh meshRend = new RenderItemMesh();
         RenderItemGrid gridRend = new RenderItemGrid();
@@ -135,7 +136,15 @@ namespace Warp9.Viewer
             set { compareForm = value; UpdateGroups(true, true); OnPropertyChanged("ModelsForm"); }
         }
 
+        public int PaletteIndex
+        {
+            get { return paletteIndex; }
+            set { paletteIndex = value; UpdateLut(); OnPropertyChanged("PaletteIndex"); }
+        }
+
+
         public List<string> MappedFieldsList => mappedFieldsList;
+        public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
 
         public void AttachRenderer(WpfInteropRenderer renderer)
         {
@@ -271,6 +280,12 @@ namespace Warp9.Viewer
             meshRend.Style = style;
         }
 
+        private void UpdateLut()
+        {
+            lut = null;
+            UpdateRendererConfig();
+        }
+
         private void UpdateRendererConfig()
         {
             UpdateRendererStyle();
@@ -280,7 +295,10 @@ namespace Warp9.Viewer
             meshRend.RenderCull = false;
             meshRend.FillColor = Color.LightGray;
             meshRend.PointWireColor = Color.Black;
-            meshRend.Lut = lut;
+            Lut lutLocal = lut ?? Lut.Create(256, Palettes[PaletteIndex].Stops);
+            sidebar?.SetLut(lutLocal);
+            lut = lutLocal;
+            meshRend.Lut = lutLocal;
             meshRend.ValueMin = valueMin;
             meshRend.ValueMax = valueMax;
             gridRend.Visible = renderGrid;
@@ -318,8 +336,6 @@ namespace Warp9.Viewer
             sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
         }
         
-       
-
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

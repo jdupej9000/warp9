@@ -52,7 +52,7 @@
                 <StackPanel Orientation="Vertical" Margin="4">
                     <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
                     <ComboBox Height="20" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
-                    <ComboBox x:Name="cmbPalettes" Height="20" Width="199" HorizontalAlignment="Left">
+                    <ComboBox Height="20" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">

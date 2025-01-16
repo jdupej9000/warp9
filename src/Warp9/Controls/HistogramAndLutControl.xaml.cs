@@ -91,7 +91,7 @@ namespace Warp9.Controls
                 new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));
 
             if (geomHist is not null && brushHist is not null)
-                ctx.DrawGeometry(brushHist, null, geomHist);
+                ctx.DrawGeometry(brushHist, borderPen, geomHist);
 
             double w = ActualWidth;
             double axisY = ActualHeight - AxisMargin + 1;
@@ -151,48 +151,51 @@ namespace Warp9.Controls
 
         private void Updated()
         {
-            int numBins = (int)gridMain.ActualWidth;
-            if (hist.Length != numBins)
+            if (scalarField.Length > 0)
             {
-                hist = new int[numBins];
-            }
-            else
-            {
-                for (int i = 0; i < numBins; i++)
-                    hist[i] = 0;
-            }
-
-            MiscUtils.Histogram(scalarField.AsSpan(), numBins, x0, x1, hist.AsSpan(), out _, out _);
-            histMax = Math.Max(1, hist.Max());
-
-            const int NumGradientStops = 64;
-            GradientStopCollection stops = new GradientStopCollection();
-            for (int i = 0; i < NumGradientStops; i++)
-            {
-                float t = (float)i / (float)(NumGradientStops - 1);
-                System.Drawing.Color col = lut.Sample(t);
-                stops.Add(new GradientStop(Color.FromRgb(col.R, col.G, col.B), t));
-            }
-
-            brushHist = new LinearGradientBrush(stops, 0);
-
-            geomHist = new StreamGeometry();
-            int w = Math.Min((int)gridMain.ActualWidth, hist.Length);
-            double h = ActualHeight - AxisMargin;
-
-            using (StreamGeometryContext sgc = geomHist.Open())
-            {
-                sgc.BeginFigure(new Point(0, h), true, true);
-
-                Point[] pts = new Point[w + 1];
-                for (int i = 0; i < w; i++)
+                int numBins = (int)gridMain.ActualWidth;
+                if (hist.Length != numBins)
                 {
-                    double barHeight = h * (double)hist[i] / histMax;
-                    pts[i] = new Point(i, h - h * (double)hist[i] / histMax);
+                    hist = new int[numBins];
                 }
-                pts[w] = new Point(w, h);
+                else
+                {
+                    for (int i = 0; i < numBins; i++)
+                        hist[i] = 0;
+                }
 
-                sgc.PolyLineTo(pts, false, true);
+                MiscUtils.Histogram(scalarField.AsSpan(), numBins, x0, x1, hist.AsSpan(), out _, out _);
+                histMax = Math.Max(1, hist.Max());
+
+                const int NumGradientStops = 64;
+                GradientStopCollection stops = new GradientStopCollection();
+                for (int i = 0; i < NumGradientStops; i++)
+                {
+                    float t = (float)i / (float)(NumGradientStops - 1);
+                    System.Drawing.Color col = lut.Sample(t);
+                    stops.Add(new GradientStop(Color.FromRgb(col.R, col.G, col.B), t));
+                }
+
+                brushHist = new LinearGradientBrush(stops, 0);
+
+                geomHist = new StreamGeometry();
+                int w = Math.Min((int)gridMain.ActualWidth, hist.Length);
+                double h = ActualHeight - AxisMargin;
+
+                using (StreamGeometryContext sgc = geomHist.Open())
+                {
+                    sgc.BeginFigure(new Point(0, h), true, true);
+
+                    Point[] pts = new Point[w + 1];
+                    for (int i = 0; i < w; i++)
+                    {
+                        double barHeight = h * (double)hist[i] / histMax;
+                        pts[i] = new Point(i, h - h * (double)hist[i] / histMax);
+                    }
+                    pts[w] = new Point(w, h);
+
+                    sgc.PolyLineTo(pts, false, true);
+                }
             }
 
             InvalidateVisual();
