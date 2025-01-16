@@ -21,15 +21,26 @@
             <GroupBox.Header>
                 <TextBlock Text="Viewer" Style="{DynamicResource GroupBoxHeaderBlock}"/>
             </GroupBox.Header>
+                            
         <DockPanel Background="{DynamicResource Panel.Background}">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="4">
-                <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource CaptureFrame}" Width="28" Height="28"/> 
-            </StackPanel>
-            <ComboBox x:Name="cmbVis" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="4" SelectionChanged="cmbVis_SelectionChanged" Background="Transparent"/>
-            <ScrollViewer DockPanel.Dock="Bottom" Padding="8">
+            
+                    <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}" DockPanel.Dock="Top" Margin="4" Width="225" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal" Margin="4">
+                                <Button Style="{DynamicResource ControlButton}" Content="Snapshot" Width="64" Height="20"/>
+                            </StackPanel>
+                        <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+
+                        <TextBlock Style="{DynamicResource TextBlockSidebarSection}" Margin="4,0,4,4">Visualization mode</TextBlock>
+                        <ComboBox x:Name="cmbVis" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="4,0,4,4" SelectionChanged="cmbVis_SelectionChanged" Background="Transparent"/>
+                        </StackPanel>
+                    </GroupBox>
+                
+
+                <ScrollViewer DockPanel.Dock="Bottom" Padding="0">
                     <Frame x:Name="frmSidebar" />
-            </ScrollViewer>
-        </DockPanel>
+                </ScrollViewer>
+            </DockPanel>
         </GroupBox>
 
         <Label Grid.Column="1" Background="{DynamicResource Window.Static.Background}" Width="2" />

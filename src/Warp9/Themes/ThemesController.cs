@@ -59,9 +59,16 @@ namespace Warp9.Themes
             return ThemeDictionary[key];
         }
 
-        public static SolidColorBrush GetBrush(string name)
+        public static Brush GetBrush(string name)
         {
-            return GetResource(name) is SolidColorBrush brush ? brush : new SolidColorBrush(Colors.White);
+            object r = GetResource(name);
+
+            if (r is Color c)
+                return new SolidColorBrush(c);
+            else if (r is Brush b)
+                return b;
+
+            return new SolidColorBrush(Colors.White);
         }
     }
 }

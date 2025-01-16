@@ -68,10 +68,6 @@
                             </TabItem.Header>
                             <DockPanel Margin="4">
                                 
-                                <StackPanel Orientation="Horizontal" Height="28" DockPanel.Dock="Top">
-                                    <Button x:Name="btnProjDelete" Content="{DynamicResource Delete}" Style="{DynamicResource NoBorderButton}" Width="28" Height="28"/>
-                                </StackPanel>
-
                                 <Label DockPanel.Dock="Top" Height="4" />
                                 <TreeView Name="treeProject" DockPanel.Dock="Top" SelectedItemChanged="treeProject_SelectedItemChanged">
                                     <TreeView.ItemTemplate>

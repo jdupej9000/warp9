@@ -292,11 +292,24 @@
     <SolidColorBrush x:Key="Panel.Highlight" Color="{DynamicResource ThemeColor.Panel.Highlight}" />
 
     <SolidColorBrush x:Key="Control.Background" Color="{DynamicResource ThemeColor.Control.Background}" />
+    <SolidColorBrush x:Key="Control.LightBorder" Color="{DynamicResource ThemeColor.Control.BorderInner}" />
     <SolidColorBrush x:Key="Control.Border" Color="{DynamicResource ThemeColor.Control.BorderLight}" />
     <SolidColorBrush x:Key="Control.DarkBorder" Color="{DynamicResource ThemeColor.Control.BorderDark}"/>
     <SolidColorBrush x:Key="Control.Text" Color="{DynamicResource ThemeColor.Control.Text}" />
     <SolidColorBrush x:Key="Control.Gridline" Color="{DynamicResource ThemeColor.Control.Gridline}" />
     <SolidColorBrush x:Key="Control.SelectedFill" Color="{DynamicResource ThemeColor.Control.SelectedFill}" />
     <SolidColorBrush x:Key="Control.SelectedText" Color="{DynamicResource ThemeColor.Control.SelectedText}" />
+    <SolidColorBrush x:Key="Control.EditBackground" Color="{DynamicResource ThemeColor.Control.EditBackground}" />
+
+
+    <LinearGradientBrush x:Key="Button.Fill" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="{DynamicResource ThemeColor.Panel.FillDark}" />
+        <GradientStop Offset="1" Color="{DynamicResource ThemeColor.Panel.FillLight}" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Button.FillCheck" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="{DynamicResource ThemeColor.Panel.FillLighter}" />
+        <GradientStop Offset="1" Color="{DynamicResource ThemeColor.Panel.FillLight}" />
+    </LinearGradientBrush>
 
 </ResourceDictionary>

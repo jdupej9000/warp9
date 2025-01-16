@@ -96,7 +96,7 @@
 
     <Style TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-        <Setter Property="Background" Value="{DynamicResource Button.Static.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource Button.Fill}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}"/>
         <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
         <Setter Property="BorderThickness" Value="1"/>
@@ -139,36 +139,39 @@
         </Setter>
     </Style>
 
-    <Style x:Key="NoBorderButton" TargetType="{x:Type Button}">
+    <Style x:Key="ControlButton" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
-                         BorderThickness="{TemplateBinding BorderThickness}"
-                         Background="{TemplateBinding Background}" SnapsToDevicePixels="true"
-                         CornerRadius="6">
-                        <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                       Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
-                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    
+                    <Border x:Name="border" Background="{DynamicResource Button.Fill}" BorderBrush="{DynamicResource Control.Border}" BorderThickness="1">
+                        <ContentPresenter  Grid.Row="2" Grid.Column="2" x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="true"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.5" />
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
                     </Border>
+
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsDefaulted" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Fill}"/>
+                            
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="border" Value="Transparent"/>
@@ -248,54 +251,58 @@
     <Style x:Key="NoBorderToggle" TargetType="{x:Type ToggleButton}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
         <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Padding" Value="1"/>
+        <Setter Property="Margin" Value="0,0,-1,0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
                     <Border x:Name="border"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Background="{TemplateBinding Background}" SnapsToDevicePixels="true"
-                        CornerRadius="6">
+                        Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
                         <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.5" />
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Button.IsDefaulted" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Fill}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="border" Value="Transparent"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True"/>
                                 <Condition Property="IsPressed" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True"/>
                                 <Condition Property="IsMouseOver" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1659,7 +1666,7 @@
     </ContextMenu>
 
     <Style x:Key="{x:Type TextBoxBase}" TargetType="{x:Type TextBoxBase}">
-        <Setter Property="Background" Value="{DynamicResource Control.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource Control.EditBackground}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource Control.Text}"/>
@@ -1748,7 +1755,7 @@
 
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource TextBoxErrorTemplate}"/>
-        <Setter Property="Background" Value="{DynamicResource Control.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource Control.EditBackground}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource Control.Text}"/>
@@ -2305,8 +2312,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                        <Border x:Name="splitBorder"  CornerRadius="6" BorderThickness="0" HorizontalAlignment="Right" Margin="0" SnapsToDevicePixels="true" Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}">
+                    <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
+                        <Border x:Name="splitBorder" Background="{DynamicResource Button.Fill}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,0,0,0" HorizontalAlignment="Right" Margin="0" SnapsToDevicePixels="true" Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}">
                             <Path x:Name="arrow" Data="F1 M 0,0 L 2.667,2.66665 L 5.3334,0 L 5.3334,-1.78168 L 2.6667,0.88501 L0,-1.78168 L0,0 Z" Fill="{DynamicResource ComboBox.Static.Glyph}" HorizontalAlignment="Center" Margin="0 3 0 0" VerticalAlignment="Center"/>
                         </Border>
                     </Border>
@@ -2483,7 +2490,7 @@
         <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
@@ -2556,7 +2563,7 @@
 
     <Style TargetType="{x:Type ComboBox}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-        <Setter Property="Background" Value="{DynamicResource Control.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource Control.EditBackground}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -4420,10 +4427,11 @@
 
     <Style x:Key="InsetNoTitleGroupBox" TargetType="{x:Type GroupBox}">
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource Control.Background}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type GroupBox}">
-                    <Grid SnapsToDevicePixels="true">
+                    <Grid SnapsToDevicePixels="true" Background="{DynamicResource Control.Background}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1"/>
                             <ColumnDefinition Width="1"/>
@@ -4438,21 +4446,44 @@
                             <RowDefinition Height="1"/>
                             <RowDefinition Height="1"/>
                         </Grid.RowDefinitions>
-
                         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
-                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Grid.RowSpan="4" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
-                        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.Border}" />
-                        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" BorderThickness="0" Background="{DynamicResource Control.Border}" />
-                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
-                        <Border Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" Grid.RowSpan="4" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Grid.RowSpan="3" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="2" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
+                        <Border Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="1" Grid.RowSpan="3" BorderThickness="0" Background="{DynamicResource Control.DarkBorder}" />
                         <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.RowSpan="1" BorderThickness="0" Background="{DynamicResource Control.Border}" />
-                        <Border Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" Grid.RowSpan="5" BorderThickness="0" Background="{DynamicResource Control.Border}" />
-                        <ContentPresenter Grid.Row="2" Grid.Column="2" x:Name="Contents" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        <Border Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" Grid.RowSpan="4" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <ContentPresenter Grid.Row="2" Grid.Column="2" x:Name="Contents" SnapsToDevicePixels="true"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="GroupBoxHorizontalSeparator" TargetType="{x:Type Label}">
+        <Setter Property="Height" Value="2"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource Control.Background}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Label}">
+                    <Grid SnapsToDevicePixels="true" Background="{DynamicResource Control.Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1"/>
+                            <RowDefinition Height="1"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{DynamicResource Control.Border}" />
+                        <Border Grid.Row="1" Grid.Column="0" BorderThickness="0" Background="{DynamicResource Control.Gridline}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 
     <Style x:Key="NoBorderGroupBox" TargetType="{x:Type GroupBox}">
         <Setter Property="Background" Value="{DynamicResource GroupBox.Header.Static.Background}"/>
@@ -5142,12 +5173,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TreeView}">
-                    <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            SnapsToDevicePixels="true">
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="4" Direction="330" Color="{DynamicResource ThemeColor.Panel.Background}" Opacity="0.5" BlurRadius="3" />
-                        </Border.Effect>
+                    <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}">
                         <!-- CanContentScroll must be false, otherwise scrolling breaks -->
                         <ScrollViewer x:Name="_tv_scrollviewer_" Background="{TemplateBinding Background}"
                                       CanContentScroll="false" Focusable="false"
@@ -5157,12 +5183,12 @@
                                       a:HorizontalScrolling.UseHorizontalScrolling="True">
                             <ItemsPresenter/>
                         </ScrollViewer>
-                    </Border>
+                    </GroupBox>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsEnabled" Value="false">
+                        <!--<Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="Bd" Value="{DynamicResource TreeView.Disabled.Background}"/>
                             <Setter Property="BorderBrush" TargetName="Bd" Value="{DynamicResource TreeView.Disabled.Border}"/>
-                        </Trigger>
+                        </Trigger>-->
                         <Trigger Property="VirtualizingPanel.IsVirtualizing" Value="true">
                             <Setter Property="CanContentScroll" TargetName="_tv_scrollviewer_" Value="true"/>
                         </Trigger>

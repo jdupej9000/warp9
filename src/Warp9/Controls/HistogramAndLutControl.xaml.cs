@@ -83,7 +83,14 @@ namespace Warp9.Controls
         {
             base.OnRender(ctx);
 
-            if(geomHist is not null && brushHist is not null)
+            Brush fill = Themes.ThemesController.GetBrush("ThemeColor.Control.EditBackground");
+            Brush borderBrush = Themes.ThemesController.GetBrush("ThemeColor.Control.BorderLight");
+            Pen borderPen = new Pen(borderBrush, 1);
+
+            ctx.DrawRectangle(fill, borderPen,
+                new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));
+
+            if (geomHist is not null && brushHist is not null)
                 ctx.DrawGeometry(brushHist, null, geomHist);
 
             double w = ActualWidth;
