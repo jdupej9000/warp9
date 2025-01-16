@@ -52,7 +52,18 @@
                 <StackPanel Orientation="Vertical" Margin="4">
                     <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
                     <ComboBox Height="20" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
-                   
+                    <ComboBox x:Name="cmbPalettes" Height="20" Width="199" HorizontalAlignment="Left">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Image}"/>
+                                    <Label Width="4" />
+                                    <TextBlock Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
                     <Label Height="4" />
                     <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />

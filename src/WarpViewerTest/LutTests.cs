@@ -28,7 +28,6 @@ namespace Warp9.Test
             LutSampleAtStopCase(128, Lut.FastColors);
             LutSampleAtStopCase(256, Lut.FastColors);
             LutSampleAtStopCase(1024, Lut.FastColors);
-            LutSampleAtStopCase(256, Lut.SmoothCoolWarmColors);
             LutSampleAtStopCase(512, Lut.ViridisColors);
         }
     }

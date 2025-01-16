@@ -81,19 +81,6 @@ namespace Warp9.Data
             (1.00f, Color.FromArgb(150, 20, 30))
         };
 
-        public static readonly (float, Color)[] SmoothCoolWarmColors =
-        {
-            (0.00f, Color.FromArgb(59, 76, 192)),
-            (0.50f, Color.FromArgb(221, 221, 221)),
-            (1.00f, Color.FromArgb(180, 4, 38))
-        };
-
-        public static readonly (float, Color)[] BentCoolWarmColors =
-        {
-            (0.00f, Color.FromArgb(59, 76, 192)),
-            (0.50f, Color.FromArgb(242, 242, 242)),
-            (1.00f, Color.FromArgb(180, 4, 38))
-        };
 
         public static readonly (float, Color)[] ViridisColors =
         {
@@ -119,12 +106,40 @@ namespace Warp9.Data
             (1.00f, Color.FromArgb(240, 249, 33))
         };
 
-        public static readonly (float, Color)[] BlackBodyColors =
+       public static readonly (float, Color)[] BlackBodyColors =
        {
             (0.00f, Color.FromArgb(0, 0, 0)),
             (0.39f, Color.FromArgb(178, 34, 34)),
             (0.58f, Color.FromArgb(227, 105, 5)),
             (0.89f, Color.FromArgb(230, 230, 53)),
+            (1.00f, Color.FromArgb(255, 255, 255))
+        };
+
+        public static readonly (float, Color)[] JetColors =
+        {
+            (0.00f, Color.FromArgb(0,0,127)),
+            (0.10f, Color.FromArgb(0,0,229)),
+            (0.20f, Color.FromArgb(0,76,255)),
+            (0.30f, Color.FromArgb(0,178,255)),
+            (0.40f, Color.FromArgb(25,255,229)),
+            (0.50f, Color.FromArgb(127,255,127)),
+            (0.60f, Color.FromArgb(229,255,25)),
+            (0.70f, Color.FromArgb(255,178,0)),
+            (0.80f, Color.FromArgb(255,76,0)),
+            (0.90f, Color.FromArgb(229,0,0)),
+            (1.00f, Color.FromArgb(127,0,0))
+        };
+
+        public static readonly (float, Color)[] BlueToGreenColors =
+        {
+            (0.00f, Color.FromArgb(7,63,128)),
+            (0.50f, Color.FromArgb(103,191,203)),
+            (1.00f, Color.FromArgb(223,242,218))
+        };
+
+        public static readonly (float, Color)[] GreyColors =
+        {
+            (0.00f, Color.FromArgb(0, 0, 0)),
             (1.00f, Color.FromArgb(255, 255, 255))
         };
     }
