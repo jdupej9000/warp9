@@ -51,15 +51,15 @@
 
                 <StackPanel Orientation="Vertical" Margin="4">
                     <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
-                    <ComboBox Height="20" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+                    <ComboBox Height="20" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
                    
                     <Label Height="4" />
-                    <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover"/>
+                    <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />
                     <StackPanel Orientation="Horizontal">
                         <TextBox Width="50" Height="20" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <Label Width="98" />
-                        <TextBox Width="50" Height="20" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="50" Height="20" TextAlignment="Right" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </StackPanel>
 
