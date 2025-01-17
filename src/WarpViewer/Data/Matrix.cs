@@ -23,6 +23,7 @@ namespace Warp9.Data
 
         public int Columns { get; init; }
         public int Rows { get; init; }
+        public float[] Data => data;
 
         public Span<byte> GetRawData()
         {

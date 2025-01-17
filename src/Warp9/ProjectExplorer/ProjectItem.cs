@@ -180,7 +180,8 @@ namespace Warp9.ProjectExplorer
             Project proj = ParentViewModel.Project;
             page.SetContent(
                 new CorrMeshViewerContent(proj, Key, "Correspondence meshes"),
-                new CompareGroupsViewerContent(proj, Key, "Compare groups"));
+                new CompareGroupsViewerContent(proj, Key, "Compare groups"),
+                new DcaDiagnosticsViewerContent(proj, Key, "DCA diagnostics"));
         }
     }
 }

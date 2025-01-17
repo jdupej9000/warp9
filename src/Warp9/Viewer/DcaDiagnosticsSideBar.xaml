@@ -1,0 +1,23 @@
+﻿<Page x:Class="Warp9.Viewer.DcaDiagnosticsSideBar"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Warp9.Viewer"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="216"
+      Background="{DynamicResource Panel.Background}"
+      Title="DcaDiagnosticsSideBar">
+
+    <StackPanel Orientation="Vertical" Margin="4">
+        <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}">
+            <StackPanel Orientation="Vertical" Margin="4">
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" Height="20" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                       ToolTip="Add grid."/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+    </StackPanel>
+</Page>
