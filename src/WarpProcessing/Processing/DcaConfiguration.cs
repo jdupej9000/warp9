@@ -78,9 +78,6 @@ namespace Warp9.Processing
         [JsonPropertyName("reject-count-percent")]
         public float RejectCountPercent { get; set; } = 5;
 
-        [JsonPropertyName("restore-size")]
-        public bool RestoreSize {get; set; } = true;
-
         [JsonPropertyName("cpd-config")]
         public CpdConfiguration CpdConfig { get; set; } = new CpdConfiguration();
     }
