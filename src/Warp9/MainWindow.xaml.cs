@@ -26,13 +26,14 @@ namespace Warp9
             InitializeComponent();
             pageViewer = new ViewerPage(this);
 
-            views.Add(pageViewer);
-            views.Add(pageTextEditor);
-            views.Add(pageSpecimenTable);
-            views.Add(pageProjectSettings);
-            views.Add(pageLog);
+            views.Add(typeof(ViewerPage), pageViewer);
+            views.Add(typeof(TextEditorPage), pageTextEditor);
+            views.Add(typeof(SpecimenTablePage), pageSpecimenTable);
+            views.Add(typeof(ProjectSettingsPage), pageProjectSettings);
+            views.Add(typeof(LogPage), pageLog);
 
             lstTasks.ItemsSource = JobEngine.Jobs;
+            JobEngine.JobFinished += JobEngine_JobFinished;
         }
 
         Warp9Model? model = null;
@@ -43,7 +44,7 @@ namespace Warp9
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
         JobEngine jobEngine = new JobEngine();
-        List<IWarp9View> views = new List<IWarp9View>();
+        Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
         ViewerPage pageViewer;
 
         public JobEngine JobEngine => jobEngine;
@@ -197,9 +198,10 @@ namespace Warp9
         private void SetProject(Project project)
         {
             model = new Warp9Model(project);
+            DataContext = model.ViewModel;
             UpdateProjectExplorer();
 
-            foreach (IWarp9View view in views)
+            foreach (IWarp9View view in views.Values)
                 view.AttachViewModel(model.ViewModel);
         }
 
@@ -208,16 +210,19 @@ namespace Warp9
             if (model is not null)
             {
                 model = null;
+                DataContext = null;
                 UpdateProjectExplorer();
 
-                foreach (IWarp9View view in views)
+                foreach (IWarp9View view in views.Values)
                     view.DetachViewModel();
             }
         }
 
         private void UpdateProjectExplorer()
         {
-            treeProject.ItemsSource = model?.ViewModel?.Items ?? new ObservableCollection<ProjectItem>();
+            //treeProject.ItemsSource = model?.ViewModel?.Items ?? new ObservableCollection<ProjectItem>();
+            model?.ViewModel?.Update();
+           
         }
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
@@ -227,47 +232,14 @@ namespace Warp9
 
         private void treeProject_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (model is not null && e.NewValue is ProjectItem item)
+            if (model is not null &&
+                e.NewValue is ProjectItem item &&
+                item.PagePresenterType is not null &&
+                views.TryGetValue(item.PagePresenterType, out IWarp9View? viewer) &&
+                viewer is not null)
             {
-                switch (item.Kind)
-                {
-                    case StockProjectItemKind.GeneralComment:
-                        frameMain.NavigationService.Navigate(pageTextEditor);
-                        break;
-
-                    case StockProjectItemKind.GeneralSettings:
-                        frameMain.NavigationService.Navigate(pageProjectSettings);
-                        break;
-
-                    case StockProjectItemKind.Entry:
-                        if (model.Project.Entries.TryGetValue(item.EntryIndex, out ProjectEntry? entry))
-                        {
-                            switch (entry.Kind)
-                            {
-                                case ProjectEntryKind.Specimens:
-                                    frameMain.NavigationService.Navigate(pageSpecimenTable);
-                                    pageSpecimenTable.ShowEntry(item.EntryIndex);
-                                    break;
-
-                                case ProjectEntryKind.MeshCorrespondence:
-                                    frameMain.NavigationService.Navigate(pageViewer);
-                                    pageViewer.SetContent(
-                                        new CorrMeshViewerContent(model.Project, item.EntryIndex, "Correspondence meshes"),
-                                        new CompareGroupsViewerContent(model.Project, item.EntryIndex, "Compare groups"));
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-
-                        break;
-
-                    default:
-                        frameMain.NavigationService.Navigate(pageLog);
-                        break;
-                }
+                frameMain.NavigationService.Navigate(viewer);
+                item.ConfigurePresenter(viewer);
             }
             else
             {
@@ -309,6 +281,11 @@ namespace Warp9
         {
             OptionsWindow wnd = new OptionsWindow();
             wnd.ShowDialog();
+        }
+
+        private void JobEngine_JobFinished(object? sender, IJob e)
+        {
+            UpdateProjectExplorer();
         }
     }
 }

@@ -46,6 +46,8 @@ namespace Warp9.Jobs
         private ObservableCollection<IJob> jobs = new ObservableCollection<IJob>();
         private List<IJob> finishedJobs = new List<IJob>();
 
+        public event EventHandler<IJob> JobFinished;
+
         public ObservableCollection<IJob> Jobs => jobs;
         public List<IJob> FinishedJobs => finishedJobs;
 
@@ -100,6 +102,7 @@ namespace Warp9.Jobs
                     job.DetachContext();
                     finishedJobs.Add(job);
                     jobs.Remove(job);
+                    JobFinished?.Invoke(this, job);
                 }
             }
 

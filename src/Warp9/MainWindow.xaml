@@ -69,7 +69,7 @@
                             <DockPanel Margin="4">
                                 
                                 <Label DockPanel.Dock="Top" Height="4" />
-                                <TreeView Name="treeProject" DockPanel.Dock="Top" SelectedItemChanged="treeProject_SelectedItemChanged">
+                                <TreeView Name="treeProject" DockPanel.Dock="Top" SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                             <TextBlock Text="{Binding Name}"/>

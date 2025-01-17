@@ -26,7 +26,9 @@ namespace Warp9.Navigation
         {
             get 
             {
-                if (entryIndex < 0 || viewModel is null || !viewModel.Project.Entries.TryGetValue(entryIndex, out ProjectEntry? entry))
+                if (entryIndex < 0 || 
+                    viewModel is null || 
+                    !viewModel.Project.Entries.TryGetValue(entryIndex, out ProjectEntry? entry))
                     throw new InvalidOperationException();
 
                 return entry.Payload.Table ?? throw new InvalidOperationException();
