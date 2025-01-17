@@ -79,6 +79,13 @@ namespace Warp9.Controls
             Updated();
         }
 
+        public void SetRange(float x0, float x1)
+        {
+            this.x0 = x0;
+            this.x1 = x1;
+            Updated();
+        }
+
         protected override void OnRender(DrawingContext ctx)
         {
             base.OnRender(ctx);
@@ -151,9 +158,10 @@ namespace Warp9.Controls
 
         private void Updated()
         {
-            if (scalarField.Length > 0)
+            int numBins = (int)gridMain.ActualWidth;
+
+            if (scalarField.Length > 0 && numBins > 0)
             {
-                int numBins = (int)gridMain.ActualWidth;
                 if (hist.Length != numBins)
                 {
                     hist = new int[numBins];

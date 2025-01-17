@@ -51,6 +51,11 @@ namespace Warp9.Viewer
             histField.SetAll(values, lut, x0, x1);
         }
 
+        public void SetRange(float x0, float x1)
+        {
+            histField.SetRange(x0, x1);
+        }
+
         public void SetLut(Lut lut)
         {
             histField.Lut = lut;

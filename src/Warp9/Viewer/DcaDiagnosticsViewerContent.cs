@@ -16,9 +16,10 @@ using Warp9.Processing;
 
 namespace Warp9.Viewer
 {
-    public class DcaDiagnosticsViewerContent : IViewerContent, INotifyPropertyChanged
+    public class DcaDiagnosticsViewerContent : ColormapMeshViewerContentBase
     {
-        public DcaDiagnosticsViewerContent(Project proj, long dcaEntityKey, string name)
+        public DcaDiagnosticsViewerContent(Project proj, long dcaEntityKey, string name) :
+            base(name)
         {
             project = proj;
             entityKey = dcaEntityKey;
@@ -28,63 +29,46 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException();
 
             dcaEntry = entry;
-            Name = name;
-
             sidebar = new DcaDiagnosticsSideBar(this);
         }
 
+        DcaDiagnosticsSideBar sidebar;
         Project project;
-        ProjectEntry dcaEntry;
-        Page sidebar;
+        ProjectEntry dcaEntry;       
         long entityKey;
-        Lut lut = Lut.Create(256, Lut.PlasmaColors);
+        int mappedFieldIndex = 0;
+        int nv = 0;
 
-        RenderItemMesh meshRend = new RenderItemMesh();
-        RenderItemGrid gridRend = new RenderItemGrid();
-        bool  renderGrid = true;
-
-        public event EventHandler ViewUpdated;
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string Name { get; private init; }
-
-        public bool RenderGrid
+        static readonly List<string> mappedFieldsList = new List<string>
         {
-            get { return renderGrid; }
-            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
+            "Vertex rejection ratio", "Index"
+        };
+
+        public int MappedFieldIndex
+        {
+            get { return mappedFieldIndex; }
+            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
         }
 
-        public void AttachRenderer(WpfInteropRenderer renderer)
+        public List<string> MappedFieldsList => mappedFieldsList;
+            
+
+        public override void AttachRenderer(WpfInteropRenderer renderer)
         {
-            meshRend.Lut = lut;
-            renderer.AddRenderItem(meshRend);
-            renderer.AddRenderItem(gridRend);
+            base.AttachRenderer(renderer);
             ShowMesh();
-            ShowRejectionMap();
+            UpdateMappedField();
         }
 
-        public Page? GetSidebar()
+        protected override void UpdateRendererConfig()
+        {
+            base.UpdateRendererConfig();
+            sidebar.SetLut(meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors));
+        }
+
+        public override Page? GetSidebar()
         {
             return sidebar;
-        }
-
-        public void ViewportResized(Size size)
-        {
-        }
-
-        private void UpdateRendererConfig()
-        {
-            meshRend.Style = MeshRenderStyle.DiffuseLighting | MeshRenderStyle.ColorLut | MeshRenderStyle.EstimateNormals;
-            meshRend.RenderWireframe = false;
-            meshRend.RenderFace = true;
-            meshRend.RenderPoints = false;
-            meshRend.RenderCull = false;
-            meshRend.FillColor = Color.LightGray;
-            meshRend.PointWireColor = Color.Black;
-            meshRend.ValueMin = 0;
-            meshRend.ValueMax = 1;
-
-            gridRend.Visible = renderGrid;
         }
 
         private void ShowMesh()
@@ -101,31 +85,45 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException();
 
             meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
-           
+            nv = meanPcl.VertexCount;
+
             UpdateRendererConfig();
         }
 
-        private void ShowRejectionMap()
+        private float[]? MakeRejectionMap()
         {
             long rejectionRatesKey = dcaEntry.Payload.MeshCorrExtra?.VertexRejectionRatesKey ?? 0;
             if (rejectionRatesKey == 0)
-                return;
+                return null;
 
             if (!project.TryGetReference(rejectionRatesKey, out Matrix? rejectionRates) || rejectionRates is null)
+                return null;
+
+            return rejectionRates.Data;
+        }
+
+        private float[]? MakeIndexMap()
+        {
+            float[] ret = new float[nv];
+            for(int i = 0; i < nv; i++)
+                ret[i] = (float)i / (float)(nv-1);
+            return ret;
+        }
+
+        private void UpdateMappedField()
+        {
+            float[]? data = mappedFieldIndex switch
+            {
+                0 => MakeRejectionMap(),
+                1 => MakeIndexMap(),
+                _ => null
+            };
+
+            if (data is null)
                 return;
 
-            meshRend.SetValueField(rejectionRates.Data);
-        }
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public override string ToString()
-        {
-            return Name;
+            meshRend.SetValueField(data);
+            sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
         }
     }
 }

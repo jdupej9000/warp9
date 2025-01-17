@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Warp9.Viewer"
+      xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="216"
       Background="{DynamicResource Panel.Background}"
@@ -11,12 +12,57 @@
 
     <StackPanel Orientation="Vertical" Margin="4">
         <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}">
-            <StackPanel Orientation="Vertical" Margin="4">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Margin="4">
+                    <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="50" Height="20" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+              ToolTip="Add wireframe."/>
+                        <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="50" Height="20" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+              ToolTip="Fill faces."/>
+                        <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="50" Height="20" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+              ToolTip="Use vertex normals. If disabled, face normals are used."/>
+                        <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Diffuse" Width="50" Height="20" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+              ToolTip="Use diffuse lighting."/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                
+                <StackPanel Orientation="Vertical" Margin="4">
+                    <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
+                    <ComboBox Height="20" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+                    <ComboBox Height="20" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Image}"/>
+                                    <Label Width="4" />
+                                    <TextBlock Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Label Height="4" />
+                    <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
+                    <Label Height="4" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Width="50" Height="20" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <Label Width="98" />
+                        <TextBox Width="50" Height="20" TextAlignment="Right" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </StackPanel>
+                
+                <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+
+                <StackPanel Orientation="Vertical" Margin="4">
                 <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
                 <StackPanel Orientation="Horizontal">
                     <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" Height="20" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
                        ToolTip="Add grid."/>
                 </StackPanel>
+            </StackPanel>
             </StackPanel>
         </GroupBox>
     </StackPanel>

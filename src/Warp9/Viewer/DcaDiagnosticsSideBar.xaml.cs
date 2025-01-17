@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -24,9 +25,29 @@ namespace Warp9.Viewer
         {
             InitializeComponent();
             Content = content;
+            DataContext = content;
         }
 
         DcaDiagnosticsViewerContent Content { get; init; }
+
+        public void SetHist(float[] values, Lut lut, float x0, float x1)
+        {
+            histField.SetAll(values, lut, x0, x1);
+        }
+
+        public void SetLut(Lut lut)
+        {
+            histField.Lut = lut;
+        }
+
+        public void SetRange(float x0, float x1)
+        {
+            histField.SetRange(x0, x1);
+        }
+        private void histField_ScaleHover(object sender, float? e)
+        {
+            Content.MeshScaleHover(e);
+        }
 
     }
 }

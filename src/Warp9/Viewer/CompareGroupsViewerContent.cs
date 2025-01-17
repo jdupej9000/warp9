@@ -19,9 +19,10 @@ using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
-    public class CompareGroupsViewerContent : IViewerContent
+    public class CompareGroupsViewerContent : ColormapMeshViewerContentBase
     {
-        public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name)
+        public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
+            base(name)
         {
             project = proj;
             entityKey = dcaEntityKey;
@@ -45,11 +46,9 @@ namespace Warp9.Viewer
             selectionA = new SpecimenTableSelection(specTableEntry.Payload.Table);
             selectionB = new SpecimenTableSelection(specTableEntry.Payload.Table);
 
-            dcaEntry = entry;
-            Name = name;
+            dcaEntry = entry;        
 
-            sidebar = new CompareGroupsSideBar(this);
-            
+            sidebar = new CompareGroupsSideBar(this);            
         }
 
         Project project;
@@ -57,18 +56,11 @@ namespace Warp9.Viewer
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
         Mesh? meshB = null;
-        Lut? lut = null;
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
-        long entityKey;
-        bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true;
-        bool compareForm = false;
-        float valueMin = 0, valueMax = 1;
-        float? valueShow = null; 
-        int mappedFieldIndex = 0, paletteIndex = 0;
-
-        RenderItemMesh meshRend = new RenderItemMesh();
-        RenderItemGrid gridRend = new RenderItemGrid();
+        long entityKey;       
+        bool compareForm = false;      
+        int mappedFieldIndex = 0;
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -76,58 +68,11 @@ namespace Warp9.Viewer
             "Surface distance", "Signed surface distance",
             "Triangle expansion", "Triangle shape"
         };
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public event EventHandler ViewUpdated;
-
-        public string Name { get; private init; }
-
-        public bool RenderWireframe
-        {
-            get { return renderWireframe; }
-            set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
-        }
-
-        public bool RenderFill
-        {
-            get { return renderFill; }
-            set { renderFill = value; UpdateRendererConfig(); OnPropertyChanged("RenderFill"); }
-        }
-
-        public bool RenderSmoothNormals
-        {
-            get { return renderSmooth; }
-            set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
-        }
-
-        public bool RenderGrid
-        {
-            get { return renderGrid; }
-            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
-        }
-
-        public bool RenderDiffuse
-        {
-            get { return renderDiffuse; }
-            set { renderDiffuse = value; UpdateRendererConfig(); OnPropertyChanged("RenderDiffuse"); }
-        }
-
+              
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
             set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
-        }
-
-        public float ValueMin
-        {
-            get { return valueMin; }
-            set { valueMin = value; UpdateMappedField(); OnPropertyChanged("ValueMin"); }
-        }
-
-        public float ValueMax
-        {
-            get { return valueMax; }
-            set { valueMax = value; UpdateMappedField(); OnPropertyChanged("ValueMax"); }
         }
 
         public bool ModelsForm
@@ -136,34 +81,21 @@ namespace Warp9.Viewer
             set { compareForm = value; UpdateGroups(true, true); OnPropertyChanged("ModelsForm"); }
         }
 
-        public int PaletteIndex
-        {
-            get { return paletteIndex; }
-            set { paletteIndex = value; UpdateLut(); OnPropertyChanged("PaletteIndex"); }
-        }
-
 
         public List<string> MappedFieldsList => mappedFieldsList;
-        public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
 
-        public void AttachRenderer(WpfInteropRenderer renderer)
+        public override void AttachRenderer(WpfInteropRenderer renderer)
         {
-            UpdateRendererConfig();
             meshMean = GetVisibleMesh();
             meshRend.Mesh = meshMean;
-            renderer.AddRenderItem(meshRend);
-            renderer.AddRenderItem(gridRend);
+            base.AttachRenderer(renderer);
         }
 
-        public Page? GetSidebar()
+        public override Page? GetSidebar()
         {
             return sidebar;
         }
-
-        public void ViewportResized(Size size)
-        {
-        }
-
+            
         public void InvokeGroupSelectionDialog(int group)
         {
             if (group != 0 && group != 1)
@@ -200,13 +132,7 @@ namespace Warp9.Viewer
         public void SwapGroups()
         {
         }
-
-        public void MeshScaleHover(float? value)
-        {
-            valueShow = value;
-            UpdateRendererStyle();
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
-        }
+               
 
         private Mesh? GetVisibleMesh()
         {
@@ -256,7 +182,15 @@ namespace Warp9.Viewer
             }
         }
 
-        private void UpdateRendererStyle()
+        protected override void UpdateRendererConfig()
+        {
+            base.UpdateRendererConfig();
+
+            if(lut is not null)
+                sidebar?.SetLut(lut);
+        }
+
+        protected override void UpdateRendererStyle()
         {
             MeshRenderStyle style = 0;
 
@@ -280,31 +214,7 @@ namespace Warp9.Viewer
             meshRend.Style = style;
         }
 
-        private void UpdateLut()
-        {
-            lut = null;
-            UpdateRendererConfig();
-        }
-
-        private void UpdateRendererConfig()
-        {
-            UpdateRendererStyle();
-            meshRend.RenderWireframe = renderWireframe;
-            meshRend.RenderFace = renderFill;
-            meshRend.RenderPoints = false;
-            meshRend.RenderCull = false;
-            meshRend.FillColor = Color.LightGray;
-            meshRend.PointWireColor = Color.Black;
-            Lut lutLocal = lut ?? Lut.Create(256, Palettes[PaletteIndex].Stops);
-            sidebar?.SetLut(lutLocal);
-            lut = lutLocal;
-            meshRend.Lut = lutLocal;
-            meshRend.ValueMin = valueMin;
-            meshRend.ValueMax = valueMax;
-            gridRend.Visible = renderGrid;
-        }
-
-        private void UpdateMappedField()
+        protected void UpdateMappedField()
         {
             UpdateRendererConfig();
             if (pclA is null || meshB is null)
@@ -335,16 +245,11 @@ namespace Warp9.Viewer
             meshRend.SetValueField(field);
             sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
         }
-        
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
-        }
 
-        public override string ToString()
+        protected override void UpdateMappedFieldRange()
         {
-            return Name;
+            base.UpdateMappedFieldRange();
+            sidebar.SetRange(valueMin, valueMax);
         }
     }
 }
