@@ -25,6 +25,27 @@ namespace Warp9.Processing
         public int[] VertexRejections { get; }
         public int[] MeshRejections { get; }
 
+        public bool[] ToVertexWhitelist(int maxRejectedMeshes)
+        {
+            int nv = NumVertices;
+            bool[] ret = new bool[nv];
+            for (int i = 0; i < nv; i++)
+                ret[i] = VertexRejections[i] <= maxRejectedMeshes;
+
+            return ret;
+        }
+
+        public float[] ToVertexRejectionRates()
+        {
+            float nrec = 1.0f / NumModels;
+            int nv = NumVertices;
+            float[] ret = new float[nv];
+            for (int i = 0; i < nv; i++)
+                ret[i] = (float)VertexRejections[i] * nrec;
+
+            return ret;
+        }
+
         public static DcaVertexRejection Create(Mesh baseMesh, IEnumerable<PointCloud> floating, float minTriScale=0.1f, float maxTriScale=10.0f)
         {
             int nv = baseMesh.VertexCount;
@@ -74,7 +95,7 @@ namespace Warp9.Processing
                 float areaFloating = MeshUtils.TriangleArea(vertFloating[f.I0], vertFloating[f.I1], vertFloating[f.I2]);
 
                 float r = areaFloating / areaBase;
-                if (r < minTriScale || r > maxTriScale)
+                if (float.IsNaN(r) || r < minTriScale || r > maxTriScale)
                 {
                     reject[f.I0] = true;
                     reject[f.I1] = true;

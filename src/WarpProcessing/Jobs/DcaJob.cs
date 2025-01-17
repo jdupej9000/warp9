@@ -14,6 +14,8 @@ namespace Warp9.Jobs
         private static readonly string NonrigidRegKey = "nonrigid.reg";
         private static readonly string CorrespondenceRegKey = "corr.reg";
         private static readonly string CorrespondenceSizeKey = "corr.size";
+        private static readonly string RejectionKey = "corr.reject";
+        private static readonly string VertexWhitelistKey = "corr.vxwhlst";
         
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj, bool debug=false)
         {
@@ -94,6 +96,13 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
+            if (cfg.RejectDistant || cfg.RejectExpanded)
+            {
+                yield return new DcaRejectionJobItem(index++, cfg.SpecimenTableKey, cfg.MeshColumnName, baseMeshIndex,
+                    CorrespondenceRegKey, cfg, RejectionKey, VertexWhitelistKey);
+
+            }
+
             switch (cfg.RigidPostRegistration)
             {
                 case DcaRigidPostRegistrationKind.None:
@@ -113,7 +122,10 @@ namespace Warp9.Jobs
             if(!debug)
                 yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
-            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, GpaPreregKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, cfg.ResultEntryName, cfg);
+            yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, 
+                GpaPreregKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, 
+                RejectionKey, VertexWhitelistKey,
+                cfg.ResultEntryName, cfg);
         }
     }
 }

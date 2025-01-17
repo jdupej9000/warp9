@@ -19,5 +19,9 @@ namespace Warp9.Model
         [JsonPropertyName("dca-mean-lms")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public long MeanLandmarksKey { get; set; }
+
+        [JsonPropertyName("dca-vert-rej")]
+        [JsonIgnore(Condition =JsonIgnoreCondition.WhenWritingDefault)]
+        public long VertexRejectionRatesKey { get; set; }
     }
 }

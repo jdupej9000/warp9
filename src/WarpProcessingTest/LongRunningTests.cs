@@ -80,6 +80,12 @@ namespace Warp9.Test
                corrPcls is null)
                 Assert.Fail("corr.reg is not present in the workspace");
 
+            if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
+              corrPcls is null)
+                Assert.Fail("corr.reject is not present in the workspace");
+
+            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));
+
             Mesh baseMesh = GetMeshFromProject(project, cfg.SpecimenTableKey, cfg.MeshColumnName, cfg.BaseMeshIndex);
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(1024, 1024);

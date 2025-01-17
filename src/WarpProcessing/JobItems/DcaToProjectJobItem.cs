@@ -13,7 +13,7 @@ namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string resultEntryName, DcaConfiguration cfg) :
+        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string corrRejection, string corrWhitelist, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
@@ -23,6 +23,8 @@ namespace Warp9.JobItems
             CorrespondenceSizeItem = corrSizeItem;
             GpaItem = gpaItem;
             DcaConfig = cfg;
+            RejectionItem = corrRejection;
+            VertexWhitelistItem = corrWhitelist;
         }
 
         public long SpecimenTableKey { get; init; }
@@ -31,6 +33,8 @@ namespace Warp9.JobItems
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
         public string? GpaItem { get; init; }
+        public string RejectionItem { get; init; }
+        public string VertexWhitelistItem { get; init; }
         public DcaConfiguration DcaConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
@@ -90,6 +94,17 @@ namespace Warp9.JobItems
                     colCs.Add((double)cs[i]);
             }
 
+            long rejectionRatesKey = 0;
+            if (ctx.Workspace.TryGet(RejectionItem, out DcaVertexRejection? rej) && rej is not null)
+            {
+                SpecimenTableColumn<double> colRej = specTab.AddColumn<double>("rejected", SpecimenTableColumnType.Real);
+                for (int i = 0; i < n; i++)
+                    colRej.Add((double)rej.MeshRejections[i] / (double)rej.NumVertices);
+
+                Matrix rejRates = Matrix.FromVector(rej.ToVertexRejectionRates());
+                rejectionRatesKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, rejRates);
+            }
+
             if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
                 return false;
 
@@ -113,7 +128,8 @@ namespace Warp9.JobItems
             { 
                 DcaConfig = DcaConfig, 
                 BaseMeshCorrKey = baseMeshCorrRef,
-                MeanLandmarksKey = meanLandmarksKey
+                MeanLandmarksKey = meanLandmarksKey,
+                VertexRejectionRatesKey = rejectionRatesKey
             };
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, 

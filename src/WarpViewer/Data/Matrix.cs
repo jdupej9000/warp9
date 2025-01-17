@@ -5,6 +5,13 @@ namespace Warp9.Data
 {
     public class Matrix
     {
+        private Matrix(float[] d)
+        {
+            data = d;
+            Rows = d.Length;
+            Columns = 1;
+        }
+
         public Matrix(int cols, int rows)
         {
             Columns = cols;
@@ -28,6 +35,11 @@ namespace Warp9.Data
                 throw new IndexOutOfRangeException();
 
             return data.AsSpan().Slice(col * Rows, Rows);
+        }
+
+        public static Matrix FromVector(float[] d)
+        {
+            return new Matrix(d);
         }
     }
 }
