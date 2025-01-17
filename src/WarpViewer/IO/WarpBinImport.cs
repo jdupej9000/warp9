@@ -194,7 +194,7 @@ namespace Warp9.IO
                 }
             } 
 
-            return null;
+            return ret;
         }
 
         private Mesh? ReadMesh()
