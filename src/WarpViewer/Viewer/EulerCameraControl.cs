@@ -79,8 +79,7 @@ namespace Warp9.Viewer
 
         private void Update(Vector2 rotDelta, Vector3 transDelta, bool release = false)
         {
-            Matrix4x4 newRot = Matrix4x4.Multiply(prevRot,
-                Matrix4x4.CreateFromYawPitchRoll(rotDelta.X, rotDelta.Y, 0));
+            Matrix4x4 newRot = Matrix4x4.Multiply(Matrix4x4.CreateFromYawPitchRoll(rotDelta.X, rotDelta.Y, 0), prevRot);
 
             Matrix4x4 newTrans = Matrix4x4.CreateTranslation(prevTrans + transDelta + new Vector3(0, 0, radius));
             Matrix4x4 newXform = Matrix4x4.Multiply(newRot, newTrans);
