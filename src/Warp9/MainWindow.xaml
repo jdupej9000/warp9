@@ -46,9 +46,9 @@
     </Window.Resources>
 
     <DockPanel>
-        <!--<StatusBar DockPanel.Dock="Bottom">
+        <!--<StatusBar DockPanel.Dock="Bottom" Padding="2">
             <StatusBarItem>
-                <TextBlock Name="lblCursorPosition" Text="Woohoo"/>
+                <TextBlock Name="lblCursorPosition" Text="Ready."/>
             </StatusBarItem>
         </StatusBar>-->
 
