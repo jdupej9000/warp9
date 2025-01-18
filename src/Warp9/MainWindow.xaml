@@ -53,62 +53,54 @@
         </StatusBar>-->
 
         <Border BorderBrush="{DynamicResource Window.Static.Border}" BorderThickness="1" Margin="4">
-        <Grid x:Name="gridMain">
+        <Grid x:Name="gridMain" SnapsToDevicePixels="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-                <Border Background="{DynamicResource Panel.Background}" Margin="2">
-                    <TabControl x:Name="tabLeft" TabStripPlacement="Top" Margin="2,2,2,2">
-                        <TabItem Style="{DynamicResource MainWindowTabItem}">
-                            <TabItem.Header>
-                                <TextBlock Text="Project" Style="{DynamicResource TabItemHeaderBlock}" />
-                            </TabItem.Header>
-                            <DockPanel Margin="4">
-                                
-                                <Label DockPanel.Dock="Top" Height="4" />
-                                <TreeView Name="treeProject" DockPanel.Dock="Top" SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
-                                    <TreeView.ItemTemplate>
-                                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                            <TextBlock Text="{Binding Name}"/>
-                                        </HierarchicalDataTemplate>
-                                    </TreeView.ItemTemplate>
-                                </TreeView>
-                            </DockPanel>
-                        </TabItem>
+                <ScrollViewer Background="{DynamicResource Panel.Background}" Margin="2">
+                <StackPanel Orientation="Vertical" Background="{DynamicResource Panel.Background}">
+                    <Expander DockPanel.Dock="Top" IsExpanded="True" Height="400" Style="{DynamicResource FancyExpander}">
+                            <Expander.Header>
+                                <TextBlock Text="Project" Style="{DynamicResource GroupBoxHeaderBlock}"/>
+                            </Expander.Header>
+                            <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </Expander>
 
-                        <TabItem  Style="{DynamicResource MainWindowTabItem}">
-                            <TabItem.Header>
-                                <TextBlock Text="Tasks" Style="{DynamicResource TabItemHeaderBlock}" />
-                            </TabItem.Header>
-                            <DockPanel Margin="8,8,8,8">
-                                <TextBlock FontWeight="Bold"  DockPanel.Dock="Top">Task List</TextBlock>
-                                <Label DockPanel.Dock="Top" Height="12" />
+                    <Expander DockPanel.Dock="Top" IsExpanded="False" Height="160" Style="{DynamicResource FancyExpander}">
+                            <Expander.Header>
+                                <TextBlock Text="Tasks" Style="{DynamicResource GroupBoxHeaderBlock}"/>
+                            </Expander.Header>
+                        
+                            <ListView x:Name="lstTasks"  Margin="4" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="Height" Value="76" />
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate DataType="jobs:IJob">
+                                        <DockPanel Margin="2">
+                                            <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
+                                            <TextBlock Text="{Binding StatusText, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
+                                            <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                        </ListView>
+                    </Expander>
 
-                                <ListView x:Name="lstTasks" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="Height" Value="76" />
-                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate DataType="jobs:IJob">
-                                            <DockPanel Margin="2">
-                                                <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
-                                                <TextBlock Text="{Binding StatusText, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
-                                                <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
-                                            </DockPanel>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                            </DockPanel>
-                        </TabItem>
-
-                    </TabControl>
-                </Border>
+                </StackPanel>
+                </ScrollViewer>
 
                 <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Background}" ShowsPreview="True" Width="4" />
 
