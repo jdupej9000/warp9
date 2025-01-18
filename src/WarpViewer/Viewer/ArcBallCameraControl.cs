@@ -83,7 +83,7 @@ namespace Warp9.Viewer
             float alpha = MathF.Acos(MathF.Min(1, Vector3.Dot(en, st)));
             Vector3 axis = Vector3.Normalize(Vector3.Cross(st, en));
 
-            return Quaternion.CreateFromAxisAngle(axis, alpha);
+            return Quaternion.CreateFromAxisAngle(axis, -alpha);
         }
 
         private Vector2 ToScreenRelative(Vector2 pt)
@@ -100,11 +100,11 @@ namespace Warp9.Viewer
 
             if (len > 1)
             {
-                return new Vector3(Vector2.Normalize(ptyx), 0);
+                return Vector3.Normalize(new Vector3(ptyx, 0));
             }
             else
             {
-                return new Vector3(ptyx, MathF.Sqrt(1.0f - len));
+                return Vector3.Normalize(new Vector3(ptyx, MathF.Sqrt(1.0f - len)));
             }
         }
     }

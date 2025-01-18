@@ -30,6 +30,7 @@ namespace Warp9.Navigation
             {
                 0 => new EulerCameraControl(),
                 1 => new ArcBallCameraControl(),
+                2 => new PlaneCameraControl(),
                 _ => new EulerCameraControl()
             };
             SetCameraControl(ctl);
