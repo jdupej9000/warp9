@@ -117,16 +117,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsDefaulted" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Defaulted.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Button.Defaulted.Border}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Fill}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.MouseOver.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Button.MouseOver.Border}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillHot}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Pressed.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Button.Pressed.Border}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Disabled.Background}"/>
@@ -168,7 +165,7 @@
                             
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillHot}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
@@ -279,7 +276,7 @@
                             <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Fill}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillHot}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
@@ -302,7 +299,7 @@
                                 <Condition Property="IsChecked" Value="True"/>
                                 <Condition Property="IsMouseOver" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillCheck}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.FillHot}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -2405,14 +2402,14 @@
                                 <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="false"/>
                             </MultiDataTrigger.Conditions>
-                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Button.FillHot}"/>
                         </MultiDataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="true"/>
                             </MultiDataTrigger.Conditions>
-                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Button.FillHot}"/>
                         </MultiDataTrigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter Property="Fill" TargetName="arrow" Value="{DynamicResource ComboBox.Pressed.Glyph}"/>
@@ -2422,7 +2419,7 @@
                                 <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true"/>
                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="false"/>
                             </MultiDataTrigger.Conditions>
-                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Panel.Highlight}"/>
+                            <Setter Property="Background" TargetName="splitBorder" Value="{DynamicResource Button.FillCheck}"/>
                         </MultiDataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>

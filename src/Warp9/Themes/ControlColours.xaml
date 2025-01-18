@@ -312,4 +312,9 @@
         <GradientStop Offset="1" Color="{DynamicResource ThemeColor.Panel.FillLight}" />
     </LinearGradientBrush>
 
+    <LinearGradientBrush x:Key="Button.FillHot" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="{DynamicResource ThemeColor.Panel.FillLight}" />
+        <GradientStop Offset="1" Color="{DynamicResource ThemeColor.Panel.FillLighter}" />
+    </LinearGradientBrush>
+
 </ResourceDictionary>
