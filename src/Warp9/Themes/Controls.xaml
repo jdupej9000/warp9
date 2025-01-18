@@ -136,6 +136,48 @@
         </Setter>
     </Style>
 
+    <Style x:Key="HeaderButton" TargetType="{x:Type Button}">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+
+                        <ContentPresenter  Grid.Row="2" Grid.Column="2" x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="true"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.5" />
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
+                    
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDefaulted" Value="true">
+                           
+
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="true">
+                          
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                           
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">                          
+                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{DynamicResource Button.Disabled.Foreground}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ControlButton" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -1649,6 +1691,10 @@
         </Setter>
     </Style>
 
+    <Style x:Key="HorizontalSeparator" TargetType="{x:Type Label}">
+        
+    </Style>
+
     <!-- A shared context menu for all text boxes and rich text boxes. Change or replace as desired -->
     <ContextMenu x:Key="TextBoxDefaultContextMenu" x:Shared="True">
         <MenuItem Header="Undo" Command="Undo"/>
@@ -2704,7 +2750,7 @@
     <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}">
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Editor.Foreground}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Padding" Value="5,2,0,2"/>
         <Setter Property="Template">
@@ -2719,9 +2765,9 @@
                                 <VisualState x:Name="Disabled"/>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Border x:Name="HeaderBorder" BorderThickness="0,0,0,1" Padding="2,0,2,0"
-                                BorderBrush="{DynamicResource ListView.GridView.Static.Border}"
-                                Background="{DynamicResource ListView.GridView.HeaderItem.Background}">
+                        <Border x:Name="HeaderBorder" BorderThickness="0,1,0,1" Padding="2,0,2,0"
+                                BorderBrush="{DynamicResource Editor.Foreground}"
+                                Background="{DynamicResource Editor.Background}">
                             <ContentPresenter x:Name="HeaderContent" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -2796,12 +2842,13 @@
     </Style>
 
     <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
-        <Setter Property="Background" Value="{DynamicResource DataGrid.HeaderItem.Static.Background}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
+        <Setter Property="Background" Value="{DynamicResource Editor.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Editor.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Foreground}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridColumnHeadersPresenter}">
-                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                    <Border Background="{DynamicResource Editor.Background}" BorderThickness="1,0,1,0">
                         <Grid>
                             <DataGridColumnHeader x:Name="PART_FillerColumnHeader" IsHitTestVisible="False"
                                                   Background="{TemplateBinding Background}"
@@ -2830,9 +2877,9 @@
     </Style>
 
     <Style TargetType="{x:Type DataGridColumnHeader}">
-        <Setter Property="Background" Value="{DynamicResource DataGrid.HeaderItem.Static.Background}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource Editor.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Foreground}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,1"/>
         <Setter Property="SeparatorBrush" Value="{DynamicResource DataGrid.VerticalSeparatorBrush}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Padding" Value="4,2"/>
@@ -2948,19 +2995,19 @@
     </Style>
 
     <Style TargetType="{x:Type DataGridCell}">
-        <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Editor.Foreground}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridCell}">
-                    <Border x:Name="border" Background="{DynamicResource DataGrid.CellItem.Static.Background}" BorderThickness="0" SnapsToDevicePixels="True">
+                    <Border x:Name="border" Background="Transparent" BorderThickness="0" SnapsToDevicePixels="True">
                         <ContentPresenter Margin="4" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DataGrid.CellItem.MouseOver.Background}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Editor.SelectedFill}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DataGrid.Row.Selected.Background}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Editor.SelectedFill}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -2976,6 +3023,7 @@
 
     <Style x:Key="DataGridComboBoxColumnEditingElementStyle" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{DynamicResource Editor.Foreground}" />
     </Style>
 
     <Style x:Key="DataGridCheckBoxColumnElementStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
@@ -2984,11 +3032,11 @@
     <Style x:Key="DataGridCheckBoxColumnEditingElementStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource DataGridCheckBoxColumnElementStyle}"/>
 
     <Style TargetType="{x:Type DataGrid}">
-        <Setter Property="Background" Value="{DynamicResource DataGrid.Static.Background}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Static.Border}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
-        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGrid.VerticalSeparatorBrush}"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.HorizontalSeparatorBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource Editor.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Control.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Editor.Foreground}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Editor.Separator}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="RowDetailsVisibilityMode" Value="VisibleWhenSelected"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>

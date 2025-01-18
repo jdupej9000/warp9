@@ -10,31 +10,33 @@
 
     <Border BorderBrush="{DynamicResource TabItem.Selected.Border}" BorderThickness="1">
         <Grid Background="{DynamicResource Window.Static.Background}">
-            <DockPanel >
-                <TextBox x:Name="txtName" FontSize="16" BorderThickness="0" Padding="4" DockPanel.Dock="Top">
-                    Specimen table
-                </TextBox>
+            <DockPanel>
 
-
-                <ToolBar DockPanel.Dock="Top" Margin="4,4,4,4">
+                <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource Editor.Foreground}" BorderThickness="0,0,0,1">
+                <DockPanel Background="{DynamicResource Editor.Header.Background}">
+                    <Label Width="8" DockPanel.Dock="Right" />
+                    <Button x:Name="btnSpecImport" DockPanel.Dock="Right" Style="{DynamicResource HeaderButton}" Content="Import..." Click="btnSpecImport_Click" />
+                    <Label Width="16" Style="{DynamicResource HorizontalSeparator}" DockPanel.Dock="Right" />
+                    <Button x:Name="btnSpecEditCol" DockPanel.Dock="Right" Style="{DynamicResource HeaderButton}" Content="Edit column" Click="btnSpecEditCol_Click" />
+                    <Label Width="16" Style="{DynamicResource HorizontalSeparator}" DockPanel.Dock="Right" />
+                    <Button x:Name="btnSpecDelete" DockPanel.Dock="Right" Style="{DynamicResource HeaderButton}" Content="Remove row" Click="btnSpecDelete_Click" />
+                    <Label Width="16" Style="{DynamicResource HorizontalSeparator}" DockPanel.Dock="Right" />
+                    <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource HeaderButton}" Content="Add row" Click="btnSpecAdd_Click" />
+                    <Label Width="16" Style="{DynamicResource HorizontalSeparator}" DockPanel.Dock="Right" />
                     
-                    <Button x:Name="btnSpecAdd" Content="{DynamicResource Add}" Click="btnSpecAdd_Click" />
-                    <Button x:Name="btnSpecDelete" Content="{DynamicResource Remove}" Click="btnSpecDelete_Click" />
-                    <Separator />
-                    <Button x:Name="btnSpecEditCol" Content="{DynamicResource EditColumn}" Click="btnSpecEditCol_Click" />
-                    <Button x:Name="btnSpecImport" Content="{DynamicResource ImportTable}" Click="btnSpecImport_Click" />
-                </ToolBar>
+                    <TextBox x:Name="txtName" Text="Specimen table" FontSize="16" BorderThickness="0" Background="Transparent" Padding="4" DockPanel.Dock="Left" />
+                </DockPanel>
+                </Border>
 
-
-                <DataGrid x:Name="dataMain" Margin="4,4,4,4" VerticalAlignment="Stretch" DockPanel.Dock="Top" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" BeginningEdit="dataMain_BeginningEdit">
+                <DataGrid x:Name="dataMain" VerticalAlignment="Stretch" DockPanel.Dock="Top" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" BeginningEdit="dataMain_BeginningEdit">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate>
                                         <StackPanel Margin="4">
-                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Editor.Foreground}" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Type}" Foreground="{DynamicResource Editor.Foreground}"/>
                                         </StackPanel>
                                     </ControlTemplate>
                                 </Setter.Value>
