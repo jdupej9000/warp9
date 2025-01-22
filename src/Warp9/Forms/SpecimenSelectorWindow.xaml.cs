@@ -1,19 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Linq.Dynamic.Core;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Warp9.Model;
-using System.Text.RegularExpressions;
+
 
 namespace Warp9.Forms
 {
@@ -111,51 +101,6 @@ namespace Warp9.Forms
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ShowEntry();
-        }
-
-        private void txtQuery_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                try
-                {
-                    ApplyQuery(txtQuery.Text, chkQueryClearFirst.IsChecked ?? false, chkQueryCheck.IsChecked ?? false);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
-                }
-            }
-        }
-
-        private void ApplyQuery(string query, bool clearFirst, bool newSelect)
-        {
-            string code = "row => " + Regex.Replace(query,
-                @"\$([A-Za-z0-9]+)", @"row[""$1""]");
-
-            ParsingConfig cfg = new ParsingConfig();
-            cfg.ConvertObjectToSupportComparison = true;
-
-            LambdaExpression lambda = DynamicExpressionParser.ParseLambda<SpecimenTableSelectionRow, bool>(
-                typeof(Func<SpecimenTableSelectionRow, bool>), cfg, false, code);
-
-            Func<SpecimenTableSelectionRow, bool> pred = (Func<SpecimenTableSelectionRow, bool>)lambda.Compile();
-
-            if (clearFirst)
-            {
-                for (int i = 0; i < table.Count; i++)
-                    table.Selected[i] = false;
-            }
-
-            
-            // translate $Name to Row["Name"]
-            foreach (SpecimenTableSelectionRow row in table.AsQueryable().Where(pred))
-            {
-               // MessageBox.Show(row.ToString());
-                table.Selected[row.Index] = newSelect;
-            }
-
-            table.NotifyUpdated();
         }
     }
 }

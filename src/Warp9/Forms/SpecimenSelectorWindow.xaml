@@ -20,24 +20,6 @@
             <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click"/>
         </StackPanel>
 
-        <GroupBox Header="Query (press Enter to apply)" Margin="4" DockPanel.Dock="Bottom">
-            <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal" Margin="4">
-                    <Button Height="24" Width="24" Style="{DynamicResource NoBorderButton}" Content="{DynamicResource RunQuery}"/>
-                    <Label Width="8" />
-                   
-                    <CheckBox x:Name="chkQueryClearFirst" Content="Clear first" />
-                    <Label Width="8" />
-                    <CheckBox x:Name="chkQueryCheck" Content="Check selected" IsChecked="True"/>
-                </StackPanel>
-           
-                <TextBox x:Name="txtQuery" Height="60" VerticalScrollBarVisibility="Visible" BorderBrush="Transparent" Style="{DynamicResource NoHoverTextBox}" FontFamily="Cascadia Mono Light" Padding="4" TextWrapping="Wrap" AcceptsReturn="False" AcceptsTab="True" KeyDown="txtQuery_KeyDown" >
-                    <TextBox.Text>$Sex == "F"</TextBox.Text>
-                </TextBox>
-            </StackPanel>
-        </GroupBox>
-
-
         <DataGrid x:Name="dataMain" Margin="4" BorderThickness="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
