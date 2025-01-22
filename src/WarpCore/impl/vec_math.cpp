@@ -270,14 +270,16 @@ namespace warpcore::impl
                     a1 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + (j+1) * n), a1);
                 }
 
-                float aa0 = reduce_add(a0);
-                float aa1 = reduce_add(a1);
+                float aa0 = 0;
+                float aa1 = 0;
                 for(int k = n16; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
+                aa0 += reduce_add(a0);
+                aa1 += reduce_add(a1);
                 aa0 *= alpha;
                 aa1 *= alpha;
                 y[i * m + j] = aa0;
@@ -293,12 +295,13 @@ namespace warpcore::impl
                     a0 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + j * n), a0);
                 }
 
-                float aa0 = reduce_add(a0);
+                float aa0 = 0;
                 for(int k = n16; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
 
+                aa0 += reduce_add(a0);
                 aa0 *= alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
@@ -323,14 +326,16 @@ namespace warpcore::impl
                     a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j + 1) * n), a1);
                 }
 
-                float aa0 = reduce_add(a0);
-                float aa1 = reduce_add(a1);
+                float aa0 = 0;
+                float aa1 = 0;
                 for (int k = n8; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
+                aa0 += reduce_add(a0);
+                aa1 += reduce_add(a1);
                 aa0 *= alpha;
                 aa1 *= alpha;
 
@@ -347,12 +352,13 @@ namespace warpcore::impl
                     a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
                 }
 
-                float aa0 = reduce_add(a0);
+                float aa0 = 0;
                 for (int k = n8; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
 
+                aa0 += reduce_add(a0);
                 aa0 *= alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
