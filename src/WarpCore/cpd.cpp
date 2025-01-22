@@ -2,8 +2,6 @@
 
 #include "cpd.h"
 #include "impl/cpd_impl.h"
-#include <float.h>
-#include <math.h>
 #include <memory>
 #include <cstring>
 #include <chrono>
@@ -93,9 +91,6 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
             sigma2 = cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
     }
 
-    //float sigma2 = (cpd->sigma2init > 0.0f) ? cpd->sigma2init : 
-    //    cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
-
     std::memset(pp, 0, sizeof(float) * (2 * n + 4 * m + tmp_size));
 
     const float* q = (const float*)init + 2 * m;
@@ -172,8 +167,8 @@ int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_ol
     if (sigma2 < 1e-8)
         conv |= CPD_CONV_SIGMA;
 
-    if (abs(sigma2 - sigma2_old) < 1e-10f ||
-        abs(sigma2 - sigma2_old) / sigma2 < 1e-6)
+    if (abs(sigma2 - sigma2_old) < 1e-6f ||
+        abs(sigma2 - sigma2_old) / sigma2 < 1e-3)
         conv |= CPD_CONV_DSIGMA;
 
     if (isnan(abs(sigma2 - sigma2_old) / sigma2))
