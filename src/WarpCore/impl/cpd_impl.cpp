@@ -186,7 +186,7 @@ namespace warpcore::impl
                 d += dj * dj;
             }
 
-            gi[i] = expf(ef * d);
+            gi[i] = expf_fast(ef * d);
         }
     }
 
@@ -329,7 +329,7 @@ namespace warpcore::impl
                 float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
 
                 if(dist < thresh)			
-                    sumAccumB += expf(expFactor * dist);	
+                    sumAccumB += expf_fast(expFactor * dist);	
 
                 if (cpd_is_tier_complete(j)) {
                     sumAccum += sumAccumB;
@@ -419,7 +419,7 @@ namespace warpcore::impl
                 float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
 
                 if( dist < thresh) {
-                    const float pmn = expf(expFactor * dist) * psum[i];
+                    const float pmn = expf_fast(expFactor * dist) * psum[i];
                     px0 += pmn * x[0*n+i];
                     px1 += pmn * x[1*n+i];
                     px2 += pmn * x[2*n+i];

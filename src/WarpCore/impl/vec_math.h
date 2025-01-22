@@ -5,7 +5,9 @@
 
 namespace warpcore::impl
 {
+    float WCORE_VECCALL expf_fast(float x);
     __m256 WCORE_VECCALL expf_fast(__m256 x);
+    __m512 WCORE_VECCALL expf_fast(__m512 x);
     __m256 WCORE_VECCALL expf_schraudolph(__m256 x);
     
     double WCORE_VECCALL reduce_add(__m256d v);
