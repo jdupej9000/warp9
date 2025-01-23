@@ -295,7 +295,6 @@ namespace warpcore::impl
     {
         for (int i = i0; i < n; i++) {
             float sumAccum = 0.0f;
-
             float sumAccumB = 0;
             for (int j = 0; j < m; j++) {
                 const float dd1 = x[0 * n + i] - t[0 * m + j];
