@@ -40,9 +40,9 @@
             <StackPanel Orientation="Vertical" Margin="4">
                 <StackPanel Orientation="Horizontal">
                     <CheckBox Width="50" Content="If" IsChecked="True" />
-                    <ComboBox Width="200" />
+                    <ComboBox Width="200" ItemsSource="{Binding SearchableColumns}"/>
                     <Label Width="4" />
-                    <ComboBox Width="200" />
+                    <ComboBox Width="200" ItemsSource="{Binding Operators}"/>
                     <Label Width="4" />
                     <TextBox Width="200" />
                 </StackPanel>
@@ -51,9 +51,9 @@
 
                 <StackPanel Orientation="Horizontal">
                     <CheckBox Width="50" Content="And" />
-                    <ComboBox Width="200" />
+                    <ComboBox Width="200" ItemsSource="{Binding SearchableColumns}" />
                     <Label Width="4" />
-                    <ComboBox Width="200" />
+                    <ComboBox Width="200" ItemsSource="{Binding Operators}"/>
                     <Label Width="4" />
                     <TextBox Width="200" />
                 </StackPanel>
@@ -66,7 +66,7 @@
                     <Button Style="{DynamicResource ControlButton}" Content="Unselect" Width="88" Height="20" Margin="0,0,-1,0" />
                     <Button Style="{DynamicResource ControlButton}" Content="Invert" Width="88" Height="20" Margin="0,0,-1,0" />
                     <Label Width="8" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="88" Height="20" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="88" Height="20" Click="Clear_Click" />
                 </StackPanel>
             </StackPanel>
         </GroupBox>

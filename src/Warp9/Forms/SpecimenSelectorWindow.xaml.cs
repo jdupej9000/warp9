@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,8 +13,14 @@ namespace Warp9.Forms
     {
         public string Name { get; init; } = name;
         public string Type { get; init; } = type;
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", Name, Type);
+        }
     }
 
+  
     /// <summary>
     /// Interaction logic for SpecimenSelectorWindow.xaml
     /// </summary>
@@ -21,10 +29,34 @@ namespace Warp9.Forms
         public SpecimenSelectorWindow(SpecimenTableSelection sts)
         {
             table = sts;
+            InitSearchableColumns(sts);
             InitializeComponent();
         }
 
         SpecimenTableSelection table;
+        public ObservableCollection<SpecimenTableColumnTextInfo> SearchableColumns { get; } = new ObservableCollection<SpecimenTableColumnTextInfo>();
+        public ObservableCollection<string> Operators { get; } = new ObservableCollection<string>{
+            "Equals", "Not equal to", 
+            "Greater than", "Greater than or equal to",
+            "Less than", "Less than or equal to",
+            "In", "Not in"
+        };
+
+        private void InitSearchableColumns(SpecimenTableSelection sts)
+        {
+            foreach (var col in sts.TableColumns)
+            {
+                if (col.Value.ColumnType == SpecimenTableColumnType.Integer ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Real ||
+                    col.Value.ColumnType == SpecimenTableColumnType.String ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Factor ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Boolean)
+                {
+                    SearchableColumns.Add(new SpecimenTableColumnTextInfo(
+                        col.Key, col.Value.ColumnType.ToString()));
+                }
+            }
+        }
 
         private void ShowEntry()
         {
@@ -86,6 +118,12 @@ namespace Warp9.Forms
                         break;
                 }
             }
+        }
+
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < table.Selected.Length; i++)
+                table.Selected[i] = false;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
