@@ -2,11 +2,11 @@
 #include "vec_math.h"
 #include "kmeans.h"
 #include "utils.h"
-#include <math.h>
 #include <lapacke.h>
 #include <cblas.h>
 #include <algorithm>
 #include <immintrin.h>
+#include "cpu_info.h"
 
 
 namespace warpcore::impl
@@ -15,10 +15,17 @@ namespace warpcore::impl
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
-    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
-    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
+
+    void cpd_psumpt1(int i0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
+    void cpd_psumpt1_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
+    void cpd_psumpt1_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
+
+    void cpd_p1px(int j0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
+    void cpd_p1px_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
+    void cpd_p1px_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     
-    constexpr bool cpd_is_tier_complete(int x) {
+    constexpr bool cpd_is_tier_complete(int x) 
+    {
         return (x & 0xff) == 0;
     }
 
@@ -74,8 +81,16 @@ namespace warpcore::impl
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        cpd_psumpt1(m, n, thresh, factor, denom, x, t, psum, pt1);
-        cpd_p1px(m, n, thresh, factor, denom, x, t, psum, p1, px);
+        if (get_optpath() >= OPT_PATH::AVX512)
+        {
+            cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
+            cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
+        }
+        else
+        {
+            cpd_psumpt1_avx2(m, n, thresh, factor, denom, x, t, psum, pt1);
+            cpd_p1px_avx2(m, n, thresh, factor, denom, x, t, psum, p1, px);
+        }
     }
 
     float cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
@@ -276,13 +291,43 @@ namespace warpcore::impl
         }
     }
 
-    void cpd_psumpt1(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
+    void cpd_psumpt1(int i0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
+    {
+        for (int i = i0; i < n; i++) {
+            float sumAccum = 0.0f;
+
+            float sumAccumB = 0;
+            for (int j = 0; j < m; j++) {
+                const float dd1 = x[0 * n + i] - t[0 * m + j];
+                const float dd2 = x[1 * n + i] - t[1 * m + j];
+                const float dd3 = x[2 * n + i] - t[2 * m + j];
+                float dist = dd1 * dd1 + dd2 * dd2 + dd3 * dd3;
+
+                if (dist < thresh)
+                    sumAccumB += expf_fast(expFactor * dist);
+
+                if (cpd_is_tier_complete(j)) {
+                    sumAccum += sumAccumB;
+                    sumAccumB = 0;
+                }
+            }
+            sumAccum += sumAccumB;
+
+            const float rcp = 1.0f / (sumAccum + denomAdd);
+            psum[i] = rcp;
+            pt1[i] = sumAccum * rcp;
+        }
+    }
+
+    void cpd_psumpt1_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
         const __m256 denomAdd8 = _mm256_broadcast_ss(&denomAdd);
         const int n8 = n >> 3;
 
+        // Intel hybrid architectures would usually be the ones where we fall back to avx2 code. Dynamic
+        // scheduling results in beter utilization there.
         #pragma omp parallel for schedule(dynamic, 8)
         for(int i8 = 0; i8 < n8; i8++) {	
             const int i = i8 * 8;
@@ -318,33 +363,86 @@ namespace warpcore::impl
             _mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
         }
 
-        for(int i = 8*n8; i < n; i++) {
-            float sumAccum = 0.0f;
+        cpd_psumpt1(n8 * 8, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
+    }
 
-            float sumAccumB = 0;
-            for(int j = 0; j<m; j++) {			
-                const float dd1 = x[0*n+i] - t[0*m+j];
-                const float dd2 = x[1*n+i] - t[1*m+j];
-                const float dd3 = x[2*n+i] - t[2*m+j];
-                float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
+    void cpd_psumpt1_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
+    {
+        constexpr int BlockSize = 16;
+        const __m512 factorb = _mm512_set1_ps(expFactor);
+        const __m512 threshb = _mm512_set1_ps(thresh);
+        const __m512 denomAddb = _mm512_set1_ps(denomAdd);
+        const int nb = n / BlockSize;
 
-                if(dist < thresh)			
-                    sumAccumB += expf_fast(expFactor * dist);	
+        #pragma omp parallel for schedule(static, 8)
+        for (int ib = 0; ib < nb; ib++) {
+            const int i = ib * BlockSize;
+            __m512 accum = _mm512_setzero_ps(), accumb = _mm512_setzero_ps();
+            const __m512 x0 = _mm512_loadu_ps(x + i);
+            const __m512 x1 = _mm512_loadu_ps(x + i + n);
+            const __m512 x2 = _mm512_loadu_ps(x + i + 2 * n);
+
+            for (int j = 0; j < m; j++) {
+                const __m512 d0 = _mm512_sub_ps(_mm512_set1_ps(t[j]), x0);
+                const __m512 d1 = _mm512_sub_ps(_mm512_set1_ps(t[j + m]), x1);
+                const __m512 d2 = _mm512_sub_ps(_mm512_set1_ps(t[j + 2 * m]), x2);
+                __m512 dist = _mm512_mul_ps(d0, d0);
+                dist = _mm512_fmadd_ps(d1, d1, dist);
+                dist = _mm512_fmadd_ps(d2, d2, dist);
+
+                const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
+                if (_cvtmask16_u32(compareMask) != 0) {
+                    __m512 affinity = expf_fast(_mm512_mul_ps(dist, factorb));
+                    accumb = _mm512_mask_add_ps(accumb, compareMask, accumb, affinity);
+                }
 
                 if (cpd_is_tier_complete(j)) {
-                    sumAccum += sumAccumB;
-                    sumAccumB = 0;
+                    accum = _mm512_add_ps(accum, accumb);
+                    accumb = _mm512_setzero_ps();
                 }
             }
-            sumAccum += sumAccumB;
+            accum = _mm512_add_ps(accum, accumb);
 
-            const float rcp = 1.0f / (sumAccum + denomAdd);
-            psum[i] = rcp;
-            pt1[i] = sumAccum * rcp;
+            const __m512 denom = _mm512_rcp28_ps(_mm512_add_ps(accumb, denomAddb));
+            _mm512_storeu_ps(psum + i, denom);
+            _mm512_storeu_ps(pt1 + i, _mm512_mul_ps(denom, accum));
+        }
+
+        cpd_psumpt1(nb * BlockSize, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
+    }
+
+    void cpd_p1px(int j0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
+    {
+        for (int j = j0; j < m; j++) {
+            float px0 = 0, px1 = 0, px2 = 0;
+            float p1a = 0.0f;
+            const float t0 = t[j],
+                t1 = t[m + j],
+                t2 = t[2 * m + j];
+
+            for (int i = 0; i < n; i++) {
+                const float dd1 = x[0 * n + i] - t0;
+                const float dd2 = x[1 * n + i] - t1;
+                const float dd3 = x[2 * n + i] - t2;
+                float dist = dd1 * dd1 + dd2 * dd2 + dd3 * dd3;
+
+                if (dist < thresh) {
+                    const float pmn = expf_fast(expFactor * dist) * psum[i];
+                    px0 += pmn * x[0 * n + i];
+                    px1 += pmn * x[1 * n + i];
+                    px2 += pmn * x[2 * n + i];
+                    p1a += pmn;
+                }
+            }
+
+            p1[j] = p1a;
+            px[0 * m + j] = px0;
+            px[1 * m + j] = px1;
+            px[2 * m + j] = px2;
         }
     }
 
-    void cpd_p1px(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
+    void cpd_p1px_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
     {
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
@@ -405,32 +503,70 @@ namespace warpcore::impl
             _mm256_storeu_ps(px + j + 2*m, px2);
         }
 
-        for(int j = 8 * m8; j < m; j++) {
-            float px0 = 0, px1 = 0, px2 = 0;
-            float p1a = 0.0f;
-            const float t0 = t[j],
-                t1 = t[m+j],
-                t2 = t[2*m+j];
+        cpd_p1px(8 * m8, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
+    }
 
-            for(int i = 0; i < n; i++) {
-                const float dd1 = x[0*n+i] - t0;
-                const float dd2 = x[1*n+i] - t1;
-                const float dd3 = x[2*n+i] - t2;
-                float dist = dd1*dd1 + dd2*dd2 + dd3*dd3;
+    void cpd_p1px_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
+    {
+        constexpr int BlockSize = 16;
+        const __m512 factorb = _mm512_set1_ps(expFactor);
+        const __m512 threshb = _mm512_set1_ps(thresh);
+        const int mb = m / BlockSize;
 
-                if( dist < thresh) {
-                    const float pmn = expf_fast(expFactor * dist) * psum[i];
-                    px0 += pmn * x[0*n+i];
-                    px1 += pmn * x[1*n+i];
-                    px2 += pmn * x[2*n+i];
-                    p1a += pmn;	
+        #pragma omp parallel for schedule(static, 8)
+        for (int jb = 0; jb < mb; jb++) {
+            int j = jb * BlockSize;
+            const __m512 t0 = _mm512_loadu_ps(t + j);
+            const __m512 t1 = _mm512_loadu_ps(t + j + m);
+            const __m512 t2 = _mm512_loadu_ps(t + j + 2 * m);
+
+            __m512 px0 = _mm512_setzero_ps(), px0b = _mm512_setzero_ps();
+            __m512 px1 = _mm512_setzero_ps(), px1b = _mm512_setzero_ps();
+            __m512 px2 = _mm512_setzero_ps(), px2b = _mm512_setzero_ps();
+            __m512 p1a = _mm512_setzero_ps(), p1ab = _mm512_setzero_ps();
+
+            for (int i = 0; i < n; i++) {
+                const __m512 x0 = _mm512_set1_ps(x[i]);
+                const __m512 x1 = _mm512_set1_ps(x[n + i]);
+                const __m512 x2 = _mm512_set1_ps(x[2 * n + i]);
+                const __m512 dd1 = _mm512_sub_ps(x0, t0);
+                const __m512 dd2 = _mm512_sub_ps(x1, t1);
+                const __m512 dd3 = _mm512_sub_ps(x2, t2);
+
+                __m512 dist = _mm512_mul_ps(dd1, dd1);
+                dist = _mm512_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
+                dist = _mm512_fmadd_ps(dd3, dd3, dist);
+
+                const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
+                if (_cvtmask16_u32(compareMask) != 0) {
+                    __m512 pmn = expf_fast(_mm512_mul_ps(dist, factorb));
+                    pmn = _mm512_mul_ps(pmn, _mm512_set1_ps(psum[i]));
+                    pmn = _mm512_maskz_mov_ps(compareMask, pmn);
+
+                    px0b = _mm512_fmadd_ps(x0, pmn, px0b);
+                    px1b = _mm512_fmadd_ps(x1, pmn, px1b);
+                    px2b = _mm512_fmadd_ps(x2, pmn, px2b);
+                    p1ab = _mm512_add_ps(p1ab, pmn);
+                }
+
+                if (cpd_is_tier_complete(i)) {
+                    px0 = _mm512_add_ps(px0, px0b); px0b = _mm512_setzero_ps();
+                    px1 = _mm512_add_ps(px1, px1b); px1b = _mm512_setzero_ps();
+                    px2 = _mm512_add_ps(px2, px2b); px2b = _mm512_setzero_ps();
+                    p1a = _mm512_add_ps(p1a, p1ab); p1ab = _mm512_setzero_ps();
                 }
             }
+            px0 = _mm512_add_ps(px0, px0b);
+            px1 = _mm512_add_ps(px1, px1b);
+            px2 = _mm512_add_ps(px2, px2b);
+            p1a = _mm512_add_ps(p1a, p1ab);
 
-            p1[j] = p1a;
-            px[0*m+j] = px0;
-            px[1*m+j] = px1;
-            px[2*m+j] = px2;
+            _mm512_storeu_ps(p1 + j, p1a);
+            _mm512_storeu_ps(px + j, px0);
+            _mm512_storeu_ps(px + j + m, px1);
+            _mm512_storeu_ps(px + j + 2 * m, px2);
         }
+
+        cpd_p1px(BlockSize * mb, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
     }
 };
