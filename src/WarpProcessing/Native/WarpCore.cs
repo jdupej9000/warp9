@@ -5,6 +5,13 @@ using System.Text;
 
 namespace Warp9.Native
 {
+    public enum WarpCoreOptimizationPath : int
+    {
+        Avx2 = 0,
+        Avx512 = 1,
+        Maximum = 0x7fffffff
+    }
+
     public enum WarpCoreInfoIndex : int
     {
         VERSION = 0,
@@ -166,6 +173,10 @@ namespace Warp9.Native
 
     public static class WarpCore
     {
+
+        [DllImport("WarpCore.dll")]
+        public static extern int set_optpath(int path);
+
         [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
         public static extern int wcore_get_info(int index, StringBuilder buffer, int bufferSize);
 

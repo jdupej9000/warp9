@@ -38,9 +38,9 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 
     case WCINFO_OPT_PATH:
         switch (get_optpath()) {
-            case OPT_PATH::AVX2:    ss << "avx2"; break;
-            case OPT_PATH::AVX512:  ss << "avx512"; break;
-            default:                ss << "unknown"; break;
+            case WCORE_OPTPATH::AVX2:       ss << "avx2"; break;
+            case WCORE_OPTPATH::AVX512:     ss << "avx512"; break;
+            default:                        ss << "unknown"; break;
         }
         break;
 
@@ -78,6 +78,12 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         strncpy_s(buffer, bufferSize, ss.str().c_str(), std::min(sslen, (size_t)bufferSize));
     
     return (int)sslen;
+}
+
+extern "C" int set_optpath(int path)
+{
+    restrict_optpath((WCORE_OPTPATH)path);
+    return (int)get_optpath();
 }
 
 extern "C" int clust_kmeans(const float* x, int d, int n, int k, float* cent, int* label)

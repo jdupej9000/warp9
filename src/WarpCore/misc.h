@@ -13,4 +13,5 @@ enum WCORE_INFO_INDEX
 };
 
 extern "C" WCEXPORT int wcore_get_info(int index, char* buffer, int bufferSize);
+extern "C" WCEXPORT int set_optpath(int path);
 extern "C" WCEXPORT int clust_kmeans(const float* x, int d, int n, int k, float* cent, int* label);

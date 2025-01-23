@@ -81,7 +81,7 @@ namespace warpcore::impl
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        if (get_optpath() >= OPT_PATH::AVX512)
+        if (get_optpath() >= WCORE_OPTPATH::AVX512)
         {
             cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
             cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
@@ -321,16 +321,16 @@ namespace warpcore::impl
 
     void cpd_psumpt1_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
     {
+        constexpr int BlockSize = 8;
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
         const __m256 denomAdd8 = _mm256_broadcast_ss(&denomAdd);
-        const int n8 = n >> 3;
+        const int nb = round_down(n, BlockSize);
 
         // Intel hybrid architectures would usually be the ones where we fall back to avx2 code. Dynamic
         // scheduling results in beter utilization there.
         #pragma omp parallel for schedule(dynamic, 8)
-        for(int i8 = 0; i8 < n8; i8++) {	
-            const int i = i8 * 8;
+        for(int i = 0; i < nb; i += BlockSize) {	
             __m256 accum = _mm256_setzero_ps(), accumb = _mm256_setzero_ps();
             const __m256 x0 = _mm256_loadu_ps(x + i);
             const __m256 x1 = _mm256_loadu_ps(x + i + n);
@@ -363,7 +363,7 @@ namespace warpcore::impl
             _mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
         }
 
-        cpd_psumpt1(n8 * 8, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
+        cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
     }
 
     void cpd_psumpt1_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1)
@@ -372,11 +372,10 @@ namespace warpcore::impl
         const __m512 factorb = _mm512_set1_ps(expFactor);
         const __m512 threshb = _mm512_set1_ps(thresh);
         const __m512 denomAddb = _mm512_set1_ps(denomAdd);
-        const int nb = n / BlockSize;
+        const int nb = round_down(n, BlockSize);
 
         #pragma omp parallel for schedule(static, 8)
-        for (int ib = 0; ib < nb; ib++) {
-            const int i = ib * BlockSize;
+        for (int i = 0; i < nb; i += BlockSize) {
             __m512 accum = _mm512_setzero_ps(), accumb = _mm512_setzero_ps();
             const __m512 x0 = _mm512_loadu_ps(x + i);
             const __m512 x1 = _mm512_loadu_ps(x + i + n);
@@ -403,12 +402,12 @@ namespace warpcore::impl
             }
             accum = _mm512_add_ps(accum, accumb);
 
-            const __m512 denom = _mm512_rcp28_ps(_mm512_add_ps(accumb, denomAddb));
+            const __m512 denom = _mm512_rcp14_ps(_mm512_add_ps(accum, denomAddb));
             _mm512_storeu_ps(psum + i, denom);
             _mm512_storeu_ps(pt1 + i, _mm512_mul_ps(denom, accum));
         }
 
-        cpd_psumpt1(nb * BlockSize, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
+        cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
     }
 
     void cpd_p1px(int j0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
@@ -444,13 +443,13 @@ namespace warpcore::impl
 
     void cpd_p1px_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
     {
+        constexpr int BlockSize = 8;
         const __m256 factor8 = _mm256_broadcast_ss(&expFactor);
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
-        const int m8 = m >> 3;
+        const int mb = round_down(m, BlockSize);
 
         #pragma omp parallel for schedule(dynamic, 8)
-        for(int j8 = 0; j8 < m8; j8++) {
-            int j = j8 * 8;		
+        for(int j = 0; j < mb; j += BlockSize) {	
             const __m256 t0 = _mm256_loadu_ps(t + j);
             const __m256 t1 = _mm256_loadu_ps(t + j + m);
             const __m256 t2 = _mm256_loadu_ps(t + j + 2*m);
@@ -503,7 +502,7 @@ namespace warpcore::impl
             _mm256_storeu_ps(px + j + 2*m, px2);
         }
 
-        cpd_p1px(8 * m8, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
+        cpd_p1px(mb, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
     }
 
     void cpd_p1px_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)
@@ -511,11 +510,10 @@ namespace warpcore::impl
         constexpr int BlockSize = 16;
         const __m512 factorb = _mm512_set1_ps(expFactor);
         const __m512 threshb = _mm512_set1_ps(thresh);
-        const int mb = m / BlockSize;
+        const int mb = round_down(m, BlockSize);
 
         #pragma omp parallel for schedule(static, 8)
-        for (int jb = 0; jb < mb; jb++) {
-            int j = jb * BlockSize;
+        for (int j = 0; j < mb; j += BlockSize) {
             const __m512 t0 = _mm512_loadu_ps(t + j);
             const __m512 t1 = _mm512_loadu_ps(t + j + m);
             const __m512 t2 = _mm512_loadu_ps(t + j + 2 * m);
@@ -567,6 +565,6 @@ namespace warpcore::impl
             _mm512_storeu_ps(px + j + 2 * m, px2);
         }
 
-        cpd_p1px(BlockSize * mb, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
+        cpd_p1px(mb, m, n, thresh, expFactor, denomAdd, x, t, psum, p1, px);
     }
 };

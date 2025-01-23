@@ -1,14 +1,11 @@
 #pragma once
 
+#include "../defs.h"
+
 namespace warpcore::impl
 {
-	enum class OPT_PATH : int
-	{
-		AVX2 = 0,
-		AVX512 = 1
-	};
-
 	void init_cpuinfo(void);
-	OPT_PATH get_optpath(void);
+	WCORE_OPTPATH get_optpath(void);
+	WCORE_OPTPATH restrict_optpath(WCORE_OPTPATH path);
 	const char* get_cpuname(void);
 }

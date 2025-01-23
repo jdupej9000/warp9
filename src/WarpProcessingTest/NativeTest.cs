@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms.Design;
 using Warp9.Data;
 using Warp9.Native;
 using Warp9.Processing;
@@ -14,7 +15,18 @@ namespace Warp9.Test
     [TestClass]
     public class NativeTest
     {
-        public object PointCloudBuilder { get; private set; }
+        private static void SetOptPath(WarpCoreOptimizationPath p)
+        {
+            int ret = WarpCore.set_optpath((int)p);
+
+            if (p != WarpCoreOptimizationPath.Maximum && ret != (int)p)
+                Assert.Inconclusive("This platform is incapable of executing the optimization path " + p.ToString());
+        }
+
+        private static void RestoreOptPath()
+        {
+            WarpCore.set_optpath((int)WarpCoreOptimizationPath.Maximum);
+        }
 
         private static void AssertMatrixEqual(Matrix4x4 expected, Matrix4x4 got, float tol = 1e-6f)
         {
@@ -117,11 +129,14 @@ namespace Warp9.Test
             File.WriteAllText(TestUtils.MakeResultPath("CpdInitDefaultTest_0.txt"), sb.ToString());*/
         }
 
+        [DoNotParallelize]
         [TestMethod]
-        [DataRow(false)]
+        [DataRow(false, WarpCoreOptimizationPath.Avx2)]
+        [DataRow(false, WarpCoreOptimizationPath.Avx512)]
         [DataRow(true)]
-        public void CpdRegDefaultTest(bool useGpu)
+        public void CpdRegDefaultTest(bool useGpu, WarpCoreOptimizationPath opt=WarpCoreOptimizationPath.Maximum)
         {
+            SetOptPath(opt);
             Mesh pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pclTarget = DistortPcl(pcl, Vector3.Zero, 1.10f, 0.25f);
 
@@ -133,6 +148,7 @@ namespace Warp9.Test
             Console.WriteLine(ctx.ToString());
 
             WarpCoreStatus regStat = ctx.Register(pclTarget, out PointCloud? pclBent, out CpdResult result);
+            RestoreOptPath();
             Console.WriteLine(result.ToString());
             Assert.IsNotNull(pclBent);
             //Assert.AreEqual(regStat, WarpCoreStatus.WCORE_OK);
@@ -147,7 +163,7 @@ namespace Warp9.Test
             Console.WriteLine("T-Y:");
             ComparePcls(pclBent, pcl);
 
-            TestUtils.Render(string.Format("CpdRegDefaultTest_{0}_0.png", useGpu ? "cuda" : "cpu"),
+            TestUtils.Render(string.Format("CpdRegDefaultTest_{0}_{1}_0.png", useGpu ? "cuda" : "cpu", opt.ToString()),
                 new TestRenderItem(TriStyle.PointCloud, pcl, wireCol:Color.Red),
                 new TestRenderItem(TriStyle.PointCloud, pclTarget, wireCol:Color.Green),
                 new TestRenderItem(TriStyle.PointCloud, pclBent, wireCol:Color.White));
