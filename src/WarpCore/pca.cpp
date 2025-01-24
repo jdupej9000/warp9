@@ -4,9 +4,9 @@
 
 using namespace warpcore::impl;
 
-extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* allow, void* pcs, void* lambda)
+extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* allow, void* mean_pcs, void* lambda)
 {
-	if (pca == NULL || data == NULL || pcs == NULL)
+	if (pca == NULL || data == NULL || mean_pcs == NULL)
 		return WCORE_INVALID_ARGUMENT;
 
 	// This will be later removed as support for implicit full allow is added.
@@ -15,7 +15,12 @@ extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* all
 
 	int m = pca->m;
 	float* cov = new float[m * m];
-	pca_covmat((const float**)data, allow, pca->n, pca->m, cov);
+	
+	float* mean = (float*)mean_pcs;
+	float* pcs = mean + pca->n;
+
+	pca_mean((const float**)data, pca->n, pca->m, mean);
+	pca_covmat((const float**)data, mean, allow, pca->n, pca->m, cov);
 
 
 
