@@ -10,7 +10,12 @@ extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx);
 extern void cpd_deinit_cuda(void* pDevCtx);
 extern void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
 extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int m, int n);
-int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err);
+int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
+
+constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
+constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-6f;
+constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-3f;
+constexpr float CPD_REL_ERROR_CONV_THRESH = 2e-3f;
 
 using namespace warpcore::impl;
 
@@ -102,7 +107,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
     int conv = 0;
     float l0 = 0;
-    float tol = FLT_MAX;
+    float tol = FLT_MAX, tol_old = FLT_MAX;
     int it = 0;
     int64_t etime = 0;
 
@@ -135,7 +140,8 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         }
 
         std::memcpy(t, ttemp, sizeof(float) * 3 * m);
-        conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol);
+        conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol, tol_old);
+        tol_old = tol;
         it++;
     }
 
@@ -158,17 +164,17 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     return (it < maxit) ? WCORE_OK : WCORE_NONCONVERGENCE;
 }
 
-int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_old, float err)
+int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_old, float err, float err_old)
 {
     int conv = 0;
     if (it >= cpd->maxit)
         conv |= CPD_CONV_ITER;
 
-    if (sigma2 < 1e-8)
+    if (sigma2 < CPD_SIGMA2_CONV_TRESH)
         conv |= CPD_CONV_SIGMA;
 
-    if (abs(sigma2 - sigma2_old) < 1e-6f ||
-        abs(sigma2 - sigma2_old) / sigma2 < 1e-3)
+    if (abs(sigma2 - sigma2_old) < CPD_DELTA_SIGMA2_CONV_THRESH ||
+        abs(sigma2 - sigma2_old) / sigma2 < CPD_REL_SIGMA2_CONV_THRESH)
         conv |= CPD_CONV_DSIGMA;
 
     if (isnan(abs(sigma2 - sigma2_old) / sigma2))
@@ -176,6 +182,9 @@ int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_ol
 
     if (err < cpd->tol)
         conv |= CPD_CONV_TOL;
+
+    if ((err_old - err) / err < CPD_REL_ERROR_CONV_THRESH)
+        conv |= CPD_CONV_RTOL;
 
     return conv;
 }
