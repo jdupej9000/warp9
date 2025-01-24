@@ -62,10 +62,8 @@ namespace warpcore::impl
                     }
                 }
 
-                aa0 += reduce_add(a0);
-                aa1 += reduce_add(a1);
-                aa0 *= norm;
-                aa1 *= norm;
+                aa0 = (aa0 + reduce_add(a0)) * norm;
+                aa1 = (aa1 + reduce_add(a1)) * norm;
                 cov[i * m + j] = aa0;
                 cov[j * m + i] = aa0;
                 cov[i * m + j + 1] = aa1;
@@ -91,8 +89,7 @@ namespace warpcore::impl
                     }
                 }
 
-                aa0 += reduce_add(a0);
-                aa0 *= norm;
+                aa0 = (aa0 + reduce_add(a0)) * norm;
                 cov[i * m + j] = aa0;
                 cov[j * m + i] = aa0;
             }

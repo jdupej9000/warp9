@@ -18,7 +18,6 @@ namespace warpcore::impl
 
         __m128 t, f, p, r;
         __m128i i, j;
-
         const __m128 l2e = _mm_set_ss(1.442695041f); /* log2(e) */
         const __m128 cvt = _mm_set_ss(12582912.0f);  /* 1.5 * (1 << 23) */
         const __m128 c0 = _mm_set_ss(0.238428936f);
@@ -72,7 +71,6 @@ namespace warpcore::impl
 
         __m512 t, f, p, r;
         __m512i i, j;
-
         const __m512 l2e = _mm512_set1_ps(1.442695041f); /* log2(e) */
         const __m512 cvt = _mm512_set1_ps(12582912.0f);  /* 1.5 * (1 << 23) */
         const __m512 c0 = _mm512_set1_ps(0.238428936f);
@@ -105,7 +103,6 @@ namespace warpcore::impl
         __m128d vlow = _mm256_castpd256_pd128(v);
         __m128d vhigh = _mm256_extractf128_pd(v, 1); 
         vlow = _mm_add_pd(vlow, vhigh);    
-
         __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
         return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64)); 
     }
@@ -351,10 +348,8 @@ namespace warpcore::impl
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
-                aa0 += reduce_add(a0);
-                aa1 += reduce_add(a1);
-                aa0 *= alpha;
-                aa1 *= alpha;
+                aa0 = (reduce_add(a0) + aa0) * alpha;
+                aa1 = (reduce_add(a1) + aa1) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
                 y[i * m + j + 1] = aa1;
@@ -374,8 +369,7 @@ namespace warpcore::impl
                     aa0 += aai * a[k + j * n];
                 }
 
-                aa0 += reduce_add(a0);
-                aa0 *= alpha;
+                aa0 = (reduce_add(a0) + aa0) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }
@@ -407,11 +401,8 @@ namespace warpcore::impl
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
-                aa0 += reduce_add(a0);
-                aa1 += reduce_add(a1);
-                aa0 *= alpha;
-                aa1 *= alpha;
-
+                aa0 = (reduce_add(a0) + aa0) * alpha;
+                aa1 = (reduce_add(a1) + aa1) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
                 y[i * m + j + 1] = aa1;
@@ -431,8 +422,7 @@ namespace warpcore::impl
                     aa0 += aai * a[k + j * n];
                 }
 
-                aa0 += reduce_add(a0);
-                aa0 *= alpha;
+                aa0 = (reduce_add(a0) + aa0) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }
@@ -468,13 +458,13 @@ namespace warpcore::impl
                 accum = _mm256_add_ps(accum, _mm256_add_ps(p0, p1));
             }
 
-            float part = reduce_add(accum);
+            float part = 0;
             for(int j = n16; j < n; j++) {
                 const float aj = a[j + i * n];
                 part += aj * aj * b[j]; 
             }
 
-            ret += part;
+            ret += part + reduce_add(accum);
         }
 
         return ret;
