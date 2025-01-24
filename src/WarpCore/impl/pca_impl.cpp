@@ -3,9 +3,14 @@
 #include "vec_math.h"
 #include "cpu_info.h"
 #include "utils.h"
+#include "math.h"
+#include <algorithm>
 
 namespace warpcore::impl
 {
+    // Notation: n = datapoint count, m = datapoint dimension
+    // This is a high-dimensional PCA, it is assumed that n < m.
+
     void pca_covmat_base(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
     void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
 
@@ -51,20 +56,20 @@ namespace warpcore::impl
         float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
         const int* allowq = (const int*)allow;
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < n; i++) {
             const float* datai = data[i];
 
-            for (int j = i; j < m; j++) {
+            for (int j = i; j < n; j++) {
                 const float* dataj = data[j];
                 float aa0 = 0;
-                for (int k = 0; k < n; k++) {
+                for (int k = 0; k < m; k++) {
                     if ((allowq[k >> 5] >> (k & 0x1f)) & 0x1) {
                         aa0 += (datai[k] - mean[k]) * (dataj[k] - mean[k]);
                     }
                 }
                 aa0 *= norm;
-                cov[i * m + j] = aa0;
-                cov[j * m + i] = aa0;
+                cov[i * n + j] = aa0;
+                cov[j * n + i] = aa0;
             }
         }
     }
@@ -72,20 +77,20 @@ namespace warpcore::impl
 	void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
 	{
         constexpr int VEC_WIDTH = 16;
-        int m2 = round_down(m, 2);
-        int n16 = round_down(n, VEC_WIDTH);
+        int n2 = round_down(n, 2);
+        int m16 = round_down(m, VEC_WIDTH);
         float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
         const __mmask16* allowb = (const __mmask16*)allow;
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < n; i++) {
             const float* datai = data[i];
-            int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
+            int n2i = ((i & 0x1) == 0) ? n2 : (n2 - 1);
 
-            for (int j = i; j < m2i; j += 2) {
+            for (int j = i; j < n2i; j += 2) {
                 __m512 a0 = _mm512_setzero_ps();
                 __m512 a1 = _mm512_setzero_ps();
 
-                for (int k = 0, ki = 0; k < n16; k += VEC_WIDTH, ki++) {
+                for (int k = 0, ki = 0; k < m16; k += VEC_WIDTH, ki++) {
                     __mmask16 allowMask = allowb[ki];
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
@@ -97,7 +102,7 @@ namespace warpcore::impl
 
                 float aa0 = 0;
                 float aa1 = 0;
-                for (int k = n16; k < n; k++) {
+                for (int k = m16; k < m; k++) {
                     if ((allowb[k >> 4] >> (k & 0xf)) & 0x1) {
                         const float meank = mean[k];
                         const float coli = datai[k] - meank;
@@ -110,16 +115,16 @@ namespace warpcore::impl
 
                 aa0 = (aa0 + reduce_add(a0)) * norm;
                 aa1 = (aa1 + reduce_add(a1)) * norm;
-                cov[i * m + j] = aa0;
-                cov[j * m + i] = aa0;
-                cov[i * m + j + 1] = aa1;
-                cov[(j + 1) * m + i] = aa1;
+                cov[i * n + j] = aa0;
+                cov[j * n + i] = aa0;
+                cov[i * n + j + 1] = aa1;
+                cov[(j + 1) * n + i] = aa1;
             }
 
-            for (int j = m2i; j < m; j++) {
+            for (int j = n2i; j < n; j++) {
                 __m512 a0 = _mm512_setzero_ps();
 
-                for (int k = 0, ki = 0; k < n16; k += VEC_WIDTH, ki++) {
+                for (int k = 0, ki = 0; k < m16; k += VEC_WIDTH, ki++) {
                     __mmask16 allowMask = allowb[ki];
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
@@ -128,7 +133,7 @@ namespace warpcore::impl
                 }
 
                 float aa0 = 0;
-                for (int k = n16; k < n; k++) {
+                for (int k = m16; k < m; k++) {
                     if ((allowb[k >> 4] >> (k & 0xf)) & 0x1) {
                         const float meank = mean[k];
                         const float coli = datai[k] - meank;
@@ -144,8 +149,27 @@ namespace warpcore::impl
         }
 	}
 
-    void pca_make_pcs(const float** data, float* x, const void* allow, int n, int m, int npcs, float* lambda)
+    void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* lambda, float* pcs)
     {
-        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', m, x, m, lambda) <= 0;
+        float* evals = new float[n];
+        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals) <= 0;
+
+        // Find the order that sorts the eigenvalues in a descending order of magnitude.
+        int* order = new int[n];
+        for (int i = 0; i < n; i++)
+            order[i] = i;
+
+        std::sort(order, order + n,
+            [evals](int a, int b) { return fabs(evals[a]) > fabs(evals[b]); });
+
+        // Use the eigenvectors corresponding to 'npcs' eigenvalues with the largest magnitude
+        // and transform centered data with these weights to get the principal vectors.
+        #pragma omp parallel for schedule(static, 4)
+        for (int i = 0; i < std::min(npcs, n); i++) {
+            wsumc(data, mean, cov + order[i] * n, n, m, pcs + i * m);
+        }
+
+        delete[] order;
+        delete[] evals;
     }
 };

@@ -434,13 +434,7 @@ namespace warpcore::impl
         // trace(A' * diag(B) * A)
 
         float ret = 0;
-        /*for (int i = 0; i < m; i++) {
-            for (int k = 0; k < n; k++) {
-                float ak = a[i * n + k];
-                ret += ak * ak * b[k];
-            }                
-        }*/
-
+      
         int n16 = round_down(n, 16);
         for(int i = 0; i < m; i++) {
             __m256 accum = _mm256_setzero_ps();
@@ -448,10 +442,8 @@ namespace warpcore::impl
             for(int j = 0; j < n16; j+=16) {
                 const __m256 aj0 = _mm256_loadu_ps(a + j + i * n);
                 const __m256 bj0 = _mm256_loadu_ps(b + j);
-
                 const __m256 aj1 = _mm256_loadu_ps(a + j + i * n + 8);
                 const __m256 bj1 = _mm256_loadu_ps(b + j + 8);
-
                 const __m256 p0 = _mm256_mul_ps(_mm256_mul_ps(aj0, aj0), bj0);
                 const __m256 p1 = _mm256_mul_ps(_mm256_mul_ps(aj1, aj1), bj1);
 
@@ -468,5 +460,27 @@ namespace warpcore::impl
         }
 
         return ret;
+    }
+
+    void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res)
+    {
+        constexpr int BlockSize = 8;
+        int nb = round_down(n, BlockSize);
+        memset(res, 0, sizeof(float) * m);
+
+        for (int i = 0; i < m; i++) {
+            const float* coli = cols[i];
+            __m256 w = _mm256_broadcast_ss(weights + i);
+
+            for (int j = 0; j < nb; j += BlockSize) {
+                __m256 t = _mm256_sub_ps(_mm256_loadu_ps(coli + j), _mm256_loadu_ps(center + j));
+                __m256 wt = _mm256_fmadd_ps(t, w, _mm256_loadu_ps(res + j));
+                _mm256_storeu_ps(res + j, wt);
+            }
+
+            float ws = weights[i];
+            for (int j = nb; j < n; j++)
+                res[j] += coli[j] * ws;
+        }
     }
 };

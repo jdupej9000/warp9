@@ -47,4 +47,7 @@ namespace warpcore::impl
 
     // trace(A^T * diag(b) * A)
     float tratdba(const float* a, int n, int m, const float* b);
+
+    // res = sum_i((cols_i-center) * weights_i)
+    void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res);
 };

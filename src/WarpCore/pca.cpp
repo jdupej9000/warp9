@@ -13,16 +13,21 @@ extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* all
 	if (allow == NULL)
 		return WCORE_INVALID_ARGUMENT;
 
-	int m = pca->m;
-	float* cov = new float[m * m];
+	int n = pca->n;
+	float* cov = new float[n * n];
 	
 	float* mean = (float*)mean_pcs;
-	float* pcs = mean + pca->n;
+	float* pcs = mean + pca->m;
 
 	pca_mean((const float**)data, pca->n, pca->m, mean);
 	pca_covmat((const float**)data, mean, allow, pca->n, pca->m, cov);
 
+	if (pca->flags & PCA_SCALE_TO_UNITY) {
+		// TODO
+	}
 
+	// cov is destroyed after this call
+	pca_make_pcs((const float**)data, mean, cov, pca->n, pca->m, pca->npcs, (float*)lambda, pcs);
 
 	delete[] cov;
 
