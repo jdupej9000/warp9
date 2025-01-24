@@ -373,7 +373,7 @@ namespace warpcore::impl
         const __m512 denomAddb = _mm512_set1_ps(denomAdd);
         const int nb = round_down(n, BlockSize);
 
-        #pragma omp parallel for schedule(static, 8)
+        #pragma omp parallel for schedule(dynamic, 8)
         for (int i = 0; i < nb; i += BlockSize) {
             __m512 accum = _mm512_setzero_ps(), accumb = _mm512_setzero_ps();
             const __m512 x0 = _mm512_loadu_ps(x + i);
@@ -511,7 +511,7 @@ namespace warpcore::impl
         const __m512 threshb = _mm512_set1_ps(thresh);
         const int mb = round_down(m, BlockSize);
 
-        #pragma omp parallel for schedule(static, 8)
+        #pragma omp parallel for schedule(dynamic, 8)
         for (int j = 0; j < mb; j += BlockSize) {
             const __m512 t0 = _mm512_loadu_ps(t + j);
             const __m512 t1 = _mm512_loadu_ps(t + j + m);
