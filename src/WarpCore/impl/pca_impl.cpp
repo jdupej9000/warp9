@@ -159,8 +159,9 @@ namespace warpcore::impl
         for (int i = 0; i < n; i++)
             order[i] = i;
 
+        // Absolute values for eigenvalues are ommitted as the matrix should be positive-semidefinite.
         std::sort(order, order + n,
-            [evals](int a, int b) { return fabs(evals[a]) > fabs(evals[b]); });
+            [evals](int a, int b) { return evals[a] > evals[b]; });
 
         // Use the eigenvectors corresponding to 'npcs' eigenvalues with the largest magnitude
         // and transform centered data with these weights to get the principal vectors.
@@ -170,6 +171,9 @@ namespace warpcore::impl
         }
 
         // Calculate proportion of explained variance.
+        for (int i = 0; i < n; i++)
+            evals[i] = sqrtf(evals[i]);
+
         float sumev = reduce_add(evals, n);
         for (int i = 0; i < std::min(npcs, n); i++)
             var[i] = evals[i] / sumev;
