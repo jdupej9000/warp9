@@ -164,6 +164,7 @@
     <ClInclude Include="impl\vec_math.h" />
     <ClInclude Include="misc.h" />
     <ClInclude Include="p3f.h" />
+    <ClInclude Include="pca.h" />
     <ClInclude Include="search.h" />
     <ClInclude Include="warpcore.h" />
   </ItemGroup>
@@ -183,6 +184,7 @@
     <ClCompile Include="impl\vec_math.cpp" />
     <ClCompile Include="misc.cpp" />
     <ClCompile Include="p3f.cpp" />
+    <ClCompile Include="pca.cpp" />
     <ClCompile Include="search.cpp" />
   </ItemGroup>
   <ItemGroup>

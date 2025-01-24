@@ -5,7 +5,7 @@
 
 namespace warpcore::impl
 {
-    void pca_covmat(float* cov, const float** data, const void* allow, int n, int m)
+    void pca_covmat(const float** data, const void* allow, int n, int m, float* cov)
     {
         float norm = 1.0f / (float)reduce_add_i1(allow, n);
         const int* allowq = (const int*)allow;
@@ -27,7 +27,7 @@ namespace warpcore::impl
         }
     }
 
-	void pca_covmat_avx512(float* cov, const float** data, const void* allow, int n, int m)
+	void pca_covmat_avx512(const float** data, const void* allow, int n, int m, float* cov)
 	{
         constexpr int VEC_WIDTH = 16;
         int m2 = round_down(m, 2);

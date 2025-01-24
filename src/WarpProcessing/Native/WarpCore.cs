@@ -79,6 +79,12 @@ namespace Warp9.Native
         SEARCH_INVERT_DIRECTION = 0x20000000
     };
 
+    [Flags]
+    public enum PCA_FLAGS : int
+    {
+        PCA_SCALE_TO_UNITY = 1
+    };
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpdInfo
@@ -172,6 +178,12 @@ namespace Warp9.Native
         public float max_dist;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PcaInfo
+    {
+        public int n, m, npcs, flags;
+    }
+
     public static class WarpCore
     {
 
@@ -210,5 +222,14 @@ namespace Warp9.Native
 
         [DllImport("WarpCore.dll")]
         public static extern int clust_kmeans(nint x, int d, int n, int k, nint cent, nint label);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int pca_fit(ref PcaInfo pca, nint ppdata, nint allow, nint pcs, nint lambda);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int pca_data_to_scores(ref PcaInfo pca, nint data, nint pcs, nint scores);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int pca_scores_to_data(ref PcaInfo pca, nint scores, nint pcs, nint data);
     }
 }
