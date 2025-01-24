@@ -4,7 +4,7 @@
 
 using namespace warpcore::impl;
 
-extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* allow, void* mean_pcs, void* lambda)
+extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* allow, void* mean_pcs, void* var)
 {
 	if (pca == NULL || data == NULL || mean_pcs == NULL)
 		return WCORE_INVALID_ARGUMENT;
@@ -27,7 +27,7 @@ extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* all
 	}
 
 	// cov is destroyed after this call
-	pca_make_pcs((const float**)data, mean, cov, pca->n, pca->m, pca->npcs, (float*)lambda, pcs);
+	pca_make_pcs((const float**)data, mean, cov, pca->n, pca->m, pca->npcs, (float*)var, pcs);
 
 	delete[] cov;
 

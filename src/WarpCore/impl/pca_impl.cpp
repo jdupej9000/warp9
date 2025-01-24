@@ -149,7 +149,7 @@ namespace warpcore::impl
         }
 	}
 
-    void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* lambda, float* pcs)
+    void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* var, float* pcs)
     {
         float* evals = new float[n];
         LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals) <= 0;
@@ -168,6 +168,11 @@ namespace warpcore::impl
         for (int i = 0; i < std::min(npcs, n); i++) {
             wsumc(data, mean, cov + order[i] * n, n, m, pcs + i * m);
         }
+
+        // Calculate proportion of explained variance.
+        float sumev = reduce_add(evals, n);
+        for (int i = 0; i < std::min(npcs, n); i++)
+            var[i] = evals[i] / sumev;
 
         delete[] order;
         delete[] evals;
