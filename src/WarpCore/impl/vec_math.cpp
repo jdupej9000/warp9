@@ -325,16 +325,16 @@ namespace warpcore::impl
     void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A
-        constexpr int VEC_WIDTH = 16;
+        constexpr int BlockSize = 16;
         int m2 = round_down(m, 2);
-        int n16 = round_down(n, VEC_WIDTH);
+        int n16 = round_down(n, BlockSize);
       
         for(int i = 0; i < m; i++) {
             int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
             for(int j = i; j < m2i; j+=2) {
                 __m512 a0 = _mm512_setzero_ps();
                 __m512 a1 = _mm512_setzero_ps();
-                for(int k = 0; k < n16; k+= VEC_WIDTH) {
+                for(int k = 0; k < n16; k+= BlockSize) {
                     const __m512 aai = _mm512_mul_ps(_mm512_loadu_ps(a + k + i * n), _mm512_loadu_ps(b + k));
                     a0 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + j * n), a0);
                     a1 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + (j+1) * n), a1);
@@ -358,7 +358,7 @@ namespace warpcore::impl
 
             for(int j = m2i; j < m; j++) {
                 __m512 a0 = _mm512_setzero_ps();
-                for(int k = 0; k < n16; k+= VEC_WIDTH) {
+                for(int k = 0; k < n16; k+= BlockSize) {
                     const __m512 aai = _mm512_mul_ps(_mm512_loadu_ps(a + k + i * n), _mm512_loadu_ps(b + k));
                     a0 = _mm512_fmadd_ps(aai, _mm512_loadu_ps(a + k + j * n), a0);
                 }

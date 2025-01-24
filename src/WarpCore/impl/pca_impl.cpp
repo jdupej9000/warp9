@@ -76,9 +76,9 @@ namespace warpcore::impl
 
 	void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
 	{
-        constexpr int VEC_WIDTH = 16;
+        constexpr int BlockSize = 16;
         int n2 = round_down(n, 2);
-        int m16 = round_down(m, VEC_WIDTH);
+        int m16 = round_down(m, BlockSize);
         float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
         const __mmask16* allowb = (const __mmask16*)allow;
 
@@ -90,7 +90,7 @@ namespace warpcore::impl
                 __m512 a0 = _mm512_setzero_ps();
                 __m512 a1 = _mm512_setzero_ps();
 
-                for (int k = 0, ki = 0; k < m16; k += VEC_WIDTH, ki++) {
+                for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
                     __mmask16 allowMask = allowb[ki];
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
@@ -124,7 +124,7 @@ namespace warpcore::impl
             for (int j = n2i; j < n; j++) {
                 __m512 a0 = _mm512_setzero_ps();
 
-                for (int k = 0, ki = 0; k < m16; k += VEC_WIDTH, ki++) {
+                for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
                     __mmask16 allowMask = allowb[ki];
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
