@@ -1,11 +1,23 @@
 #include "pca_impl.h"
 #include <lapacke.h>
 #include "vec_math.h"
+#include "cpu_info.h"
 #include "utils.h"
 
 namespace warpcore::impl
 {
+    void pca_covmat_base(const float** data, const void* allow, int n, int m, float* cov);
+    void pca_covmat_avx512(const float** data, const void* allow, int n, int m, float* cov);
+
     void pca_covmat(const float** data, const void* allow, int n, int m, float* cov)
+    {
+        if (get_optpath() >= WCORE_OPTPATH::AVX512)
+            pca_covmat_avx512(data, allow, n, m, cov);
+        else
+            pca_covmat_base(data, allow, n, m, cov);
+    }
+
+    void pca_covmat_base(const float** data, const void* allow, int n, int m, float* cov)
     {
         float norm = 1.0f / (float)reduce_add_i1(allow, n);
         const int* allowq = (const int*)allow;
