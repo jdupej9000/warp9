@@ -33,9 +33,9 @@ namespace Warp9.Test
             MeshStyle = mrs ?? style switch
             {
                 TriStyle.PointCloud => MeshRenderStyle.ColorFlat,
-                TriStyle.MeshFilled => MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals,
+                TriStyle.MeshFilled => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
                 TriStyle.MeshWire => MeshRenderStyle.ColorFlat,
-                TriStyle.Landmarks => MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals,
+                TriStyle.Landmarks => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
                 _ => throw new ArgumentException()
             };
         }
