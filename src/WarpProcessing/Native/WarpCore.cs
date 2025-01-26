@@ -227,7 +227,7 @@ namespace Warp9.Native
         public static extern int pca_fit(ref PcaInfo pca, nint ppdata, nint allow, nint pcs, nint lambda);
 
         [DllImport("WarpCore.dll")]
-        public static extern int pca_data_to_scores(ref PcaInfo pca, nint data, nint pcs, nint scores);
+        public static extern int pca_data_to_scores(ref PcaInfo pca, nint data, nint pcs, nint allow, nint scores);
 
         [DllImport("WarpCore.dll")]
         public static extern int pca_scores_to_data(ref PcaInfo pca, nint scores, nint pcs, nint data);

@@ -1,5 +1,6 @@
 #include "pca_impl.h"
 #include <lapacke.h>
+#include <cblas.h>
 #include "vec_math.h"
 #include "cpu_info.h"
 #include "utils.h"
@@ -13,6 +14,7 @@ namespace warpcore::impl
 
     void pca_covmat_base(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
     void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
+    float dot_centered_pred(const float* x, const float* y, const float* x0, const void* allow, int n);
 
     void pca_mean(const float** data, int n, int m, float* mean)
     {
@@ -180,5 +182,29 @@ namespace warpcore::impl
 
         delete[] order;
         delete[] evals;
+    }
+
+    float dot_centered_pred(const float* x, const float* y, const float* x0, const void* allow, int n)
+    {
+        const int* allowq = (const int*)allow;
+        float ret = 0;
+        for (int i = 0; i < n; i++) {
+            if ((allowq[i >> 5] >> (i & 0x1f)) & 0x1)
+                ret += (x[i] - x0[i]) * y[i];
+        }
+
+        return ret;
+    }
+
+    void pca_make_scores(const float* x, const float* mean, const float* pcs, const void* allow, int n, int m, float* sc)
+    {
+        for (int i = 0; i < n; i++)
+            sc[i] = dot_centered_pred(x, pcs + i * m, mean, allow, m);
+    }
+
+    void pca_predict(const float* scores, const float* mean, const float* pcs, int n, int m, float* x)
+    {
+        memcpy(x, mean, sizeof(float) * m);
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, n, scores, n, -1.0f, x, n);
     }
 };
