@@ -80,6 +80,7 @@ namespace warpcore::impl
 	void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
 	{
         constexpr int BlockSize = 16;
+        constexpr int FullBlockMask = 1 << (BlockSize - 1);
         int n2 = round_down(n, 2);
         int m16 = round_down(m, BlockSize);
         float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
@@ -94,8 +95,8 @@ namespace warpcore::impl
                 __m512 a1 = _mm512_setzero_ps();
 
                 for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
-                    int numOutOfRangeItems = std::max(0, k + 16 - m);
-                    __mmask16 allowMask = allowb[ki] & (0xff >> numOutOfRangeItems);
+                    int numOutOfRangeItems = std::max(0, k + BlockSize - m);
+                    __mmask16 allowMask = allowb[ki] & (FullBlockMask >> numOutOfRangeItems);
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
                     __m512 colj0 = _mm512_sub_ps(_mm512_loadu_ps(data[j] + k), meank);
@@ -116,8 +117,8 @@ namespace warpcore::impl
                 __m512 a0 = _mm512_setzero_ps();
 
                 for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
-                    int numOutOfRangeItems = std::max(0, k + 16 - m);
-                    __mmask16 allowMask = allowb[ki] & (0xff >> numOutOfRangeItems);
+                    int numOutOfRangeItems = std::max(0, k + BlockSize - m);
+                    __mmask16 allowMask = allowb[ki] & (FullBlockMask >> numOutOfRangeItems);
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
                     __m512 colj0 = _mm512_sub_ps(_mm512_loadu_ps(data[j] + k), meank);
