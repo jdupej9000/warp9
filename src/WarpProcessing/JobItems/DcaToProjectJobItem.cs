@@ -7,7 +7,6 @@ using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Processing;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Warp9.JobItems
 {
@@ -48,7 +47,8 @@ namespace Warp9.JobItems
             if (ctx.Workspace.TryGet(CorrespondencePclItem, out List<PointCloud>? corrPcls) && corrPcls is not null)
             {
                 n = corrPcls.Count;
-                SpecimenTableColumn<ProjectReferenceLink> colCorrPcl = specTab.AddColumn<ProjectReferenceLink>("corrPcl", SpecimenTableColumnType.PointCloud);
+                SpecimenTableColumn<ProjectReferenceLink> colCorrPcl = specTab.AddColumn<ProjectReferenceLink>(
+                    ModelConstants.CorrespondencePclColumnName, SpecimenTableColumnType.PointCloud);
                 for (int i = 0; i < n; i++)
                 {
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrPcls[i]);
@@ -60,7 +60,8 @@ namespace Warp9.JobItems
             else if (ctx.Workspace.TryGet(CorrespondencePclItem, out List<Mesh>? corrMeshes) && corrMeshes is not null)
             {
                 n = corrMeshes.Count;
-                SpecimenTableColumn<ProjectReferenceLink> colCorrPcl = specTab.AddColumn<ProjectReferenceLink>("corrPcl", SpecimenTableColumnType.PointCloud);
+                SpecimenTableColumn<ProjectReferenceLink> colCorrPcl = specTab.AddColumn<ProjectReferenceLink>(
+                    ModelConstants.CorrespondencePclColumnName, SpecimenTableColumnType.PointCloud);
                 for (int i = 0; i < n; i++)
                 {
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrMeshes[i].ToPointCloud());
@@ -79,7 +80,8 @@ namespace Warp9.JobItems
                 if (!ctx.Workspace.TryGet(CorrespondenceLandmarksItem, out List<PointCloud>? corrLms) || corrLms is null)
                     throw new InvalidOperationException("Cannot find the correspondence landmarks in the job workspace.");
 
-                SpecimenTableColumn<ProjectReferenceLink> colCorrLms = specTab.AddColumn<ProjectReferenceLink>("corrLms", SpecimenTableColumnType.PointCloud);
+                SpecimenTableColumn<ProjectReferenceLink> colCorrLms = specTab.AddColumn<ProjectReferenceLink>(
+                    ModelConstants.CorrespondenceLmsColumnName, SpecimenTableColumnType.PointCloud);
                 for (int i = 0; i < n; i++)
                 {
                     long referenceKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, corrLms[i]);
@@ -89,7 +91,8 @@ namespace Warp9.JobItems
 
             if (ctx.Workspace.TryGet(CorrespondenceSizeItem, out List<float>? cs) && cs is not null)
             {
-                SpecimenTableColumn<double> colCs = specTab.AddColumn<double>("cs", SpecimenTableColumnType.Real);
+                SpecimenTableColumn<double> colCs = specTab.AddColumn<double>(
+                    ModelConstants.CentroidSizeColumnName, SpecimenTableColumnType.Real);
                 for (int i = 0; i < n; i++)
                     colCs.Add((double)cs[i]);
             }
@@ -97,12 +100,15 @@ namespace Warp9.JobItems
             long rejectionRatesKey = 0;
             if (ctx.Workspace.TryGet(RejectionItem, out DcaVertexRejection? rej) && rej is not null)
             {
-                SpecimenTableColumn<double> colRej = specTab.AddColumn<double>("rejected", SpecimenTableColumnType.Real);
+                SpecimenTableColumn<double> colRej = specTab.AddColumn<double>(
+                    ModelConstants.RejectedVertexProportionColumnName, SpecimenTableColumnType.Real);
                 for (int i = 0; i < n; i++)
                     colRej.Add((double)rej.MeshRejections[i] / (double)rej.NumVertices);
 
+                MatrixCollection rejObject = new MatrixCollection();
                 Matrix<float> rejRates = new Matrix<float>(rej.ToVertexRejectionRates());
-                rejectionRatesKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, rejRates);
+                rejObject[ModelConstants.VertexRejectionRatesKey] = rejRates;
+                rejectionRatesKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, rejObject);
             }
 
             if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)

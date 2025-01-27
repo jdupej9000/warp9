@@ -156,7 +156,7 @@ namespace Warp9.IO
             reader.Read(MemoryMarshal.Cast<float, byte>(limits));
 
             for (int i = 0; i < cols; i++)
-                ReadInt16AsFloat32(buffer.Slice(i * rows * 4), rows, limits[2*i], limits[2 *i+1]);
+                ReadInt16AsFloat32(buffer.Slice(i * rows * 4), rows, limits[2 * i], limits[2 * i + 1]);
         }
 
         private void ReadNormalized16AsFloat32(Span<byte> buffer, int count)
@@ -164,35 +164,49 @@ namespace Warp9.IO
             ReadInt16AsFloat32(buffer, count, 0, 1);
         }
 
-        private Matrix? ReadMatrix()
+        private MatrixCollection ReadMatrix()
         {
-            if (chunks.Count < 1 || chunks[0].Semantic != ChunkSemantic.None)
-                return null;
+            if (chunks.Count == 0)
+                return MatrixCollection.Empty;
 
-            int numCols = chunks[0].Columns;
-            int numRows = chunks[0].Rows;
-
-            Matrix<float> ret = new Matrix<float>(numCols, numRows);
-            for (int i = 0; i < numCols; i++)
+            MatrixCollection ret = new MatrixCollection();
+            for (int chunkId = 0; chunkId < chunks.Count; chunkId++)
             {
-                switch (chunks[0].Encoding)
+                int cols = chunks[chunkId].Columns;
+                int rows = chunks[chunkId].Rows;
+                WarpBinCommon.DecodeMatrixSemantic((short)chunks[chunkId].Semantic, 
+                    out ChunkNativeFormat nativeFmt, out int matKey);
+                ChunkEncoding encodedFmt = chunks[chunkId].Encoding;
+
+                if (nativeFmt == ChunkNativeFormat.Float)
                 {
-                    case ChunkEncoding.Float32:
-                        reader.Read(MemoryMarshal.Cast<float, byte>(ret.GetColumn(i)));
-                        break;
+                    Matrix<float> m = new Matrix<float>(cols, rows);                   
+                    switch (encodedFmt)
+                    {
+                        case ChunkEncoding.Float32:
+                            reader.Read(MemoryMarshal.Cast<float, byte>(m.Data.AsSpan()));
+                            break;
 
-                    case ChunkEncoding.Fixed16:
-                        ReadFixed16AsFloat32(ret.GetRawData(), numCols, numRows);
-                        break;
+                        case ChunkEncoding.Fixed16:
+                            ReadFixed16AsFloat32(m.GetRawData(), cols, rows);
+                            break;
 
-                    case ChunkEncoding.Normalized16:
-                        ReadNormalized16AsFloat32(ret.GetRawData(), numCols * numRows);
-                        break;
+                        case ChunkEncoding.Normalized16:
+                            ReadNormalized16AsFloat32(m.GetRawData(), cols * rows);
+                            break;
 
-                    default:
-                        return null;
+                        default:
+                           throw new InvalidDataException("An unsupported encoding for a native-float matrix is declared.");
+                    }
+                   
+                    ret[matKey] = m;
                 }
-            } 
+                else
+                {
+                    throw new InvalidDataException("An unsupported native matrix format is declared.");
+                }
+                
+            }
 
             return ret;
         }
@@ -270,17 +284,17 @@ namespace Warp9.IO
             return pcl is not null;
         }
 
-        public static bool TryImport(Stream s, [MaybeNullWhen(false)] out Matrix mat)
+        public static bool TryImport(Stream s, [MaybeNullWhen(false)] out MatrixCollection? mats)
         {
             using WarpBinImport import = new WarpBinImport(s);
             if (!import.ReadHeaders())
             {
-                mat = null;
+                mats = null;
                 return false;
             }
 
-            mat = import.ReadMatrix();
-            return mat is not null;
+            mats = import.ReadMatrix();
+            return true;
         }
     }
 }

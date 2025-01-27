@@ -73,7 +73,7 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
-            if (!dcaEntry.Payload.Table!.Columns.TryGetValue("corrPcl", out SpecimenTableColumn? col) ||
+            if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
               col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
                 throw new InvalidOperationException();
 
@@ -96,7 +96,10 @@ namespace Warp9.Viewer
             if (rejectionRatesKey == 0)
                 return null;
 
-            if (!project.TryGetReference(rejectionRatesKey, out Matrix<float>? rejectionRates) || rejectionRates is null)
+            if (!project.TryGetReference(rejectionRatesKey, out MatrixCollection? rejectionRatesCol) || 
+                rejectionRatesCol is null ||
+                !rejectionRatesCol.TryGetMatrix(ModelConstants.VertexRejectionRatesKey, out Matrix<float>? rejectionRates) ||
+                rejectionRates is null)
                 return null;
 
             return rejectionRates.Data;

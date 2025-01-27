@@ -98,7 +98,7 @@ namespace Warp9.Viewer
         private void ShowMesh(int index)
         {
             SpecimenTable tab = dcaEntry.Payload.Table!;
-            long corrPclRef = tab.Columns["corrPcl"].GetData<ProjectReferenceLink>()[index].ReferenceIndex;
+            long corrPclRef = tab.Columns[ModelConstants.CorrespondencePclColumnName].GetData<ProjectReferenceLink>()[index].ReferenceIndex;
 
             //int baseIndex = dcaEntry.Payload.MeshCorrExtra.DcaConfig.BaseMeshIndex;
             SpecimenTable mainSpecTable = project.Entries[dcaEntry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey].Payload.Table;

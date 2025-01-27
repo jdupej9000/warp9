@@ -20,7 +20,7 @@ namespace Warp9.Model
         {
             get
             {
-                if (column == "!index") return rowIndex.ToString();
+                if (column == ModelConstants.IndexColumnName) return rowIndex.ToString();
 
                 if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))
                     return null;
@@ -56,7 +56,7 @@ namespace Warp9.Model
 
         public object GetSafeTypedValue(string column)
         {
-            if (column == "!index") 
+            if (column == ModelConstants.IndexColumnName) 
                 return rowIndex.ToString();
 
             if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))

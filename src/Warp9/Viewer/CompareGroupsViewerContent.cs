@@ -136,7 +136,7 @@ namespace Warp9.Viewer
 
         private Mesh? GetVisibleMesh()
         {
-            if (!dcaEntry.Payload.Table!.Columns.TryGetValue("corrPcl", out SpecimenTableColumn? col) ||
+            if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
                 throw new InvalidOperationException();
 
@@ -152,13 +152,13 @@ namespace Warp9.Viewer
 
         private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form)
         {
-            if (!dcaEntry.Payload.Table!.Columns.TryGetValue("corrPcl", out SpecimenTableColumn? col) ||
+            if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
                 throw new InvalidOperationException();
 
             float[]? cs = null;
             if (form &&
-                dcaEntry.Payload.Table!.Columns.TryGetValue("cs", out SpecimenTableColumn? col2) &&
+                dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CentroidSizeColumnName, out SpecimenTableColumn? col2) &&
                 col2 is SpecimenTableColumn<double> csCol)
             {
                 cs = csCol.Data.Select((t) => (float)t).ToArray();

@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Warp9.IO
 {
     public enum ChunkNativeFormat
     {
-        Float,
-        Int32x3
+        Float = 0,
+        Int32x3 = 16
     }
 
     public enum ChunkSemantic : short
@@ -64,6 +65,20 @@ namespace Warp9.IO
                 ChunkEncoding.Ignore => 0,
                 _ => throw new ArgumentException()
             };
+        }
+
+        public static short MakeMatrixSemantic(ChunkNativeFormat fmt, int index)
+        {
+            if ((int)fmt > 15 || index > 4095)
+                throw new ArgumentException();
+
+            return (short)((index & 0xfff) | ((int)fmt) << 12);
+        }
+
+        public static void DecodeMatrixSemantic(short sem, out ChunkNativeFormat fmt, out int index)
+        {
+            index = sem & 0xfff;
+            fmt = (ChunkNativeFormat)(sem >> 12);
         }
     }
 }

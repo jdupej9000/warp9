@@ -59,11 +59,11 @@ namespace Warp9.Model
                 }
             ));
 
-            ret.Add(ProjectReferenceFormat.W9Matrix, new Codec<Matrix>(
+            ret.Add(ProjectReferenceFormat.W9Matrix, new Codec<MatrixCollection>(
                (s, b, c) => WarpBinExport.ExportMatrix(s, b, null),
                (s, c) =>
                {
-                   if (WarpBinImport.TryImport(s, out Matrix? m))
+                   if (WarpBinImport.TryImport(s, out MatrixCollection? m))
                        return m;
                    return null;
                }

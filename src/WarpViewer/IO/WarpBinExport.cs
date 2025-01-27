@@ -42,10 +42,10 @@ namespace Warp9.IO
                 fmt = ChunkNativeFormat.Float;
                 return PointCloud.TryGetRawData(MeshSegment, -1, out data);
             }
-            else if (Matrix is not null)
+            else if (Matrix is Matrix<float> mf32)
             {
                 fmt = ChunkNativeFormat.Float;
-                data = Matrix.GetRawData();
+                data = mf32.GetRawData();
                 return true;
             }
             else
@@ -263,15 +263,21 @@ namespace Warp9.IO
             }
         }
 
-        private static void AddMatrixChunk(WarpBinExport export, Matrix mat, WarpBinExportSettings s)
+        private static void AddMatrixChunks(WarpBinExport export, MatrixCollection mats, WarpBinExportSettings s)
         {
-            export.AddChunk(new WarpBinExportTask()
+            foreach (var kvp in mats)
             {
-                Matrix = mat,
-                Semantic = ChunkSemantic.None,
-                MeshSegmentDimension = mat.Columns,
-                Encoding = s.MatrixFormat
-            });
+                if (kvp.Value.ElementType == typeof(float))
+                {
+                    export.AddChunk(new WarpBinExportTask()
+                    {
+                        Matrix = kvp.Value,
+                        Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Float, kvp.Key),
+                        MeshSegmentDimension = kvp.Value.Columns,
+                        Encoding = s.MatrixFormat
+                    });
+                }
+            }
         }
 
         public static void ExportPcl(Stream stream, PointCloud pcl, WarpBinExportSettings? settings=null)
@@ -291,11 +297,11 @@ namespace Warp9.IO
             export.Compose();
         }
 
-        public static void ExportMatrix(Stream stream, Matrix mat, WarpBinExportSettings? settings = null)
+        public static void ExportMatrix(Stream stream, MatrixCollection mat, WarpBinExportSettings? settings = null)
         {
             WarpBinExportSettings s = settings ?? new WarpBinExportSettings();
             WarpBinExport export = new WarpBinExport(stream);
-            AddMatrixChunk(export, mat, s);
+            AddMatrixChunks(export, mat, s);
             export.Compose();
         }
     }
