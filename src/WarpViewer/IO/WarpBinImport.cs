@@ -172,7 +172,7 @@ namespace Warp9.IO
             int numCols = chunks[0].Columns;
             int numRows = chunks[0].Rows;
 
-            Matrix ret = new Matrix(numCols, numRows);
+            Matrix<float> ret = new Matrix<float>(numCols, numRows);
             for (int i = 0; i < numCols; i++)
             {
                 switch (chunks[0].Encoding)

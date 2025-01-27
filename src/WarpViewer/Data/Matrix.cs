@@ -3,44 +3,61 @@ using System.Runtime.InteropServices;
 
 namespace Warp9.Data
 {
-    public class Matrix
+    public abstract class Matrix
     {
-        private Matrix(float[] d)
-        {
-            data = d;
-            Rows = d.Length;
-            Columns = 1;
-        }
-
-        public Matrix(int cols, int rows)
+        protected Matrix(int cols, int rows, Type type)
         {
             Columns = cols;
             Rows = rows;
-            data = new float[cols * rows];
+            ElementType = type;
         }
-
-        private float[] data;
 
         public int Columns { get; init; }
         public int Rows { get; init; }
-        public float[] Data => data;
+        public Type ElementType { get; init; }
 
-        public Span<byte> GetRawData()
+        public abstract Span<byte> GetRawData();
+    }
+
+    public class Matrix<T> : Matrix 
+        where T:unmanaged
+    {
+        public Matrix(T[] d) :
+            base(1, d.Length, typeof(T))
         {
-            return MemoryMarshal.Cast<float, byte>(data.AsSpan());
+            data = d;          
         }
 
-        public Span<float> GetColumn(int col)
+        public Matrix(int cols, int rows)
+            : base(cols, rows, typeof(T))
+        {
+            data = new T[cols * rows];
+        }
+
+        public Matrix(T[] data, int cols, int rows)
+          : base(cols, rows, typeof(T))
+        {
+            if (data.Length < cols * rows)
+                throw new ArgumentException();
+
+            this.data = data;
+        }
+
+        private T[] data;
+
+        public T[] Data => data;
+
+        public override Span<byte> GetRawData()
+        {
+            return MemoryMarshal.Cast<T, byte>(data.AsSpan());
+        }
+
+        public Span<T> GetColumn(int col)
         {
             if (col < 0 || col >= Columns)
                 throw new IndexOutOfRangeException();
 
             return data.AsSpan().Slice(col * Rows, Rows);
-        }
-
-        public static Matrix FromVector(float[] d)
-        {
-            return new Matrix(d);
         }
     }
 }

@@ -101,7 +101,7 @@ namespace Warp9.JobItems
                 for (int i = 0; i < n; i++)
                     colRej.Add((double)rej.MeshRejections[i] / (double)rej.NumVertices);
 
-                Matrix rejRates = Matrix.FromVector(rej.ToVertexRejectionRates());
+                Matrix<float> rejRates = new Matrix<float>(rej.ToVertexRejectionRates());
                 rejectionRatesKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, rejRates);
             }
 

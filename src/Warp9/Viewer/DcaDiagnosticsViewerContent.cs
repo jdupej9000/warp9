@@ -96,7 +96,7 @@ namespace Warp9.Viewer
             if (rejectionRatesKey == 0)
                 return null;
 
-            if (!project.TryGetReference(rejectionRatesKey, out Matrix? rejectionRates) || rejectionRates is null)
+            if (!project.TryGetReference(rejectionRatesKey, out Matrix<float>? rejectionRates) || rejectionRates is null)
                 return null;
 
             return rejectionRates.Data;
