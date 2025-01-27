@@ -80,7 +80,7 @@ namespace warpcore::impl
 	void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
 	{
         constexpr int BlockSize = 16;
-        constexpr int FullBlockMask = 1 << (BlockSize - 1);
+        constexpr int FullBlockMask = (1 << (BlockSize)) - 1;
         int n2 = round_down(n, 2);
         int m16 = round_down(m, BlockSize);
         float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
