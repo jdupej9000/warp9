@@ -94,7 +94,8 @@ namespace warpcore::impl
                 __m512 a1 = _mm512_setzero_ps();
 
                 for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
-                    __mmask16 allowMask = allowb[ki];
+                    int numOutOfRangeItems = std::max(0, k + 16 - m);
+                    __mmask16 allowMask = allowb[ki] & (0xff >> numOutOfRangeItems);
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
                     __m512 colj0 = _mm512_sub_ps(_mm512_loadu_ps(data[j] + k), meank);
@@ -103,21 +104,8 @@ namespace warpcore::impl
                     a1 = _mm512_mask_fmadd_ps(coli, allowMask, colj1, a1);
                 }
 
-                float aa0 = 0;
-                float aa1 = 0;
-                for (int k = m16; k < m; k++) {
-                    if ((allowb[k >> 4] >> (k & 0xf)) & 0x1) {
-                        const float meank = mean[k];
-                        const float coli = datai[k] - meank;
-                        const float colj0 = data[j][k] - meank;
-                        const float colj1 = data[j + 1][k] - meank;
-                        aa0 += coli * colj0;
-                        aa1 += coli * colj1;
-                    }
-                }
-
-                aa0 = (aa0 + reduce_add(a0)) * norm;
-                aa1 = (aa1 + reduce_add(a1)) * norm;
+                float aa0 = reduce_add(a0) * norm;
+                float aa1 = reduce_add(a1) * norm;
                 cov[i * n + j] = aa0;
                 cov[j * n + i] = aa0;
                 cov[i * n + j + 1] = aa1;
@@ -128,24 +116,15 @@ namespace warpcore::impl
                 __m512 a0 = _mm512_setzero_ps();
 
                 for (int k = 0, ki = 0; k < m16; k += BlockSize, ki++) {
-                    __mmask16 allowMask = allowb[ki];
+                    int numOutOfRangeItems = std::max(0, k + 16 - m);
+                    __mmask16 allowMask = allowb[ki] & (0xff >> numOutOfRangeItems);
                     __m512 meank = _mm512_loadu_ps(mean + k);
                     __m512 coli = _mm512_sub_ps(_mm512_loadu_ps(datai + k), meank);
                     __m512 colj0 = _mm512_sub_ps(_mm512_loadu_ps(data[j] + k), meank);
                     a0 = _mm512_mask_fmadd_ps(coli, allowMask, colj0, a0);
                 }
 
-                float aa0 = 0;
-                for (int k = m16; k < m; k++) {
-                    if ((allowb[k >> 4] >> (k & 0xf)) & 0x1) {
-                        const float meank = mean[k];
-                        const float coli = datai[k] - meank;
-                        const float colj0 = data[j][k] - meank;
-                        aa0 += data[i][k] * data[j][k] - meank;
-                    }
-                }
-
-                aa0 = (aa0 + reduce_add(a0)) * norm;
+                float aa0 = reduce_add(a0) * norm;
                 cov[i * m + j] = aa0;
                 cov[j * m + i] = aa0;
             }
