@@ -6,6 +6,9 @@ using namespace warpcore::impl;
 
 extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* allow, void* mean_pcs, void* var)
 {
+	// mean_pcs holds the mean and the principal components - dimension is (1 + n) * m, no padding
+	// allow is a bitfield - **bits** prediate rows of data. This can be nullpts, in which case it is assumed that all rows are enabled.
+	// var holds the proportion of explained variance and can be nullptr to forgo calculating it.
 	if (pca == NULL || data == NULL || mean_pcs == NULL)
 		return WCORE_INVALID_ARGUMENT;
 

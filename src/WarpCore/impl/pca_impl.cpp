@@ -9,8 +9,9 @@
 
 namespace warpcore::impl
 {
+    // PCA for high-dimensional data
+    // see Bishop CM: Pattern Recognition and Machine Learning, 2007 -  section 12.1.4
     // Notation: n = datapoint count, m = datapoint dimension
-    // This is a high-dimensional PCA, it is assumed that n < m.
 
     void pca_covmat_base(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
     void pca_covmat_avx512(const float** data, const float* mean, const void* allow, int n, int m, float* cov);
@@ -172,13 +173,15 @@ namespace warpcore::impl
             wsumc(data, mean, cov + order[i] * n, n, m, pcs + i * m);
         }
 
-        // Calculate proportion of explained variance.
-        for (int i = 0; i < n; i++)
-            evals[i] = sqrtf(evals[i]);
+        // Calculate proportion of explained variance if desired.
+        if (var != nullptr) {
+            for (int i = 0; i < n; i++)
+                evals[i] = sqrtf(evals[i]);
 
-        float sumev = reduce_add(evals, n);
-        for (int i = 0; i < std::min(npcs, n); i++)
-            var[i] = evals[i] / sumev;
+            float sumev = reduce_add(evals, n);
+            for (int i = 0; i < std::min(npcs, n); i++)
+                var[i] = evals[i] / sumev;
+        }
 
         delete[] order;
         delete[] evals;
@@ -186,6 +189,7 @@ namespace warpcore::impl
 
     float dot_centered_pred(const float* x, const float* y, const float* x0, const void* allow, int n)
     {
+        // TODO: avx512 after proving the following is correct
         const int* allowq = (const int*)allow;
         float ret = 0;
         for (int i = 0; i < n; i++) {
@@ -198,13 +202,15 @@ namespace warpcore::impl
 
     void pca_make_scores(const float* x, const float* mean, const float* pcs, const void* allow, int n, int m, float* sc)
     {
+        // sc := pcs * (x - mean) with rows predicated on allow
         for (int i = 0; i < n; i++)
             sc[i] = dot_centered_pred(x, pcs + i * m, mean, allow, m);
     }
 
     void pca_predict(const float* scores, const float* mean, const float* pcs, int n, int m, float* x)
     {
+        // x := scores * pcs + mean
         memcpy(x, mean, sizeof(float) * m);
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, n, scores, n, -1.0f, x, n);
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, n, scores, n, 1.0f, x, n);
     }
 };
