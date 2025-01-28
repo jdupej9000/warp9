@@ -56,5 +56,14 @@ namespace Warp9
             }
             return sum;
         }
+
+        public static void ThresholdBelow(ReadOnlySpan<float> x, float thresh, Span<bool> res)
+        {
+            if (x.Length != res.Length)
+                throw new ArgumentException();
+
+            for (int i = 0; i < x.Length; i++)
+                res[i] = x[i] < thresh;
+        }
     }
 }

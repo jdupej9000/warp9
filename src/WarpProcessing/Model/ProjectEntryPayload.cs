@@ -16,6 +16,10 @@ namespace Warp9.Model
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public MeshCorrespondenceExtraInfo? MeshCorrExtra { get; set; }
 
+        [JsonPropertyName("pca")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public PcaExtraInfo? PcaExtra { get; set; }
+
         [JsonIgnore]
         public static readonly ProjectEntryPayload Empty = new ProjectEntryPayload();
     }
