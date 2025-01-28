@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Numerics;
+using System.Security.Cryptography.Xml;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.Viewer;
@@ -131,9 +132,9 @@ namespace Warp9.Test
             return m;
         }
 
-        public static Bitmap RenderAsHeatmap(int width, int height, float min, float max, Func<int, int, float> fun)
+        public static Bitmap RenderAsHeatmap(int width, int height, float min, float max, Func<int, int, float> fun, Lut? customLut = null)
         {
-            Lut lut = Lut.Create(256, Lut.FastColors);
+            Lut lut = customLut ?? Lut.Create(256, Lut.FastColors);
             Bitmap bmp = new Bitmap(width, height);
 
             unsafe
@@ -166,6 +167,12 @@ namespace Warp9.Test
             }
 
             return bmp;
+        }
+
+        public static void SaveTestResult(string fileName, Bitmap bmp)
+        {
+            Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
+            bmp.Save(Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName)));
         }
 
         public static void LoadBitmapAsFloatGrey(string assetFileName, out float[] data, out int height, out int width)

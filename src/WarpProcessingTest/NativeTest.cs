@@ -1,6 +1,7 @@
 ﻿using SharpDX.Direct3D11;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -335,6 +336,55 @@ namespace Warp9.Test
             Assert.IsNotNull(pca);
 
             Console.WriteLine("Explained variance: " + string.Join(", ", pca.PcVariance.Select((f) => f.ToString("F2"))));
+
+            Bitmap bmpPcs = TestUtils.RenderAsHeatmap(bmpWidth, bmpHeight, 0, 2,
+                (c, r) => pca.GetPrincipalComponent(r)[c] + 1,
+                Lut.Create(256, Lut.JetColors));
+            BitmapAsserts.AssertEqual("PcaTest_0.png", bmpPcs);
+
+            TestUtils.SaveTestResult("PcaTest_1.png",
+                RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 1000));
+
+            TestUtils.SaveTestResult("PcaTest_2.png",
+               RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 4));
+
+        }
+
+        private static Bitmap RoundtripPcaTrim(Pca pca, float[] bmpSrc, int height, int width, int numPcsKeep)
+        {
+            Lut lut = Lut.Create(256, Lut.GreyColors);
+
+            int numScores = pca.NumPcs;
+            int dimension = pca.Dimension;
+
+            float[] scores = new float[numScores];
+            float[] pred = new float[dimension];
+
+            Bitmap bmp = new Bitmap(width, height);
+            unsafe
+            {
+                BitmapData bmpData = bmp.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.ReadWrite, PixelFormat.Format32bppRgb);
+
+                for (int i = 0; i < height; i++)
+                {
+                    pca.TryGetScores(bmpSrc.AsSpan().Slice(i * width, width), scores.AsSpan());
+                    for (int j = numPcsKeep; j < numScores; j++)
+                        scores[j] = 0;
+
+                    pca.TryPredict(scores, pred);
+
+                    nint ptr = bmpData.Scan0 + i * bmpData.Stride;
+                    Span<int> ptrSpan = new Span<int>((void*)ptr, bmpData.Stride);
+                    for (int j = 0; j < width; j++)
+                        ptrSpan[j] = lut.Sample(pred[j] / 255.0f).ToArgb();
+                }
+
+                bmp.UnlockBits(bmpData);
+            }
+
+            return bmp;
         }
     }
 }

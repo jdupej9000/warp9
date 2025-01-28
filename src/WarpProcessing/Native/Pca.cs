@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,56 @@ namespace Warp9.Native
         public const int KeyPcsMean = 0;
         public const int KeyPcVariance = 1;
         public const int KeyAllow = 2;
+
+        public ReadOnlySpan<float> GetMean()
+        {
+            return pcsMean.AsSpan().Slice(0, Dimension);
+        }
+
+        public ReadOnlySpan<float> GetPrincipalComponent(int index)
+        {
+            return pcsMean.AsSpan().Slice((index + 1) * Dimension, Dimension);
+        }
+
+        public bool TryGetScores(ReadOnlySpan<float> data, Span<float> scores)
+        {
+            if (data.Length < Dimension || scores.Length < NumPcs)
+                return false;
+
+            WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
+            unsafe
+            {
+               
+                fixed (int* pallow = &MemoryMarshal.GetReference(allow.AsSpan()))
+                fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
+                fixed (float* pdata = &MemoryMarshal.GetReference(data))
+                fixed (float* pscores = &MemoryMarshal.GetReference(scores))
+                {
+                    ret = (WarpCoreStatus)WarpCore.pca_data_to_scores(ref info, (nint)pdata, (nint)pmeanpcs, (nint)pallow, (nint)pscores);
+                }
+            }
+
+            return ret == WarpCoreStatus.WCORE_OK;
+        }
+
+        public bool TryPredict(ReadOnlySpan<float> scores, Span<float> pred)
+        {
+            if (scores.Length < NumPcs || pred.Length < Dimension)
+                return false;
+
+            WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
+            unsafe
+            {
+                fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
+                fixed (float* ppred = &MemoryMarshal.GetReference(pred))
+                fixed (float* pscores = &MemoryMarshal.GetReference(scores))
+                {
+                    ret = (WarpCoreStatus)WarpCore.pca_scores_to_data(ref info, (nint)pscores, (nint)pmeanpcs, (nint)ppred);
+                }
+            }
+
+            return ret == WarpCoreStatus.WCORE_OK;
+        }
 
         public MatrixCollection ToMatrixCollection()
         {
