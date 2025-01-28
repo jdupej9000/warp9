@@ -11,7 +11,8 @@ namespace Warp9.Native
 {
     public enum PcaSourceDataKind
     {
-        VertexData
+        VertexPositions,
+        General
     }
 
     public class Pca
@@ -125,7 +126,47 @@ namespace Warp9.Native
             if (ret != WarpCoreStatus.WCORE_OK)
                 return null;
 
-            return new Pca(PcaSourceDataKind.VertexData, pcsMean, pcVar, allowBitField, pcaInfo);
+            return new Pca(PcaSourceDataKind.VertexPositions, pcsMean, pcVar, allowBitField, pcaInfo);
+        }
+
+        public static Pca? Fit(float[] mat, int cols, bool scale = false)
+        {
+            int n = mat.Length / cols;
+            int m = cols;
+
+            GCHandle matPin = GCHandle.Alloc(mat, GCHandleType.Pinned);
+            nint matPtr = matPin.AddrOfPinnedObject();
+
+            nint[] handles = new nint[n];
+            for (int i = 0; i < n; i++)
+                handles[i] = matPtr + 4 * i * m;
+
+            // Make a full whitelist until the native side can support that implicitly.
+            int numAllow = (m + 31) / 32;
+            int[] allowBitField = new int[numAllow];
+            for (int i = 0; i < numAllow; i++)
+                allowBitField[i] = -1;
+
+            PcaInfo pcaInfo = new PcaInfo { m = m, n = n, npcs = n, flags = 0 };
+            float[] pcsMean = new float[(n + 1) * m];
+            float[] pcVar = new float[n];
+
+            WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
+            unsafe
+            {
+                fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
+                fixed (int* pallow = &MemoryMarshal.GetReference(allowBitField.AsSpan()))
+                fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
+                fixed (float* pvar = &MemoryMarshal.GetReference(pcVar.AsSpan()))
+                {
+                    ret = (WarpCoreStatus)WarpCore.pca_fit(ref pcaInfo, (nint)ppdata, (nint)pallow, (nint)pmeanpcs, (nint)pvar);
+                }
+            }
+
+            if (ret != WarpCoreStatus.WCORE_OK)
+                return null;
+
+            return new Pca(PcaSourceDataKind.General, pcsMean, pcVar, allowBitField, pcaInfo);
         }
     }
 }

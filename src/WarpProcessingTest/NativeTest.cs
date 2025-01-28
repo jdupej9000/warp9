@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using SharpDX.Direct3D11;
+using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -323,6 +324,17 @@ namespace Warp9.Test
             TestUtils.Render("TeapotKMeansTest_0.png",
               new TestRenderItem(TriStyle.PointCloud, pcl, wireCol:Color.White),
               new TestRenderItem(TriStyle.Landmarks, pclK, col:Color.Red, lmScale:0.05f));
+        }
+
+        [TestMethod]
+        public void PcaTest()
+        {
+            TestUtils.LoadBitmapAsFloatGrey("_lena256.png", out float[] bmpData, out int bmpHeight, out int bmpWidth);
+
+            Pca? pca = Pca.Fit(bmpData, bmpWidth);
+            Assert.IsNotNull(pca);
+
+            Console.WriteLine("Explained variance: " + string.Join(", ", pca.PcVariance.Select((f) => f.ToString("F2"))));
         }
     }
 }

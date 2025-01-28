@@ -168,6 +168,35 @@ namespace Warp9.Test
             return bmp;
         }
 
+        public static void LoadBitmapAsFloatGrey(string assetFileName, out float[] data, out int height, out int width)
+        {
+            Bitmap bmp = new Bitmap(Path.Combine(AssetsPath, assetFileName));
+            height = bmp.Height;
+            width = bmp.Width;
+            data = new float[height * width];
+
+            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            const float norm = 1.0f / 255.0f;
+
+            unsafe
+            {
+                int p = 0;
+                for (int j = 0; j < height; j++)
+                {
+                    uint* d = (uint*)(bmpData.Scan0 + j * bmpData.Stride);
+                    for (int i = 0; i < width; i++)
+                    {
+                        float grey = 0.299f * ((d[i] >> 16) & 0xff) +
+                            0.587f * ((d[i] >> 8) & 0xff) +
+                            0.114f * ((d[i] >> 0) & 0xff);
+                        data[p++] = grey * norm;
+                    }
+                }
+            }
+
+            bmp.UnlockBits(bmpData);
+        }
+
         public static HeadlessRenderer CreateRenderer(bool preferNvidia=true)
         {
             int adapterIdx = FindAdapter(preferNvidia);
