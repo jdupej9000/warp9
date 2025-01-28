@@ -25,9 +25,9 @@ extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* all
 	pca_mean((const float**)data, pca->n, pca->m, mean);
 	pca_covmat((const float**)data, mean, allow, pca->n, pca->m, cov);
 
-	//if (pca->flags & PCA_SCALE_TO_UNITY) {
+	if (pca->flags & PCA_SCALE_TO_UNITY) {
 		pca_cov_to_cor(cov, n);
-	//}
+	}
 
 	// cov is destroyed after this call
 	pca_make_pcs((const float**)data, mean, cov, pca->n, pca->m, pca->npcs, (float*)var, pcs);

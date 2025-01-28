@@ -332,7 +332,7 @@ namespace Warp9.Test
         {
             TestUtils.LoadBitmapAsFloatGrey("_lena256.png", out float[] bmpData, out int bmpHeight, out int bmpWidth);
 
-            Pca? pca = Pca.Fit(bmpData, bmpWidth);
+            Pca? pca = Pca.Fit(bmpData, bmpWidth, true);
             Assert.IsNotNull(pca);
 
             Console.WriteLine("Explained variance: " + string.Join(", ", pca.PcVariance.Select((f) => f.ToString("F3"))));

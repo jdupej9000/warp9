@@ -199,6 +199,8 @@ namespace Warp9.Native
                 allowBitField[i] = -1;
 
             PcaInfo pcaInfo = new PcaInfo { m = m, n = n, npcs = n, flags = 0 };
+            if (scale) pcaInfo.flags |= (int)PCA_FLAGS.PCA_SCALE_TO_UNITY;
+
             float[] pcsMean = new float[(n + 1) * m];
             float[] pcVar = new float[n];
 
