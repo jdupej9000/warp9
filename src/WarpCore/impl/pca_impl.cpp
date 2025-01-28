@@ -56,7 +56,7 @@ namespace warpcore::impl
 
     void pca_covmat_base(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
     {
-        float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
+        float norm = 1.0f / (n - 1);
         const int* allowq = (const int*)allow;
 
         for (int i = 0; i < n; i++) {
@@ -83,7 +83,7 @@ namespace warpcore::impl
         constexpr int FullBlockMask = (1 << (BlockSize)) - 1;
         int n2 = round_down(n, 2);
         int m16 = round_down(m, BlockSize);
-        float norm = 1.0f / (float)(reduce_add_i1(allow, n) - 1);
+        float norm = 1.0f / (n - 1);
         const __mmask16* allowb = (const __mmask16*)allow;
 
         for (int i = 0; i < n; i++) {
@@ -132,11 +132,24 @@ namespace warpcore::impl
         }
 	}
 
+    void pca_cov_to_cor(float* mat, int dim)
+    {
+        float* f = new float[dim];
+
+        for (int i = 0; i < dim; i++)
+            f[i] = 1.0f / sqrtf(mat[i + i * dim]);
+
+        for (int i = 0; i < dim; i++)
+            cblas_saxpy(dim, f[i], f, 1, mat + i * dim, 1);
+
+        delete[] f;
+    }
+
     void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* var, float* pcs)
     {
         float* evals = new float[n];
         LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals) <= 0;
-
+        
         // Find the order that sorts the eigenvalues in a descending order of magnitude.
         int* order = new int[n];
         for (int i = 0; i < n; i++)
@@ -148,19 +161,23 @@ namespace warpcore::impl
 
         // Use the eigenvectors corresponding to 'npcs' eigenvalues with the largest magnitude
         // and transform centered data with these weights to get the principal vectors.
-        #pragma omp parallel for schedule(static, 4)
+        //#pragma omp parallel for schedule(static, 4)
         for (int i = 0; i < std::min(npcs, n); i++) {
             wsumc(data, mean, cov + order[i] * n, n, m, pcs + i * m);
         }
 
         // Calculate proportion of explained variance if desired.
         if (var != nullptr) {
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < n; i++) {
                 evals[i] = sqrtf(evals[i]);
+
+                if (!isnormal(evals[i]))
+                    evals[i] = 0;
+            }
 
             float sumev = reduce_add(evals, n);
             for (int i = 0; i < std::min(npcs, n); i++)
-                var[i] = evals[i] / sumev;
+                var[i] = evals[order[i]] / sumev;
         }
 
         delete[] order;
@@ -191,6 +208,6 @@ namespace warpcore::impl
     {
         // x := scores * pcs + mean
         memcpy(x, mean, sizeof(float) * m);
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, n, scores, n, 1.0f, x, n);
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, m, scores, n, 1.0f, x, m);
     }
 };

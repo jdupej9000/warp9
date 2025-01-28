@@ -465,22 +465,22 @@ namespace warpcore::impl
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res)
     {
         constexpr int BlockSize = 8;
-        int nb = round_down(n, BlockSize);
+        int mb = round_down(m, BlockSize);
         memset(res, 0, sizeof(float) * m);
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < n; i++) {
             const float* coli = cols[i];
             __m256 w = _mm256_broadcast_ss(weights + i);
 
-            for (int j = 0; j < nb; j += BlockSize) {
+            for (int j = 0; j < mb; j += BlockSize) {
                 __m256 t = _mm256_sub_ps(_mm256_loadu_ps(coli + j), _mm256_loadu_ps(center + j));
                 __m256 wt = _mm256_fmadd_ps(t, w, _mm256_loadu_ps(res + j));
                 _mm256_storeu_ps(res + j, wt);
             }
 
             float ws = weights[i];
-            for (int j = nb; j < n; j++)
-                res[j] += coli[j] * ws;
+            for (int j = mb; j < m; j++)
+                res[j] += (coli[j] - center[j]) * ws;
         }
     }
 };
