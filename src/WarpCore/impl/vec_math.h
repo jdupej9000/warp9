@@ -50,4 +50,8 @@ namespace warpcore::impl
 
     // res = sum_i((cols_i-center) * weights_i)
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res);
+
+    float dot(const float* x, const float* y, int n);
+    void scale(float* x, float f, int n);
+    void normalize_columns(float* mat, int rows, int cols);
 };

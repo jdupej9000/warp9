@@ -32,8 +32,6 @@ extern "C" WCEXPORT int pca_fit(pcainfo* pca, const void** data, const void* all
 	// cov is destroyed after this call
 	pca_make_pcs((const float**)data, mean, cov, pca->n, pca->m, pca->npcs, (float*)var, pcs);
 
-	// TODO: normalize principal components
-
 	delete[] cov;
 
 	return WCORE_OK;

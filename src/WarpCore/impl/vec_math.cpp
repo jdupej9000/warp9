@@ -483,4 +483,45 @@ namespace warpcore::impl
                 res[j] += (coli[j] - center[j]) * ws;
         }
     }
+
+    float dot(const float* x, const float* y, int n)
+    {
+        const int BlockSize = 8;
+        const int nb = round_down(n, BlockSize);
+
+        __m256 sumb = _mm256_setzero_ps();
+        for (int i = 0; i < nb; i += BlockSize) {
+            sumb = _mm256_fmadd_ps(_mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i), sumb);
+        }
+
+        float sum = 0;
+        for (int i = nb; i < n; i++) {
+            sum += x[i] * y[i];
+        }
+
+        return reduce_add(sumb) + sum;
+    }
+
+    void scale(float* x, float f, int n)
+    {
+        const int BlockSize = 8;
+        const int nb = round_down(n, BlockSize);
+        const __m256 fb = _mm256_set1_ps(f);
+
+        for (int i = 0; i < nb; i += BlockSize) {
+            __m256 xf = _mm256_mul_ps(_mm256_loadu_ps(x + i), fb);
+            _mm256_storeu_ps(x + i, xf);
+        }
+
+        for (int i = nb; i < n; i++)
+            x[i] *= f;
+    }
+
+    void normalize_columns(float* mat, int rows, int cols)
+    {
+        for (int c = 0; c < cols; c++) {
+            float f = 1.0f / sqrtf(dot(mat + c * rows, mat + c * rows, rows));
+            scale(mat + c * rows, f, rows);
+        }
+    }
 };

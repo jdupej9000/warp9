@@ -337,8 +337,8 @@ namespace Warp9.Test
 
             Console.WriteLine("Explained variance: " + string.Join(", ", pca.PcVariance.Select((f) => f.ToString("F3"))));
 
-            Bitmap bmpPcs = TestUtils.RenderAsHeatmap(bmpWidth, bmpHeight, 0, 2,
-                (c, r) => pca.GetPrincipalComponent(r)[c] + 1,
+            Bitmap bmpPcs = TestUtils.RenderAsHeatmap(bmpWidth, bmpHeight, 0, 0.2f,
+                (c, r) => pca.GetPrincipalComponent(r)[c] + 0.1f,
                 Lut.Create(256, Lut.JetColors));
           
 
@@ -346,7 +346,7 @@ namespace Warp9.Test
                 RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 1000));
 
             TestUtils.SaveTestResult("PcaTest_2.png",
-               RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 1));
+               RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 10));
 
             BitmapAsserts.AssertEqual("PcaTest_0.png", bmpPcs);
         }

@@ -166,6 +166,8 @@ namespace warpcore::impl
             wsumc(data, mean, cov + order[i] * n, n, m, pcs + i * m);
         }
 
+        normalize_columns(pcs, m, n);
+
         // Calculate proportion of explained variance if desired.
         if (var != nullptr) {
             for (int i = 0; i < n; i++) {
