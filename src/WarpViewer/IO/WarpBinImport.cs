@@ -180,11 +180,11 @@ namespace Warp9.IO
 
                 if (nativeFmt == ChunkNativeFormat.Float)
                 {
-                    Matrix<float> m = new Matrix<float>(cols, rows);                   
+                    Matrix<float> m = new Matrix<float>(cols, rows);
                     switch (encodedFmt)
                     {
                         case ChunkEncoding.Float32:
-                            reader.Read(MemoryMarshal.Cast<float, byte>(m.Data.AsSpan()));
+                            reader.Read(m.GetRawData());
                             break;
 
                         case ChunkEncoding.Fixed16:
@@ -196,9 +196,24 @@ namespace Warp9.IO
                             break;
 
                         default:
-                           throw new InvalidDataException("An unsupported encoding for a native-float matrix is declared.");
+                            throw new InvalidDataException("An unsupported encoding for a native-float matrix is declared.");
                     }
-                   
+
+                    ret[matKey] = m;
+                }
+                else if (nativeFmt == ChunkNativeFormat.Int32)
+                {
+                    Matrix<int> m = new Matrix<int>(cols, rows);
+                    switch (encodedFmt)
+                    {
+                        case ChunkEncoding.Int32:
+                            reader.Read(m.GetRawData());
+                            break;
+
+                        default:
+                            throw new InvalidDataException("An unsupported encoding for a native-float matrix is declared.");
+                    }
+
                     ret[matKey] = m;
                 }
                 else
@@ -237,6 +252,7 @@ namespace Warp9.IO
                 switch (chunk.Chunk.Encoding)
                 {
                     case ChunkEncoding.Float32:
+                    case ChunkEncoding.Int32:
                         reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.TotalLength);
                         break;
 

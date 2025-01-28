@@ -7,6 +7,7 @@ namespace Warp9.IO
     public enum ChunkNativeFormat
     {
         Float = 0,
+        Int32 = 1,
         Int32x3 = 16
     }
 
@@ -26,6 +27,7 @@ namespace Warp9.IO
         Float32 = 2,
         Fixed16 = 3,
         Normalized16 = 4,
+        Int32 = 5,
 
         Ignore = 0x7fff
     }
@@ -59,6 +61,7 @@ namespace Warp9.IO
             {
                 ChunkEncoding.Raw => 1,
                 ChunkEncoding.Int32x3 => 12,
+                ChunkEncoding.Int32 => 4,
                 ChunkEncoding.Float32 => 4,
                 ChunkEncoding.Fixed16 => 2,
                 ChunkEncoding.Normalized16 => 2,

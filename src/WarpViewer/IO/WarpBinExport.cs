@@ -48,6 +48,12 @@ namespace Warp9.IO
                 data = mf32.GetRawData();
                 return true;
             }
+            else if (Matrix is Matrix<int> mi32)
+            {
+                fmt = ChunkNativeFormat.Int32;
+                data = mi32.GetRawData();
+                return true;
+            }
             else
             {
                 fmt = ChunkNativeFormat.Float;
@@ -165,6 +171,7 @@ namespace Warp9.IO
                     break;
 
                 case (ChunkNativeFormat.Float, ChunkEncoding.Float32):
+                case (ChunkNativeFormat.Int32, ChunkEncoding.Int32):
                     wr.Write(data.Slice(0, numElems * dim * 4));
                     break;
 
@@ -201,7 +208,6 @@ namespace Warp9.IO
             ReadOnlySpan<T> dataSpan = new ReadOnlySpan<T>(in data);
             wr.Write(MemoryMarshal.Cast<T, byte>(dataSpan));
         }
-
 
         private static void AddPclChunks(WarpBinExport export, PointCloud pcl, WarpBinExportSettings s)
         {
@@ -273,6 +279,16 @@ namespace Warp9.IO
                     {
                         Matrix = kvp.Value,
                         Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Float, kvp.Key),
+                        MeshSegmentDimension = kvp.Value.Columns,
+                        Encoding = s.MatrixFormat
+                    });
+                }
+                else if (kvp.Value.ElementType == typeof(int))
+                {
+                    export.AddChunk(new WarpBinExportTask()
+                    {
+                        Matrix = kvp.Value,
+                        Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Int32, kvp.Key),
                         MeshSegmentDimension = kvp.Value.Columns,
                         Encoding = s.MatrixFormat
                     });
