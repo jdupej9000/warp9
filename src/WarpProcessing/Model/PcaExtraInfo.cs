@@ -15,5 +15,8 @@ namespace Warp9.Model
 
         [JsonPropertyName("pca-data")]
         public long DataKey { get; set; }
+
+        [JsonPropertyName("pca-template")]
+        public long TemplateKey { get; set; }
     }
 }

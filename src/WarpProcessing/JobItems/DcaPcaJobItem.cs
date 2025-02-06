@@ -26,7 +26,7 @@ namespace Warp9.JobItems
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
             Project proj = ctx.Project;
-            if (!proj.Entries.TryGetValue(Config.ParentDcaKey, out ProjectEntry? dcaEntry) ||
+            if (!proj.Entries.TryGetValue(Config.ParentEntityKey, out ProjectEntry? dcaEntry) ||
                 dcaEntry is null ||
                 dcaEntry.Kind != ProjectEntryKind.MeshCorrespondence ||
                 dcaEntry.Payload.MeshCorrExtra is null ||
@@ -36,7 +36,7 @@ namespace Warp9.JobItems
             }
 
             SpecimenTableColumn<ProjectReferenceLink>? corrColumn = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
-                ctx.Project, Config.ParentDcaKey, ModelConstants.CorrespondencePclColumnName);
+                ctx.Project, Config.ParentEntityKey, Config.ParentColumnName);
             if (corrColumn is null)
                 return false;
 
@@ -46,8 +46,15 @@ namespace Warp9.JobItems
 
             if (Config.RestoreSize)
             {
+                if (Config.ParentSizeColumn is null)
+                {
+                    ctx.WriteLog(ItemIndex, MessageKind.Error,
+                        "Restore size is enabled, but no size column is selected.");
+                    return false;
+                }
+
                 SpecimenTableColumn<double>? csColumn = ModelUtils.TryGetSpecimenTableColumn<double>(
-                    ctx.Project, Config.ParentDcaKey, ModelConstants.CentroidSizeColumnName);
+                    ctx.Project, Config.ParentEntityKey, Config.ParentSizeColumn);
                 // TODO
             }
 
@@ -91,7 +98,7 @@ namespace Warp9.JobItems
 
             ProjectEntry entry = proj.AddNewEntry(ProjectEntryKind.MeshPca);
             entry.Name = ResultEntryName;
-            entry.Deps.Add(Config.ParentDcaKey);
+            entry.Deps.Add(Config.ParentEntityKey);
             entry.Payload.PcaExtra = new PcaExtraInfo()
             {
                 Info = Config,

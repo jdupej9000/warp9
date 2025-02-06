@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Warp9.Model;
 
 namespace Warp9.Processing
 {
@@ -24,12 +25,18 @@ namespace Warp9.Processing
         [JsonPropertyName("kind")]
         public PcaKind Kind { get; set; }
 
-        [JsonPropertyName("parent-dca")]
+        [JsonPropertyName("parent-key")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public long ParentDcaKey { get; set; }
+        public long ParentEntityKey { get; set; }
+
+        [JsonPropertyName("parent-column")]
+        public string ParentColumnName { get; set; } = ModelConstants.CorrespondencePclColumnName;
 
         [JsonPropertyName("restore-size")]
         public bool RestoreSize { get; set; } = false;
+
+        [JsonPropertyName("size-column")]
+        public string? ParentSizeColumn { get; set; } = ModelConstants.CentroidSizeColumnName;
 
         [JsonPropertyName("use-cor")]
         public bool NormalizeScale { get; set; } = true;
