@@ -47,5 +47,8 @@ namespace Warp9.Processing
         [JsonPropertyName("rejection-thresh")]
         public float RejectionThreshold { get; set; } = 0.05f;
 
+        [JsonIgnore]
+        public string ResultEntityName { get; set; } = string.Empty;
+
     }
 }
