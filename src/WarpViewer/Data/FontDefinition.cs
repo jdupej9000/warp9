@@ -133,7 +133,11 @@ namespace Warp9.Data
                         def.BitmapFileName = new string(value);
                         break;
 
-                    case "id" when int.TryParse(value, CultureInfo.InvariantCulture, out int pageIndex) && pageIndex != 0:
+                    case "id" when int.TryParse(value, CultureInfo.InvariantCulture, out int pageIndex):
+                        if (pageIndex != 0)
+                            return false;
+                        break;
+
                     default:
                         return false;
                 }
@@ -192,7 +196,7 @@ namespace Warp9.Data
                 }
             }
 
-            if (id <= 0 || x < 0 || y < 0 || width < 0 || height < 0 || xadvance < 0 || page != 0 || chnl != 0)
+            if (id < 0 || x < 0 || y < 0 || width < 0 || height < 0 || xadvance < 0 || page != 0 || chnl != 0)
                 return false;
 
             def.symbols.Add((char)id, new FontSymbol(

@@ -32,7 +32,7 @@ namespace Warp9.Utils
             while (p0 < n && IsWhite(Line[p0]))
                 p0++;
 
-            if (p0 == n)
+            if (p0 >= n)
             {
                 ptr = n;
                 return false;
@@ -56,7 +56,7 @@ namespace Warp9.Utils
                 p1++;
                 int p2 = p1;
 
-                while (p2 < n && p2 != '\"')
+                while (p2 < n && Line[p2] != '\"')
                     p2++;
 
                 ptr = p2 + 1;
