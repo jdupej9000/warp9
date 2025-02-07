@@ -12,7 +12,13 @@ using Warp9.Utils;
 
 namespace Warp9.Data
 {
-    public class FontSymbol(float X, float Y, float Width, float Height, float XOffs, float YOffs, float XAdvance, int Page = 0, int Channel = 0);
+    public record FontSymbol(
+        float X, float Y, 
+        float Width, float Height,
+        float RealWidth, float RealHeight,
+        float XOffs, float YOffs,
+        float XAdvance, 
+        int Page = 0, int Channel = 0);
 
     public class FontDefinition
     {
@@ -26,6 +32,22 @@ namespace Warp9.Data
         public string BitmapFileName { get; private set; } = string.Empty;
         public int BitmapWidth { get; private set; } = -1;
         public int BitmapHeight { get; private set; } = -1;
+
+        public FontSymbol GetSymbol(char ch)
+        {
+            if(symbols.TryGetValue(ch, out FontSymbol? symbol)) 
+                return symbol;
+
+            return symbols['\0'];
+        }
+
+        public float Kern(char a, char b)
+        {
+            if (kerning.TryGetValue(MakePairHash(a, b), out float k))
+                return k;
+
+            return 0;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int MakePairHash(char a, char b)
@@ -147,10 +169,10 @@ namespace Warp9.Data
 
         private static bool ParseChar(FontDefinition def, KeyValueLineParser parser)
         {
-            if(def.BitmapWidth <= 0 || def.BitmapHeight <= 0 || def.LineHeight <=0)
+            if(def.BitmapWidth <= 0 || def.BitmapHeight <= 0 || def.FontSize <=0)
                 return false;
 
-            float lineHeightR = 1.0f / def.LineHeight;
+            float sizeR = 1.0f / def.FontSize;
             float bmpWidthR = 1.0f / def.BitmapWidth;
             float bmpHeightR = 1.0f / def.BitmapHeight;
 
@@ -201,9 +223,10 @@ namespace Warp9.Data
 
             def.symbols.Add((char)id, new FontSymbol(
                 x * bmpWidthR, y * bmpHeightR, 
-                width * bmpWidthR, height * bmpHeightR, 
-                xoffset * lineHeightR, yoffset * lineHeightR, 
-                xadvance * lineHeightR, 
+                width * bmpWidthR, height * bmpHeightR,
+                width * sizeR, height * sizeR,
+                xoffset * sizeR, yoffset * sizeR, 
+                xadvance * sizeR, 
                 page, chnl));
 
             return true;
@@ -214,7 +237,7 @@ namespace Warp9.Data
             if (def.LineHeight <= 0)
                 return false;
 
-            float lineHeightR = 1.0f / def.LineHeight;
+            float sizeR = 1.0f / def.FontSize;
 
             // kerning first=290 second=121 amount=-1
 
@@ -240,7 +263,7 @@ namespace Warp9.Data
             if (first <= 0 || second <= 0)
                 return false;
 
-            def.kerning.Add(MakePairHash((char)first, (char)second), amount * lineHeightR);
+            def.kerning.Add(MakePairHash((char)first, (char)second), amount * sizeR);
 
             return true;
         }
