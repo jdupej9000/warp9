@@ -14,9 +14,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Warp9.Data;
-using Warp9;
 using System.Security.Policy;
 using System.Globalization;
+using Warp9.Utils;
 
 namespace Warp9.Controls
 {

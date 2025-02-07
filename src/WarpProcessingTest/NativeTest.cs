@@ -10,6 +10,7 @@ using System.Windows.Forms.Design;
 using Warp9.Data;
 using Warp9.Native;
 using Warp9.Processing;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9.Test

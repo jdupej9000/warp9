@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
 
-namespace Warp9
+namespace Warp9.Utils
 {
     public static class MiscUtils
     {
@@ -29,7 +29,7 @@ namespace Warp9
 
         public static void Histogram(ReadOnlySpan<float> x, int bins, float x0, float x1, Span<int> hist, out int below, out int above)
         {
-            float dx = (float)bins / (x1 - x0);
+            float dx = bins / (x1 - x0);
             int numBelow = 0, numAbove = 0;
 
             for (int i = 0; i < x.Length; i++)

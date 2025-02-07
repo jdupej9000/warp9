@@ -8,6 +8,7 @@ using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Native;
 using Warp9.Processing;
+using Warp9.Utils;
 
 namespace Warp9.JobItems
 {
