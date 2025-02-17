@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
-        Style="{StaticResource CustomWindowStyle}"
+        Style="{StaticResource CustomWindowStyleMain}"
         mc:Ignorable="d"
         Title="DCA Configuration" Height="550" Width="550">
     <Window.Resources>
@@ -27,14 +27,13 @@
         </Menu>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" />
+            <Button x:Name="btnOK" Style="{DynamicResource ControlButton}" Content="OK" Width="100" Click="btnOK_Click" />
             <Label Width="4" />
-            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click"/>
+            <Button x:Name="btnCancel" Style="{DynamicResource ControlButton}" Content="Cancel" Width="100" Click="btnCancel_Click"/>
         </StackPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
-            <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}">
-                
+                         
             <StackPanel Orientation="Vertical" Width="500">
                 
                     <StackPanel Orientation="Vertical">
@@ -42,11 +41,11 @@
                         <Label Height="4" />
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="28"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="12" />
@@ -55,7 +54,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">Name of result</TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="2" Height="20" Text="{Binding Path=ResultEntryName, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="2" Height="24" Text="{Binding Path=ResultEntryName, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
 
                             <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">Specimen table</TextBlock>
                             <ComboBox Grid.Row="1" Grid.Column="2" x:Name="cmbSpecTable" SelectionChanged="cmbSpecTable_SelectionChanged" VerticalAlignment="Center"/>
@@ -73,7 +72,7 @@
                         <Label Height="4" />
                     </StackPanel>
 
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                    <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Rigid prealignment</TextBlock>
@@ -96,7 +95,7 @@
                         <Label Height="4" />
                     </StackPanel>
 
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Nonrigid registration</TextBlock>
@@ -146,7 +145,7 @@
 
                     </StackPanel>
 
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Surface projection</TextBlock>
@@ -167,7 +166,7 @@
                         <Label Height="4" />
                     </StackPanel>
 
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Correspondence rejection</TextBlock>
@@ -206,7 +205,7 @@
                         <Label Height="4" />
                     </StackPanel>
 
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+                <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Rigid registration</TextBlock>
@@ -226,8 +225,8 @@
                         </RadioButton>
                         <Label Height="4" />
                     </StackPanel>
-                
-                    <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+
+                <Label Height="8" />
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Advanced</TextBlock>
@@ -237,7 +236,7 @@
                     </StackPanel>
                 
             </StackPanel>
-            </GroupBox>
+        
         </ScrollViewer>
     </DockPanel>
 </Window>

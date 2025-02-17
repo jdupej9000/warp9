@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
-        Style="{StaticResource CustomWindowStyle}"
+        Style="{StaticResource CustomWindowStyleMain}"
         Loaded="Window_Loaded"
         mc:Ignorable="d"
         Title="Select Specimens" Height="550" Width="800">

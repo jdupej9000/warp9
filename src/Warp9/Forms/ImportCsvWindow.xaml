@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
         mc:Ignorable="d"
-        Style="{StaticResource CustomWindowStyle}"
+        Style="{StaticResource CustomWindowStyleMain}"
         Closing="Window_Closing"
         Title="Import text data" Height="450" Width="600">
     <Window.Resources>

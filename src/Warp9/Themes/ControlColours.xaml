@@ -331,4 +331,18 @@
         <GradientStop Offset="1" Color="{DynamicResource ThemeColor.Editor.Header.Background2}" />
     </LinearGradientBrush>
 
+
+    <!-- -->
+    <SolidColorBrush x:Key="Brush.BackgroundDark" Color="{DynamicResource ThemeColor.BackgroundDark}" />
+    <SolidColorBrush x:Key="Brush.Background" Color="{DynamicResource ThemeColor.Background}" />
+    <SolidColorBrush x:Key="Brush.BackgroundLight" Color="{DynamicResource ThemeColor.BackgroundLight}" />
+    <SolidColorBrush x:Key="Brush.BackgroundHot" Color="{DynamicResource ThemeColor.BackgroundHot}" />
+
+    <SolidColorBrush x:Key="Brush.BorderDark" Color="{DynamicResource ThemeColor.BorderDark}" />
+    <SolidColorBrush x:Key="Brush.Border" Color="{DynamicResource ThemeColor.Border}" />
+    <SolidColorBrush x:Key="Brush.BorderHot" Color="{DynamicResource ThemeColor.BorderHot}" />
+
+    <SolidColorBrush x:Key="Brush.ForegroundDark" Color="{DynamicResource ThemeColor.ForegroundDark}" />
+    <SolidColorBrush x:Key="Brush.Foreground" Color="{DynamicResource ThemeColor.Foreground}" />
+  
 </ResourceDictionary>

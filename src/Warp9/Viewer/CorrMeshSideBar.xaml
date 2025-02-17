@@ -6,42 +6,41 @@
       xmlns:local="clr-namespace:Warp9.Viewer"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="216"
-      Background="{DynamicResource Panel.Background}"
       Title="CorrMeshSideBar">
 
     <StackPanel Orientation="Vertical" Margin="4">
-        <GroupBox Style="{DynamicResource InsetNoTitleGroupBox}">
+       
             <StackPanel Orientation="Vertical">
                 
                     <StackPanel Orientation="Vertical" Margin="4">
                         <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Correspondence mesh</TextBlock>
                         <StackPanel Orientation="Horizontal">
-                        <TextBox x:Name="txtSpecimen" Width="158" Height="20" VerticalContentAlignment="Center" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0,0,-1,0" />
-                            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphLeft}" Width="20" Height="20" Click="btnSpecimenDec_Click" Margin="0,0,-1,0"/>
-                            <Button Style="{DynamicResource NoBorderButton}" Content="{DynamicResource GlyphRight}" Width="20" Height="20" Click="btnSpecimenInc_Click"/>
+                    <TextBox x:Name="txtSpecimen" Width="150" Height="24" VerticalContentAlignment="Center" Margin="0,0,1,0" Text="{Binding Path=MeshIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Style="{DynamicResource ControlButton}" Content="{DynamicResource GlyphLeft}" Width="24" Click="btnSpecimenDec_Click" Margin="0,0,1,0"/>
+                    <Button Style="{DynamicResource ControlButton}" Content="{DynamicResource GlyphRight}" Width="24" Click="btnSpecimenInc_Click"/>
                         </StackPanel>
                         <Label Height="4" />
                         <StackPanel Orientation="Horizontal">
-                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="66" Height="20" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="66" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
                                           ToolTip="Add wireframe."/>
-                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="66" Height="20" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="66" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
                                           ToolTip="Fill faces."/>
-                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="66" Height="20" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="66" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
                                           ToolTip="Use vertex normals. If disabled, face normals are used."/>
                         </StackPanel>
-                    </StackPanel>
+                </StackPanel>
 
-                <Label Style="{DynamicResource GroupBoxHorizontalSeparator}" />
+            <Label Height="8" />
 
-                <StackPanel Orientation="Vertical" Margin="4">
+            <StackPanel Orientation="Vertical" Margin="4">
                         <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
                         <StackPanel Orientation="Horizontal">
-                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" Height="20" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
                           ToolTip="Add grid."/>
                         </StackPanel>
                     </StackPanel>
                 
             </StackPanel>
-        </GroupBox>
+        
     </StackPanel>
 </Page>

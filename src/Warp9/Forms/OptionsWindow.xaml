@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
-        Style="{StaticResource CustomWindowStyle}"
+        Style="{StaticResource CustomWindowStyleMain}"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         Title="Options" Height="600" Width="600">
@@ -15,15 +15,15 @@
 
     <DockPanel>        
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" />
+            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" Style="{DynamicResource ControlButton}" />
             <Label Width="4" />
-            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click"/>
+            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click" Style="{DynamicResource ControlButton}"/>
         </StackPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
             <StackPanel Orientation="Vertical" Width="500">
-                
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Appearance</TextBlock>
+
+                <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Appearance</TextBlock>
                 <TextBlock Margin="2">Theme</TextBlock>
                 <ComboBox Margin="2" SelectedIndex="{Binding Path=ThemeIndex, Mode=TwoWay}">
                     <ComboBoxItem>Soft dark</ComboBoxItem>
@@ -35,9 +35,9 @@
                 </ComboBox>
                 <Label Height="8" />
 
-                <Separator/>
+                <Label Height="8" />
 
-                <TextBlock Style="{DynamicResource TextBlockTitle}" Margin="2">Viewer</TextBlock>
+                <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Viewer</TextBlock>
                 <TextBlock Margin="2">Camera control</TextBlock>
                 <ComboBox Margin="2" SelectedIndex="{Binding Path=CameraControlIndex, Mode=TwoWay}">
                     <ComboBoxItem>Euler angles</ComboBoxItem>

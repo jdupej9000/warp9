@@ -118,7 +118,7 @@ namespace Warp9.Navigation
                 if (!WpfInteropRenderer.TryCreate(0, out renderer) || renderer is null)
                     throw new InvalidOperationException();
 
-                renderer.CanvasColor = System.Drawing.Color.FromArgb(146, 146, 146);
+                renderer.CanvasColor = System.Drawing.Color.FromArgb(31, 31, 31);
                 //if (FindResource("ThemeColors.Window.Background") is Color clr)
                 //    renderer.CanvasColor = System.Drawing.Color.FromArgb(clr.R, clr.G, clr.B);
                 //else

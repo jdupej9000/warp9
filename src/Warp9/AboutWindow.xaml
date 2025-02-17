@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:local="clr-namespace:Warp9"
-        Style="{StaticResource CustomWindowStyle}"
+        Style="{StaticResource CustomWindowStyleMain}"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
+        Background="{DynamicResource Brush.Background}"
         Title="About Warp9" Height="450" Width="450" ResizeMode="NoResize">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
@@ -20,7 +21,7 @@
 
         <TabControl Canvas.Left="16" Canvas.Top="158" Width="412" Height="212" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TabItem Header="Acknowledgments">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource Brush.Background}">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock TextWrapping="Wrap" Margin="8,8,8,8">
                             <Bold>OpenBLAS</Bold>
@@ -74,6 +75,6 @@
         </TabControl>
 
 
-        <Button x:Name="btnClose" Height="28" Width="50" Canvas.Left="378" Canvas.Top="385" Click="btnClose_Click">Close</Button>
+        <Button x:Name="btnClose" Width="50" Canvas.Left="378" Canvas.Top="385" Click="btnClose_Click" Style="{DynamicResource ControlButton}">Close</Button>
     </Canvas>
 </Window>

@@ -7,12 +7,11 @@
         xmlns:projexp ="clr-namespace:Warp9.ProjectExplorer"
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:utils="clr-namespace:Warp9.Utils"
-        xmlns:jobs="clr-namespace:Warp9.Jobs"
         xmlns:local="clr-namespace:Warp9"
         mc:Ignorable="d"
-        Style="{StaticResource CustomWindowStyle2}"
+        Style="{StaticResource CustomWindowStyleMain}"
         Closing="Window_Closing"
-        Title="Warp9" Height="450" Width="800">
+        Title="Warp9" Height="650" Width="800">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
 
@@ -46,13 +45,7 @@
     </Window.Resources>
 
     <DockPanel>
-        <!--<StatusBar DockPanel.Dock="Bottom" Padding="2">
-            <StatusBarItem>
-                <TextBlock Name="lblCursorPosition" Text="Ready."/>
-            </StatusBarItem>
-        </StatusBar>-->
-
-        <Border BorderBrush="{DynamicResource Window.Static.Border}" BorderThickness="1" Margin="4">
+        <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Brush.BorderDark}" Margin="0">
         <Grid x:Name="gridMain" SnapsToDevicePixels="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
@@ -60,12 +53,9 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-                <ScrollViewer Background="{DynamicResource Panel.Background}" Margin="2">
-                <StackPanel Orientation="Vertical" Background="{DynamicResource Panel.Background}">
-                    <Expander DockPanel.Dock="Top" IsExpanded="True" Height="400" Style="{DynamicResource FancyExpander}">
-                            <Expander.Header>
-                                <TextBlock Text="Project" Style="{DynamicResource GroupBoxHeaderBlock}"/>
-                            </Expander.Header>
+                <ScrollViewer Background="{DynamicResource Brush.BackgroundDark}" >
+                    <StackPanel Orientation="Vertical" Background="{DynamicResource  Brush.BackgroundDark}">
+                        <Expander Header="PROJECT" DockPanel.Dock="Top" IsExpanded="True" Height="400" Style="{DynamicResource FancyExpander}">
                             <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
@@ -75,11 +65,7 @@
                         </TreeView>
                     </Expander>
 
-                    <Expander DockPanel.Dock="Top" IsExpanded="False" Height="160" Style="{DynamicResource FancyExpander}">
-                            <Expander.Header>
-                                <TextBlock Text="Tasks" Style="{DynamicResource GroupBoxHeaderBlock}"/>
-                            </Expander.Header>
-                        
+                    <Expander Header="TASKS" DockPanel.Dock="Top" IsExpanded="False" Height="160" Style="{DynamicResource FancyExpander}">
                             <ListView x:Name="lstTasks"  Margin="4" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
                                 <ListView.ItemContainerStyle>
                                     <Style TargetType="ListViewItem">
@@ -102,9 +88,9 @@
                 </StackPanel>
                 </ScrollViewer>
 
-                <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Window.Static.Background}" ShowsPreview="True" Width="4" />
+                <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Brush.BackgroundDark}" ShowsPreview="True" Width="4" />
 
-            <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" Margin="0,2,2,2" Background="{DynamicResource Panel.Background}" />
+            <Frame x:Name="frameMain" Grid.Column="2" NavigationUIVisibility="Hidden" Source="Navigation/MainLandingPage.xaml" Margin="0" Background="{DynamicResource Brush.Background}" />
 
         </Grid>
         </Border>
