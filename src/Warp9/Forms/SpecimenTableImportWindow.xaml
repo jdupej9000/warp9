@@ -76,7 +76,7 @@
         </GroupBox>
 
         <GroupBox Header="Imported Data" DockPanel.Dock="Left" Margin="4">
-            <DataGrid x:Name="dataCsv" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
+            <DataGrid x:Name="dataCsv" Margin="4" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
             </DataGrid>
         </GroupBox>
 
