@@ -19,7 +19,7 @@
                      AcceptsTab="True"
                      FontFamily="Cascadia Mono Light" 
                      IsReadOnly="True"
-                     Padding="4,4,4,4" />
+                     Padding="8" />
         </Border>
     </Grid>
 </Page>

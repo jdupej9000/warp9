@@ -17,6 +17,6 @@
                     AcceptsTab="True"
                     FontFamily="Cascadia Mono Light" 
                     TextChanged="txtEdit_TextChanged"
-                    Padding="4,4,4,4" />
+                    Padding="8" />
     </Grid>
 </Page>
