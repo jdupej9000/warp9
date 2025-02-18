@@ -10,9 +10,10 @@
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" BorderThickness="0" Background="{DynamicResource Panel.Background}" Padding="6">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-            
+            <TextBlock Text="Project settings" Style="{DynamicResource GroupBoxHeaderBlock}" />
+            <Label Height="4" />
             <StackPanel Orientation="Horizontal">                
-                <TextBlock Width="200">External references policy</TextBlock>
+                <TextBlock Width="200" VerticalAlignment="Center">External references policy</TextBlock>
                 <ComboBox x:Name="cmbExtRefPolicy" Width="200" Text="Use relative paths" SelectionChanged="ComboBox_SelectionChanged">
                     <ComboBoxItem>Use absolute paths</ComboBoxItem>
                     <ComboBoxItem>Use relative paths</ComboBoxItem>
