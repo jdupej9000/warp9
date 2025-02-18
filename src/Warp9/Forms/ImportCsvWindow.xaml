@@ -16,7 +16,7 @@
     <DockPanel>
         <GroupBox Header="Formatting" Margin="4" DockPanel.Dock="Top">
             <DockPanel>
-                <StackPanel Orientation="Horizontal" Margin="6" DockPanel.Dock="Top">
+                <StackPanel Orientation="Horizontal" Margin="4" DockPanel.Dock="Top">
                     <TextBlock Width="120">Cell delimiters</TextBlock>
                     <CheckBox IsChecked="{Binding Path=UseCommaCellDelimiter, Mode=TwoWay}">Comma</CheckBox>
                     <Label Width="12" />
@@ -27,7 +27,7 @@
                     <CheckBox IsChecked="{Binding Path=UseSpaceCellDelimiter, Mode=TwoWay}">Space</CheckBox>
                 </StackPanel>
               
-                <StackPanel Orientation="Horizontal" Margin="6">
+                <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBlock Width="120">Misc</TextBlock>
                     <CheckBox IsChecked="{Binding Path=IgnoreFirstRow, Mode=TwoWay}">Ignore first row</CheckBox>
                     <Label Width="12" />
@@ -39,13 +39,14 @@
         </GroupBox>
 
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" />
+            <Button x:Name="btnOK" Style="{DynamicResource ControlButton}" Content="OK" Width="100" Click="btnOK_Click" />
             <Label Width="4" />
-            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click"/>
+            <Button x:Name="btnCancel" Style="{DynamicResource ControlButton}" Content="Cancel" Width="100" Click="btnCancel_Click"/>
         </StackPanel>
 
         <GroupBox Header="Preview" Margin="4" DockPanel.Dock="Top">
-            <DataGrid x:Name="dataCsv" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
+            
+            <DataGrid x:Name="dataCsv" Margin="4" BorderThickness="1" BorderBrush="{DynamicResource Brush.BorderDark}" ItemsSource="{Binding ParsedData}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="Auto">
             </DataGrid>
         </GroupBox>
        
