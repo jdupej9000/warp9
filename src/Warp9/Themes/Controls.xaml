@@ -3,6 +3,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
                     xmlns:a="clr-namespace:Warp9.Themes.Attached"
+                     xmlns:mi="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
                     xmlns:local="clr-namespace:Warp9.Themes">
     <PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">Fade</PopupAnimation>
     <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
@@ -16,6 +17,9 @@
         </Setter>
     </Style>
 
+    <Style TargetType="{x:Type mi:MaterialIcon}">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+    </Style>
     
     <!-- Normal focus visual looks a bit better -->
     <Style x:Key="OptionMarkFocusVisual">
@@ -4478,7 +4482,7 @@
     <Style x:Key="GroupBoxHeaderBlock" TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
     <Style TargetType="{x:Type GroupBox}">

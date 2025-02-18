@@ -4,13 +4,19 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Warp9.Navigation"
+      xmlns:mi="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="600"
       Title="ProjectSettingsPage">
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" BorderThickness="0" Background="{DynamicResource Panel.Background}" Padding="6">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-            <TextBlock Text="Project settings" Style="{DynamicResource GroupBoxHeaderBlock}" />
+            <StackPanel Orientation="Horizontal" Height="32">
+                <mi:MaterialIcon Kind="Cog" />
+                <TextBlock Text="Project settings" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
+            </StackPanel>
+            
+           
             <Label Height="4" />
             <StackPanel Orientation="Horizontal">                
                 <TextBlock Width="200" VerticalAlignment="Center">External references policy</TextBlock>

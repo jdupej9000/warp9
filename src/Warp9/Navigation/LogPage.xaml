@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mi="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
       xmlns:local="clr-namespace:Warp9.Navigation"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
@@ -10,9 +11,17 @@
 
 
     <Grid>
-        <Border BorderBrush="{DynamicResource TabItem.Selected.Border}">
+
+        <DockPanel Background="{DynamicResource Brush.Background}">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
+                <mi:MaterialIcon Kind="TimelineText" />
+                <TextBlock Text="Log" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
+            </StackPanel>
+            
             <TextBox x:Name="txtLog" 
+                     DockPanel.Dock="Bottom"
                      Style="{DynamicResource NoHoverTextBox}"
+                     Background="{DynamicResource Brush.Background}"
                      VerticalScrollBarVisibility="Visible" 
                      TextWrapping="Wrap" 
                      AcceptsReturn="True"
@@ -20,6 +29,6 @@
                      FontFamily="Cascadia Mono Light" 
                      IsReadOnly="True"
                      Padding="8" />
-        </Border>
+        </DockPanel>
     </Grid>
 </Page>

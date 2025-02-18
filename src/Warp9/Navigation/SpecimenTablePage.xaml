@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mi="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
       xmlns:local="clr-namespace:Warp9.Navigation"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
@@ -10,7 +11,12 @@
 
 
     <DockPanel Background="{DynamicResource Brush.Background}" Margin="8">
-        <TextBox x:Name="txtName" Text="Specimen table"  Background="Transparent" Padding="4" DockPanel.Dock="Top" />
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
+            <mi:MaterialIcon Kind="Table" />
+            <TextBox x:Name="txtName" Text="Specimen table" Margin="8,0,0,0" Height="24" Width="300" Background="Transparent" VerticalContentAlignment="Center" DockPanel.Dock="Top" />
+        </StackPanel>
+        
+       
         <Label Height="8" DockPanel.Dock="Top" />
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
             <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,1,0" Content="Add row" Click="btnSpecAdd_Click" />
