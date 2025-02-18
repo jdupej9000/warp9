@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:local="clr-namespace:Warp9.Forms"
         mc:Ignorable="d"
-        Style="{StaticResource CustomWindowStyleMain}" Loaded="Window_Loaded"
+        Style="{StaticResource CustomWindowStyle}" Loaded="Window_Loaded"
         Title="Import Specimen Table" Height="520" Width="800">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>

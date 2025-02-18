@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Warp9.Forms"
         xmlns:controls="clr-namespace:Warp9.Themes"
-        Style="{StaticResource CustomWindowStyleMain}"
+        Style="{StaticResource CustomWindowStyle}"
         Loaded="Window_Loaded"
         mc:Ignorable="d"
         Title="Select Specimens" Height="550" Width="800">
@@ -14,29 +14,13 @@
     </Window.Resources>
 
     <DockPanel Margin="4">
-       
-        
-            <DataGrid x:Name="dataMain" DockPanel.Dock="Top" BorderThickness="1" Height="400" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate>
-                                    <StackPanel Margin="4">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                        <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
-                                    </StackPanel>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
-            </DataGrid>
-      
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
+            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" Style="{DynamicResource ControlButton}"/>
+            <Label Width="4" />
+            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click" Style="{DynamicResource ControlButton}"/>
+        </StackPanel>
 
-        <Label Height="8" DockPanel.Dock="Top" />
-
-        <GroupBox DockPanel.Dock="Top" Height="85" Style="{DynamicResource InsetNoTitleGroupBox}" >
+        <GroupBox DockPanel.Dock="Bottom" Height="120" Header="Select with filters" >
             <StackPanel Orientation="Vertical" Margin="4">
                 <StackPanel Orientation="Horizontal">
                     <CheckBox Width="50" Content="If" IsChecked="True" />
@@ -62,19 +46,32 @@
 
                 <StackPanel Orientation="Horizontal">
                     <Label Width="50" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Select" Width="88" Height="20" Margin="0,0,-1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Unselect" Width="88" Height="20" Margin="0,0,-1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Invert" Width="88" Height="20" Margin="0,0,-1,0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Select" Width="88" Margin="0,0,1,0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Unselect" Width="88" Margin="0,0,1,0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Invert" Width="88" Margin="0,0,1,0" />
                     <Label Width="8" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="88" Height="20" Click="Clear_Click" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="88" Click="Clear_Click" />
                 </StackPanel>
             </StackPanel>
         </GroupBox>
 
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button x:Name="btnOK" Content="OK" Width="100" Click="btnOK_Click" />
-            <Label Width="4" />
-            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="btnCancel_Click"/>
-        </StackPanel>
+
+        <DataGrid x:Name="dataMain" DockPanel.Dock="Top" BorderThickness="1"  VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <StackPanel Margin="4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Type}" Foreground="{DynamicResource ABrush.Foreground.Disabled}"/>
+                                </StackPanel>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+
     </DockPanel>
 </Window>

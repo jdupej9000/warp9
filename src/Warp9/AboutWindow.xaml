@@ -5,10 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Warp9.Themes"
         xmlns:local="clr-namespace:Warp9"
-        Style="{StaticResource CustomWindowStyleMain}"
+        Style="{StaticResource CustomWindowStyle}"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
-        Background="{DynamicResource Brush.Background}"
         Title="About Warp9" Height="450" Width="450" ResizeMode="NoResize">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>

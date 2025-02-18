@@ -5739,9 +5739,9 @@
     </ControlTemplate>
 
     <Style x:Key="CustomWindowStyle" TargetType="{x:Type Window}">
-        <Setter Property="Background" Value="{DynamicResource Panel.Background}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Window.Static.Border}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Panel.DarkText}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.BorderDark}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Brush.ForegroundDark}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="WindowStyle" Value="SingleBorderWindow"/>
         <Setter Property="WindowChrome.WindowChrome">
