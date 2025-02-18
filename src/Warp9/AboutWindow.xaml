@@ -51,9 +51,9 @@
                             <LineBreak/>
                             <LineBreak/>                            
                             
-                            <Bold>System.Linq.Dynamic</Bold>
+                            <Bold>Material.Icons.WPF</Bold>
                             <LineBreak />
-                            https://dynamic-linq.net/
+                            https://https://github.com/SKProCH/Material.Icons/
                         </TextBlock>
                         
                     </StackPanel>
