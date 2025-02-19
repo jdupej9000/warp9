@@ -54,7 +54,7 @@ namespace Warp9.Test
             cfg.MeshColumnName = "Model";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
+            cfg.SurfaceProjection = DcaSurfaceProjectionKind.None;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
             cfg.CpdConfig.UseGpu = true;
@@ -93,8 +93,8 @@ namespace Warp9.Test
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    //new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col:Color.Gray),
-                    new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
+                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col: Color.Gray));
+                    //new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
             }
            
         }
