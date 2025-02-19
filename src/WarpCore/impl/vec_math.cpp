@@ -1,6 +1,7 @@
 #include "vec_math.h"
 #include "utils.h"
 #include "cpu_info.h"
+#include <math.h>
 
 #include <algorithm>
 
@@ -11,6 +12,8 @@ namespace warpcore::impl
 
     float WCORE_VECCALL expf_fast(float xx)
     {
+        return expf(xx);
+
         __m128 x = _mm_set_ss(xx);
 
         // adapted from http://software-lisc.fbk.eu/avx_mathfun/avx_mathfun.h
