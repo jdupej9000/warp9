@@ -65,7 +65,11 @@
                     </ComboBox>
 
                     <Label Height="4" />
-                    <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
+                    <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
+                                                 PlotBackground="{DynamicResource Brush.Background}"
+                                                 PlotBorder="{DynamicResource Brush.BorderDark}"
+                                                 PlotForeground="{DynamicResource Brush.Foreground}"
+                                                 ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />
                     <StackPanel Orientation="Horizontal">
                         <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

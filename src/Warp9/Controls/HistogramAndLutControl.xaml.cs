@@ -25,6 +25,22 @@ namespace Warp9.Controls
     /// </summary>
     public partial class HistogramAndLutControl : UserControl
     {
+        public static readonly DependencyProperty PlotBackgroundProperty = DependencyProperty.Register(
+            "PlotBackground", typeof(Brush), typeof(HistogramAndLutControl), new FrameworkPropertyMetadata(
+                defaultValue: new SolidColorBrush(),
+                flags: FrameworkPropertyMetadataOptions.AffectsRender));
+
+
+        public static readonly DependencyProperty PlotBorderProperty = DependencyProperty.Register(
+            "PlotBorder", typeof(Brush), typeof(HistogramAndLutControl), new FrameworkPropertyMetadata(
+                defaultValue: new SolidColorBrush(),
+                flags: FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public static readonly DependencyProperty PlotForegroundProperty = DependencyProperty.Register(
+            "PlotForeground", typeof(Brush), typeof(HistogramAndLutControl), new FrameworkPropertyMetadata(
+                defaultValue: new SolidColorBrush(),
+                flags: FrameworkPropertyMetadataOptions.AffectsRender));
+
         public HistogramAndLutControl()
         {
             InitializeComponent();
@@ -42,6 +58,10 @@ namespace Warp9.Controls
         bool exitNoDisappear = false;
 
         public event EventHandler<float?> ScaleHover;
+
+        public Brush PlotBackground { get; set; } = new SolidColorBrush();
+        public Brush PlotBorder { get; set; } = new SolidColorBrush();
+        public Brush PlotForeground { get; set; } = new SolidColorBrush();
 
         public float X0
         {
@@ -85,14 +105,13 @@ namespace Warp9.Controls
             this.x1 = x1;
             Updated();
         }
-
+        
         protected override void OnRender(DrawingContext ctx)
         {
-            base.OnRender(ctx);
-
-            Brush fill = Themes.ThemesController.GetBrush("ThemeColor.Control.EditBackground");
-            Brush borderBrush = Themes.ThemesController.GetBrush("ThemeColor.Control.BorderLight");
-            Pen borderPen = new Pen(borderBrush, 1);
+            //base.OnRender(ctx);
+            Brush fill = PlotBackground ?? Background;
+            Brush borderBrush = PlotBorder ?? BorderBrush;
+            Pen borderPen = new Pen(borderBrush, BorderThickness.Left);
 
             ctx.DrawRectangle(fill, borderPen,
                 new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));
@@ -102,7 +121,7 @@ namespace Warp9.Controls
 
             double w = ActualWidth;
             double axisY = ActualHeight - AxisMargin + 1;
-            Brush axisBrush = Themes.ThemesController.GetBrush("ABrush.Foreground.Disabled");
+            Brush axisBrush = PlotForeground ?? Foreground;
             Pen axisPen = new Pen(axisBrush, 1);
             
             if (Math.Min(x0, x1) < 0 && Math.Max(x0, x1) > 0)

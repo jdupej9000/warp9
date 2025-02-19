@@ -7,28 +7,26 @@
       xmlns:local="clr-namespace:Warp9.Navigation"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      Background="{DynamicResource Brush.Background}"
       Title="LogPage">
 
+    <DockPanel Background="{DynamicResource Brush.Background}" Margin="8">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
+            <mi:MaterialIcon Kind="TimelineText" />
+            <TextBlock Text="Log" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
+        </StackPanel>
 
-    <Grid>
+        <TextBox x:Name="txtLog" 
+                    DockPanel.Dock="Bottom"
+                    Style="{DynamicResource NoHoverTextBox}"
+                    Background="{DynamicResource Brush.Background}"
+                    VerticalScrollBarVisibility="Visible" 
+                    TextWrapping="Wrap" 
+                    AcceptsReturn="True"
+                    AcceptsTab="True"
+                    FontFamily="Cascadia Mono Light" 
+                    IsReadOnly="True"
+                    Padding="8" />
+    </DockPanel>
 
-        <DockPanel Background="{DynamicResource Brush.Background}">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
-                <mi:MaterialIcon Kind="TimelineText" />
-                <TextBlock Text="Log" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
-            </StackPanel>
-            
-            <TextBox x:Name="txtLog" 
-                     DockPanel.Dock="Bottom"
-                     Style="{DynamicResource NoHoverTextBox}"
-                     Background="{DynamicResource Brush.Background}"
-                     VerticalScrollBarVisibility="Visible" 
-                     TextWrapping="Wrap" 
-                     AcceptsReturn="True"
-                     AcceptsTab="True"
-                     FontFamily="Cascadia Mono Light" 
-                     IsReadOnly="True"
-                     Padding="8" />
-        </DockPanel>
-    </Grid>
 </Page>
