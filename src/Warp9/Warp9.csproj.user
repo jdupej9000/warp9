@@ -19,6 +19,9 @@
     <Compile Update="Forms\OptionsWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\PcaConfigWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\SpecimenSelectorWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -64,6 +67,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Forms\OptionsWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Forms\PcaConfigWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Forms\SpecimenSelectorWindow.xaml">

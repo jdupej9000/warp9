@@ -271,6 +271,28 @@ namespace Warp9
             JobEngine.Run(job);
         }
 
+        private void mnuProjectComputePca_Click(object sender, RoutedEventArgs e)
+        {
+            if (model is null)
+                throw new InvalidOperationException();
+
+            PcaConfiguration config = new PcaConfiguration();
+
+            PcaConfigWindow cfgWnd = new PcaConfigWindow();
+            cfgWnd.Attach(model.Project, config);
+            cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            ProjectJobContext ctx = new ProjectJobContext(model.Project);
+            ctx.LogMessage += (s, e) => pageLog.AddMessage(e);
+            Job job = Job.Create(PcaJob.CreateDcaPca(config, model.Project), ctx, "High dimensional PCA");
+
+            frameMain.NavigationService.Navigate(pageLog);
+            JobEngine.Run(job);
+        }
+
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             Options.Save();

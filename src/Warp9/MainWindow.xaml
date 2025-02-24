@@ -31,7 +31,10 @@
                 <MenuItem Header="Add new specimen table" Click="mnuProjectAddNewSpecTable_Click" />
                 <MenuItem Header="Import specimen table..." Click="mnuProjectImportSpecTable_Click" />
                 <Separator />
-                <MenuItem Header="Compute DCA..." Click="mnuProjectComputeDca_Click"/> 
+                <MenuItem Header="Compute">
+                    <MenuItem Header="Mesh homology (DCA)" Click="mnuProjectComputeDca_Click" />
+                    <MenuItem Header="Principal component analysis" Click="mnuProjectComputePca_Click" />
+                </MenuItem>
             </MenuItem>
 
             <MenuItem Header="_Tools">

@@ -73,12 +73,11 @@ namespace Warp9.Model
             return null;
         }
 
-        public static IEnumerable<SpecimenTableColumnInfo> EnumerateAllSpecimenTableColumns(Project proj)
+        public static IEnumerable<SpecimenTableColumnInfo> EnumerateAllTableColumns(Project proj)
         {
             foreach (var kvp in proj.Entries)
             {
-                if (kvp.Value.Kind == ProjectEntryKind.Specimens &&
-                    kvp.Value.Payload.Table is SpecimenTable table)
+                if (kvp.Value.Payload.Table is SpecimenTable table)
                 {
                     foreach (var col in table.Columns)
                         yield return new SpecimenTableColumnInfo(kvp.Key, kvp.Value.Name, col.Key, col.Value);
@@ -92,6 +91,17 @@ namespace Warp9.Model
             {
                 if (kvp.Value.Kind == ProjectEntryKind.Specimens &&
                     kvp.Value.Payload.Table is SpecimenTable table)
+                {
+                    yield return new SpecimenTableInfo(kvp.Key, kvp.Value.Name, table);
+                }
+            }
+        }
+
+        public static IEnumerable<SpecimenTableInfo> EnumerateEntitiesWithTables(Project proj)
+        {
+            foreach (var kvp in proj.Entries)
+            {
+                if (kvp.Value.Payload.Table is SpecimenTable table)
                 {
                     yield return new SpecimenTableInfo(kvp.Key, kvp.Value.Name, table);
                 }

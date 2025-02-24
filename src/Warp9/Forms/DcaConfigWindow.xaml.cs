@@ -57,14 +57,13 @@ namespace Warp9.Forms
         public IEnumerable<SpecimenTableInfo> SpecimenTables =>
            ModelUtils.EnumerateSpecimenTables(project);
 
-
         public IEnumerable<SpecimenTableColumnInfo> AllowedMeshColumns =>
-            ModelUtils.EnumerateAllSpecimenTableColumns(project)
+            ModelUtils.EnumerateAllTableColumns(project)
                 .Where((x) => x.SpecTableId == (specTable?.SpecTableId ?? -1) && 
                                 x.Column.ColumnType == SpecimenTableColumnType.Mesh);
 
         public IEnumerable<SpecimenTableColumnInfo> AllowedLandmarksColumns =>
-            ModelUtils.EnumerateAllSpecimenTableColumns(project)
+            ModelUtils.EnumerateAllTableColumns(project)
                 .Where((x) => x.SpecTableId == (specTable?.SpecTableId ?? -1) &&
                                 x.Column.ColumnType == SpecimenTableColumnType.PointCloud);
 
