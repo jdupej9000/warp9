@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Warp9.Model;
@@ -139,11 +140,18 @@ namespace Warp9.ProjectExplorer
         {
             Children.Clear();
 
-            foreach (var kvp in ParentViewModel.Project.Entries
-                .Where((e) => e.Value.Kind == ProjectEntryKind.MeshCorrespondence))
+            foreach (var kvp in ParentViewModel.Project.Entries)
             {
-                Children.Add(new MeshCorrespondenceProjectItem(ParentViewModel, kvp.Key));
-            }   
+                switch (kvp.Value.Kind)
+                {
+                    case ProjectEntryKind.MeshCorrespondence:
+                        Children.Add(new MeshCorrespondenceProjectItem(ParentViewModel, kvp.Key));
+                        break;
+
+                    case ProjectEntryKind.MeshPca:
+                        break;
+                }
+            }
 
             base.Update();
         }
