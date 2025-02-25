@@ -290,7 +290,7 @@ namespace Warp9.IO
                         Matrix = kvp.Value,
                         Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Int32, kvp.Key),
                         MeshSegmentDimension = kvp.Value.Columns,
-                        Encoding = s.MatrixFormat
+                        Encoding = ChunkEncoding.Int32
                     });
                 }
             }
