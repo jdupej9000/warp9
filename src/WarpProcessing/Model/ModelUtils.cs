@@ -35,8 +35,7 @@ namespace Warp9.Model
 
         public static SpecimenTableColumn<T>? TryGetSpecimenTableColumn<T>(Project proj, long tableKey, string column)
         {
-            if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||
-                entry.Kind != ProjectEntryKind.Specimens ||
+            if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||                
                 entry.Payload.Table is null ||
                 !entry.Payload.Table.Columns.TryGetValue(column, out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<T> typedCol)

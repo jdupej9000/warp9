@@ -71,7 +71,7 @@ namespace Warp9.JobItems
             {
                 float thresh = Config.RejectionMode == PcaRejectionMode.CustomThreshold ?
                     Config.RejectionThreshold :
-                    dcaEntry.Payload.MeshCorrExtra!.DcaConfig.RejectCountPercent;
+                    0.01f * dcaEntry.Payload.MeshCorrExtra!.DcaConfig.RejectCountPercent;
 
                 if (!proj.TryGetReference(dcaEntry.Payload.MeshCorrExtra.VertexRejectionRatesKey, out MatrixCollection? rejmc) ||
                     rejmc is null ||

@@ -126,8 +126,8 @@ namespace warpcore::impl
                 }
 
                 float aa0 = reduce_add(a0) * norm;
-                cov[i * m + j] = aa0;
-                cov[j * m + i] = aa0;
+                cov[i * n + j] = aa0;
+                cov[j * n + i] = aa0;
             }
         }
 	}
