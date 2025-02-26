@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+using System.Windows.Controls;
+using Warp9.Data;
 using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.Viewer;
@@ -149,6 +144,7 @@ namespace Warp9.ProjectExplorer
                         break;
 
                     case ProjectEntryKind.MeshPca:
+                        Children.Add(new PcaProjectItem(ParentViewModel, kvp.Key));
                         break;
                 }
             }
@@ -190,6 +186,49 @@ namespace Warp9.ProjectExplorer
                 new CorrMeshViewerContent(proj, Key, "Correspondence meshes"),
                 new CompareGroupsViewerContent(proj, Key, "Compare groups"),
                 new DcaDiagnosticsViewerContent(proj, Key, "DCA diagnostics"));
+        }
+    }
+
+    public class PcaProjectItem : ProjectItem
+    {
+        public PcaProjectItem(Warp9ViewModel vm, long key) :
+            base(vm, typeof(MatrixViewPage))
+        {
+            Key = key;
+        }
+
+        public long Key { get; init; }
+
+        public override void Update()
+        {
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                Name = entry.Name;
+            else
+                Name = "(error)";
+
+            base.Update();
+        }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            base.ConfigurePresenter(pres);
+
+            if (pres is not MatrixViewPage page)
+                throw new ArgumentException();
+
+            Project proj = ParentViewModel.Project;
+
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) &&
+                entry.Payload.PcaExtra is not null &&
+                proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? mat) &&
+                mat is not null)
+            {
+                page.SetMatrices(new MatrixViewProvider(mat[1], "Variance"));
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 }

@@ -31,6 +31,7 @@ namespace Warp9
             views.Add(typeof(SpecimenTablePage), pageSpecimenTable);
             views.Add(typeof(ProjectSettingsPage), pageProjectSettings);
             views.Add(typeof(LogPage), pageLog);
+            views.Add(typeof(MatrixViewPage), pageMatrixView);
 
             lstTasks.ItemsSource = JobEngine.Jobs;
             JobEngine.JobFinished += JobEngine_JobFinished;
@@ -43,6 +44,7 @@ namespace Warp9
         TextEditorPage pageTextEditor = new TextEditorPage();
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
+        MatrixViewPage pageMatrixView = new MatrixViewPage();
         JobEngine jobEngine = new JobEngine();
         Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
         ViewerPage pageViewer;

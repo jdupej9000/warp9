@@ -34,6 +34,7 @@ namespace Warp9.Navigation
                 return entry.Payload.Table ?? throw new InvalidOperationException();
             }
         }
+
         public void AttachViewModel(Warp9ViewModel vm)
         {
             viewModel = vm;
