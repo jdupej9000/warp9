@@ -223,7 +223,7 @@ namespace Warp9.ProjectExplorer
                 proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? mat) &&
                 mat is not null)
             {
-                page.SetMatrices(new MatrixViewProvider(mat[1], "Variance"));
+                page.SetMatrices(new MatrixViewProvider(mat[1], "Variance", "Variance"));
             }
             else
             {

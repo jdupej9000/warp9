@@ -11,11 +11,12 @@ namespace Warp9.Model
     public class MatrixRowViewProvider(Matrix Matrix, int FirstColIndex, int NumCols, int RowIndex)
     {
         public int Index => RowIndex;
+        public int RealNumColumns => (NumCols >= 0) ? NumCols : (Matrix.Columns - FirstColIndex);
         public object? this[int index]
         {
             get
             {
-                if (index >= NumCols)
+                if (index >= RealNumColumns)
                     return "!RNG";
 
                 if (Matrix is Matrix<float> matf)

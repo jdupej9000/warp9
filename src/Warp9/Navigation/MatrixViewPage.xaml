@@ -29,7 +29,7 @@
         </TabControl>
 
 
-        <DataGrid x:Name="dataMain" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+        <DataGrid x:Name="dataMain" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Template">
