@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -94,7 +95,28 @@ namespace Warp9.JobItems
                 return false;
             }
 
+            int ns = dcaCorrPcls.Count;
+            int npcs = 50;
+            ctx.WriteLog(ItemIndex, MessageKind.Information, $"Transforming source data ({dcaCorrPcls.Count} datapoints), keeping {npcs} PCs.");
+            
+            int npcsall = pca.NumPcs;
+            float[] scores = new float[npcsall];
+            Matrix<float> scoresMat = new Matrix<float>(npcs, ns);
+            for (int i = 0; i < ns; i++)
+            {
+                if (dcaCorrPcls[i] is null || 
+                    !pca.TryGetScores(dcaCorrPcls[i]!, scores.AsSpan()))
+                {
+                    ctx.WriteLog(ItemIndex, MessageKind.Error, $"Cannot transform specimen {i}.");
+                    return false;
+                }
+
+                for (int j = 0; j < npcs; j++)
+                    scoresMat[j, i] = scores[j];
+            }
+
             MatrixCollection mcPca = pca.ToMatrixCollection();
+            mcPca[Pca.KeyScores] = scoresMat;
             long pcaDataKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, mcPca);
 
             ProjectEntry entry = proj.AddNewEntry(ProjectEntryKind.MeshPca);

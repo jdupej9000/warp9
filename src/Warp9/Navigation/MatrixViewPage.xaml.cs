@@ -43,7 +43,13 @@ namespace Warp9.Navigation
         {
             tabPages.Items.Clear();
             for (int i = 0; i < providers.Length; i++)
-                tabPages.Items.Add(providers[i].Name);
+            {
+                tabPages.Items.Add(new TabItem 
+                { 
+                    Header = providers[i].Name,
+                    Tag = providers[i] 
+                });
+            }
 
             if (providers.Length > 0)
                 ShowMatrix(providers[0]);
@@ -51,8 +57,11 @@ namespace Warp9.Navigation
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (tabPages.SelectedItem is MatrixViewProvider mvp)
+            if (tabPages.SelectedItem is TabItem ti &&
+                ti.Tag is MatrixViewProvider mvp)
+            {
                 ShowMatrix(mvp);
+            }
         }
 
         private void btnExport_Click(object sender, RoutedEventArgs e)

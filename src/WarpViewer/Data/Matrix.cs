@@ -47,6 +47,12 @@ namespace Warp9.Data
 
         public T[] Data => data;
 
+        public T this[int r, int c]
+        {
+            get { return data[r + c * Columns]; }
+            set { data[r + c * Columns] = value; }
+        }
+
         public override Span<byte> GetRawData()
         {
             return MemoryMarshal.Cast<T, byte>(data.AsSpan());

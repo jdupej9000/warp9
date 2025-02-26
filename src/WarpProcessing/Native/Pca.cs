@@ -40,6 +40,7 @@ namespace Warp9.Native
         public const int KeyPcsMean = 0;
         public const int KeyPcVariance = 1;
         public const int KeyAllow = 2;
+        public const int KeyScores = 3;
 
         public ReadOnlySpan<float> GetMean()
         {
@@ -66,6 +67,31 @@ namespace Warp9.Native
                 fixed (float* pscores = &MemoryMarshal.GetReference(scores))
                 {
                     ret = (WarpCoreStatus)WarpCore.pca_data_to_scores(ref info, (nint)pdata, (nint)pmeanpcs, (nint)pallow, (nint)pscores);
+                }
+            }
+
+            return ret == WarpCoreStatus.WCORE_OK;
+        }
+
+        public bool TryGetScores(PointCloud pcl, Span<float> scores)
+        {
+            if (pcl.VertexCount * 3 != Dimension || scores.Length < NumPcs)
+                return false;
+
+            if (!pcl.TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length))
+                return false;
+
+            byte[] raw = pcl.RawData;
+
+            WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
+            unsafe
+            {
+                fixed (int* pallow = &MemoryMarshal.GetReference(allow.AsSpan()))
+                fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
+                fixed (byte* pdata = &MemoryMarshal.GetReference(raw.AsSpan()))
+                fixed (float* pscores = &MemoryMarshal.GetReference(scores))
+                {
+                    ret = (WarpCoreStatus)WarpCore.pca_data_to_scores(ref info, (nint)pdata + offset, (nint)pmeanpcs, (nint)pallow, (nint)pscores);
                 }
             }
 
