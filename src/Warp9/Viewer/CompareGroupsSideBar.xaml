@@ -10,8 +10,6 @@
       Title="CompareGroupsSideBar">
 
     <StackPanel Orientation="Vertical" Margin="4">
-        
-            <StackPanel Orientation="Vertical">
                 
                 <StackPanel Orientation="Vertical" Margin="4">
                     <TextBlock>Source</TextBlock>
@@ -88,7 +86,7 @@
                     </StackPanel>
                 </StackPanel>
                 
-            </StackPanel>
+            
         
     </StackPanel>
 </Page>
