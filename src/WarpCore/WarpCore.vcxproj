@@ -144,6 +144,7 @@
       <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
       <CudaRuntime>Shared</CudaRuntime>
       <NvccCompilation>compile</NvccCompilation>
+      <CodeGeneration>compute_70,sm_70</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -3,9 +3,11 @@
 
 #include <math.h>
 
-__global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, float denomAdd, float* ctx);
-__global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float* ctx);
-__global__ void cpd_sigmaest_cuda(int m, int n, float* ctx);
+#define CONST_ARG const __grid_constant__
+
+__global__ void cpd_psumpt1_cuda(CONST_ARG int m, const  CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx);
+__global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, float* ctx);
+__global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx);
 
 #define BLOCK_SIZE (512)
 
@@ -80,7 +82,7 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
     cudaMemcpy(pt1p1px, dpt1, sizeof(float) * (n + m + 3 * m), cudaMemcpyDeviceToHost);
 }
 
-__global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, float denomAdd, float* ctx)
+__global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx)
 {
     __shared__ float t012[3 * BLOCK_SIZE];
 
@@ -135,7 +137,7 @@ __global__ void cpd_psumpt1_cuda(int m, int n, float thresh, float expFactor, fl
     }
 }
 
-__global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float* ctx)
+__global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, float* ctx)
 {
     __shared__ float x012sum[4 * BLOCK_SIZE];
 
@@ -203,7 +205,7 @@ __global__ void cpd_p1px_cuda(int m, int n, float thresh, float expFactor, float
     }
 }
 
-__global__ void cpd_sigmaest_cuda(int m, int n, float* ctx)
+__global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx)
 {
     __shared__ float t012[3 * BLOCK_SIZE];
 
