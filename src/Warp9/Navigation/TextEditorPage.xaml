@@ -10,7 +10,7 @@
       Title="MarkdownEditorPage">
 
     <Grid>
-        <DockPanel Background="{DynamicResource Brush.Background}">
+        <DockPanel Background="{DynamicResource Brush.Background}" Margin="8">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
                 <mi:MaterialIcon Kind="CommentText" />
                 <TextBlock Text="Comment" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
