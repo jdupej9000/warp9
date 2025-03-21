@@ -65,5 +65,21 @@ namespace Warp9.Utils
             for (int i = 0; i < x.Length; i++)
                 res[i] = x[i] < thresh;
         }
+
+        public static Vector2 Range(ReadOnlySpan<float> x)
+        {
+            if (x.Length == 0)
+                return Vector2.Zero;
+
+            float min = x[0], max = x[0];
+
+            for (int i = 1; i < x.Length; i++)
+            {
+                if (x[i] < min) min = x[i];
+                if (x[i] > max) max = x[i];
+            }
+
+            return new Vector2(min, max);
+        }
     }
 }

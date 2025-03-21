@@ -39,11 +39,21 @@ namespace Warp9.Viewer
         long entityKey;
         PcaSynthMeshSideBar sidebar;
         MatrixCollection pcaData;
+        int indexPcScatterX = 0, indexPcScatterY = 1;
 
         public List<string> PrincipalComponents => CreatePrincipalComponentList().ToList();
         public List<string> Groupings { get; } = new List<string>() { "(nothing)" };
-        public int ScatterXAxisPcIndex { get; set; } = 0;
-        public int ScatterYAxisPcIndex { get; set; } = 1;
+        public int ScatterXAxisPcIndex
+        {
+            get { return indexPcScatterX; }
+            set { indexPcScatterX = value; UpdateScatter(); }
+        }
+
+        public int ScatterYAxisPcIndex
+        {
+            get { return indexPcScatterY; }
+            set { indexPcScatterY = value; UpdateScatter(); }
+        }
 
         public override Page? GetSidebar()
         {
@@ -58,6 +68,17 @@ namespace Warp9.Viewer
         protected override void UpdateRendererConfig()
         {
             base.UpdateRendererConfig();
+        }
+
+        private void UpdateScatter()
+        {
+            if (pcaData.TryGetMatrix(Native.Pca.KeyScores, out Matrix<float>? pcaScores) &&
+              pcaScores is not null &&
+              indexPcScatterX >=0 && indexPcScatterX < pcaScores.Columns &&
+              indexPcScatterY >= 0 && indexPcScatterY < pcaScores.Columns)
+            {
+                sidebar.UpdateScatterplot(pcaScores.GetColumn(indexPcScatterX), pcaScores.GetColumn(indexPcScatterY));
+            }
         }
 
         private IEnumerable<string> CreatePrincipalComponentList()

@@ -29,6 +29,11 @@ namespace Warp9.Viewer
 
         PcaSynthMeshViewerContent Content { get; init; }
 
+        public void UpdateScatterplot(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
+        {
+            scatPca.SetData(x, y);
+        }
+
         private void histField_ScaleHover(object sender, float? e)
         {
             Content.MeshScaleHover(e);

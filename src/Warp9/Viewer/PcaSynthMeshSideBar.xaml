@@ -74,7 +74,11 @@
                                    ItemsSource="{Binding Path=Groupings}"/>
                     </Grid>
 
-                    <ctls:ScatterPlotControl x:Name="scatPca" Width="200" Height="200" HorizontalAlignment="Left" />
+                    <ctls:ScatterPlotControl x:Name="scatPca" Width="200" Height="200" HorizontalAlignment="Left" 
+                                    SnapsToDevicePixels="True"
+                                    PlotBackground="{DynamicResource Brush.Background}"
+                                    PlotBorder="{DynamicResource Brush.BorderDark}"
+                                    PlotForeground="{DynamicResource Brush.Foreground}" />
                 </StackPanel>
             </TabItem>
 
