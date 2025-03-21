@@ -63,9 +63,11 @@ namespace Warp9.Viewer
         private IEnumerable<string> CreatePrincipalComponentList()
         {
             if (pcaData.TryGetMatrix(Native.Pca.KeyPcVariance, out Matrix<float>? pcaVar) &&
-                pcaVar is not null)
+                pcaVar is not null &&
+                pcaData.TryGetMatrix(Native.Pca.KeyScores, out Matrix<float>? pcaScores) &&
+                pcaScores is not null)
             {
-                int n = pcaVar.Rows;
+                int n = Math.Min(pcaVar.Rows, pcaScores.Columns);
 
                 for (int i = 0; i < n; i++)
                 {
