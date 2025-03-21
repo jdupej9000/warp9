@@ -20,9 +20,18 @@ namespace Warp9.Viewer
     /// </summary>
     public partial class PcaSynthMeshSideBar : Page
     {
-        public PcaSynthMeshSideBar()
+        public PcaSynthMeshSideBar(PcaSynthMeshViewerContent content)
         {
             InitializeComponent();
+            Content = content;
+            DataContext = content;
+        }
+
+        PcaSynthMeshViewerContent Content { get; init; }
+
+        private void histField_ScaleHover(object sender, float? e)
+        {
+            Content.MeshScaleHover(e);
         }
     }
 }

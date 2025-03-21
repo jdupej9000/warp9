@@ -60,14 +60,21 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="X PC" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" />
-                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="0" />
+                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="0" 
+                                  ItemsSource="{Binding Path=PrincipalComponents}" 
+                                  SelectedIndex="{Binding Path=ScatterXAxisPcIndex, Mode=TwoWay}"/>
 
                         <TextBlock Text="Y PC" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" />
-                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1" />
+                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1" 
+                                  ItemsSource="{Binding Path=PrincipalComponents}" 
+                                  SelectedIndex="{Binding Path=ScatterYAxisPcIndex, Mode=TwoWay}"/>
 
                         <TextBlock Text="Group by" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" />
-                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" />
+                        <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" 
+                                   ItemsSource="{Binding Path=Groupings}"/>
                     </Grid>
+
+                    <ctls:ScatterPlotControl x:Name="scatPca" Width="200" Height="200" HorizontalAlignment="Left" />
                 </StackPanel>
             </TabItem>
 

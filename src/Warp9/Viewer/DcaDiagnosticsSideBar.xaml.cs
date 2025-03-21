@@ -48,6 +48,5 @@ namespace Warp9.Viewer
         {
             Content.MeshScaleHover(e);
         }
-
     }
 }

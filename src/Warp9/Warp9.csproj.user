@@ -10,6 +10,9 @@
     <Compile Update="Controls\HistogramAndLutControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Controls\ScatterPlotControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\DcaConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
