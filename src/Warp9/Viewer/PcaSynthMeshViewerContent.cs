@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,27 @@ using Warp9.Model;
 
 namespace Warp9.Viewer
 {
+    public class PcaScatterGrouping
+    {
+        public string DisplayName { get; init; }
+        public long SourceEntry { get; init; }
+        public string ColumnName { get; init; }
+        public string[] Levels { get; init; }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
+        public static PcaScatterGrouping None = new PcaScatterGrouping()
+        {
+            DisplayName = "(none)",
+            SourceEntry = -1,
+            ColumnName = string.Empty,
+            Levels = Array.Empty<string>()
+        };
+    }
+
     public class PcaSynthMeshViewerContent : ColormapMeshViewerContentBase
     {
         public PcaSynthMeshViewerContent(Project proj, long pcaEntityKey, string name) :
@@ -31,6 +53,9 @@ namespace Warp9.Viewer
             pcaEntry = entry;
             pcaData = pca;
 
+            Groupings.Add(PcaScatterGrouping.None);
+            GatherGroupingsFromEntry(pcaEntityKey);
+
             sidebar = new PcaSynthMeshSideBar(this);
         }
 
@@ -42,7 +67,7 @@ namespace Warp9.Viewer
         int indexPcScatterX = 0, indexPcScatterY = 1;
 
         public List<string> PrincipalComponents => CreatePrincipalComponentList().ToList();
-        public List<string> Groupings { get; } = new List<string>() { "(nothing)" };
+        public List<PcaScatterGrouping> Groupings { get; } = new List<PcaScatterGrouping>();
         public int ScatterXAxisPcIndex
         {
             get { return indexPcScatterX; }
@@ -68,6 +93,39 @@ namespace Warp9.Viewer
         protected override void UpdateRendererConfig()
         {
             base.UpdateRendererConfig();
+        }
+
+        private void GatherGroupingsFromEntry(long key)
+        {
+            if (project.Entries.TryGetValue(key, out ProjectEntry? entry) && entry is not null)
+            {
+                if (entry.Payload.Table is not null)
+                {
+                    foreach (var kvp in entry.Payload.Table.Columns)
+                    {
+                        if (kvp.Value.ColumnType == SpecimenTableColumnType.Factor && kvp.Value.Names is not null)
+                        {
+                            Groupings.Add(new PcaScatterGrouping() 
+                            { 
+                                DisplayName = $"{kvp.Key} in {entry.Name}",
+                                SourceEntry = entry.Id,
+                                ColumnName = kvp.Key,
+                                Levels = kvp.Value.Names
+                            });
+                        }
+                    }
+                }
+
+                foreach (long dep in entry.Deps)
+                    GatherGroupingsFromEntry(dep);
+
+                if (entry.Deps.Count == 0 && entry.Payload.PcaExtra is not null)
+                    GatherGroupingsFromEntry(entry.Payload.PcaExtra.Info.ParentEntityKey);
+
+                if (entry.Deps.Count == 0 && entry.Payload.MeshCorrExtra is not null)
+                    GatherGroupingsFromEntry(entry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey);
+            }
+
         }
 
         private void UpdateScatter()
