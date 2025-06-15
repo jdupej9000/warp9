@@ -70,6 +70,8 @@ namespace Warp9.Navigation
 
             if(cmbVis.Items.Count > 0)
                 cmbVis.SelectedIndex = 0;
+
+            Interlocked.Exchange(ref viewDirty, 1);
         }
 
         public void AttachViewModel(Warp9ViewModel vm)
@@ -214,17 +216,7 @@ namespace Warp9.Navigation
                 InteropImage.RequestRender();
             }
 
-        }
-
-        public static readonly string AssetsPath = @"../../test/data/";
-
-        public static Stream OpenAsset(string name)
-        {
-            string path = Path.Combine(AssetsPath, name);
-
-            return new FileStream(path, FileMode.Open, FileAccess.Read);
-        }
-      
+        }    
 
         private static Size WpfSizeToPixels(FrameworkElement element)
         {
