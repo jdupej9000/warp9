@@ -165,7 +165,7 @@ namespace warpcore::impl
 
         float best = clamp * clamp;
         int bestIdx = -1;
-        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(clamp, p3f_set(grid->dx))), 1.0f, grid->ncell[0]);
+        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(clamp, p3f_set(grid->dx))), 1.0f, (float)grid->ncell[0]);
         alignas(16) int coarseRadius[4];
         _mm_store_si128((__m128i*)coarseRadius, p3f_to_p3i(crad));
       
@@ -211,7 +211,7 @@ namespace warpcore::impl
                         memcpy(ctx.proj, cellResult, sizeof(float) * TPtTriTraits::ResultSize);
 
                         float d = sqrtf(d2);
-                        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(d, p3f_set(ctx.grid->dx))), 1.0f, ctx.grid->ncell[0]);
+                        p3f crad = p3f_clamp(p3f_add(0.5f, p3f_mul(d, p3f_set(ctx.grid->dx))), 1.0f, (float)ctx.grid->ncell[0]);
                         _mm_store_si128((__m128i*)ctx.coarseRadius, p3f_to_p3i(crad));
                     }
                 }

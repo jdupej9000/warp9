@@ -14,7 +14,7 @@ namespace Warp9.Data
             indexData = Array.Empty<FaceIndices>();
         }
 
-        internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, FaceIndices[] ixd)
+        internal MeshBuilder(byte[] vxd, Dictionary<MeshSegmentType, MeshSegment> segs, FaceIndices[]? ixd)
         {
             data = vxd;
             indexData = ixd;

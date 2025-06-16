@@ -148,7 +148,7 @@ namespace warpcore::impl
     void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* var, float* pcs)
     {
         float* evals = new float[n];
-        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals) <= 0;
+        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals);
         
         // Find the order that sorts the eigenvalues in a descending order of magnitude.
         int* order = new int[n];

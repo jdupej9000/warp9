@@ -150,7 +150,7 @@ namespace warpcore::impl
         return reduce_add(sum) + ret;
     }
 
-    float reduce_add_i32(const int* x, int n)
+    int reduce_add_i32(const int* x, int n)
     {
         __m256i sum = _mm256_setzero_si256();
 

@@ -140,7 +140,6 @@ namespace Warp9.IO
         }
 
         BinaryReader rd;
-        BackgroundType stream;
         bool headerValid = false;
         string format = string.Empty;
         List<PlyElement> elements = new List<PlyElement>();

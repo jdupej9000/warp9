@@ -5,7 +5,7 @@
 
 #define CONST_ARG const __grid_constant__
 
-__global__ void cpd_psumpt1_cuda(CONST_ARG int m, const  CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx);
+__global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx);
 __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, float* ctx);
 __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx);
 

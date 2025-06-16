@@ -31,7 +31,7 @@ namespace warpcore::impl
     void reduce_minmax(const float* x, int n, float* xmin, float* xmax);
 
     float reduce_add(const float* x, int n);
-    float reduce_add_i32(const int* x, int n);
+    int reduce_add_i32(const int* x, int n);
     int64_t reduce_add_i1(const void* x, int n);
 
     __m256i WCORE_VECCALL clamp(__m256i x, __m256i x0, __m256i x1);
