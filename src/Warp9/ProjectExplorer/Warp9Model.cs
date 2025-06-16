@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Windows.Markup;
 using Warp9.Model;
 
 namespace Warp9.ProjectExplorer
@@ -15,12 +16,28 @@ namespace Warp9.ProjectExplorer
         public Project Project { get; init; }
         public Warp9ViewModel ViewModel { get; init; }
         public bool IsDirty { get; private set; } = false;
+        public string? FileName => Project.Archive?.FileName;
 
         public void Save(string fileName)
         {
             if (File.Exists(fileName))
             {
-                throw new InvalidOperationException();
+                string tempArchiveFileName = fileName + ".w9temp";
+                Warp9ProjectArchive arch = new Warp9ProjectArchive(tempArchiveFileName, true);
+                Project.Save(arch);
+                arch.Dispose();
+
+                IProjectArchive? oldArch = Project.SwitchToSavedArchive(null);
+                oldArch?.Dispose();
+
+                string oldArchiveFileName = fileName + ".w9old";
+                File.Move(fileName, oldArchiveFileName, true);
+
+                File.Move(tempArchiveFileName, fileName);
+                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false);
+                Project.SwitchToSavedArchive(archSaved);
+
+                File.Delete(oldArchiveFileName);
             }
             else
             {

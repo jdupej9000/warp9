@@ -6,6 +6,7 @@ namespace Warp9.Model
     public interface IProjectArchive : IDisposable
     {
         public bool IsOpen { get; }
+        public string? FileName { get; }
         public string WorkingDirectory { get; }
         public bool ContainsFile(string name);
         public Stream OpenFile(string name);

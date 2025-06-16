@@ -52,19 +52,29 @@ namespace Warp9
         public JobEngine JobEngine => jobEngine;
 
         
-        private bool SaveOrSaveAs()
+        private bool Save(bool forceNewPath = false)
         {
             if (model is null)
                 return true;
 
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
+            string? currentArchivePath = model.Project.Archive?.FileName;
+            string? destPath = null;
+            if (currentArchivePath is not null)
+            {
+                destPath = currentArchivePath;
+            }
+            else
+            {
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
 
-            DialogResult res = dlg.ShowDialog();
-            if(res != System.Windows.Forms.DialogResult.OK) 
-                return false;
+                DialogResult res = dlg.ShowDialog();
+                if (res == System.Windows.Forms.DialogResult.OK)
+                    destPath = dlg.FileName;
+            }
 
-            model.Save(dlg.FileName);
+            if(destPath != null)
+                model.Save(destPath);
 
             return true;
         }
@@ -79,7 +89,7 @@ namespace Warp9
                 switch (res)
                 {
                     case MessageBoxResult.Yes:
-                        return SaveOrSaveAs();
+                        return Save();
 
                     case MessageBoxResult.No:
                         return true;
@@ -143,11 +153,12 @@ namespace Warp9
 
         private void mnuFileSave_Click(object sender, RoutedEventArgs e)
         {
-            SaveOrSaveAs();
+            Save();
         }
 
         private void mnuFileSaveAs_Click(object sender, RoutedEventArgs e)
         {
+            Save(true);
         }
 
         private void mnuFileClose_Click(object sender, RoutedEventArgs e)

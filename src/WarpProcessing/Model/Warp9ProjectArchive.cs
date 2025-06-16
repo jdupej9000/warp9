@@ -32,6 +32,7 @@ namespace Warp9.Model
 
         public bool IsOpen => archive is not null;
         public string WorkingDirectory => workingDir;
+        public string? FileName => fileName;
 
         public void Close()
         {

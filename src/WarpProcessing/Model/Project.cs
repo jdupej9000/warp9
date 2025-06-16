@@ -36,6 +36,7 @@ namespace Warp9.Model
         private static readonly string SpecimenIdGenName = "specimens";
         private static JsonSerializerOptions? opts;
 
+        public IProjectArchive? Archive => archive;
         public bool IsArchiveOpen => archive?.IsOpen ?? false;
         public ProjectSettings Settings => settings;
         public IReadOnlyDictionary<long, ProjectEntry> Entries => entries;
@@ -200,7 +201,7 @@ namespace Warp9.Model
             archive?.Dispose();
         }
 
-        public IProjectArchive? SwitchToSavedArchive(IProjectArchive newArchive)
+        public IProjectArchive? SwitchToSavedArchive(IProjectArchive? newArchive)
         {
             IProjectArchive? oldArchive = archive;
             archive = newArchive;

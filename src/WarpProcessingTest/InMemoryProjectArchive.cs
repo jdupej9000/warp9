@@ -27,6 +27,7 @@ namespace Warp9.Test
         public bool IsOpen { get; private set; } = true;
 
         public string WorkingDirectory => string.Empty;
+        public string? FileName => null;
 
         public void Close()
         {
