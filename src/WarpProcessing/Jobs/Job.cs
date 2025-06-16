@@ -28,11 +28,11 @@ namespace Warp9.Jobs
 
         int nextItemIdx = 0, itemsDone = 0, itemsFailed = 0;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         public string Title { get; private init; }
-        public string StatusText { get; private set; } = "Waiting";
+        public string StatusText { get => LastStartedItem?.Title ?? string.Empty; }
         public IJobContext? Context { get; private set; }
+        public IJobItem? LastStartedItem { get; private set; }
+        public int NumConcurrentItems => runningJobs.Count;
         public int NumItems => jobItems.Count;
         public int NumItemsDone => itemsDone;
         public int NumItemsFailed => itemsFailed;
@@ -104,6 +104,7 @@ namespace Warp9.Jobs
                 JobItemStatus itemStatus;
                 try
                 {
+                    LastStartedItem = item;
                     itemStatus = item.Run(this, ctx);
                 }
                 catch (Exception)
@@ -120,7 +121,13 @@ namespace Warp9.Jobs
                     runningJobs.Remove(itemIndex);
                 }
 
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumItemsDone)));
+                if (status != JobExecutionStatus.Failed &&
+                    runningJobs.Count == 0 &&
+                    nextItemIdx >= jobItems.Count)
+                {
+                    status = JobExecutionStatus.Done;
+                }
+
                 return true;
             }
 

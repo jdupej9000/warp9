@@ -75,7 +75,7 @@
     </ControlTemplate>
 
     <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockTitle">
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="Padding" Value="4,4,4,4" />
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.5" />
@@ -1506,10 +1506,10 @@
     </Style>
 
     <Style TargetType="{x:Type StatusBar}">
-        <Setter Property="Background" Value="{DynamicResource Window.Static.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.Background}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource StatusBar.Static.Border}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{DynamicResource Window.Static.Foreground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}"/>
         <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.StatusFontFamilyKey}}"/>
         <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.StatusFontSizeKey}}"/>
         <Setter Property="FontStyle" Value="{DynamicResource {x:Static SystemFonts.StatusFontStyleKey}}"/>

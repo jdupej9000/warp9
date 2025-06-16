@@ -48,7 +48,25 @@
     </Window.Resources>
 
     <DockPanel>
-        <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Brush.BorderDark}" Margin="0">
+        <StatusBar DockPanel.Dock="Bottom" Height="28">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="250" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0">
+                <TextBlock x:Name="lblStatusMain" Text="Ready." Padding="4,0,0,0" />
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="1">
+                <ProgressBar x:Name="prbStatusProgress" Height="18" Width="240" />
+            </StatusBarItem>
+        </StatusBar>
+        <Border BorderThickness="0,1,0,1" BorderBrush="{DynamicResource Brush.BorderDark}" Margin="0">
         <Grid x:Name="gridMain" SnapsToDevicePixels="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
@@ -56,40 +74,16 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-                <ScrollViewer Background="{DynamicResource Brush.BackgroundDark}" >
-                    <StackPanel Orientation="Vertical" Background="{DynamicResource  Brush.BackgroundDark}">
-                        <Expander Header="PROJECT" DockPanel.Dock="Top" IsExpanded="True" Height="400" Style="{DynamicResource FancyExpander}">
-                            <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
-                            <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                    <TextBlock Text="{Binding Name}"/>
-                                </HierarchicalDataTemplate>
-                            </TreeView.ItemTemplate>
-                        </TreeView>
-                    </Expander>
-
-                    <Expander Header="TASKS" DockPanel.Dock="Top" IsExpanded="False" Height="160" Style="{DynamicResource FancyExpander}">
-                            <ListView x:Name="lstTasks"  Margin="4" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" HorizontalContentAlignment="Stretch">
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="Height" Value="76" />
-                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.ItemTemplate>
-                                    <DataTemplate DataType="jobs:IJob">
-                                        <DockPanel Margin="2">
-                                            <TextBlock Text="{Binding Title, Mode=OneWay}" FontWeight="Bold" DockPanel.Dock="Top" Margin="2" />
-                                            <TextBlock Text="{Binding StatusText, Mode=OneWay}" DockPanel.Dock="Top" Margin="2" />
-                                            <ProgressBar Value="{Binding NumItemsDone, Mode=OneWay}" Maximum="{Binding NumItems, Mode=OneWay}" Height="16" Margin="2"/>
-                                        </DockPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                        </ListView>
-                    </Expander>
-
-                </StackPanel>
-                </ScrollViewer>
+                <DockPanel Background="{DynamicResource Brush.BackgroundDark}" >
+                    <TextBlock Text="PROJECT" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}"/>
+                    <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Name}"/>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </DockPanel>
 
                 <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource Brush.BackgroundDark}" ShowsPreview="True" Width="4" />
 

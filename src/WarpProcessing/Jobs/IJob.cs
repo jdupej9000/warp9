@@ -2,7 +2,7 @@
 
 namespace Warp9.Jobs
 {
-    public interface IJob : INotifyPropertyChanged
+    public interface IJob
     {
         public string Title { get; }
         public string StatusText { get; }

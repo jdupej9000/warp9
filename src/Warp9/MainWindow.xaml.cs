@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using SharpDX.Direct3D11;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,8 +34,7 @@ namespace Warp9
             views.Add(typeof(LogPage), pageLog);
             views.Add(typeof(MatrixViewPage), pageMatrixView);
 
-            lstTasks.ItemsSource = JobEngine.Jobs;
-            JobEngine.JobFinished += JobEngine_JobFinished;
+            JobEngine.ProgressChanged += JobEngine_ProgressChanged;
         }
 
         Warp9Model? model = null;
@@ -90,6 +90,29 @@ namespace Warp9
             }
 
             return true;
+        }
+
+        private void JobEngine_ProgressChanged(object? sender, JobEngineProgress e)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+            { 
+                if (e.IsBusy)
+                {
+                    if(e.NumJobsQueued > 0)
+                        lblStatusMain.Text = $"({e.NumItemsDone} of {e.NumItems} done) {e.CurrentItemText} +{e.NumJobsQueued} queued jobs";
+                    else
+                        lblStatusMain.Text = $"({e.NumItemsDone} of {e.NumItems} done) {e.CurrentItemText}";
+
+                    prbStatusProgress.Visibility = Visibility.Visible;
+                    prbStatusProgress.Value = e.NumItemsDone;
+                    prbStatusProgress.Maximum = e.NumItems;
+                }
+                else
+                {
+                    lblStatusMain.Text = "Ready.";
+                    prbStatusProgress.Visibility = Visibility.Hidden;
+                }
+            }));
         }
 
         private void mnuFileNew_Click(object sender, RoutedEventArgs e)
