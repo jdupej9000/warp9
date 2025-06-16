@@ -111,6 +111,8 @@ namespace Warp9
                 {
                     lblStatusMain.Text = "Ready.";
                     prbStatusProgress.Visibility = Visibility.Hidden;
+
+                    UpdateProjectExplorer();
                 }
             }));
         }
