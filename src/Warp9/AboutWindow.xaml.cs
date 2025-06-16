@@ -28,6 +28,13 @@ namespace Warp9
 
         private void PopulateDebugItems()
         {
+            listDebug.Items.Add(new WarpCoreDebugItem(
+                ".NET version", Environment.Version.ToString()));
+            listDebug.Items.Add(new WarpCoreDebugItem(
+                "OS version", Environment.OSVersion.ToString()));
+            listDebug.Items.Add(new WarpCoreDebugItem(
+                "Machine name", Environment.MachineName));
+
             const int MaxDataLen = 1024;
             StringBuilder sb = new StringBuilder(MaxDataLen);
 
