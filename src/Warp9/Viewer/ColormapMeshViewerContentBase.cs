@@ -21,7 +21,7 @@ namespace Warp9.Viewer
 
         protected RenderItemMesh meshRend = new RenderItemMesh();
         protected RenderItemGrid gridRend = new RenderItemGrid();
-        protected bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true;
+        protected bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true, renderLut = true;
         protected float? valueShow = null;
         protected float valueMin = 0, valueMax = 1;
         protected Lut? lut = null;
@@ -33,6 +33,12 @@ namespace Warp9.Viewer
         public string Name { get; private init; }
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
+
+        public bool RenderLut
+        {
+            get { return renderLut; }
+            set { renderLut = value; UpdateRendererConfig(); OnPropertyChanged("RenderLut"); }
+        }
 
         public bool RenderGrid
         {
@@ -114,7 +120,10 @@ namespace Warp9.Viewer
             if (!renderSmooth)
                 style |= MeshRenderStyle.EstimateNormals;
 
-            style |= MeshRenderStyle.ColorLut;
+            if (renderLut)
+                style |= MeshRenderStyle.ColorLut;
+            else
+                style |= MeshRenderStyle.ColorFlat;
 
             if (valueShow.HasValue)
             {

@@ -123,10 +123,15 @@ namespace Warp9.Viewer
             };
 
             if (data is null)
-                return;
-
-            meshRend.SetValueField(data);
-            sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
+            {
+                RenderLut = false;
+            }
+            else
+            {
+                RenderLut = true;
+                meshRend.SetValueField(data);
+                sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
+            }
         }
     }
 }

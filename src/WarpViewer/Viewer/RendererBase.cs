@@ -85,7 +85,14 @@ namespace Warp9.Viewer
                     {
                         // Update individual or per-drawcall vertex buffers.
                         kvp.Key.UpdateConstantBuffers(kvp.Value);
-                        kvp.Value.Render(ctx, stateCache);
+                        RenderJobExecuteStatus renderStatus = kvp.Value.Render(ctx, stateCache);
+
+#if DEBUG
+    if(renderStatus != RenderJobExecuteStatus.Ok)
+        throw new InvalidOperationException($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
+#else
+                        Console.Error.WriteLine($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
+#endif
                     }
                 }
             }

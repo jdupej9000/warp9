@@ -10,6 +10,13 @@ using Warp9.Data;
 
 namespace Warp9.Viewer
 {
+    public enum RenderJobExecuteStatus
+    {
+        Ok = 0,
+        InvalidResources = 1,
+        InvalidVertexLayout = 2
+    }
+
     public class RenderJob
     {
         public RenderJob(ShaderRegistry shaders, ConstantBufferManager cbuffs)
@@ -74,14 +81,14 @@ namespace Warp9.Viewer
             return true;
         }
 
-        public void Render(DeviceContext ctx, StateCache stateCache)
+        public RenderJobExecuteStatus Render(DeviceContext ctx, StateCache stateCache)
         {
             if (shaderVert is null || shaderPix is null || shaderSignatureVert is null || inputSemanticAssgn is null)
-                throw new InvalidOperationException();
+                return RenderJobExecuteStatus.InvalidResources;
 
             EnsureInputLayout(ctx, shaderSignatureVert, inputSemanticAssgn);
             if (inputLayout is null)
-                throw new InvalidOperationException();
+                return RenderJobExecuteStatus.InvalidVertexLayout;
 
             ctx.InputAssembler.InputLayout = inputLayout;
 
@@ -113,6 +120,8 @@ namespace Warp9.Viewer
 
                 dc.Execute(ctx, stateCache);
             }
+
+            return RenderJobExecuteStatus.Ok;
         }
 
         private void ApplyConstBuffPayloads(DeviceContext ctx, Dictionary<int, ConstantBufferPayload> cbuffs)

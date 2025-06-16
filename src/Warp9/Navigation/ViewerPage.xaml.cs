@@ -76,7 +76,6 @@ namespace Warp9.Navigation
 
         public void AttachViewModel(Warp9ViewModel vm)
         {
-
         }
 
         public void DetachViewModel()
@@ -270,6 +269,7 @@ namespace Warp9.Navigation
             renderer.ClearRenderItems();
 
             frmSidebar.Content = null;
+            this.content = null;
         }
 
         public void DisplayContent(IViewerContent content)

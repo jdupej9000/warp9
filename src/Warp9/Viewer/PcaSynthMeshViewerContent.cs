@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Model;
+using Warp9.Processing;
 
 namespace Warp9.Viewer
 {
@@ -64,8 +65,21 @@ namespace Warp9.Viewer
         long entityKey;
         PcaSynthMeshSideBar sidebar;
         MatrixCollection pcaData;
+        int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
 
+        static readonly List<string> mappedFieldsList = new List<string>
+        {
+            "None", "PC effect"
+        };
+
+        public int MappedFieldIndex
+        {
+            get { return mappedFieldIndex; }
+            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+        }
+
+        public List<string> MappedFieldsList => mappedFieldsList;
         public List<string> PrincipalComponents => CreatePrincipalComponentList().ToList();
         public List<PcaScatterGrouping> Groupings { get; } = new List<PcaScatterGrouping>();
         public int ScatterXAxisPcIndex
@@ -125,7 +139,27 @@ namespace Warp9.Viewer
                 if (entry.Deps.Count == 0 && entry.Payload.MeshCorrExtra is not null)
                     GatherGroupingsFromEntry(entry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey);
             }
+        }
 
+        private void ShowMesh()
+        {
+            // TODO: extract mean mesh with allow list from PCA and show.
+
+           /* if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
+              col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
+                throw new InvalidOperationException();
+
+            PointCloud? meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
+            if (meanPcl is null)
+                return;
+
+            if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
+                throw new InvalidOperationException();
+
+            meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
+            nv = meanPcl.VertexCount;*/
+
+            UpdateRendererConfig();
         }
 
         private void UpdateScatter()
@@ -152,6 +186,25 @@ namespace Warp9.Viewer
                 {
                     yield return string.Format("PC{0} ({1:F1} %)", i + 1, 100.0f * pcaVar[i, 0]);
                 }
+            }
+        }
+
+        private void UpdateMappedField()
+        {
+            float[]? data = mappedFieldIndex switch
+            {
+                _ => null
+            };
+
+            if (data is null)
+            {
+                RenderLut = false;
+            }
+            else
+            {
+                RenderLut = true;
+                meshRend.SetValueField(data);
+                sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
             }
         }
     }
