@@ -50,9 +50,14 @@ namespace Warp9.Viewer
             {
                 throw new InvalidOperationException();
             }
-            
+
             pcaEntry = entry;
             pcaData = pca;
+
+            if (!project.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
+                throw new InvalidOperationException();
+
+            meanMesh = baseMesh;
 
             Groupings.Add(PcaScatterGrouping.None);
             GatherGroupingsFromEntry(pcaEntityKey);
@@ -65,6 +70,7 @@ namespace Warp9.Viewer
         long entityKey;
         PcaSynthMeshSideBar sidebar;
         MatrixCollection pcaData;
+        Mesh meanMesh;
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
 
@@ -102,6 +108,7 @@ namespace Warp9.Viewer
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             base.AttachRenderer(renderer);
+            ShowMesh();
         }
 
         protected override void UpdateRendererConfig()
@@ -145,19 +152,21 @@ namespace Warp9.Viewer
         {
             // TODO: extract mean mesh with allow list from PCA and show.
 
-           /* if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
-              col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
-                throw new InvalidOperationException();
+            meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
 
-            PointCloud? meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
-            if (meanPcl is null)
-                return;
+            /* if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
+               col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
+                 throw new InvalidOperationException();
 
-            if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
-                throw new InvalidOperationException();
+             PointCloud? meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
+             if (meanPcl is null)
+                 return;
 
-            meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
-            nv = meanPcl.VertexCount;*/
+             if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
+                 throw new InvalidOperationException();
+
+             meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
+             nv = meanPcl.VertexCount;*/
 
             UpdateRendererConfig();
         }

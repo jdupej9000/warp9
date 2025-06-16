@@ -125,7 +125,8 @@ namespace Warp9.JobItems
             entry.Payload.PcaExtra = new PcaExtraInfo()
             {
                 Info = Config,
-                DataKey = pcaDataKey
+                DataKey = pcaDataKey,
+                TemplateKey = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey
             };
 
             ctx.WriteLog(ItemIndex, MessageKind.Information,
