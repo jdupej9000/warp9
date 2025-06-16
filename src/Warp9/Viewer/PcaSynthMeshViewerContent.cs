@@ -105,6 +105,12 @@ namespace Warp9.Viewer
             return sidebar;
         }
 
+        public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
+        {
+            // TODO: something with sppi
+            RevertexMesh();
+        }
+
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             base.AttachRenderer(renderer);
@@ -150,25 +156,13 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
-            // TODO: extract mean mesh with allow list from PCA and show.
-
             meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
-
-            /* if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
-               col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
-                 throw new InvalidOperationException();
-
-             PointCloud? meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
-             if (meanPcl is null)
-                 return;
-
-             if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
-                 throw new InvalidOperationException();
-
-             meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
-             nv = meanPcl.VertexCount;*/
-
             UpdateRendererConfig();
+        }
+
+        private void RevertexMesh()
+        {
+
         }
 
         private void UpdateScatter()

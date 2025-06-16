@@ -18,6 +18,8 @@ using Warp9.Utils;
 
 namespace Warp9.Controls
 {
+    public record ScatterPlotPosInfo(int PCX, int PCY, float valueX, float valueY);
+
     /// <summary>
     /// Interaction logic for ScatterPlotControl.xaml
     /// </summary>
@@ -53,6 +55,8 @@ namespace Warp9.Controls
         public Brush PlotBackground { get; set; } = new SolidColorBrush();
         public Brush PlotBorder { get; set; } = new SolidColorBrush();
         public Brush PlotForeground { get; set; } = new SolidColorBrush();
+
+        public event EventHandler<ScatterPlotPosInfo>? PlotPosChanged;
 
         public void SetData(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
         {

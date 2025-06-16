@@ -54,5 +54,10 @@ namespace Warp9.Viewer
         {
             Content.MeshScaleHover(e);
         }
+
+        private void scatPca_PlotPosChanged(object sender, Controls.ScatterPlotPosInfo e)
+        {
+            Content.ScatterPlotPosChanged(e);
+        }
     }
 }
