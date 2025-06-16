@@ -53,6 +53,7 @@
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="250" />
                         </Grid.ColumnDefinitions>
@@ -60,10 +61,13 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="0">
-                <TextBlock x:Name="lblStatusMain" Text="Ready." Padding="4,0,0,0" />
+                <Button Content="{DynamicResource Log}" Style="{DynamicResource ControlButton}" Click="btnShowLog_Click" Width="22" Height="22" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="1">
-                <ProgressBar x:Name="prbStatusProgress" Height="18" Width="240" />
+                <TextBlock x:Name="lblStatusMain" Text="Ready." Padding="4,0,0,0" />
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2">
+                <ProgressBar x:Name="prbStatusProgress" Height="18" Width="240" Visibility="Hidden" />
             </StatusBarItem>
         </StatusBar>
         <Border BorderThickness="0,1,0,1" BorderBrush="{DynamicResource Brush.BorderDark}" Margin="0">

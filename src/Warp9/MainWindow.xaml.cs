@@ -266,11 +266,7 @@ namespace Warp9
                 frameMain.NavigationService.Navigate(viewer);
                 item.ConfigurePresenter(viewer);
             }
-            else
-            {
-                frameMain.NavigationService.Navigate(pageLog);
-            }
-
+            
             e.Handled = true;
         }
 
@@ -330,9 +326,9 @@ namespace Warp9
             wnd.ShowDialog();
         }
 
-        private void JobEngine_JobFinished(object? sender, IJob e)
+        private void btnShowLog_Click(object sender, RoutedEventArgs e)
         {
-            UpdateProjectExplorer();
+            frameMain.NavigationService.Navigate(pageLog);
         }
     }
 }
