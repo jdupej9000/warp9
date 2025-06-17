@@ -1,5 +1,6 @@
 ﻿using SharpDX.Direct3D11;
 using System.Drawing;
+using System.Text.Json.Serialization;
 using Warp9.Data;
 using Warp9.Viewer;
 
@@ -7,7 +8,7 @@ namespace Warp9.Test
 {
     public enum CubeRenderStyle
     {
-        NoFill,
+        NoFillExploded,
         FlatColor,
         ColorArray,
         Texture,
@@ -91,6 +92,51 @@ namespace Warp9.Test
             -1,1,-1,0,0,-1
         };
 
+        public readonly static ShaderSpec GsExplode = ShaderSpec.Create(
+           "GsExplode",
+           ShaderType.Geometry,
+           [], @"
+struct GsInput
+{
+   float4 pos : SV_POSITION;
+   float3 posw : POSITION1;
+   float4 color : COLOR0;
+   float2 tex0 : TEXCOORD0;
+   float3 normal : NORMAL;
+   float value : TEXCOORD1;
+};
+
+struct GsOutput
+{
+   float4 pos : SV_POSITION;
+   float3 posw : POSITION1;
+   float4 color : COLOR0;
+   float2 tex0 : TEXCOORD0;
+   float3 normal : NORMAL;
+   float value : TEXCOORD1;
+};
+
+[maxvertexcount(3)]
+void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
+{
+    GsOutput output;
+    
+    float3 tri_norm = normalize(cross((input[1].pos - input[0].pos).xyz, (input[2].pos - input[0].pos).xyz));
+
+    [unroll(3)]
+    for (int i = 0; i < 3; ++i)
+    {
+        output.pos = input[i].pos + float4(tri_norm, 0);
+        output.posw = input[i].posw;
+        output.color = input[i].color;
+        output.tex0 = input[i].tex0;
+        output.normal = input[i].normal;
+        output.value = input[i].value;
+        outStream.Append(output);
+    }
+}
+");
+
         private CubeRenderStyle style = CubeRenderStyle.FlatColor;
         private Color color = Color.Green;
         private bool wireframe = false, instances = false, valueNotch = false, alphaBlend = false;
@@ -159,6 +205,9 @@ namespace Warp9.Test
 
             job.SetShader(ctx, ShaderType.Vertex, instances ? "VsDefaultInstanced" : "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
+
+            if(style == CubeRenderStyle.NoFillExploded)
+                job.SetShader(ctx, ShaderType.Geometry, "GsExplode");
 
             if (isTriangleSoup)
             {
@@ -231,7 +280,7 @@ namespace Warp9.Test
             dcMain.RastMode = RasterizerMode.NoCull;
             dcMain.BlendMode = alphaBlend ? BlendMode.AlphaBlend : BlendMode.Default;
 
-            if (style == CubeRenderStyle.NoFill)
+            if (style == CubeRenderStyle.NoFillExploded)
             {
                 dcWire.RastMode = RasterizerMode.Wireframe;
                 dcWire.DepthMode = DepthMode.NoDepth;
@@ -266,7 +315,7 @@ namespace Warp9.Test
 
                 switch (style)
                 {
-                    case CubeRenderStyle.NoFill:
+                    case CubeRenderStyle.NoFillExploded:
                     case CubeRenderStyle.FlatColor:
                         pshConst.flags = StockShaders.PshConst_Flags_ColorFlat;
                         break;
@@ -302,7 +351,7 @@ namespace Warp9.Test
                     pshConst.flags |= StockShaders.PshConst_Flags_ValueLevel;
 
                 job.TrySetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
-                job.TryEnableDrawCall(0, style != CubeRenderStyle.NoFill);
+                job.TryEnableDrawCall(0, style != CubeRenderStyle.NoFillExploded);
                 job.TryEnableDrawCall(1, wireframe);
 
                 buffDirty = false;
