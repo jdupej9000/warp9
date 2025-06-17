@@ -269,7 +269,7 @@ void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
 
             if (Style == CubeRenderStyle.Texture)
             {
-                job.SetTexture(ctx, 0, new Bitmap(@"..\..\test\data\_tex_nebula_256.png"));
+                job.SetTexture(ctx, 0, new Bitmap(@"..\..\test\data\_lena256-rgb.png"));
             }
             else if (Style == CubeRenderStyle.Scale || Style == CubeRenderStyle.ScalePhongEstNormals)
             {

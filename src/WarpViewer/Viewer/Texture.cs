@@ -85,6 +85,35 @@ namespace Warp9.Viewer
 
         internal static Texture Create(Device device, Bitmap bitmap, bool dynamic=false)
         {
+            SharpDX.DXGI.Format dxgiFmt = SharpDX.DXGI.Format.Unknown;
+            Bitmap bmp = bitmap;
+            bool destroy = false;
+            switch (bmp.PixelFormat)
+            {
+                case PixelFormat.Format24bppRgb:
+                    bmp = new Bitmap(bmp);
+                    destroy = true;
+                    bmp.ConvertFormat(PixelFormat.Format32bppRgb);
+                    dxgiFmt = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
+                    break;
+
+                case PixelFormat.Format32bppArgb:
+                case PixelFormat.Format32bppRgb:
+                    dxgiFmt = SharpDX.DXGI.Format.R8G8B8A8_UNorm;
+                    break;
+
+                case PixelFormat.Format8bppIndexed:
+                    dxgiFmt = SharpDX.DXGI.Format.R8_UNorm;
+                    break;
+
+                case PixelFormat.Format16bppGrayScale:
+                    dxgiFmt = SharpDX.DXGI.Format.R16_UNorm;
+                    break;
+
+                default:
+                    throw new ArgumentException("Bitmap pixel format is not supported.");
+            }
+
             Texture2DDescription desc = new Texture2DDescription()
             {
                 Width = bitmap.Width,
@@ -96,17 +125,20 @@ namespace Warp9.Viewer
                 OptionFlags = ResourceOptionFlags.None,
                 SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
                 Usage = dynamic ? ResourceUsage.Dynamic : ResourceUsage.Default,
-                Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm
+                Format = dxgiFmt
             };
 
-            BitmapData bitmapData = bitmap.LockBits(
-                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                ImageLockMode.ReadWrite, bitmap.PixelFormat);
+            BitmapData bitmapData = bmp.LockBits(
+                new Rectangle(0, 0, bmp.Width, bmp.Height),
+                ImageLockMode.ReadWrite, bmp.PixelFormat);
 
             DataRectangle rect = new DataRectangle(bitmapData.Scan0, bitmapData.Stride);
             Texture2D tex = new Texture2D(device, desc, rect);
 
-            bitmap.UnlockBits(bitmapData);
+            bmp.UnlockBits(bitmapData);
+
+            if (destroy)
+                bmp.Dispose();
 
             ShaderResourceView srv = new ShaderResourceView(device, tex);
             return new Texture(tex, srv, desc);
