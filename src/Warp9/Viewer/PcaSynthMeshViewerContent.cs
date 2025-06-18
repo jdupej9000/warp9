@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Model;
+using Warp9.Native;
 using Warp9.Processing;
 
 namespace Warp9.Viewer
@@ -57,7 +60,14 @@ namespace Warp9.Viewer
             if (!project.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
                 throw new InvalidOperationException();
 
+            Pca? pcaObj = Pca.FromMatrixCollection(pca);
+            if(pcaObj is null)
+                throw new InvalidOperationException();
+
+            pcaObject = pcaObj;
             meanMesh = baseMesh;
+            tempSoa = new float[pcaObj.Dimension];
+            tempAos = new byte[pcaObj.Dimension * 4];
 
             Groupings.Add(PcaScatterGrouping.None);
             GatherGroupingsFromEntry(pcaEntityKey);
@@ -67,12 +77,15 @@ namespace Warp9.Viewer
 
         Project project;
         ProjectEntry pcaEntry;
+        Pca pcaObject;
         long entityKey;
         PcaSynthMeshSideBar sidebar;
         MatrixCollection pcaData;
         Mesh meanMesh;
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
+        float[] tempSoa;
+        byte[] tempAos;
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -107,14 +120,18 @@ namespace Warp9.Viewer
 
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
-            // TODO: something with sppi
-            RevertexMesh();
+            pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
+            MeshUtils.CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(tempAos.AsSpan()), 
+                MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
+            meshRend.UpdatePosData(tempAos);
+            UpdateViewer();
         }
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             base.AttachRenderer(renderer);
             ShowMesh();
+            UpdateMappedField();
         }
 
         protected override void UpdateRendererConfig()
@@ -156,20 +173,16 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
+            meshRend.UseDynamicArrays = true;
             meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
             UpdateRendererConfig();
-        }
-
-        private void RevertexMesh()
-        {
-
         }
 
         private void UpdateScatter()
         {
             if (pcaData.TryGetMatrix(Native.Pca.KeyScores, out Matrix<float>? pcaScores) &&
               pcaScores is not null &&
-              indexPcScatterX >=0 && indexPcScatterX < pcaScores.Columns &&
+              indexPcScatterX >= 0 && indexPcScatterX < pcaScores.Columns &&
               indexPcScatterY >= 0 && indexPcScatterY < pcaScores.Columns)
             {
                 sidebar.UpdateScatterplot(pcaScores.GetColumn(indexPcScatterX), pcaScores.GetColumn(indexPcScatterY));

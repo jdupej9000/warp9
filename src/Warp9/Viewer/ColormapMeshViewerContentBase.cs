@@ -100,6 +100,12 @@ namespace Warp9.Viewer
             return null;
         }
 
+        public void UpdateViewer()
+        {
+            ViewUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+
         public void ViewportResized(System.Drawing.Size size)
         {
         }
@@ -107,7 +113,7 @@ namespace Warp9.Viewer
         {
             valueShow = value;
             UpdateRendererStyle();
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
+            UpdateViewer();
         }
 
         protected virtual void UpdateRendererStyle()
@@ -165,7 +171,7 @@ namespace Warp9.Viewer
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
+            UpdateViewer();
         }
 
         public override string ToString()

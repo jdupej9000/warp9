@@ -52,6 +52,23 @@ namespace Warp9.Native
             return pcsMean.AsSpan().Slice((index + 1) * Dimension, Dimension);
         }
 
+        public void Synthesize(Span<float> result, params (int, float)[] scores)
+        {
+            int d = Math.Min(result.Length, Dimension);
+
+            for (int i = 0; i < d; i++)
+                result[i] = pcsMean[i]; // initialize with mean
+
+            foreach ((int, float) s in scores)
+            {
+                int offs = (s.Item1 + 1) * Dimension;
+                float v = s.Item2;
+
+                for (int i = 0; i < d; i++)
+                    result[i] += v * pcsMean[offs + i];
+            }
+        }
+
         public bool TryGetScores(ReadOnlySpan<float> data, Span<float> scores)
         {
             if (data.Length < Dimension || scores.Length < NumPcs)
@@ -60,7 +77,6 @@ namespace Warp9.Native
             WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
             unsafe
             {
-               
                 fixed (int* pallow = &MemoryMarshal.GetReference(allow.AsSpan()))
                 fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
                 fixed (float* pdata = &MemoryMarshal.GetReference(data))
@@ -161,7 +177,34 @@ namespace Warp9.Native
 
         public static Pca? FromMatrixCollection(MatrixCollection mc)
         {
-            // TODO
+            if (mc.TryGetMatrix(KeyPcsMean, out Matrix<float>? matPcsMean) &&
+                matPcsMean is not null &&
+                mc.TryGetMatrix(KeyPcVariance, out Matrix<float>? matVar) &&
+                matVar is not null)
+            {
+                PcaInfo info = new PcaInfo()
+                {
+                    m = matPcsMean.Rows,
+                    n = matPcsMean.Columns - 1,
+                    npcs = mc.Count
+                };
+
+                int[]? allow = null;
+                if (mc.TryGetMatrix(KeyAllow, out Matrix<int>? matAllow) && matAllow is not null)
+                    allow = matAllow.Data;
+
+                if (allow is null)
+                {
+                    int numAllow = (matPcsMean.Rows + 31) / 32;
+                    int[] allowBitField = new int[numAllow];
+                    for (int i = 0; i < numAllow; i++)
+                        allowBitField[i] = -1;
+                    allow = allowBitField;
+                }
+
+                return new Pca(PcaSourceDataKind.VertexPositions, matPcsMean.Data, matVar.Data, allow, info);
+            }
+
             return null;
         }
 

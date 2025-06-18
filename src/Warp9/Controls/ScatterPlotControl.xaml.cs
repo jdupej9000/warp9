@@ -18,7 +18,7 @@ using Warp9.Utils;
 
 namespace Warp9.Controls
 {
-    public record ScatterPlotPosInfo(int PCX, int PCY, float valueX, float valueY);
+    public record ScatterPlotPosInfo(Vector2 Pos);
 
     /// <summary>
     /// Interaction logic for ScatterPlotControl.xaml
@@ -51,6 +51,10 @@ namespace Warp9.Controls
         Vector2[]? scatterPoints = null;
         Vector2 RangeX { get; set; } = new Vector2(-1, 1);
         Vector2 RangeY { get; set; } = new Vector2(-1, 1);
+        Vector2 Range0 => new Vector2(RangeX.X, RangeY.X);
+        Vector2 Range1 => new Vector2(RangeX.Y, RangeY.Y);
+
+        bool dragging = false;
 
         public Brush PlotBackground { get; set; } = new SolidColorBrush();
         public Brush PlotBorder { get; set; } = new SolidColorBrush();
@@ -63,6 +67,7 @@ namespace Warp9.Controls
             MakeRange(x, y);
             scatterPoints = MakeScatterPlot(x, y);
             InvalidateVisual();
+            NotifyPosChange(0.5f * new Vector2((float)ActualWidth, (float)ActualHeight));
         }
 
         protected override void OnRender(DrawingContext ctx)
@@ -79,9 +84,8 @@ namespace Warp9.Controls
             Pen borderPen = new Pen(borderBrush, 1);
             Pen dotsPen = new Pen(dots, 1);
 
-
             ctx.DrawRectangle(fill, borderPen,
-                new Rect(0, 0, ActualWidth, ActualHeight));
+                new Rect(0, 0, ActualWidth, ActualHeight-1));
 
             if (scatterGeometry is not null)
                 ctx.DrawGeometry(borderBrush, borderPen, scatterGeometry);
@@ -93,17 +97,31 @@ namespace Warp9.Controls
             }
         }
 
+        private void NotifyPosChange(Vector2 posScreen)
+        {
+            Vector2 xy = Range0 + posScreen / new Vector2((float)ActualWidth, (float)ActualHeight) * (Range1 - Range0);
+            PlotPosChanged?.Invoke(this, new ScatterPlotPosInfo(xy));
+        }
+
+
         private void Control_MouseMove(object sender, MouseEventArgs e)
         {
-           
+            if (dragging)
+            {
+                Point pos = e.MouseDevice.GetPosition(this);
+                NotifyPosChange(new Vector2((float)pos.X, (float)pos.Y));
+            }
         }
 
         private void Control_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if(e.LeftButton == MouseButtonState.Pressed)
+                dragging = true;
         }
 
         private void Control_MouseLeave(object sender, MouseEventArgs e)
         {
+            dragging = false;
         }
 
 
