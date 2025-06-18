@@ -55,8 +55,7 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="28" />
-                            <RowDefinition Height="28" />
-                            <RowDefinition Height="28"/>
+                            <RowDefinition Height="28" />                            
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="X PC" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" />
@@ -69,18 +68,19 @@
                                   ItemsSource="{Binding Path=PrincipalComponents}" 
                                   SelectedIndex="{Binding Path=ScatterYAxisPcIndex, Mode=TwoWay}"/>
 
-                        <TextBlock Text="Group by" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" />
+                        <!--<TextBlock Text="Group by" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" />
                         <ComboBox Height="24" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" 
-                                   ItemsSource="{Binding Path=Groupings}"/>
+                                   ItemsSource="{Binding Path=Groupings}"/> -->
                     </Grid>
 
                     <ctls:ScatterPlotControl x:Name="scatPca" Width="200" Height="200" HorizontalAlignment="Left" 
-                                    Margin="0,4,0,4"
+                                    Margin="0,4,0,0"
                                     SnapsToDevicePixels="True"
                                     PlotPosChanged="scatPca_PlotPosChanged"    
                                     PlotBackground="{DynamicResource Brush.Background}"
                                     PlotBorder="{DynamicResource Brush.Border}"
-                                    PlotForeground="{DynamicResource Brush.Foreground}" />
+                                    PlotForeground="{DynamicResource Brush.Foreground}"
+                                    PlotHot="{DynamicResource Brush.BackgroundHot}"/>
                 </StackPanel>
             </TabItem>
 

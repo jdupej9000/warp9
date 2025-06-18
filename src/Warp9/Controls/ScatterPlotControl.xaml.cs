@@ -41,10 +41,16 @@ namespace Warp9.Controls
                 defaultValue: new SolidColorBrush(),
                 flags: FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public static readonly DependencyProperty PlotHotProperty = DependencyProperty.Register(
+           "PlotHot", typeof(Brush), typeof(ScatterPlotControl), new FrameworkPropertyMetadata(
+               defaultValue: new SolidColorBrush(),
+               flags: FrameworkPropertyMetadataOptions.AffectsRender));
+
 
         public ScatterPlotControl()
         {
             InitializeComponent();
+            pxPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         }
 
         StreamGeometry? scatterGeometry = null;
@@ -53,8 +59,10 @@ namespace Warp9.Controls
         Vector2 RangeY { get; set; } = new Vector2(-1, 1);
         Vector2 Range0 => new Vector2(RangeX.X, RangeY.X);
         Vector2 Range1 => new Vector2(RangeX.Y, RangeY.Y);
+        double pxPerDip = 1;
 
         bool dragging = false;
+        Vector2? lastHot = null;
 
         public Brush PlotBackground
         {
@@ -73,6 +81,12 @@ namespace Warp9.Controls
             set { SetValue(PlotForegroundProperty, value); }
         }
 
+        public Brush PlotHot
+        {
+            get { return (Brush)GetValue(PlotHotProperty); }
+            set { SetValue(PlotHotProperty, value); }
+        }
+
         public event EventHandler<ScatterPlotPosInfo>? PlotPosChanged;
 
         public void SetData(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
@@ -81,6 +95,7 @@ namespace Warp9.Controls
             scatterPoints = MakeScatterPlot(x, y);
             InvalidateVisual();
             NotifyPosChange(0.5f * new Vector2((float)ActualWidth, (float)ActualHeight));
+            lastHot = null;
         }
 
         protected override void OnRender(DrawingContext ctx)
@@ -100,28 +115,69 @@ namespace Warp9.Controls
             ctx.DrawRoundedRectangle(fill, borderPen,
                 new Rect(0, 0, ActualWidth, ActualHeight),
                 4, 4);
-            //ctx.DrawRectangle(fill, borderPen,
-            //    new Rect(0, 0, ActualWidth, ActualHeight-1));
-
+           
             if (scatterGeometry is not null)
                 ctx.DrawGeometry(borderBrush, borderPen, scatterGeometry);
 
+            double textHeight = 10;
+            float px = 0, py = 0;
             if (RangeX.X < 0 && RangeX.Y > 0)
             {
-                float px = (float)(-RangeX.X / (RangeX.Y - RangeX.X) * ActualWidth);
-                ctx.DrawLine(borderPen, new Point(px, 0), new Point(px, ActualHeight)); 
+                px = (float)(-RangeX.X / (RangeX.Y - RangeX.X) * ActualWidth);
+                ctx.DrawLine(borderPen, new Point(px, 0), new Point(px, ActualHeight));
             }
-
+            
             if (RangeY.X < 0 && RangeY.Y > 0)
             {
-                float py = (float)(-RangeY.X / (RangeY.Y - RangeY.X) * ActualHeight);
+                py = (float)(-RangeY.X / (RangeY.Y - RangeY.X) * ActualHeight);
                 ctx.DrawLine(borderPen, new Point(0, py), new Point(ActualWidth, py));
             }
+
+            ctx.DrawText(new FormattedText(RangeX.X.ToString("F1"), CultureInfo.CurrentCulture,
+                  FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyles.Normal, FontWeights.Light, FontStretches.Normal),
+                  textHeight, dots, pxPerDip), new Point(0, py));
+
+            FormattedText t1 = new FormattedText(RangeX.Y.ToString("F1"), CultureInfo.CurrentCulture,
+               FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyles.Normal, FontWeights.Light, FontStretches.Normal),
+               textHeight, dots, pxPerDip);
+            ctx.DrawText(t1, new Point(ActualWidth - t1.Width, py));
+
+            ctx.DrawText(new FormattedText(RangeY.X.ToString("F1"), CultureInfo.CurrentCulture,
+                 FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyles.Normal, FontWeights.Light, FontStretches.Normal),
+                 textHeight, dots, pxPerDip), new Point(px, 0));
+
+            FormattedText t2 = new FormattedText(RangeY.Y.ToString("F1"), CultureInfo.CurrentCulture,
+               FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyles.Normal, FontWeights.Light, FontStretches.Normal),
+               textHeight, dots, pxPerDip);
+            ctx.DrawText(t2, new Point(px, ActualHeight - t2.Height));
 
             if (scatterPoints is not null)
             {
                 foreach (Vector2 pt in scatterPoints)
-                    ctx.DrawRectangle(dots, dotsPen, new Rect(pt.X - 0.5f, pt.Y - 0.5f, 1, 1));
+                    ctx.DrawRectangle(borderBrush, borderPen, new Rect(pt.X - 0.5f, pt.Y - 0.5f, 1, 1));
+            }
+
+            if (lastHot is not null)
+            {
+                Brush brushHot = PlotHot;
+                Pen penHot = new Pen(brushHot, 1);
+
+                Vector2 p = (lastHot.Value - Range0) / (Range1 - Range0) * new Vector2((float)ActualWidth, (float)ActualHeight);
+                ctx.DrawRectangle(brushHot, penHot, new Rect(p.X - 2f, p.Y - 2f, 5, 5));
+
+                FormattedText t3 = new FormattedText(
+                    string.Format("{0:F1}, {1:F1}", lastHot.Value.X, lastHot.Value.Y), 
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, 
+                    new Typeface(FontFamily, FontStyles.Normal, FontWeights.Regular, FontStretches.Normal),
+                    12,
+                    brushHot, 
+                    pxPerDip);
+
+                if(p.X + t3.Width > ActualWidth)
+                    ctx.DrawText(t3, new Point(p.X - 3 - t3.Width, p.Y + 3));
+                else
+                    ctx.DrawText(t3, new Point(p.X + 3, p.Y + 3));
             }
         }
 
@@ -129,6 +185,7 @@ namespace Warp9.Controls
         {
             Vector2 xy = Range0 + posScreen / new Vector2((float)ActualWidth, (float)ActualHeight) * (Range1 - Range0);
             PlotPosChanged?.Invoke(this, new ScatterPlotPosInfo(xy));
+            lastHot = xy;
         }
 
 
@@ -138,7 +195,11 @@ namespace Warp9.Controls
             {
                 Point pos = e.MouseDevice.GetPosition(this);
                 NotifyPosChange(new Vector2((float)pos.X, (float)pos.Y));
+                InvalidateVisual();
             }
+
+            if (e.LeftButton == MouseButtonState.Released)
+                dragging = false;
         }
 
         private void Control_MouseDown(object sender, MouseButtonEventArgs e)
