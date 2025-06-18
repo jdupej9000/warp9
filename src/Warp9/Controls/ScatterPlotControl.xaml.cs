@@ -56,9 +56,22 @@ namespace Warp9.Controls
 
         bool dragging = false;
 
-        public Brush PlotBackground { get; set; } = new SolidColorBrush();
-        public Brush PlotBorder { get; set; } = new SolidColorBrush();
-        public Brush PlotForeground { get; set; } = new SolidColorBrush();
+        public Brush PlotBackground
+        {
+            get { return (Brush)GetValue(PlotBackgroundProperty); }
+            set { SetValue(PlotBackgroundProperty, value); }
+        }
+
+        public Brush PlotBorder
+        {
+            get { return (Brush)GetValue(PlotBorderProperty); }
+            set { SetValue(PlotBorderProperty, value); }
+        }
+        public Brush PlotForeground
+        {
+            get { return (Brush)GetValue(PlotForegroundProperty); }
+            set { SetValue(PlotForegroundProperty, value); }
+        }
 
         public event EventHandler<ScatterPlotPosInfo>? PlotPosChanged;
 
@@ -73,22 +86,37 @@ namespace Warp9.Controls
         protected override void OnRender(DrawingContext ctx)
         {
             //base.OnRender(ctx);
-            //Brush fill = PlotBackground ?? Background;
-            //Brush borderBrush = PlotBorder ?? BorderBrush;
-            // Brush dots = PlotForeground ?? new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            Brush fill = PlotBackground;
+            Brush borderBrush = PlotBorder;
+            Brush dots = PlotForeground;
 
-            Brush fill = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-            Brush borderBrush = new SolidColorBrush(Color.FromRgb(128, 128, 128));
-            Brush dots = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            //Brush fill = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+            //Brush borderBrush = new SolidColorBrush(Color.FromRgb(128, 128, 128));
+            //Brush dots = new SolidColorBrush(Color.FromRgb(255, 255, 255));
 
             Pen borderPen = new Pen(borderBrush, 1);
             Pen dotsPen = new Pen(dots, 1);
 
-            ctx.DrawRectangle(fill, borderPen,
-                new Rect(0, 0, ActualWidth, ActualHeight-1));
+            ctx.DrawRoundedRectangle(fill, borderPen,
+                new Rect(0, 0, ActualWidth, ActualHeight),
+                4, 4);
+            //ctx.DrawRectangle(fill, borderPen,
+            //    new Rect(0, 0, ActualWidth, ActualHeight-1));
 
             if (scatterGeometry is not null)
                 ctx.DrawGeometry(borderBrush, borderPen, scatterGeometry);
+
+            if (RangeX.X < 0 && RangeX.Y > 0)
+            {
+                float px = (float)(-RangeX.X / (RangeX.Y - RangeX.X) * ActualWidth);
+                ctx.DrawLine(borderPen, new Point(px, 0), new Point(px, ActualHeight)); 
+            }
+
+            if (RangeY.X < 0 && RangeY.Y > 0)
+            {
+                float py = (float)(-RangeY.X / (RangeY.Y - RangeY.X) * ActualHeight);
+                ctx.DrawLine(borderPen, new Point(0, py), new Point(ActualWidth, py));
+            }
 
             if (scatterPoints is not null)
             {

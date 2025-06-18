@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Warp9.Viewer"
       xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="218"
+      d:DesignHeight="650" d:DesignWidth="218"
       Title="PcaSynthMeshSideBar">
 
     <StackPanel Orientation="Vertical" Margin="8">
@@ -48,7 +48,7 @@
             <TabItem Header="Scatter" Background="Transparent">
                 <StackPanel Orientation="Vertical">
                     <Label Height="4" />
-                    <Grid>
+                    <Grid SnapsToDevicePixels="True">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="60" />
                             <ColumnDefinition />
@@ -75,10 +75,11 @@
                     </Grid>
 
                     <ctls:ScatterPlotControl x:Name="scatPca" Width="200" Height="200" HorizontalAlignment="Left" 
+                                    Margin="0,4,0,4"
                                     SnapsToDevicePixels="True"
                                     PlotPosChanged="scatPca_PlotPosChanged"    
                                     PlotBackground="{DynamicResource Brush.Background}"
-                                    PlotBorder="{DynamicResource Brush.BorderDark}"
+                                    PlotBorder="{DynamicResource Brush.Border}"
                                     PlotForeground="{DynamicResource Brush.Foreground}" />
                 </StackPanel>
             </TabItem>
