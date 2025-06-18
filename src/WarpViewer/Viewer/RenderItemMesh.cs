@@ -3,8 +3,10 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Warp9.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Warp9.Viewer
 {
@@ -32,7 +34,9 @@ namespace Warp9.Viewer
 
         Mesh? mesh;
         Lut? lut;
+        bool useDynamicArrays = false;
         float[]? valueBuffer;
+        ReadOnlyMemory<byte> posUpdateDyn;
         float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
         Matrix4x4 modelMatrix = Matrix4x4.Identity;
@@ -89,6 +93,12 @@ namespace Warp9.Viewer
             set { valueMax = value; constBuffDirty = true; }
         }
 
+        public bool UseDynamicArrays
+        {
+            get { return useDynamicArrays; }
+            set { useDynamicArrays = value; useDynamicArrays = true; }
+        }
+
         public Mesh? Mesh
         {
             get { return mesh; }
@@ -136,6 +146,24 @@ namespace Warp9.Viewer
             Commit();
         }
 
+        public void UpdatePosData(ReadOnlyMemory<byte> newPos)
+        {
+            posUpdateDyn = newPos;
+            Commit(RenderJobInvalidation.DynamicData);
+        }
+
+        protected override void PartialUpdateJobInternal(RenderJobInvalidation kind, RenderJob job, DeviceContext ctx)
+        {
+            if (kind == RenderJobInvalidation.DynamicData)
+            {
+                // TODO: lock this
+                if (!posUpdateDyn.IsEmpty)
+                {
+                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdateDyn.Span);
+                }
+            }
+        }
+
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
         {
             if (mesh is null)
@@ -146,14 +174,18 @@ namespace Warp9.Viewer
 
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
-
+                       
             MeshView? posView = mesh.GetView(MeshViewKind.Pos3f);
             if (posView is null)
             {
                 SetError("Mesh has no vertex position view.");
                 return true;
             }
-            job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), false);
+
+            if(posUpdateDyn.IsEmpty)
+                job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
+            else
+                job.SetVertexBuffer(ctx, 0, posUpdateDyn.Span, posView.GetLayout(), useDynamicArrays);
 
             MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
             if (normalView is not null)

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text.Json.Serialization;
 
 namespace Warp9.Viewer
 {
@@ -60,10 +61,24 @@ namespace Warp9.Viewer
                     RenderItemBase ri = kvp.Key;
                     RenderJob? job = kvp.Value;
 
-                    if (job is null || job.NeedsUpdate(ri.Version) || jobsDirty)
+                    RenderJobInvalidation inv = RenderJobInvalidation.None;
+                    if (job is null || jobsDirty)
+                    {
+                        inv = RenderJobInvalidation.Full;
+                    }
+                    else
+                    {
+                        inv = job.NeedsUpdate(ri);
+                    }
+
+                    if (inv == RenderJobInvalidation.Full)
                     {
                         if (ri.UpdateRenderJob(ref job, ctx, shaders, constantBufferManager))
                             updates.Add((ri, job));
+                    }
+                    else if (inv != RenderJobInvalidation.None)
+                    {
+                        ri.PartialUpdate(inv, job!, ctx);
                     }
                 }
 
@@ -87,12 +102,16 @@ namespace Warp9.Viewer
                         kvp.Key.UpdateConstantBuffers(kvp.Value);
                         RenderJobExecuteStatus renderStatus = kvp.Value.Render(ctx, stateCache);
 
+                        if (renderStatus != RenderJobExecuteStatus.Ok)
+                        {
+
 #if DEBUG
     if(renderStatus != RenderJobExecuteStatus.Ok)
         throw new InvalidOperationException($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
 #else
-                        Console.Error.WriteLine($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
+                            Console.Error.WriteLine($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
 #endif
+                        }
                     }
                 }
             }

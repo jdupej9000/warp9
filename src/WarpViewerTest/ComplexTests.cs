@@ -2,6 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Warp9.Data;
 using Warp9.Viewer;
 
@@ -71,6 +73,44 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderTeapotPhongTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderTeapotDynamicTest()
+        {
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            MeshView? viewPos = teapot.GetView(MeshViewKind.Pos3f);
+            if (viewPos == null)
+                Assert.Fail("Cannot get pos array.");
+
+            HeadlessRenderer rend = CreateRenderer();
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = teapot;
+            renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.PhongBlinn | MeshRenderStyle.EstimateNormals;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            renderItemMesh.FillColor = Color.Orange;
+            renderItemMesh.UseDynamicArrays = true;
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present(); // this should look like RenderTeapotPhongTest but orange, we're not interested in this result
+
+            if (!viewPos.AsTypedData(out ReadOnlySpan<Vector3> pos))
+                Assert.Fail("Cannot get typed pos array.");
+
+            int nv = pos.Length;
+            byte[] pos2b = new byte[nv * Marshal.SizeOf<Vector3>()];
+            Span<Vector3> pos2 = MemoryMarshal.Cast<byte, Vector3>(pos2b.AsSpan());
+            for (int i = 0; i < nv; i++)
+                pos2[i] = pos[i] * 1.25f;
+
+            renderItemMesh.UpdatePosData(pos2b);
+            rend.Present(); // now the teapot should appear larger
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotDynamicTest_0.png", bmp);
         }
 
         [TestMethod]

@@ -25,7 +25,7 @@ namespace Warp9.Viewer
             constantBuffersManager = cbuffs;
         }
 
-        uint itemVersion = 0;
+        uint itemVersion = 0, itemDynVersion = 0;
 
         ShaderSignature? shaderSignatureVert;
         PixelShader? shaderPix;
@@ -47,14 +47,28 @@ namespace Warp9.Viewer
 
         bool rebuildInputLayout = false;
 
-        public bool NeedsUpdate(uint masterItemVersion)
+        public RenderJobInvalidation NeedsUpdate(RenderItemBase item)
         {
-            return itemVersion != masterItemVersion;
+            if (item.Version != itemVersion)
+                return RenderJobInvalidation.Full;
+            else if (item.DynamicVersion != itemDynVersion)
+                return RenderJobInvalidation.DynamicData;
+
+            return RenderJobInvalidation.None;
         }
 
-        public void CommitVersion(uint masterItemVersion)
+        public void CommitVersion(RenderJobInvalidation inv, RenderItemBase item)
         {
-            itemVersion = masterItemVersion;
+            switch (inv)
+            {
+                case RenderJobInvalidation.Full:
+                    itemVersion = item.Version;
+                    break;
+
+                case RenderJobInvalidation.DynamicData:
+                    itemDynVersion = item.DynamicVersion;
+                    break;
+            }
         }
 
         public bool TrySetConstBuffer<T>(int drawCallId, int buffId, T value) where T : struct
@@ -222,6 +236,16 @@ namespace Warp9.Viewer
 
                 rebuildInputLayout = true;
             }
+        }
+
+        public bool TryUpdateDynamicVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data)
+        {
+            if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
+            {
+                return rjb.TryUpdateDynamic(ctx, data);
+            }
+
+            return false;
         }
 
         public void SetVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, VertexDataLayout layout, bool isDynamic = false)
