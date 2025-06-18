@@ -21,6 +21,7 @@ namespace Warp9.Test
             r.Shaders.AddShader(StockShaders.VsDefault);
             r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
             r.Shaders.AddShader(StockShaders.PsDefault);
+            r.Shaders.AddShader(RenderItemCube.GsExplode);
 
             RenderItemCube? cube = null;
             if (addCube)
@@ -118,6 +119,23 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorCubeTextureTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void ColorCubeWireframeTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(true);
+            Assert.IsNotNull(cube);
+
+            cube.Style = CubeRenderStyle.NoFillExploded;
+            cube.Color = Color.Gray;
+            cube.AddWireframe = true;
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("ColorCubeWireframeTest_0.png", bmp);
         }
 
         [TestMethod]
