@@ -22,6 +22,7 @@ namespace Warp9.ProjectExplorer
         public ObservableCollection<ProjectItem> Children { get; set; } = new ObservableCollection<ProjectItem>();
         public Warp9ViewModel ParentViewModel { get; init; }
         public Type? PagePresenterType { get; init; }
+        public bool IsNodeExpanded => true;
         public virtual void ConfigurePresenter(IWarp9View pres) { }
 
         public virtual void Update()

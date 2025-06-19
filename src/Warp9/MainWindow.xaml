@@ -81,7 +81,7 @@
                 <DockPanel Background="{DynamicResource Brush.BackgroundDark}" >
                     <TextBlock Text="PROJECT" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}"/>
                     <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
-                        <TreeView.ItemTemplate>
+                        <TreeView.ItemTemplate>                           
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <TextBlock Text="{Binding Name}"/>
                             </HierarchicalDataTemplate>

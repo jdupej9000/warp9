@@ -4561,6 +4561,7 @@
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Foreground" Value="{DynamicResource Control.Text}"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource TreeViewItemFocusVisual}"/>
+        <Setter Property="IsExpanded" Value="{Binding IsNodeExpanded}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TreeViewItem}">                    
