@@ -21,7 +21,9 @@ namespace Warp9.Native
         CPU_NAME = 3,
         OPENBLAS_VERSION = 1000,
         OPENBLAS_CONFIG = 1001,
-        CUDA_DEVICE = 2000
+        CUDA_DEVICE = 2000,
+        CUDA_RUNTIME_VERSION = 2001,
+        CUDA_DRIVER_VERSION = 2002
     }
 
     public enum CpdInitMethod : int

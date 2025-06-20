@@ -15,7 +15,7 @@ using namespace warpcore::impl;
 extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 {
     stringstream ss{};
-    int device;
+    int device, version = 0;
 
     switch (index) {
     case WCINFO_VERSION:
@@ -59,14 +59,30 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
     case WCINFO_CUDA_DEVICE: 
         if (cudaGetDevice(&device) != cudaSuccess) {
             ss << "Cannot get a CUDA device.";
-        }
-        else {
+        } else {
             cudaDeviceProp props;
             cudaGetDeviceProperties(&props, device);
             ss << props.name;
         }
         break;
     
+    case WCINFO_CUDA_RUNTIME_VERSION:
+        if (cudaRuntimeGetVersion(&version) == cudaSuccess && version != 0) {
+            ss << version / 1000 << "." << (version / 10) % 100;
+        } else {
+            ss << "Cannot get version.";
+        }
+        break;
+
+    case WCINFO_CUDA_DRIVER_VERSION:
+        if (cudaDriverGetVersion(&version) == cudaSuccess && version != 0) {
+            ss << version / 1000 << "." << (version / 10) % 100;;
+        }
+        else {
+            ss << "Cannot get version.";
+        }
+        break;
+
     default:
         ss << "Invalid index.";
         break;
