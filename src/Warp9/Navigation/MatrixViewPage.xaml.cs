@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -66,7 +67,18 @@ namespace Warp9.Navigation
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
+            if (tabPages.SelectedItem is TabItem ti &&
+                ti.Tag is MatrixViewProvider mvp)
+            {
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.Filter = "Comma-separated values (*.csv)|*.csv";
 
+                DialogResult res = dlg.ShowDialog();
+                if (res == DialogResult.OK)
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
 
         private void ShowMatrix(MatrixViewProvider mvp)
@@ -81,7 +93,7 @@ namespace Warp9.Navigation
                     Header = mcvp,
                     CanUserReorder = false,
                     IsReadOnly = true,
-                    Binding = new Binding($"[{colIndex}]")
+                    Binding = new System.Windows.Data.Binding($"[{colIndex}]")
                 };
                 dataMain.Columns.Add(dgcol);
                 colIndex++;
