@@ -59,5 +59,10 @@ namespace Warp9.Viewer
         {
             Content.ScatterPlotPosChanged(e);
         }
+
+        private void txtPcsManual_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

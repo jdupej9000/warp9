@@ -85,6 +85,19 @@
             </TabItem>
 
             <TabItem Header="Manual" Background="Transparent">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,8,0,0">
+                        <ToggleButton Content="Invariant culture" Style="{DynamicResource NoBorderToggle}" Padding="4" />
+                        <Button Content="From score..." Style="{DynamicResource ControlButton}" Padding="4" />
+                    </StackPanel>                   
+                    <TextBox x:Name="txtPcsManual" 
+                         Text="100,0,0" 
+                         AcceptsReturn="True"
+                         FontFamily="Cascadia Mono Light"
+                         Padding="4"
+                         Margin="0,8,0,0"
+                         TextChanged="txtPcsManual_TextChanged"/>
+                </DockPanel>
             </TabItem>
         </TabControl>
     </StackPanel>
