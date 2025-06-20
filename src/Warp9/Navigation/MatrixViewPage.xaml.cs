@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.IO;
 using Warp9.Model;
 using Warp9.ProjectExplorer;
 
@@ -76,9 +77,13 @@ namespace Warp9.Navigation
                 DialogResult res = dlg.ShowDialog();
                 if (res == DialogResult.OK)
                 {
-                    throw new NotImplementedException();
+                    TextTableExporter exp = new TextTableExporter(mvp.Matrix);
+                    // TODO: make UI to configure the exporter
+                    exp.ExportAs(dlg.FileName);
                 }
             }
+
+            System.Windows.Forms.MessageBox.Show("Export complete.", "warp9", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ShowMatrix(MatrixViewProvider mvp)

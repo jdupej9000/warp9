@@ -112,7 +112,7 @@ namespace Warp9.JobItems
                 }
 
                 for (int j = 0; j < npcs; j++)
-                    scoresMat[j, i] = scores[j];
+                    scoresMat[i, j] = scores[j];
             }
 
             MatrixCollection mcPca = pca.ToMatrixCollection();

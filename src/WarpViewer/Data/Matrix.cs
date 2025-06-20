@@ -1,9 +1,10 @@
 using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 
 namespace Warp9.Data
 {
-    public abstract class Matrix
+    public abstract class Matrix : ITable
     {
         protected Matrix(int cols, int rows, Type type)
         {
@@ -15,7 +16,12 @@ namespace Warp9.Data
         public int Columns { get; init; }
         public int Rows { get; init; }
         public Type ElementType { get; init; }
+        public bool HasColumnNames => false;
 
+        public Type ColumnType(int idx) => ElementType;
+        public string? ColumnName(int idx) => null;
+
+        public abstract object? GetAt(int col, int row);
         public abstract Span<byte> GetRawData();
     }
 
@@ -49,13 +55,21 @@ namespace Warp9.Data
 
         public T this[int r, int c]
         {
-            get { return data[r + c * Columns]; }
-            set { data[r + c * Columns] = value; }
+            get { return data[r + c * Rows]; }
+            set { data[r + c * Rows] = value; }
         }
 
         public override Span<byte> GetRawData()
         {
             return MemoryMarshal.Cast<T, byte>(data.AsSpan());
+        }
+
+        public override object? GetAt(int col, int row)
+        {
+            if (col < 0 || row < 0 || col >= Columns || row >= Rows)
+                return null;
+
+            return data[row + col * Columns];
         }
 
         public Span<T> GetColumn(int col)
