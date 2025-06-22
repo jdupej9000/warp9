@@ -1,6 +1,6 @@
 $ThirdPartyDir = "../thirdparty"
 
-$OpenBlasUrl = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29_x64.zip"
+$OpenBlasUrl = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30-x64.zip"
 $OpenBlasDir = ([System.IO.Path]::Combine($ThirdPartyDir, 'openblas'))
 New-Item -Path $ThirdPartyDir -Name "openblas" -ItemType "directory"
 Invoke-WebRequest $OpenBlasUrl -OutFile "openblas.zip"
