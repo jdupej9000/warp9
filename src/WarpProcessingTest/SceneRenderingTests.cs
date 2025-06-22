@@ -51,19 +51,19 @@ namespace Warp9.Test
 
             HeadlessRenderer renderer = CreateRenderer();
             ViewerSceneRenderer vsw = new ViewerSceneRenderer(proj);
-            vsw.AttachToRenderer(renderer);
-
             ViewerScene scene = new ViewerScene();
             vsw.Scene = scene;
 
             scene.Viewport = new Size(128, 128);
-            Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
+            Vector3 camera = new Vector3(2.0f, 4.0f, 6.0f);
             Vector3 at = new Vector3(0, 0, 0);
             Vector3 up = new Vector3(0, 1, 0);
             scene.ViewMatrix = Matrix4x4.CreateLookAtLeftHanded(camera, at, up);
             scene.Mesh0 = new MeshSceneElement();
             scene.Mesh0.Mesh = new ReferencedData<Mesh>(teapotKey);
             scene.Mesh0.Flags = MeshRenderFlags.Fill | MeshRenderFlags.EstimateNormals | MeshRenderFlags.Diffuse;
+
+            vsw.AttachToRenderer(renderer);
 
             renderer.Present();
             using (Bitmap bmp = renderer.ExtractColorAsBitmap())
