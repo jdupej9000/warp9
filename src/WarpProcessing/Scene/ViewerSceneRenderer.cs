@@ -68,9 +68,9 @@ public class ViewerSceneRenderer
         mc.model = Matrix4x4.Identity;
         Renderer.SetConstant(StockShaders.Name_ModelConst, mc);
 
-        Vector3 camera = new Vector3(1.0f, 2.0f, 3.0f);
-        Vector3 at = new Vector3(0, 0, 0);
-        Vector3 up = new Vector3(0, 1, 0);
+        Matrix4x4.Invert(Scene.ViewMatrix, out Matrix4x4 viewInv);
+        Vector3 camera = viewInv.Translation;
+
         ViewProjConst vpc = new ViewProjConst();
         vpc.viewProj = Matrix4x4.Transpose(Scene.ViewMatrix *
            Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
