@@ -27,7 +27,7 @@ namespace Warp9.Stage
         public T? Value { get; set; }
     }
 
-    public class MeshStageElement
+    public class MeshSceneElement
     {
         public bool Visible { get; set; }
         public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
@@ -39,18 +39,18 @@ namespace Warp9.Stage
         public ReferencedData<Lut>? Lut { get; set; }
     }
 
-    public class GridStageElement
+    public class GridSceneElement
     {
         public bool Visible { get; set; }
     }
 
-    public class ViewerStage
+    public class ViewerScene
     {
         public Matrix4x4 ViewMatrix { get; set; } = Matrix4x4.Identity;
         public Size Viewport { get; set; }
 
-        public MeshStageElement? Mesh0 { get; set; }
+        public MeshSceneElement? Mesh0 { get; set; }
 
-        public GridStageElement? Grid {get; set; }
+        public GridSceneElement? Grid {get; set; }
     }
 }

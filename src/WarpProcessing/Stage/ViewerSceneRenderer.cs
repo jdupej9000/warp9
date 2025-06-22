@@ -8,23 +8,23 @@ using Warp9.Viewer;
 
 namespace Warp9.Stage
 {
-    public class ViewerStageRenderer
+    public class ViewerSceneRenderer
     {
-        public ViewerStageRenderer(Project proj)
+        public ViewerSceneRenderer(Project proj)
         {
             Project = proj;
         }
 
         protected RenderItemMesh meshRend = new RenderItemMesh();
         protected RenderItemGrid gridRend = new RenderItemGrid();
-        protected ViewerStage stage = new ViewerStage();
+        protected ViewerScene scene = new ViewerScene();
        
         public Project Project { get; private init; }
         public RendererBase? Renderer { get; private set; }
-        public ViewerStage Stage
+        public ViewerScene Scene
         {
-            get { return stage; }
-            set { stage = value; UpdateFull(); }
+            get { return scene; }
+            set { scene = value; UpdateFull(); }
         }
 
         public void AttachToRenderer(RendererBase rend)
