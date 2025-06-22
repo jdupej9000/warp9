@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Warp9.Model
 {
@@ -21,6 +22,17 @@ namespace Warp9.Model
 
     public static class ModelUtils
     {
+        public static ReferencedData<T> Resolve<T>(Project proj, ReferencedData<T> x) where T : class
+        {
+            if(x.IsLoaded)
+                return x;
+
+            if (proj.TryGetReference(x.Key, out T? val) && val is not null)
+                return new ReferencedData<T>(val, x.Key);
+
+            return x;
+        }
+
         public static SpecimenTable? TryGetSpecimenTable(Project proj, long tableKey)
         {
             if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||
