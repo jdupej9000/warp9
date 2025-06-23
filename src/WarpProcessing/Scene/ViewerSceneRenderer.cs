@@ -34,6 +34,7 @@ public class ViewerSceneRenderer
         {
             DetachRenderer();
             Renderer = rend;
+            Renderer.Presenting += Renderer_Presenting;
 
             Renderer.AddRenderItem(meshRend);
             Renderer.AddRenderItem(gridRend);
@@ -47,16 +48,20 @@ public class ViewerSceneRenderer
         if (Renderer is not null)
         {
             Renderer.ClearRenderItems();
+            Renderer.Presenting -= Renderer_Presenting;
             Renderer = null;
         }
+    }
+
+    private void Renderer_Presenting(object? sender, EventArgs e)
+    {
+        UpdateConstant();
     }
 
     private void UpdateFull()
     {
         Scene.Mesh0?.ConfigureRenderItem(Project, meshRend);
         Scene.Grid?.ConfigureRenderItem(Project, gridRend);
-
-        UpdateConstant();
     }
 
     private void UpdateConstant()
@@ -64,30 +69,37 @@ public class ViewerSceneRenderer
         if (Renderer is null)
             return;
 
-        ModelConst mc = new ModelConst();
-        mc.model = Matrix4x4.Identity;
-        Renderer.SetConstant(StockShaders.Name_ModelConst, mc);
-
         Matrix4x4.Invert(Scene.ViewMatrix, out Matrix4x4 viewInv);
         Vector3 camera = viewInv.Translation;
 
-        ViewProjConst vpc = new ViewProjConst();
-        vpc.viewProj = Matrix4x4.Transpose(Scene.ViewMatrix *
-           Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
+        ModelConst mc = new ModelConst
+        {
+            model = Matrix4x4.Identity
+        };
+        Renderer.SetConstant(StockShaders.Name_ModelConst, mc);
 
-        vpc.camera = new Vector4(camera, 1);
+        ViewProjConst vpc = new ViewProjConst
+        {
+            viewProj = Matrix4x4.Transpose(Scene.ViewMatrix *
+               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f)),
+
+            camera = new Vector4(camera, 1)
+        };
         Renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
 
-        CameraLightConst clp = new CameraLightConst();
-        clp.cameraPos = camera;
-        clp.lightPos = camera;
+        CameraLightConst clp = new CameraLightConst
+        {
+            cameraPos = camera,
+            lightPos = camera
+        };
         Renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
 
-        PshConst pc = new PshConst();
-        pc.color = new Vector4(0, 1, 0, 1);
-        pc.ambStrength = 0.2f;
-        pc.flags = 0;
+        PshConst pc = new PshConst
+        {
+            color = new Vector4(0, 1, 0, 1),
+            ambStrength = 0.2f,
+            flags = 0
+        };
         Renderer.SetConstant(StockShaders.Name_PshConst, pc);
-
     }
 }

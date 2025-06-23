@@ -23,11 +23,10 @@ namespace Warp9.Viewer
         protected bool jobsDirty = false;
 
         public ShaderRegistry Shaders => shaders;
-
         public string DeviceName => deviceDesc.Description;
-
-
         public Color CanvasColor { get; set; }
+
+        public event EventHandler? Presenting;
 
         public void AddRenderItem(RenderItemBase renderItem)
         {
@@ -52,8 +51,9 @@ namespace Warp9.Viewer
             if (device is null || ctx is null || stateCache is null)
                 throw new InvalidOperationException();
 
-            List<(RenderItemBase, RenderJob?)> updates = new List<(RenderItemBase, RenderJob?)>();
+            Presenting?.Invoke(this, EventArgs.Empty);
 
+            List<(RenderItemBase, RenderJob?)> updates = new List<(RenderItemBase, RenderJob?)>();
             lock (renderItems)
             {
                 foreach (var kvp in renderItems)
