@@ -10,6 +10,7 @@ namespace Warp9.Data
         Position,
         Normal,
         Tex0,
+        AttribScalar,
 
         Invalid
     }

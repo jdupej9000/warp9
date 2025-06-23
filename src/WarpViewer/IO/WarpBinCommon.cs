@@ -17,7 +17,8 @@ namespace Warp9.IO
         Position = 1,
         Normal = 2,
         TexCoord = 3,
-        Indices = 4
+        Indices = 4,
+        AttribScalar = 5
     }
 
     public enum ChunkEncoding : short

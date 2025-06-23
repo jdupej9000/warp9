@@ -71,6 +71,8 @@ namespace Warp9.IO
         public int NormalDimension { get; set; } = 3;
         public ChunkEncoding Tex0Format { get; set; } = ChunkEncoding.Normalized16;
         public int Tex0Dimension { get; set; } = 2;
+        public ChunkEncoding AttribScalarFormat { get; set; } = ChunkEncoding.Float32;
+        public int AttribScalarDimension { get; set; } = 1;
         public ChunkEncoding IndexFormat { get; set; } = ChunkEncoding.Int32x3;
         public ChunkEncoding MatrixFormat { get; set; } = ChunkEncoding.Float32;
     }
@@ -250,6 +252,20 @@ namespace Warp9.IO
                     MeshSegmentDimension = s.Tex0Dimension,
                     Semantic = ChunkSemantic.TexCoord,
                     Encoding = s.Tex0Format
+                });
+            }
+
+            if (s.AttribScalarFormat != ChunkEncoding.Ignore &&
+             s.AttribScalarDimension > 0 &&
+             pcl.HasSegment(MeshSegmentType.AttribScalar))
+            {
+                export.AddChunk(new WarpBinExportTask()
+                {
+                    PointCloud = pcl,
+                    MeshSegment = MeshSegmentType.AttribScalar,
+                    MeshSegmentDimension = s.AttribScalarDimension,
+                    Semantic = ChunkSemantic.AttribScalar,
+                    Encoding = s.AttribScalarFormat
                 });
             }
         }
