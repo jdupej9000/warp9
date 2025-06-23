@@ -16,8 +16,8 @@ namespace Warp9.Viewer
         {
         }
 
-        public uint Version { get; private set; }
-        public uint DynamicVersion { get; private set; }
+        public uint Version { get; set; }
+        public uint DynamicVersion { get; set; }
 
         public virtual void Commit(RenderJobInvalidation level = RenderJobInvalidation.Full)
         {

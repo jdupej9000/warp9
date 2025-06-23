@@ -56,12 +56,19 @@ public class ViewerSceneRenderer
     private void Renderer_Presenting(object? sender, EventArgs e)
     {
         UpdateConstant();
+        UpdateDynamic();
     }
 
     private void UpdateFull()
     {
         Scene.Mesh0?.ConfigureRenderItem(Project, meshRend);
         Scene.Grid?.ConfigureRenderItem(Project, gridRend);
+    }
+
+    private void UpdateDynamic()
+    {
+        Scene.Mesh0?.UpdateDynamicBuffers(Project, meshRend);
+        Scene.Grid?.UpdateDynamicBuffers(Project, gridRend);
     }
 
     private void UpdateConstant()

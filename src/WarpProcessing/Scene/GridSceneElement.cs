@@ -19,6 +19,12 @@ namespace Warp9.Scene
                 return;
 
             ri.Visible = Visible;
+
+            UpdateDynamicBuffers(proj, rib);
+        }
+
+        public void UpdateDynamicBuffers(Project proj, RenderItemBase rib)
+        {
         }
     }
 }

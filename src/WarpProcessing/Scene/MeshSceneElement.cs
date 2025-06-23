@@ -26,6 +26,10 @@ namespace Warp9.Scene
 
     public class MeshSceneElement : ISceneElement
     {
+        public MeshSceneElement() { }
+
+        private uint dynamicVersion = 0;
+
         public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
         public float AttributeMin { get; set; } = 0;
         public float AttributeMax { get; set; } = 1;
@@ -66,6 +70,24 @@ namespace Warp9.Scene
             else
             {
                 ri.Mesh = null;
+            }
+
+            UpdateDynamicBuffers(proj, rib);
+        }
+
+        public void UpdateDynamicBuffers(Project proj, RenderItemBase rib)
+        {
+            if (rib is not RenderItemMesh ri)
+                return;
+
+            if (dynamicVersion > ri.DynamicVersion)
+            {
+                if (PositionOverride is not null)
+                {
+                    // TODO
+                }
+
+                ri.DynamicVersion = dynamicVersion;   
             }
         }
 
