@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Model;
@@ -36,30 +37,50 @@ namespace Warp9.Scene
         ReferencedData<float[]>? attributeScalar = null;
         ReferencedData<Lut>? lut = null;
 
+        [JsonIgnore]
         public RenderItemVersion Version { get; } = new RenderItemVersion();
+
+        [JsonPropertyName("flags")]
         public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
+
+        [JsonPropertyName("attr-min")]
         public float AttributeMin { get; set; } = 0;
+
+        [JsonPropertyName("attr-max")]
         public float AttributeMax { get; set; } = 1;
+
+        [JsonPropertyName("level")]
         public float LevelValue { get; set; } = 0;
+
+        [JsonPropertyName("color-flat")]
         public System.Drawing.Color FlatColor { get; set; } = System.Drawing.Color.LightGray;
+
+        [JsonPropertyName("mesh")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReferencedData<Mesh>? Mesh
         {
             get { return mesh; }
             set { mesh = value; Version.Commit(RenderItemDelta.Full); }
         }
 
+        [JsonPropertyName("mesh-pos-override")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReferencedData<Vector3[]>? PositionOverride
         {
             get { return positionOverride; }
             set { positionOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
         }
 
+        [JsonPropertyName("mesh-attrsc-override")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReferencedData<float[]>? AttributeScalar
         {
             get { return attributeScalar; }
             set { attributeScalar = value; Version.Commit(RenderItemDelta.Full); }
         }
 
+        [JsonPropertyName("lut")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReferencedData<Lut>? Lut
         {
             get { return lut; }
