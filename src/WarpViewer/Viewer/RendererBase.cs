@@ -61,25 +61,9 @@ namespace Warp9.Viewer
                     RenderItemBase ri = kvp.Key;
                     RenderJob? job = kvp.Value;
 
-                    RenderJobInvalidation inv = RenderJobInvalidation.None;
-                    if (job is null || jobsDirty)
-                    {
-                        inv = RenderJobInvalidation.Full;
-                    }
-                    else
-                    {
-                        inv = job.NeedsUpdate(ri);
-                    }
-
-                    if (inv == RenderJobInvalidation.Full)
-                    {
-                        if (ri.UpdateRenderJob(ref job, ctx, shaders, constantBufferManager))
-                            updates.Add((ri, job));
-                    }
-                    else if (inv != RenderJobInvalidation.None)
-                    {
-                        ri.PartialUpdate(inv, job!, ctx);
-                    }
+                    RenderItemDelta delta = ri.UpdateRenderJob(ref job, ctx, shaders, constantBufferManager);
+                    if(delta == RenderItemDelta.Full)
+                        updates.Add((ri, job));
                 }
 
                 jobsDirty = false;

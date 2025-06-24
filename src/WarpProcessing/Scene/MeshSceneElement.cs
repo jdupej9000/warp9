@@ -80,15 +80,7 @@ namespace Warp9.Scene
             if (rib is not RenderItemMesh ri)
                 return;
 
-            if (dynamicVersion > ri.DynamicVersion)
-            {
-                if (PositionOverride is not null)
-                {
-                    // TODO
-                }
-
-                ri.DynamicVersion = dynamicVersion;   
-            }
+           // TODO
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)

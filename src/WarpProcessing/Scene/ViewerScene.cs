@@ -14,6 +14,6 @@ namespace Warp9.Scene
         public Matrix4x4 ViewMatrix { get; set; } = Matrix4x4.Identity;
         public Size Viewport { get; set; }
         public MeshSceneElement? Mesh0 { get; set; }
-        public GridSceneElement? Grid {get; set; }
+        public GridSceneElement? Grid { get; set; }
     }
 }

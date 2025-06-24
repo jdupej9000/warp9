@@ -25,8 +25,6 @@ namespace Warp9.Viewer
             constantBuffersManager = cbuffs;
         }
 
-        uint itemVersion = 0, itemDynVersion = 0;
-
         ShaderSignature? shaderSignatureVert;
         PixelShader? shaderPix;
         VertexShader? shaderVert;
@@ -47,29 +45,7 @@ namespace Warp9.Viewer
 
         bool rebuildInputLayout = false;
 
-        public RenderJobInvalidation NeedsUpdate(RenderItemBase item)
-        {
-            if (item.Version != itemVersion)
-                return RenderJobInvalidation.Full;
-            else if (item.DynamicVersion != itemDynVersion)
-                return RenderJobInvalidation.DynamicData;
-
-            return RenderJobInvalidation.None;
-        }
-
-        public void CommitVersion(RenderJobInvalidation inv, RenderItemBase item)
-        {
-            switch (inv)
-            {
-                case RenderJobInvalidation.Full:
-                    itemVersion = item.Version;
-                    break;
-
-                case RenderJobInvalidation.DynamicData:
-                    itemDynVersion = item.DynamicVersion;
-                    break;
-            }
-        }
+        public RenderItemVersion Version { get; } = new RenderItemVersion();
 
         public bool TrySetConstBuffer<T>(int drawCallId, int buffId, T value) where T : struct
         {

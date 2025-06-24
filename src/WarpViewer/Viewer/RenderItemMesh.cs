@@ -148,12 +148,12 @@ namespace Warp9.Viewer
         public void UpdatePosData(ReadOnlyMemory<byte> newPos)
         {
             posUpdateDyn = newPos;
-            Commit(RenderJobInvalidation.DynamicData);
+            Commit(RenderItemDelta.Dynamic);
         }
 
-        protected override void PartialUpdateJobInternal(RenderJobInvalidation kind, RenderJob job, DeviceContext ctx)
+        protected override void PartialUpdateJobInternal(RenderItemDelta kind, RenderJob job, DeviceContext ctx)
         {
-            if (kind == RenderJobInvalidation.DynamicData)
+            if (kind.HasFlag(RenderItemDelta.Dynamic))
             {
                 // TODO: lock this
                 if (!posUpdateDyn.IsEmpty)

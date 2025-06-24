@@ -15,7 +15,7 @@ namespace Warp9.Viewer
     {
         public RenderItemGrid()
         {
-            
+            Commit();
         }
 
         Color zeroXAxisColor = Color.GreenYellow;
