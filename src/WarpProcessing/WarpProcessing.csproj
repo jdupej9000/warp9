@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Warp9</RootNamespace>
     <Platforms>Any CPU;x64</Platforms>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>Warp9.Processing</PackageId>
     <Configurations>Debug;Release</Configurations>

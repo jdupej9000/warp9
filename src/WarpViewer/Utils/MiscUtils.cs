@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -10,6 +11,15 @@ namespace Warp9.Utils
 {
     public static class MiscUtils
     {
+        public static ReadOnlySpan<byte> ArrayToBytes(Array arr, int elemSize = -1)
+        {
+            ReadOnlySpan<byte> ret = MemoryMarshal.CreateReadOnlySpan(
+                ref MemoryMarshal.GetArrayDataReference(arr),
+                elemSize * arr.Length);
+
+            return ret;
+        }
+
         public static void Decompose(this Quaternion q, out Vector3 axis, out float angleDegrees)
         {
             Vector3 a = new Vector3(q.X, q.Y, q.Z);

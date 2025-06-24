@@ -10,7 +10,7 @@ namespace Warp9.Scene
 {
     public interface ISceneElement
     {
-        public void ConfigureRenderItem(Project proj, RenderItemBase rib);
-        public void UpdateDynamicBuffers(Project proj, RenderItemBase rib);
+        public RenderItemVersion Version { get; }
+        public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib);
     }
 }

@@ -19,13 +19,14 @@ public class ViewerSceneRenderer
     protected RenderItemMesh meshRend = new RenderItemMesh();
     protected RenderItemGrid gridRend = new RenderItemGrid();
     protected ViewerScene scene = new ViewerScene();
-   
+    protected bool rendererChanged = false;
+
     public Project Project { get; private init; }
     public RendererBase? Renderer { get; private set; }
     public ViewerScene Scene
     {
         get { return scene; }
-        set { scene = value; UpdateFull(); }
+        set { scene = value; }
     }
 
     public void AttachToRenderer(RendererBase rend)
@@ -38,8 +39,7 @@ public class ViewerSceneRenderer
 
             Renderer.AddRenderItem(meshRend);
             Renderer.AddRenderItem(gridRend);
-
-            UpdateFull();
+            rendererChanged = true;
         }
     }
 
@@ -55,20 +55,21 @@ public class ViewerSceneRenderer
 
     private void Renderer_Presenting(object? sender, EventArgs e)
     {
+        UpdateRenderItem(Scene.Mesh0, meshRend);
+        UpdateRenderItem(Scene.Grid, gridRend);
         UpdateConstant();
-        UpdateDynamic();
+
+        rendererChanged = false;
     }
 
-    private void UpdateFull()
+    private void UpdateRenderItem(ISceneElement? elem, RenderItemBase ri)
     {
-        Scene.Mesh0?.ConfigureRenderItem(Project, meshRend);
-        Scene.Grid?.ConfigureRenderItem(Project, gridRend);
-    }
-
-    private void UpdateDynamic()
-    {
-        Scene.Mesh0?.UpdateDynamicBuffers(Project, meshRend);
-        Scene.Grid?.UpdateDynamicBuffers(Project, gridRend);
+        if (elem is not null)
+        {
+            RenderItemDelta delta = ri.Version.Upgrade(elem.Version);
+            if (rendererChanged)
+                elem.ConfigureRenderItem(delta, Project, ri);
+        }
     }
 
     private void UpdateConstant()
@@ -78,6 +79,7 @@ public class ViewerSceneRenderer
 
         Matrix4x4.Invert(Scene.ViewMatrix, out Matrix4x4 viewInv);
         Vector3 camera = viewInv.Translation;
+        float aspect = (float)Scene.Viewport.Width / (float)Scene.Viewport.Height;
 
         ModelConst mc = new ModelConst
         {
@@ -88,7 +90,7 @@ public class ViewerSceneRenderer
         ViewProjConst vpc = new ViewProjConst
         {
             viewProj = Matrix4x4.Transpose(Scene.ViewMatrix *
-               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f)),
+               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, aspect, 0.01f, 100.0f)),
 
             camera = new Vector4(camera, 1)
         };

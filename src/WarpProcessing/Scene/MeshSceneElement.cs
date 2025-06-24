@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -26,61 +27,91 @@ namespace Warp9.Scene
 
     public class MeshSceneElement : ISceneElement
     {
-        public MeshSceneElement() { }
+        public MeshSceneElement() 
+        {
+        }
 
-        private uint dynamicVersion = 0;
+        ReferencedData<Mesh>? mesh = null;
+        ReferencedData<Vector3[]>? positionOverride = null;
+        ReferencedData<float[]>? attributeScalar = null;
+        ReferencedData<Lut>? lut = null;
 
+        public RenderItemVersion Version { get; } = new RenderItemVersion();
         public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
         public float AttributeMin { get; set; } = 0;
         public float AttributeMax { get; set; } = 1;
         public float LevelValue { get; set; } = 0;
-        public ReferencedData<Mesh>? Mesh { get; set; }
-        public ReferencedData<Vector3[]>? PositionOverride { get; set; }
-        public ReferencedData<float[]>? AttributeScalar { get; set; }
-        public ReferencedData<Lut>? Lut { get; set; }
+        public ReferencedData<Mesh>? Mesh
+        {
+            get { return mesh; }
+            set { mesh = value; Version.Commit(RenderItemDelta.Full); }
+        }
 
-        public void ConfigureRenderItem(Project proj, RenderItemBase rib)
+        public ReferencedData<Vector3[]>? PositionOverride
+        {
+            get { return positionOverride; }
+            set { positionOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
+        }
+
+        public ReferencedData<float[]>? AttributeScalar
+        {
+            get { return attributeScalar; }
+            set { attributeScalar = value; Version.Commit(RenderItemDelta.Full); }
+        }
+
+        public ReferencedData<Lut>? Lut
+        {
+            get { return lut; }
+            set { lut = value; Version.Commit(RenderItemDelta.Full); }
+        }
+
+        public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib)
         {
             if (rib is not RenderItemMesh ri)
                 return;
 
+            if (delta == RenderItemDelta.Full)
+                ConfigureFull(proj, ri);
+
+            if (delta.HasFlag(RenderItemDelta.Dynamic))
+                ConfigureDynamic(proj, ri);
+
             ri.RenderWireframe = Flags.HasFlag(MeshRenderFlags.Wireframe);
             ri.RenderFace = Flags.HasFlag(MeshRenderFlags.Fill);
+            ri.Style = ToStyle(Flags);
+            ri.LevelValue = LevelValue;
+            ri.ValueMin = AttributeMin;
+            ri.ValueMax = AttributeMax;
             ri.RenderPoints = false;
             ri.RenderCull = false;
             ri.FillColor = System.Drawing.Color.LightGray;
             ri.PointWireColor = System.Drawing.Color.Black;
-            ri.Style = ToStyle(Flags);
-            ri.LevelValue = LevelValue;
             ri.RenderBlend = false;
             ri.RenderDepth = true;
-            ri.UseDynamicArrays = true;
-            ri.ValueMin = AttributeMin; 
-            ri.ValueMax = AttributeMax;
-
-            if (Mesh is not null)
-            {
-                Mesh = ModelUtils.Resolve(proj, Mesh);                    
-            }
-
-            if (Mesh is not null && Mesh.IsLoaded)
-            {
-                ri.Mesh = Mesh.Value;
-            }
-            else
-            {
-                ri.Mesh = null;
-            }
-
-            UpdateDynamicBuffers(proj, rib);
         }
 
-        public void UpdateDynamicBuffers(Project proj, RenderItemBase rib)
+        private void ConfigureFull(Project proj, RenderItemMesh ri)
         {
-            if (rib is not RenderItemMesh ri)
-                return;
+            ResolveReferences(proj);
+            ri.UseDynamicArrays = true;
 
-           // TODO
+            ri.Mesh = (mesh is not null && mesh.IsLoaded) ? mesh.Value : null;
+            ri.Lut = (lut is not null && lut.IsLoaded) ? lut.Value : null;
+
+            if (attributeScalar is not null && attributeScalar.IsLoaded && attributeScalar.Value is not null)
+                ri.SetValueField(attributeScalar.Value);
+        }
+
+        private void ConfigureDynamic(Project proj, RenderItemMesh ri)
+        {
+            if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
+                ri.UpdatePosData(positionOverride.Value);
+        }
+
+        private void ResolveReferences(Project proj)
+        {
+            if (mesh is not null)
+                mesh = ModelUtils.Resolve(proj, mesh);
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)

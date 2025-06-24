@@ -54,7 +54,7 @@ namespace Warp9.Processing
             if (n == 0)
                 return null;
 
-            Scale(MemoryMarshal.Cast<byte, float>(meanPos), 1.0f / n);
+            Scale(MemoryMarshal.Cast<byte, float>(meanPos.AsSpan()), 1.0f / n);
 
             return PointCloud.FromRawSoaPositions(meanPos.Length / 12, meanPos); 
         }

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
@@ -35,7 +36,8 @@ namespace Warp9.Viewer
         Lut? lut;
         bool useDynamicArrays = false;
         float[]? valueBuffer;
-        ReadOnlyMemory<byte> posUpdateDyn;
+        Array? posUpdateDyn;
+        int posUpdateDynElemSize = 0;
         float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
         Matrix4x4 modelMatrix = Matrix4x4.Identity;
@@ -145,9 +147,10 @@ namespace Warp9.Viewer
             Commit();
         }
 
-        public void UpdatePosData(ReadOnlyMemory<byte> newPos)
-        {
+        public void UpdatePosData<T>(T[] newPos)
+        {            
             posUpdateDyn = newPos;
+            posUpdateDynElemSize = Marshal.SizeOf<T>();
             Commit(RenderItemDelta.Dynamic);
         }
 
@@ -156,9 +159,10 @@ namespace Warp9.Viewer
             if (kind.HasFlag(RenderItemDelta.Dynamic))
             {
                 // TODO: lock this
-                if (!posUpdateDyn.IsEmpty)
+                if (posUpdateDyn is not null && posUpdateDyn.Length > 0)
                 {
-                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdateDyn.Span);
+                    ReadOnlySpan<byte> posUpdData = MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize);                        
+                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData);
                 }
             }
         }
@@ -181,10 +185,11 @@ namespace Warp9.Viewer
                 return true;
             }
 
-            if(posUpdateDyn.IsEmpty)
-                job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
+            if (posUpdateDyn is not null && posUpdateDyn.Length > 0)
+                job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), posView.GetLayout(), useDynamicArrays);
             else
-                job.SetVertexBuffer(ctx, 0, posUpdateDyn.Span, posView.GetLayout(), useDynamicArrays);
+                job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
+
 
             MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
             if (normalView is not null)

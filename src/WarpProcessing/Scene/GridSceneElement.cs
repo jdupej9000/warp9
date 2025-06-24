@@ -11,20 +11,14 @@ namespace Warp9.Scene
     public class GridSceneElement : ISceneElement
     {
         public bool Visible { get; set; } = true;
+        public RenderItemVersion Version { get; } = new RenderItemVersion();
 
-
-        public void ConfigureRenderItem(Project proj, RenderItemBase rib)
+        public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib)
         {
             if (rib is not RenderItemGrid ri)
                 return;
 
             ri.Visible = Visible;
-
-            UpdateDynamicBuffers(proj, rib);
-        }
-
-        public void UpdateDynamicBuffers(Project proj, RenderItemBase rib)
-        {
         }
     }
 }

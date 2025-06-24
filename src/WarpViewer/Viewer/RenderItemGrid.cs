@@ -32,7 +32,7 @@ namespace Warp9.Viewer
         public bool Visible
         {
             get { return visible; }
-            set { visible = value; Commit() ; }
+            set { if (visible != value) Commit(); visible = value; }
         }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
