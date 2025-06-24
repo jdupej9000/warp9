@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Forms;
@@ -359,6 +360,10 @@ namespace Warp9.Model
             };
 
             opts.Converters.Add(new SpecimenTableJsonConverter());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Matrix>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Bitmap>());
         }
 
         public static Project CreateEmpty()
