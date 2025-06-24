@@ -72,6 +72,12 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("BlankCanvasTest_0.png", bmp);
+
+            rend.CanvasColor = Color.DarkRed;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("BlankCanvasTest_1.png", bmp);
         }
 
         [TestMethod]
