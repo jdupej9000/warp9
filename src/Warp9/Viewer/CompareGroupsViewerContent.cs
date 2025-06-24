@@ -22,9 +22,8 @@ namespace Warp9.Viewer
     public class CompareGroupsViewerContent : ColormapMeshViewerContentBase
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
-            base(name)
+            base(proj, name)
         {
-            project = proj;
             entityKey = dcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
@@ -51,7 +50,6 @@ namespace Warp9.Viewer
             sidebar = new CompareGroupsSideBar(this);            
         }
 
-        Project project;
         ProjectEntry dcaEntry;
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
@@ -87,7 +85,10 @@ namespace Warp9.Viewer
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             meshMean = GetVisibleMesh();
-            meshRend.Mesh = meshMean;
+
+            if (meshMean is not null)
+                Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meshMean);
+
             base.AttachRenderer(renderer);
         }
 
@@ -182,41 +183,8 @@ namespace Warp9.Viewer
             }
         }
 
-        protected override void UpdateRendererConfig()
-        {
-            base.UpdateRendererConfig();
-
-            if(lut is not null)
-                sidebar?.SetLut(lut);
-        }
-
-        protected override void UpdateRendererStyle()
-        {
-            MeshRenderStyle style = 0;
-
-            if (renderDiffuse)
-                style |= MeshRenderStyle.DiffuseLighting;
-
-            if (!renderSmooth)
-                style |= MeshRenderStyle.EstimateNormals;
-
-            if (pclA is null || meshB is null)
-                style |= MeshRenderStyle.ColorFlat;
-            else
-                style |= MeshRenderStyle.ColorLut;
-
-            if (valueShow.HasValue)
-            {
-                style |= MeshRenderStyle.ShowValueLevel;
-                meshRend.LevelValue = valueShow.Value;
-            }
-
-            meshRend.Style = style;
-        }
-
         protected void UpdateMappedField()
         {
-            UpdateRendererConfig();
             if (pclA is null || meshB is null)
                 return;
 

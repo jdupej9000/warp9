@@ -8,66 +8,73 @@ using System.Windows;
 using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
+using Warp9.Model;
+using Warp9.Scene;
 using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
     public class ColormapMeshViewerContentBase : IViewerContent, INotifyPropertyChanged
     {
-        public ColormapMeshViewerContentBase(string name)
+        public ColormapMeshViewerContentBase(Project proj, string name)
         {
             Name = name;
+            project = proj;
+            sceneRend = new ViewerSceneRenderer(project);
+            sceneRend.Scene = scene;
+            scene.Mesh0 = new MeshSceneElement();
+            scene.Grid = new GridSceneElement();
         }
 
-        protected RenderItemMesh meshRend = new RenderItemMesh();
-        protected RenderItemGrid gridRend = new RenderItemGrid();
-        protected bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true, renderLut = true;
-        protected float? valueShow = null;
-        protected float valueMin = 0, valueMax = 1;
-        protected Lut? lut = null;
+
+        protected Project project;
+        private ViewerScene scene = new ViewerScene();
+        private ViewerSceneRenderer sceneRend;
+
         protected int paletteIndex = 0;
 
         public event EventHandler? ViewUpdated;
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public string Name { get; private init; }
+        public ViewerScene Scene => scene;
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
 
         public bool RenderLut
         {
-            get { return renderLut; }
-            set { renderLut = value; UpdateRendererConfig(); OnPropertyChanged("RenderLut"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.UseLut); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.UseLut, value); OnPropertyChanged("RenderLut"); }
         }
 
         public bool RenderGrid
         {
-            get { return renderGrid; }
-            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
+            get { return Scene.Grid!.Visible; }
+            set { Scene.Grid!.Visible = value; OnPropertyChanged("RenderGrid"); }
         }
 
         public bool RenderWireframe
         {
-            get { return renderWireframe; }
-            set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Wireframe); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Wireframe, value); OnPropertyChanged("RenderWireframe"); }
         }
 
         public bool RenderFill
         {
-            get { return renderFill; }
-            set { renderFill = value; UpdateRendererConfig(); OnPropertyChanged("RenderFill"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Fill); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Fill, value); OnPropertyChanged("RenderFill"); }
         }
 
         public bool RenderSmoothNormals
         {
-            get { return renderSmooth; }
-            set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.EstimateNormals); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.EstimateNormals, value); OnPropertyChanged("RenderSmoothNormals"); }
         }
 
         public bool RenderDiffuse
         {
-            get { return renderDiffuse; }
-            set { renderDiffuse = value; UpdateRendererConfig(); OnPropertyChanged("RenderDiffuse"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Diffuse); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Diffuse, value); OnPropertyChanged("RenderDiffuse"); }
         }
 
         public int PaletteIndex
@@ -78,21 +85,19 @@ namespace Warp9.Viewer
 
         public float ValueMin
         {
-            get { return valueMin; }
-            set { valueMin = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMin"); }
+            get { return Scene.Mesh0!.AttributeMin; }
+            set { Scene.Mesh0!.AttributeMin = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMin"); }
         }
 
         public float ValueMax
         {
-            get { return valueMax; }
-            set { valueMax = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMax"); }
+            get { return Scene.Mesh0!.AttributeMax; }
+            set { Scene.Mesh0!.AttributeMax = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMax"); }
         }
 
         public virtual void AttachRenderer(WpfInteropRenderer renderer)
         {
-            renderer.AddRenderItem(meshRend);
-            renderer.AddRenderItem(gridRend);
-            UpdateRendererConfig();
+            sceneRend.AttachToRenderer(renderer);
         }
 
         public virtual Page? GetSidebar()
@@ -108,45 +113,29 @@ namespace Warp9.Viewer
 
         public void ViewportResized(System.Drawing.Size size)
         {
+            Scene.Viewport = size;
         }
+
         public void MeshScaleHover(float? value)
         {
-            valueShow = value;
-            UpdateRendererStyle();
-            UpdateViewer();
+            //valueShow = value;
+            //UpdateRendererStyle();
+           // UpdateViewer();
         }
 
-        protected virtual void UpdateRendererStyle()
+        protected void SetMeshRendFlag(MeshSceneElement elem, MeshRenderFlags flag, bool set)
         {
-            MeshRenderStyle style = 0;
-
-            if (renderDiffuse)
-                style |= MeshRenderStyle.DiffuseLighting;
-
-            if (!renderSmooth)
-                style |= MeshRenderStyle.EstimateNormals;
-
-            if (renderLut)
-                style |= MeshRenderStyle.ColorLut;
-            else
-                style |= MeshRenderStyle.ColorFlat;
-
-            if (valueShow.HasValue)
-            {
-                style |= MeshRenderStyle.ShowValueLevel;
-                meshRend.LevelValue = valueShow.Value;
-            }
-
-            meshRend.Style = style;
+            if(set) elem.Flags |= flag;
+            else elem.Flags &= ~flag;
         }
 
         private void UpdateLut()
         {
-            lut = null;
-            UpdateRendererConfig();
+            //lut = null;
+            //UpdateRendererConfig();
         }
 
-        protected virtual void UpdateRendererConfig()
+       /* protected virtual void UpdateRendererConfig()
         {
             UpdateRendererStyle();
             meshRend.RenderWireframe = renderWireframe;
@@ -162,6 +151,7 @@ namespace Warp9.Viewer
             meshRend.ValueMax = valueMax;
             gridRend.Visible = renderGrid;
         }
+        */
 
         protected virtual void UpdateMappedFieldRange()
         {
