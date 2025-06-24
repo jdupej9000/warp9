@@ -9,55 +9,67 @@ namespace Warp9.Test
     public static class BitmapAsserts
     {
         public static readonly string ResultPath = @"../../bin/testresults";
-        public static void AssertEqual(string reference, Bitmap testBitmap)
+        public static bool AssertEqual(string reference, Bitmap testBitmap, bool softInconclusive = false)
         {
+            bool inconclusive = false;
             string refPath = Path.GetFullPath(Path.Combine(TestUtils.AssetsPath, reference));
 
             Directory.CreateDirectory(Path.GetFullPath(ResultPath));
             testBitmap.Save(Path.GetFullPath(Path.Combine(ResultPath, reference)));
 
-            if (!File.Exists(refPath))
-                Assert.Inconclusive("Could not find reference file: " + refPath);
-
-            using Bitmap refBitmap = new Bitmap(refPath);
-            Assert.AreEqual(refBitmap.Width, testBitmap.Width);
-            Assert.AreEqual(refBitmap.Height, testBitmap.Height);
-            Assert.AreEqual(refBitmap.PixelFormat, testBitmap.PixelFormat);
-
-            BitmapData dataTest = testBitmap.LockBits(
-                new Rectangle(0, 0, testBitmap.Width, testBitmap.Height),
-                ImageLockMode.ReadWrite, testBitmap.PixelFormat);
-
-            BitmapData dataRef = refBitmap.LockBits(
-               new Rectangle(0, 0, refBitmap.Width, refBitmap.Height),
-               ImageLockMode.ReadWrite, refBitmap.PixelFormat);
-
-            unsafe
+            if (File.Exists(refPath))
             {
-                byte* ptrTest = (byte*)dataTest.Scan0;
-                byte* ptrRef = (byte*)dataRef.Scan0;
+                using Bitmap refBitmap = new Bitmap(refPath);
+                Assert.AreEqual(refBitmap.Width, testBitmap.Width);
+                Assert.AreEqual(refBitmap.Height, testBitmap.Height);
+                Assert.AreEqual(refBitmap.PixelFormat, testBitmap.PixelFormat);
 
-                switch (testBitmap.PixelFormat)
+                BitmapData dataTest = testBitmap.LockBits(
+                    new Rectangle(0, 0, testBitmap.Width, testBitmap.Height),
+                    ImageLockMode.ReadWrite, testBitmap.PixelFormat);
+
+                BitmapData dataRef = refBitmap.LockBits(
+                   new Rectangle(0, 0, refBitmap.Width, refBitmap.Height),
+                   ImageLockMode.ReadWrite, refBitmap.PixelFormat);
+
+                unsafe
                 {
-                    case PixelFormat.Format8bppIndexed:
-                        AssertEqualGray8(ptrRef, ptrTest, refBitmap.Width, dataRef.Stride, refBitmap.Height, 0);
-                        break;
+                    byte* ptrTest = (byte*)dataTest.Scan0;
+                    byte* ptrRef = (byte*)dataRef.Scan0;
 
-                    case PixelFormat.Format32bppRgb:
-                    case PixelFormat.Format32bppArgb:
-                    case PixelFormat.Format32bppPArgb:
-                        AssertEqualRgba8(ptrRef, ptrTest, refBitmap.Width, dataRef.Stride, refBitmap.Height, 0);
-                        break;
+                    switch (testBitmap.PixelFormat)
+                    {
+                        case PixelFormat.Format8bppIndexed:
+                            AssertEqualGray8(ptrRef, ptrTest, refBitmap.Width, dataRef.Stride, refBitmap.Height, 0);
+                            break;
 
-                    default:
-                        Assert.Inconclusive("Pixel format " + testBitmap.PixelFormat + " is not supported.");
-                        break;
+                        case PixelFormat.Format32bppRgb:
+                        case PixelFormat.Format32bppArgb:
+                        case PixelFormat.Format32bppPArgb:
+                            AssertEqualRgba8(ptrRef, ptrTest, refBitmap.Width, dataRef.Stride, refBitmap.Height, 0);
+                            break;
+
+                        default:
+                            Console.WriteLine("Pixel format " + testBitmap.PixelFormat + " is not supported.");
+                            inconclusive = true;
+                            break;
+                    }
+
                 }
 
+                refBitmap.UnlockBits(dataRef);
+                testBitmap.UnlockBits(dataTest);
+            }
+            else
+            {
+                Console.WriteLine("Could not find reference file: " + refPath);
+                inconclusive = true;
             }
 
-            refBitmap.UnlockBits(dataRef);
-            testBitmap.UnlockBits(dataTest);
+            if (!softInconclusive && inconclusive)
+                Assert.Inconclusive("Test inconclusive, see console output.");
+
+            return inconclusive;
         }
 
         private static unsafe void AssertEqualGray8(byte* ptrRef, byte* ptrTest, int width, int stride, int height, int tol = 16)
