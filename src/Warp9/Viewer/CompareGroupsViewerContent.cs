@@ -210,14 +210,14 @@ namespace Warp9.Viewer
                     break;
             }
 
-            meshRend.SetValueField(field);
-            sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
+            Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]> (field);
+            //sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), ValueMin, ValueMax);
         }
 
         protected override void UpdateMappedFieldRange()
         {
             base.UpdateMappedFieldRange();
-            sidebar.SetRange(valueMin, valueMax);
+            sidebar.SetRange(ValueMin, ValueMax);
         }
     }
 }

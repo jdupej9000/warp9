@@ -11,34 +11,33 @@ using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Model;
 using Warp9.Processing;
+using Warp9.Scene;
 
 namespace Warp9.Viewer
 {
-    public class CorrMeshViewerContent : IViewerContent, INotifyPropertyChanged
+    public class CorrMeshViewerContent : SceneViewerContentBase
     {
-        public CorrMeshViewerContent(Project proj, long dcaEntityKey, string name)
+        public CorrMeshViewerContent(Project proj, long dcaEntityKey, string name) :
+            base(proj, name)
         {
-            project = proj;
+            Scene.Mesh0 = new MeshSceneElement();
+
             entityKey = dcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
                 entry.Kind != ProjectEntryKind.MeshCorrespondence)
                 throw new InvalidOperationException();
 
-            dcaEntry = entry;
-            Name = name;
-
+            dcaEntry = entry;            
             sidebar = new CorrMeshSideBar(this);
         }
 
-        Project project;
+      
         ProjectEntry dcaEntry;
         Page sidebar;
         long entityKey;
 
-        RenderItemMesh meshRend = new RenderItemMesh();
-        RenderItemGrid gridRend = new RenderItemGrid();
-
+    
         int meshIndex = 0;
         bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true;
 
@@ -55,34 +54,25 @@ namespace Warp9.Viewer
 
         public bool RenderWireframe
         {
-            get { return renderWireframe; }
-            set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Wireframe); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Wireframe, value); OnPropertyChanged("RenderWireframe"); }
         }
 
         public bool RenderFill
         {
-            get { return renderFill; }
-            set { renderFill = value; UpdateRendererConfig();  OnPropertyChanged("RenderFill"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Fill); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Fill, value); OnPropertyChanged("RenderFill"); }
         }
 
         public bool RenderSmoothNormals
         {
-            get { return renderSmooth; }
-            set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
-        }
-
-        public bool RenderGrid
-        {
-            get { return renderGrid; }
-            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.EstimateNormals); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.EstimateNormals, value); OnPropertyChanged("RenderSmoothNormals"); }
         }
 
 
-        public void AttachRenderer(WpfInteropRenderer renderer)
+        public override void AttachRenderer(WpfInteropRenderer renderer)
         {
-            renderer.AddRenderItem(meshRend);
-            renderer.AddRenderItem(gridRend);
-            UpdateRendererConfig();
             ShowMesh(0);
         }
 
@@ -104,6 +94,10 @@ namespace Warp9.Viewer
             SpecimenTable mainSpecTable = project.Entries[dcaEntry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey].Payload.Table;
             //long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
             long baseMeshRef = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey;
+
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(baseMeshRef);
+            //Scene.Mesh0.PositionOverride = new ReferencedData<
+
 
             if (!project.TryGetReference(corrPclRef, out PointCloud? corrPcl) || corrPcl is null)
                 throw new InvalidOperationException();

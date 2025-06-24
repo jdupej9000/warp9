@@ -14,30 +14,15 @@ using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
-    public class ColormapMeshViewerContentBase : IViewerContent, INotifyPropertyChanged
+    public class ColormapMeshViewerContentBase : SceneViewerContentBase
     {
-        public ColormapMeshViewerContentBase(Project proj, string name)
+        public ColormapMeshViewerContentBase(Project proj, string name) :
+            base(proj, name)
         {
-            Name = name;
-            project = proj;
-            sceneRend = new ViewerSceneRenderer(project);
-            sceneRend.Scene = scene;
-            scene.Mesh0 = new MeshSceneElement();
-            scene.Grid = new GridSceneElement();
+            Scene.Mesh0 = new MeshSceneElement();
         }
 
-
-        protected Project project;
-        private ViewerScene scene = new ViewerScene();
-        private ViewerSceneRenderer sceneRend;
-
         protected int paletteIndex = 0;
-
-        public event EventHandler? ViewUpdated;
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string Name { get; private init; }
-        public ViewerScene Scene => scene;
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
 
@@ -45,12 +30,6 @@ namespace Warp9.Viewer
         {
             get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.UseLut); }
             set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.UseLut, value); OnPropertyChanged("RenderLut"); }
-        }
-
-        public bool RenderGrid
-        {
-            get { return Scene.Grid!.Visible; }
-            set { Scene.Grid!.Visible = value; OnPropertyChanged("RenderGrid"); }
         }
 
         public bool RenderWireframe
@@ -95,26 +74,6 @@ namespace Warp9.Viewer
             set { Scene.Mesh0!.AttributeMax = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMax"); }
         }
 
-        public virtual void AttachRenderer(WpfInteropRenderer renderer)
-        {
-            sceneRend.AttachToRenderer(renderer);
-        }
-
-        public virtual Page? GetSidebar()
-        {
-            return null;
-        }
-
-        public void UpdateViewer()
-        {
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-
-        public void ViewportResized(System.Drawing.Size size)
-        {
-            Scene.Viewport = size;
-        }
 
         public void MeshScaleHover(float? value)
         {
@@ -123,11 +82,7 @@ namespace Warp9.Viewer
            // UpdateViewer();
         }
 
-        protected void SetMeshRendFlag(MeshSceneElement elem, MeshRenderFlags flag, bool set)
-        {
-            if(set) elem.Flags |= flag;
-            else elem.Flags &= ~flag;
-        }
+      
 
         private void UpdateLut()
         {
@@ -158,15 +113,5 @@ namespace Warp9.Viewer
 
         }
 
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            UpdateViewer();
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }
