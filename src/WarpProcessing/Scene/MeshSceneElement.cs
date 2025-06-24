@@ -41,6 +41,7 @@ namespace Warp9.Scene
         public float AttributeMin { get; set; } = 0;
         public float AttributeMax { get; set; } = 1;
         public float LevelValue { get; set; } = 0;
+        public System.Drawing.Color FlatColor { get; set; } = System.Drawing.Color.LightGray;
         public ReferencedData<Mesh>? Mesh
         {
             get { return mesh; }
@@ -84,7 +85,7 @@ namespace Warp9.Scene
             ri.ValueMax = AttributeMax;
             ri.RenderPoints = false;
             ri.RenderCull = false;
-            ri.FillColor = System.Drawing.Color.LightGray;
+            ri.FillColor = FlatColor;
             ri.PointWireColor = System.Drawing.Color.Black;
             ri.RenderBlend = false;
             ri.RenderDepth = true;

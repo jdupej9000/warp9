@@ -28,8 +28,9 @@ namespace Warp9.Viewer
 
     public class RenderItemMesh : RenderItemBase
     {
-        public RenderItemMesh()
+        public RenderItemMesh(bool autoCommit=true)
         {
+            AutoCommit = autoCommit;
         }
 
         Mesh? mesh;

@@ -56,6 +56,11 @@ namespace Warp9.Viewer
             return d;
         }
 
+        public override string ToString()
+        {
+            return string.Format("full:{0} dyn:{1}", Full, Dynamic);
+        }
+
         public static RenderItemDelta Compare(RenderItemVersion v, RenderItemVersion vref)
         {
             RenderItemDelta ret = RenderItemDelta.None;

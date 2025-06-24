@@ -10,6 +10,7 @@ namespace Warp9.Viewer
         }
 
         public RenderItemVersion Version { get; } = new RenderItemVersion();
+        public bool AutoCommit { get; set; } = true;
 
         public RenderItemDelta UpdateRenderJob(ref RenderJob? job, DeviceContext ctx, ShaderRegistry shaders, ConstantBufferManager constBuffers)
         {
@@ -37,7 +38,8 @@ namespace Warp9.Viewer
 
         protected void Commit(RenderItemDelta delta = RenderItemDelta.Full)
         {
-            Version.Commit(delta);
+            if(AutoCommit)
+                Version.Commit(delta);
         }
     }
 }

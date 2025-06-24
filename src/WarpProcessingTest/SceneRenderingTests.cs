@@ -45,7 +45,7 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        public void BasicSceneTest()
+        public void BasicDynamicSceneTest()
         {
             Project proj = MakeProject(out long teapotKey);
 
@@ -65,10 +65,49 @@ namespace Warp9.Test
 
             vsw.AttachToRenderer(renderer);
 
+            Console.WriteLine("scene: " + scene.ToString());
+            Console.WriteLine("rend : " + vsw.ToString());
+            Console.WriteLine();
+
             renderer.Present();
             using (Bitmap bmp = renderer.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("BasicSceneTest_0.png", bmp);
-        
+                BitmapAsserts.AssertEqual("BasicDynamicSceneTest_0.png", bmp, true);
+
+            Console.WriteLine("scene: " + scene.ToString());
+            Console.WriteLine("rend : " + vsw.ToString());
+            Console.WriteLine();
+
+            scene.Mesh0.FlatColor = Color.YellowGreen;
+
+            renderer.Present();
+            using (Bitmap bmp = renderer.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("BasicDynamicSceneTest_1.png", bmp, true);
+
+            Console.WriteLine("scene: " + scene.ToString());
+            Console.WriteLine("rend : " + vsw.ToString());
+            Console.WriteLine();
+
+            Assert.IsTrue(proj.TryGetReference(teapotKey, out Mesh? teapot) && teapot is not null);
+            MeshView? posView = teapot.GetView(MeshViewKind.Pos3f);
+            Assert.IsNotNull(posView);
+            posView.AsTypedData(out ReadOnlySpan<Vector3> pos);
+            int n = pos.Length;
+            Vector3[] pos2 = new Vector3[n];
+            for (int i = 0; i < n; i++)
+                pos2[i] = 1.25f * pos[i];
+            scene.Mesh0.PositionOverride = new ReferencedData<Vector3[]>(pos2);
+
+            Console.WriteLine("scene: " + scene.ToString());
+            Console.WriteLine("rend : " + vsw.ToString());
+            Console.WriteLine();
+
+            renderer.Present();
+            using (Bitmap bmp = renderer.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("BasicDynamicSceneTest_2.png", bmp, true);
+
+            Console.WriteLine("scene: " + scene.ToString());
+            Console.WriteLine("rend : " + vsw.ToString());
+            Console.WriteLine();
         }
     }
 }

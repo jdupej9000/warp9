@@ -15,5 +15,12 @@ namespace Warp9.Scene
         public Size Viewport { get; set; }
         public MeshSceneElement? Mesh0 { get; set; }
         public GridSceneElement? Grid { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("m0:({0}) g:({1})",
+                Mesh0?.Version?.ToString() ?? "",
+                Grid?.Version?.ToString() ?? "");
+        }
     }
 }

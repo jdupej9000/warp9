@@ -16,7 +16,7 @@ public class ViewerSceneRenderer
         Project = proj;
     }
 
-    protected RenderItemMesh meshRend = new RenderItemMesh();
+    protected RenderItemMesh meshRend = new RenderItemMesh(false);
     protected RenderItemGrid gridRend = new RenderItemGrid();
     protected ViewerScene scene = new ViewerScene();
     protected bool rendererChanged = false;
@@ -53,6 +53,12 @@ public class ViewerSceneRenderer
         }
     }
 
+    public override string ToString()
+    {
+        return string.Format("m0:({0}) g:({1})",
+            meshRend.Version, gridRend.Version);
+    }
+
     private void Renderer_Presenting(object? sender, EventArgs e)
     {
         UpdateRenderItem(Scene.Mesh0, meshRend);
@@ -67,8 +73,7 @@ public class ViewerSceneRenderer
         if (elem is not null)
         {
             RenderItemDelta delta = ri.Version.Upgrade(elem.Version);
-            if (rendererChanged)
-                elem.ConfigureRenderItem(delta, Project, ri);
+            elem.ConfigureRenderItem(delta, Project, ri);
         }
     }
 
