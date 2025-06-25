@@ -41,7 +41,7 @@ namespace Warp9.Scene
         public RenderItemVersion Version { get; } = new RenderItemVersion();
 
         [JsonPropertyName("flags")]
-        public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
+        public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill | MeshRenderFlags.Diffuse;
 
         [JsonPropertyName("attr-min")]
         public float AttributeMin { get; set; } = 0;

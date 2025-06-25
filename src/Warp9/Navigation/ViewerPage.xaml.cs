@@ -287,6 +287,7 @@ namespace Warp9.Navigation
         private void Content_ViewUpdated(object? sender, EventArgs e)
         {
             Interlocked.Exchange(ref viewDirty, 1);
+            ImageHost.InvalidateVisual();
         }
 
         private void cmbVis_SelectionChanged(object sender, SelectionChangedEventArgs e)
