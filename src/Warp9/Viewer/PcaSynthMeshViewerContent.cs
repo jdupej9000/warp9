@@ -169,6 +169,7 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(MeshNormals.MakeNormals(meanMesh));
             //meshRend.UseDynamicArrays = true;
             //meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
         }
