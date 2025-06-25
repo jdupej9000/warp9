@@ -37,14 +37,8 @@ namespace Warp9.Viewer
         Page sidebar;
         long entityKey;
 
-    
         int meshIndex = 0;
-        bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public event EventHandler ViewUpdated;
-
-        public string Name { get; private init; }
 
         public int MeshIndex
         {
@@ -74,16 +68,14 @@ namespace Warp9.Viewer
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             ShowMesh(0);
+            base.AttachRenderer(renderer);
         }
 
-        public Page? GetSidebar()
+        public override Page? GetSidebar()
         {
             return sidebar;
         }
 
-        public void ViewportResized(Size size)
-        {
-        }
 
         private void ShowMesh(int index)
         {
@@ -95,10 +87,6 @@ namespace Warp9.Viewer
             //long baseMeshRef = mainSpecTable.Columns[dcaEntry.Payload.MeshCorrExtra.DcaConfig.MeshColumnName].GetData<ProjectReferenceLink>()[baseIndex].ReferenceIndex;
             long baseMeshRef = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey;
 
-            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(baseMeshRef);
-            //Scene.Mesh0.PositionOverride = new ReferencedData<
-
-
             if (!project.TryGetReference(corrPclRef, out PointCloud? corrPcl) || corrPcl is null)
                 throw new InvalidOperationException();
 
@@ -109,34 +97,8 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException("Vertex count");
 
             Mesh corrMesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(corrMesh);
 
-            meshRend.Mesh = corrMesh;
-            meshIndex = index;
-            UpdateRendererConfig();
-        }
-
-        private void UpdateRendererConfig()
-        {
-            meshRend.Style = MeshRenderStyle.DiffuseLighting | MeshRenderStyle.ColorFlat | (renderSmooth ? 0:  MeshRenderStyle.EstimateNormals);
-            meshRend.RenderWireframe = renderWireframe;
-            meshRend.RenderFace = renderFill;
-            meshRend.RenderPoints = false;
-            meshRend.RenderCull = false;
-            meshRend.FillColor = Color.LightGray;
-            meshRend.PointWireColor = Color.Black;
-
-            gridRend.Visible = renderGrid;
-        }
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public override string ToString()
-        {
-            return Name;
         }
     }
 }

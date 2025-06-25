@@ -44,6 +44,11 @@ namespace Warp9.Viewer
             sceneRend.AttachToRenderer(renderer);
         }
 
+        public void DetachRenderer()
+        {
+            sceneRend.DetachRenderer();
+        }
+
         public virtual Page? GetSidebar()
         {
             return null;

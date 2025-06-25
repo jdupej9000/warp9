@@ -275,7 +275,10 @@ namespace Warp9.Navigation
         public void DisplayContent(IViewerContent content)
         {
             if (this.content is not null)
+            {
                 this.content.ViewUpdated -= Content_ViewUpdated;
+                this.content.DetachRenderer();
+            }
 
             EnsureRenderer();
             if (renderer is null)

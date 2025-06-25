@@ -13,6 +13,7 @@ namespace Warp9.Viewer
     {
         public string Name { get; }
         public void AttachRenderer(WpfInteropRenderer renderer);
+        public void DetachRenderer();
         public Page? GetSidebar();
         public void ViewportResized(Size size);
 

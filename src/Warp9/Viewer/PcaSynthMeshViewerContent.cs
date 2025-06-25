@@ -39,7 +39,7 @@ namespace Warp9.Viewer
     public class PcaSynthMeshViewerContent : ColormapMeshViewerContentBase
     {
         public PcaSynthMeshViewerContent(Project proj, long pcaEntityKey, string name) :
-            base(name)
+            base(proj, name)
         {
             project = proj;
             entityKey = pcaEntityKey;
@@ -67,7 +67,7 @@ namespace Warp9.Viewer
             pcaObject = pcaObj;
             meanMesh = baseMesh;
             tempSoa = new float[pcaObj.Dimension];
-            tempAos = new byte[pcaObj.Dimension * 4];
+            tempAos = new Vector3[pcaObj.Dimension / 3];
 
             Groupings.Add(PcaScatterGrouping.None);
             GatherGroupingsFromEntry(pcaEntityKey);
@@ -85,7 +85,7 @@ namespace Warp9.Viewer
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
         float[] tempSoa;
-        byte[] tempAos;
+        Vector3[] tempAos;
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -121,9 +121,10 @@ namespace Warp9.Viewer
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
-            MeshUtils.CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(tempAos.AsSpan()), 
+            MeshUtils.CopySoaToAos(tempAos.AsSpan(), 
                 MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
-            meshRend.UpdateData(tempAos, MeshSegmentType.Position);
+            //meshRend.UpdateData(tempAos, MeshSegmentType.Position);
+            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(tempAos);
             UpdateViewer();
         }
 
@@ -134,10 +135,7 @@ namespace Warp9.Viewer
             UpdateMappedField();
         }
 
-        protected override void UpdateRendererConfig()
-        {
-            base.UpdateRendererConfig();
-        }
+      
 
         private void GatherGroupingsFromEntry(long key)
         {
@@ -173,9 +171,8 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
-            meshRend.UseDynamicArrays = true;
-            meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
-            UpdateRendererConfig();
+            //meshRend.UseDynamicArrays = true;
+            //meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
         }
 
         private void UpdateScatter()
@@ -219,8 +216,8 @@ namespace Warp9.Viewer
             else
             {
                 RenderLut = true;
-                meshRend.SetValueField(data);
-                sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
+               // meshRend.SetValueField(data);
+                //sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
             }
         }
     }
