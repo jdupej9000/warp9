@@ -1,12 +1,15 @@
 ﻿using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Text.Json.Serialization;
 
 namespace Warp9.Viewer
 {
-    public class RendererBase
+    public record PresentingInfo(Size ViewportSize, long FrameIdx);
+
+    public abstract class RendererBase
     {
         public RendererBase()
         {
@@ -21,12 +24,13 @@ namespace Warp9.Viewer
         Dictionary<int, ConstantBufferPayload> constantBuffers = new Dictionary<int, ConstantBufferPayload>();
         readonly Dictionary<RenderItemBase, RenderJob?> renderItems = new Dictionary<RenderItemBase, RenderJob?>();
         protected bool jobsDirty = false;
+        protected long frameIdx = 0;
 
         public ShaderRegistry Shaders => shaders;
         public string DeviceName => deviceDesc.Description;
         public Color CanvasColor { get; set; }
 
-        public event EventHandler? Presenting;
+        public event EventHandler<PresentingInfo>? Presenting;
 
         public void AddRenderItem(RenderItemBase renderItem)
         {
@@ -51,7 +55,11 @@ namespace Warp9.Viewer
             if (device is null || ctx is null || stateCache is null)
                 throw new InvalidOperationException();
 
-            Presenting?.Invoke(this, EventArgs.Empty);
+            PresentingInfo info = new PresentingInfo(
+                GetViewportSize(),
+                frameIdx);
+
+            Presenting?.Invoke(this, info);
 
             List<(RenderItemBase, RenderJob?)> updates = new List<(RenderItemBase, RenderJob?)>();
             lock (renderItems)
@@ -98,8 +106,12 @@ namespace Warp9.Viewer
                         }
                     }
                 }
+
+                frameIdx++;
             }
         }
+
+        protected abstract Size GetViewportSize();
 
         public void SetConstant<T>(int name, T value) where T : struct
         {

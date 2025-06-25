@@ -122,12 +122,22 @@ namespace Warp9.Scene
 
             if (attributeScalar is not null && attributeScalar.IsLoaded && attributeScalar.Value is not null)
                 ri.SetValueField(attributeScalar.Value);
+
+            ri.Version.Commit(RenderItemDelta.Full);
         }
 
         private void ConfigureDynamic(Project proj, RenderItemMesh ri)
         {
+            bool changed = false;
+
             if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
+            {
                 ri.UpdateData(positionOverride.Value, MeshSegmentType.Position);
+                changed = true;
+            }
+
+            if (changed)
+                ri.Version.Commit(RenderItemDelta.Dynamic);
         }
 
         private void ResolveReferences(Project proj)

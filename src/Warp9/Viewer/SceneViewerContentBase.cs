@@ -25,7 +25,7 @@ namespace Warp9.Viewer
 
         protected Project project;
         private ViewerScene scene = new ViewerScene();
-        private ViewerSceneRenderer sceneRend;
+        private ViewerSceneRenderer? sceneRend;
 
         public event EventHandler? ViewUpdated;
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -41,12 +41,21 @@ namespace Warp9.Viewer
 
         public virtual void AttachRenderer(WpfInteropRenderer renderer)
         {
+            if (sceneRend is not null && sceneRend.Renderer == renderer)
+                return;
+
+            sceneRend = new ViewerSceneRenderer(project);
             sceneRend.AttachToRenderer(renderer);
+            sceneRend.Scene = scene;
         }
 
         public void DetachRenderer()
         {
-            sceneRend.DetachRenderer();
+            if (sceneRend is not null)
+            {
+                sceneRend.DetachRenderer();
+                sceneRend = null;
+            }            
         }
 
         public virtual Page? GetSidebar()

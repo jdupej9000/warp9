@@ -15,7 +15,7 @@ namespace Warp9.Viewer
     {
         public RenderItemGrid()
         {
-            Commit();
+            Version.Commit(RenderItemDelta.Full);
         }
 
         Color zeroXAxisColor = Color.GreenYellow;
@@ -28,11 +28,11 @@ namespace Warp9.Viewer
         Vector2 spanXYMax = new Vector2(5, 5);
 
         bool visible = true;
-
+        
         public bool Visible
         {
             get { return visible; }
-            set { if (visible != value) Commit(); visible = value; }
+            set { visible = value; }
         }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
@@ -51,6 +51,10 @@ namespace Warp9.Viewer
             return true;
         }
 
+        protected override void PartialUpdateJobInternal(RenderItemDelta kind, RenderJob job, DeviceContext ctx)
+        {
+        }
+
         public override void UpdateConstantBuffers(RenderJob job)
         {
             base.UpdateConstantBuffers(job);
@@ -65,6 +69,8 @@ namespace Warp9.Viewer
                 ambStrength = 0.1f
             };
             job.TrySetConstBuffer(-1, StockShaders.Name_PshConst, pshConst);
+
+            job.TryEnableDrawCall(0, visible);
         }
 
         [StructLayout(LayoutKind.Sequential)]

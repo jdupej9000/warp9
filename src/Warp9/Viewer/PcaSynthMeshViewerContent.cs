@@ -41,14 +41,13 @@ namespace Warp9.Viewer
         public PcaSynthMeshViewerContent(Project proj, long pcaEntityKey, string name) :
             base(proj, name)
         {
-            project = proj;
             entityKey = pcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
                 entry is null ||
                 entry.Kind != ProjectEntryKind.MeshPca ||
                 entry.Payload.PcaExtra is null ||
-                !project.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? pca) ||
+                !proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? pca) ||
                 pca is null)
             {
                 throw new InvalidOperationException();
@@ -57,7 +56,7 @@ namespace Warp9.Viewer
             pcaEntry = entry;
             pcaData = pca;
 
-            if (!project.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
+            if (!proj.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
                 throw new InvalidOperationException();
 
             Pca? pcaObj = Pca.FromMatrixCollection(pca);
@@ -75,7 +74,6 @@ namespace Warp9.Viewer
             sidebar = new PcaSynthMeshSideBar(this);
         }
 
-        Project project;
         ProjectEntry pcaEntry;
         Pca pcaObject;
         long entityKey;

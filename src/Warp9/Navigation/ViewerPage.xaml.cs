@@ -12,6 +12,7 @@ using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.ProjectExplorer;
+using Warp9.Scene;
 using Warp9.Viewer;
 
 namespace Warp9.Navigation
@@ -33,11 +34,13 @@ namespace Warp9.Navigation
                 2 => new PlaneCameraControl(),
                 _ => new EulerCameraControl()
             };
+
             SetCameraControl(ctl);
         }
 
         Window owner;
         WpfInteropRenderer? renderer = null;
+        ViewerSceneRenderer? sceneRend = null;
         IViewerContent? content = null;
         ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
@@ -80,7 +83,7 @@ namespace Warp9.Navigation
 
         public void DetachViewModel()
         {
-            content = null;
+            UnsetContent();
         }
 
         private void CameraControl_UpdateView(object? sender, CameraInfo e)
@@ -246,8 +249,7 @@ namespace Warp9.Navigation
 
         private void DisplayBlank()
         {
-            if (this.content is not null)
-                this.content.ViewUpdated -= Content_ViewUpdated;
+            UnsetContent();
 
             EnsureRenderer();
             if (renderer is null)
@@ -261,11 +263,7 @@ namespace Warp9.Navigation
 
         public void DisplayContent(IViewerContent content)
         {
-            if (this.content is not null)
-            {
-                this.content.ViewUpdated -= Content_ViewUpdated;
-                this.content.DetachRenderer();
-            }
+            UnsetContent();
 
             EnsureRenderer();
             if (renderer is null)
@@ -273,7 +271,7 @@ namespace Warp9.Navigation
 
             renderer.ClearRenderItems();
             content.AttachRenderer(renderer);
-            
+
             Page? sidebar = content.GetSidebar();
             if (sidebar is not null)
             {
@@ -282,6 +280,18 @@ namespace Warp9.Navigation
 
             this.content = content;
             this.content.ViewUpdated += Content_ViewUpdated;
+
+            cameraControl.Scroll(0); // fire the ViewChanged event
+        }
+
+        private void UnsetContent()
+        {
+            if (content is not null)
+            {
+                content.ViewUpdated -= Content_ViewUpdated;
+                content.DetachRenderer();
+                content = null;
+            }
         }
 
         private void Content_ViewUpdated(object? sender, EventArgs e)

@@ -23,6 +23,8 @@ namespace Warp9.Scene
                 return;
 
             ri.Visible = Visible;
+
+            ri.Version.Commit(delta);
         }
     }
 }
