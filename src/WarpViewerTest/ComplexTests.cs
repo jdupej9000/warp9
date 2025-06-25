@@ -106,7 +106,7 @@ namespace Warp9.Test
             for (int i = 0; i < nv; i++)
                 pos2[i] = pos[i] * 1.25f;
 
-            renderItemMesh.UpdatePosData(pos2b);
+            renderItemMesh.UpdateData(pos2b, MeshSegmentType.Position);
             rend.Present(); // now the teapot should appear larger
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())

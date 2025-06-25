@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
@@ -12,7 +13,7 @@ namespace Warp9.Processing
     {
         public static Mesh MakeNormals(Mesh m)
         {
-            return MakeNormals(m, m).ToMesh(); ;
+            return MakeNormals(m, m).ToMesh();
         }
 
         public static MeshBuilder MakeNormals(PointCloud? pcl, Mesh m)
@@ -27,18 +28,31 @@ namespace Warp9.Processing
             if(!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
                 throw new InvalidOperationException();
 
+            MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
-            int nt = m.FaceCount;
-            Vector3[] normal = new Vector3[nv];
+
+            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+            CollectionsMarshal.SetCount(normalsSeg, nv);          
+
+            MakeNormals(CollectionsMarshal.AsSpan(normalsSeg), posData, faces);
+           
+            return mb;
+        }
+
+        public static void MakeNormals(Span<Vector3> normal, ReadOnlySpan<Vector3> pos, ReadOnlySpan<FaceIndices> faces)
+        {
+            int nv = pos.Length;
+            int nt = faces.Length;
+          
             for (int i = 0; i < nv; i++)
                 normal[i] = Vector3.Zero;
 
             for (int i = 0; i < nt; i++)
             {
                 FaceIndices f = faces[i];
-                Vector3 a = posData[f.I0];
-                Vector3 b = posData[f.I1];
-                Vector3 c = posData[f.I2];
+                Vector3 a = pos[f.I0];
+                Vector3 b = pos[f.I1];
+                Vector3 c = pos[f.I2];
                 Vector3 n = Vector3.Cross(b - a, c - a);
 
                 normal[f.I0] += n;
@@ -46,14 +60,8 @@ namespace Warp9.Processing
                 normal[f.I2] += n;
             }
 
-            MeshBuilder mb = pcl.ToBuilder();
-
-            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
-            normalsSeg.Clear();
             for (int i = 0; i < nv; i++)
-                normalsSeg.Add(Vector3.Normalize(normal[i]));
-
-            return mb;
+                normal[i] = Vector3.Normalize(normal[i]);
         }
     }
 }

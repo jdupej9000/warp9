@@ -123,7 +123,7 @@ namespace Warp9.Viewer
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
             MeshUtils.CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(tempAos.AsSpan()), 
                 MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
-            meshRend.UpdatePosData(tempAos);
+            meshRend.UpdateData(tempAos, MeshSegmentType.Position);
             UpdateViewer();
         }
 
