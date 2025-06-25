@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Warp9.Data;
+using Warp9.IO;
 using Warp9.Utils;
 
 namespace Warp9.Viewer
@@ -37,8 +38,8 @@ namespace Warp9.Viewer
         Lut? lut;
         bool useDynamicArrays = false;
         float[]? valueBuffer;
-        Array? posUpdateDyn;
-        int posUpdateDynElemSize = 0;
+        Array? posUpdateDyn, normalUpdateDyn;
+        int posUpdateDynElemSize = 0, normalUpdateDynElemSize = 0;
         float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
         Matrix4x4 modelMatrix = Matrix4x4.Identity;
@@ -148,10 +149,24 @@ namespace Warp9.Viewer
             Commit();
         }
 
-        public void UpdatePosData<T>(T[] newPos)
-        {            
-            posUpdateDyn = newPos;
-            posUpdateDynElemSize = Marshal.SizeOf<T>();
+        public void UpdateData<T>(T[] data, MeshSegmentType kind)
+        {
+            switch (kind)
+            {
+                case MeshSegmentType.Position:
+                    posUpdateDyn = data;
+                    posUpdateDynElemSize = Marshal.SizeOf<T>();
+                    break;
+
+                case MeshSegmentType.Normal:
+                    normalUpdateDyn = data;
+                    normalUpdateDynElemSize = Marshal.SizeOf<T>();
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+           
             Commit(RenderItemDelta.Dynamic);
         }
 
@@ -160,10 +175,16 @@ namespace Warp9.Viewer
             if (kind.HasFlag(RenderItemDelta.Dynamic))
             {
                 // TODO: lock this
-                if (posUpdateDyn is not null && posUpdateDyn.Length > 0)
+                if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
                 {
                     ReadOnlySpan<byte> posUpdData = MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize);                        
                     job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData);
+                }
+
+                if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)
+                {
+                    ReadOnlySpan<byte> normalUpdData = MiscUtils.ArrayToBytes(normalUpdateDyn, normalUpdateDynElemSize);
+                    job.TryUpdateDynamicVertexBuffer(ctx, 2, normalUpdData);
                 }
             }
         }
@@ -186,7 +207,7 @@ namespace Warp9.Viewer
                 return true;
             }
 
-            if (posUpdateDyn is not null && posUpdateDyn.Length > 0)
+            if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
                 job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), posView.GetLayout(), useDynamicArrays);
             else
                 job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
@@ -194,7 +215,7 @@ namespace Warp9.Viewer
 
             MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
             if (normalView is not null)
-                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), false);
+                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), useDynamicArrays);
 
             if (valueBuffer is not null)
             {

@@ -127,7 +127,7 @@ namespace Warp9.Scene
         private void ConfigureDynamic(Project proj, RenderItemMesh ri)
         {
             if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
-                ri.UpdatePosData(positionOverride.Value);
+                ri.UpdateData(positionOverride.Value, MeshSegmentType.Position);
         }
 
         private void ResolveReferences(Project proj)
