@@ -85,20 +85,7 @@ namespace Warp9.Navigation
 
         private void CameraControl_UpdateView(object? sender, CameraInfo e)
         {
-            if (renderer is null)
-                return;
-
-            float aspect = viewportSize.X / viewportSize.Y;
-            vpc.viewProj = Matrix4x4.Transpose(e.ViewMat *
-                Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                    MathF.PI / 3, aspect, 0.01f, 100.0f));
-            vpc.camera = new Vector4(e.CameraPos, 1);
-            renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
-
-            clp.cameraPos = e.CameraPos;
-            clp.lightPos = e.CameraPos;
-            renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
-
+            content?.ViewChanged(e);
             Interlocked.Exchange(ref viewDirty, 1);
         }
 

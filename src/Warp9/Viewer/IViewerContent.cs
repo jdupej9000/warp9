@@ -16,7 +16,8 @@ namespace Warp9.Viewer
         public void DetachRenderer();
         public Page? GetSidebar();
         public void ViewportResized(Size size);
+        public void ViewChanged(CameraInfo ci);
 
-        public event EventHandler ViewUpdated;
+        public event EventHandler ViewUpdated; // TODO: rename
     }
 }

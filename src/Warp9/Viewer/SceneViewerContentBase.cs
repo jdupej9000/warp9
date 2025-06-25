@@ -64,6 +64,11 @@ namespace Warp9.Viewer
             Scene.Viewport = size;
         }
 
+        public void ViewChanged(CameraInfo ci)
+        {
+            Scene.ViewMatrix = ci.ViewMat;           
+        }
+
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
