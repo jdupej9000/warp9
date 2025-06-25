@@ -121,7 +121,7 @@ namespace Warp9.Viewer
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
             MeshUtils.CopySoaToAos(tempAos.AsSpan(), 
                 MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
-            //meshRend.UpdateData(tempAos, MeshSegmentType.Position);
+
             Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(tempAos);
             UpdateViewer();
         }
@@ -170,8 +170,6 @@ namespace Warp9.Viewer
         private void ShowMesh()
         {
             Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(MeshNormals.MakeNormals(meanMesh));
-            //meshRend.UseDynamicArrays = true;
-            //meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
         }
 
         private void UpdateScatter()

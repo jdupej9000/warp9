@@ -316,5 +316,11 @@ namespace Warp9.Navigation
                 DisplayBlank();
             }
         }
+
+        private void Snapshot_Click(object sender, RoutedEventArgs e)
+        {
+            // get content.Scene and do JSON for now,
+            // later store that into project
+        }
     }
 }

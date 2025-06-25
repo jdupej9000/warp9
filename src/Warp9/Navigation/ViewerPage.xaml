@@ -22,7 +22,7 @@
 
             <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Width="225" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Margin="4">
-                    <Button Style="{DynamicResource ControlButton}" Content="Snapshot" Width="64" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Snapshot" Click="Snapshot_Click" Width="64" />
                 </StackPanel>
 
 
