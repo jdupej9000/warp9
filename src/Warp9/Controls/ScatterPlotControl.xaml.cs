@@ -105,10 +105,6 @@ namespace Warp9.Controls
             Brush borderBrush = PlotBorder;
             Brush dots = PlotForeground;
 
-            //Brush fill = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-            //Brush borderBrush = new SolidColorBrush(Color.FromRgb(128, 128, 128));
-            //Brush dots = new SolidColorBrush(Color.FromRgb(255, 255, 255));
-
             Pen borderPen = new Pen(borderBrush, 1);
             Pen dotsPen = new Pen(dots, 1);
 
@@ -213,13 +209,11 @@ namespace Warp9.Controls
             dragging = false;
         }
 
-
         private void MakeRange(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
         {
             RangeX = MiscUtils.Range(x);
             RangeY = MiscUtils.Range(y);
         }
-
 
         private Vector2[] MakeScatterPlot(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
         {

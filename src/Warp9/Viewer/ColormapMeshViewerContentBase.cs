@@ -89,6 +89,15 @@ namespace Warp9.Viewer
             set { Scene.Mesh0!.AttributeMax = value; UpdateMappedField(false); OnPropertyChanged("ValueMax"); }
         }
 
+        public bool UseLutSteps
+        {
+            get; set;
+        }
+
+        public int NumLutSteps
+        {
+            get; set;
+        }
 
         public override void MeshScaleHover(float? value)
         {

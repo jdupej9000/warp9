@@ -43,7 +43,12 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-
+                <Label Height="4" />
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Steps" IsChecked="{Binding Path=NumLitSteps, Mode=TwoWay}" />
+                    <Label Width="16"/>
+                    <TextBox Width="64" Height="24" Text="{Binding Path=NumLitSteps, Mode=TwoWay}" />
+                </StackPanel>
                 <Label Height="4" />
                 <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
                                              PlotBackground="{DynamicResource Brush.Background}"
@@ -52,9 +57,9 @@
                                              ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                 <Label Height="4" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBox Width="50" Height="20" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <Label Width="98" />
-                    <TextBox Width="50" Height="20" TextAlignment="Right" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </StackPanel>
 

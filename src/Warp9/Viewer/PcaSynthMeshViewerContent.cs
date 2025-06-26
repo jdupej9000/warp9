@@ -69,8 +69,8 @@ namespace Warp9.Viewer
             posAos = new Vector3[pcaObj.Dimension / 3];
             normAos = new Vector3[pcaObj.Dimension / 3];
 
-            Groupings.Add(PcaScatterGrouping.None);
-            GatherGroupingsFromEntry(pcaEntityKey);
+            //Groupings.Add(PcaScatterGrouping.None);
+            //GatherGroupingsFromEntry(pcaEntityKey);
 
             sidebar = new PcaSynthMeshSideBar(this);
         }
@@ -127,12 +127,12 @@ namespace Warp9.Viewer
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             base.AttachRenderer(renderer);
-            ShowMesh();
+            UpdateScatter();
+            ShowMesh();            
             UpdateMappedField(true);
         }
 
-
-        private void GatherGroupingsFromEntry(long key)
+        /*private void GatherGroupingsFromEntry(long key)
         {
             if (project.Entries.TryGetValue(key, out ProjectEntry? entry) && entry is not null)
             {
@@ -162,7 +162,7 @@ namespace Warp9.Viewer
                 if (entry.Deps.Count == 0 && entry.Payload.MeshCorrExtra is not null)
                     GatherGroupingsFromEntry(entry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey);
             }
-        }
+        }*/
 
         private void ShowMesh()
         {
