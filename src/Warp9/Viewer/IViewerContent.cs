@@ -19,6 +19,7 @@ namespace Warp9.Viewer
         public Page? GetSidebar();
         public void ViewportResized(Size size);
         public void ViewChanged(CameraInfo ci);
+        public void MeshScaleHover(float? e);
 
         public ViewerScene Scene { get; }
 

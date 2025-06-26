@@ -78,6 +78,10 @@ namespace Warp9.Viewer
             Scene.ViewMatrix = ci.ViewMat;           
         }
 
+        public virtual void MeshScaleHover(float? e)
+        {
+        }
+
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

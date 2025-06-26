@@ -35,6 +35,12 @@ namespace Warp9.Viewer
             set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.UseLut, value); OnPropertyChanged("RenderLut"); }
         }
 
+        public bool RenderLevel
+        {
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.ShowLevel); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.ShowLevel, value); OnPropertyChanged("RenderLevel"); }
+        }
+
         public bool RenderWireframe
         {
             get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Wireframe); }
@@ -84,11 +90,19 @@ namespace Warp9.Viewer
         }
 
 
-        public void MeshScaleHover(float? value)
+        public override void MeshScaleHover(float? value)
         {
-            //valueShow = value;
-            //UpdateRendererStyle();
-           // UpdateViewer();
+            // this is a constant buffer-level change and does not require a commit
+            if (value.HasValue)
+            {
+                Scene.Mesh0!.LevelValue = value.Value;
+                RenderLevel = true;
+            }
+            else
+            {
+                Scene.Mesh0!.LevelValue = 0;
+                RenderLevel = false;
+            }            
         }
 
         private void UpdateLut()
