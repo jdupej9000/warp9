@@ -42,7 +42,6 @@ namespace Warp9.Controls
             Render();
 
             ctx.Flush();
-
         }
 
         public void EnsureSharedBackBuffer(IntPtr resourcePtr, System.Windows.Size size)
@@ -116,10 +115,16 @@ namespace Warp9.Controls
             }
         }
 
+        protected override Size GetViewportSize()
+        {
+            return depthStencilLastSize;
+        }
         protected void EnsureDepthBuffer(Size size)
         {
             if (depthStencilLastSize != size)
             {
+                depthStencilLastSize = size;
+
                 if (depthStencilView is not null)
                     Utilities.Dispose(ref depthStencilView);
 

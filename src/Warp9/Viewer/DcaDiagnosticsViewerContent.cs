@@ -19,9 +19,8 @@ namespace Warp9.Viewer
     public class DcaDiagnosticsViewerContent : ColormapMeshViewerContentBase
     {
         public DcaDiagnosticsViewerContent(Project proj, long dcaEntityKey, string name) :
-            base(name)
+            base(proj, name)
         {
-            project = proj;
             entityKey = dcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
@@ -33,7 +32,6 @@ namespace Warp9.Viewer
         }
 
         DcaDiagnosticsSideBar sidebar;
-        Project project;
         ProjectEntry dcaEntry;       
         long entityKey;
         int mappedFieldIndex = 0;
@@ -47,7 +45,7 @@ namespace Warp9.Viewer
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
         }
 
         public List<string> MappedFieldsList => mappedFieldsList;
@@ -55,15 +53,10 @@ namespace Warp9.Viewer
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
-            base.AttachRenderer(renderer);
             ShowMesh();
-            UpdateMappedField();
-        }
+            UpdateMappedField(true);
 
-        protected override void UpdateRendererConfig()
-        {
-            base.UpdateRendererConfig();
-            sidebar.SetLut(meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors));
+            base.AttachRenderer(renderer);
         }
 
         public override Page? GetSidebar()
@@ -84,10 +77,8 @@ namespace Warp9.Viewer
             if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
                 throw new InvalidOperationException();
 
-            meshRend.Mesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh)));
             nv = meanPcl.VertexCount;
-
-            UpdateRendererConfig();
         }
 
         private float[]? MakeRejectionMap()
@@ -113,25 +104,19 @@ namespace Warp9.Viewer
             return ret;
         }
 
-        private void UpdateMappedField()
+        protected override void UpdateMappedField(bool recalcField)
         {
-            float[]? data = mappedFieldIndex switch
+            if (recalcField)
             {
-                0 => MakeRejectionMap(),
-                1 => MakeIndexMap(),
-                _ => null
-            };
+                AttributeField = mappedFieldIndex switch
+                {
+                    0 => MakeRejectionMap(),
+                    1 => MakeIndexMap(),
+                    _ => null
+                };
+            }
 
-            if (data is null)
-            {
-                RenderLut = false;
-            }
-            else
-            {
-                RenderLut = true;
-                meshRend.SetValueField(data);
-                sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
-            }
+            base.UpdateMappedField(recalcField);
         }
     }
 }

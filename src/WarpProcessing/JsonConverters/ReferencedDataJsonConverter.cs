@@ -5,8 +5,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Warp9.Model;
 
-namespace Warp9.Model
+namespace Warp9.JsonConverters
 {
     public class ReferencedDataJsonConverter<T> : JsonConverter<ReferencedData<T>> 
         where T : class

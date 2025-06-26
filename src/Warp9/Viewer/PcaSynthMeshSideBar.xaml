@@ -12,7 +12,16 @@
     <StackPanel Orientation="Vertical" Margin="8">
         
         <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Surface</TextBlock>
-            
+        <StackPanel Orientation="Horizontal">
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="50" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+      ToolTip="Add wireframe."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="50" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+      ToolTip="Fill faces."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="50" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+      ToolTip="Use vertex normals. If disabled, face normals are used."/>
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Diffuse" Width="50" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+      ToolTip="Use diffuse lighting."/>
+        </StackPanel>       
         <Label Height="8" />
             
         <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>

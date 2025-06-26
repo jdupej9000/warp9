@@ -34,14 +34,19 @@ namespace Warp9.Scene
 
         ReferencedData<Mesh>? mesh = null;
         ReferencedData<Vector3[]>? positionOverride = null;
+        ReferencedData<Vector3[]>? normalsOverride = null;
         ReferencedData<float[]>? attributeScalar = null;
-        ReferencedData<Lut>? lut = null;
+        LutSpec? lutSpec = null;
+        Lut? lut = null;
+        bool lutChanged = false;
+
+        const int LutWidth = 256;
 
         [JsonIgnore]
         public RenderItemVersion Version { get; } = new RenderItemVersion();
 
         [JsonPropertyName("flags")]
-        public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill;
+        public MeshRenderFlags Flags { get; set; } = MeshRenderFlags.Fill | MeshRenderFlags.Diffuse;
 
         [JsonPropertyName("attr-min")]
         public float AttributeMin { get; set; } = 0;
@@ -71,6 +76,14 @@ namespace Warp9.Scene
             set { positionOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
         }
 
+        [JsonPropertyName("mesh-normal-override")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ReferencedData<Vector3[]>? NormalOverride
+        {
+            get { return normalsOverride; }
+            set { normalsOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
+        }
+
         [JsonPropertyName("mesh-attrsc-override")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReferencedData<float[]>? AttributeScalar
@@ -79,12 +92,12 @@ namespace Warp9.Scene
             set { attributeScalar = value; Version.Commit(RenderItemDelta.Full); }
         }
 
-        [JsonPropertyName("lut")]
+        [JsonPropertyName("lut-spec")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ReferencedData<Lut>? Lut
+        public LutSpec? LutSpec
         {
-            get { return lut; }
-            set { lut = value; Version.Commit(RenderItemDelta.Full); }
+            get { return lutSpec; }
+            set { lutSpec = value; Version.Commit(RenderItemDelta.Full); }
         }
 
         public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib)
@@ -118,22 +131,49 @@ namespace Warp9.Scene
             ri.UseDynamicArrays = true;
 
             ri.Mesh = (mesh is not null && mesh.IsLoaded) ? mesh.Value : null;
-            ri.Lut = (lut is not null && lut.IsLoaded) ? lut.Value : null;
+                        
+            if (lutSpec is null)
+            {
+                ri.Lut = null;
+            }
+            else
+            {
+                lut = Lut.Create(LutWidth, lutSpec);
+                ri.Lut = lut;
+            }
 
             if (attributeScalar is not null && attributeScalar.IsLoaded && attributeScalar.Value is not null)
                 ri.SetValueField(attributeScalar.Value);
+
+            ri.Version.Commit(RenderItemDelta.Full);
         }
 
         private void ConfigureDynamic(Project proj, RenderItemMesh ri)
         {
+            bool changed = false;
+
             if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
+            {
                 ri.UpdateData(positionOverride.Value, MeshSegmentType.Position);
+                changed = true;
+            }
+
+            if (normalsOverride is not null && normalsOverride.IsLoaded && normalsOverride.Value is not null)
+            {
+                ri.UpdateData(normalsOverride.Value, MeshSegmentType.Normal);
+                changed = true;
+            }
+
+            if (changed)
+                ri.Version.Commit(RenderItemDelta.Dynamic);
         }
 
         private void ResolveReferences(Project proj)
         {
             if (mesh is not null)
                 mesh = ModelUtils.Resolve(proj, mesh);
+
+            // TODO: dynamic overrides
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)

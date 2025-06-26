@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.JsonConverters;
 
 namespace Warp9.Model
 {
@@ -360,10 +361,15 @@ namespace Warp9.Model
             };
 
             opts.Converters.Add(new SpecimenTableJsonConverter());
+            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
             opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Matrix>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Bitmap>());
+            opts.Converters.Add(new LutSpecJsonConverter());
+            opts.Converters.Add(new ColorJsonConverter());
+            opts.Converters.Add(new Matrix4x4JsonConverter());
+            opts.Converters.Add(new SizeJsonConverter());
         }
 
         public static Project CreateEmpty()

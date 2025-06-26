@@ -39,16 +39,15 @@ namespace Warp9.Viewer
     public class PcaSynthMeshViewerContent : ColormapMeshViewerContentBase
     {
         public PcaSynthMeshViewerContent(Project proj, long pcaEntityKey, string name) :
-            base(name)
+            base(proj, name)
         {
-            project = proj;
             entityKey = pcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
                 entry is null ||
                 entry.Kind != ProjectEntryKind.MeshPca ||
                 entry.Payload.PcaExtra is null ||
-                !project.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? pca) ||
+                !proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? pca) ||
                 pca is null)
             {
                 throw new InvalidOperationException();
@@ -57,7 +56,7 @@ namespace Warp9.Viewer
             pcaEntry = entry;
             pcaData = pca;
 
-            if (!project.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
+            if (!proj.TryGetReference(pcaEntry.Payload.PcaExtra.TemplateKey, out Mesh? baseMesh) || baseMesh is null)
                 throw new InvalidOperationException();
 
             Pca? pcaObj = Pca.FromMatrixCollection(pca);
@@ -67,7 +66,8 @@ namespace Warp9.Viewer
             pcaObject = pcaObj;
             meanMesh = baseMesh;
             tempSoa = new float[pcaObj.Dimension];
-            tempAos = new byte[pcaObj.Dimension * 4];
+            posAos = new Vector3[pcaObj.Dimension / 3];
+            normAos = new Vector3[pcaObj.Dimension / 3];
 
             Groupings.Add(PcaScatterGrouping.None);
             GatherGroupingsFromEntry(pcaEntityKey);
@@ -75,7 +75,6 @@ namespace Warp9.Viewer
             sidebar = new PcaSynthMeshSideBar(this);
         }
 
-        Project project;
         ProjectEntry pcaEntry;
         Pca pcaObject;
         long entityKey;
@@ -85,7 +84,7 @@ namespace Warp9.Viewer
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
         float[] tempSoa;
-        byte[] tempAos;
+        Vector3[] posAos, normAos;
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -95,7 +94,7 @@ namespace Warp9.Viewer
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
         }
 
         public List<string> MappedFieldsList => mappedFieldsList;
@@ -121,9 +120,7 @@ namespace Warp9.Viewer
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
-            MeshUtils.CopySoaToAos(MemoryMarshal.Cast<byte, Vector3>(tempAos.AsSpan()), 
-                MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
-            meshRend.UpdateData(tempAos, MeshSegmentType.Position);
+            OverrideVertices(tempSoa);
             UpdateViewer();
         }
 
@@ -131,13 +128,9 @@ namespace Warp9.Viewer
         {
             base.AttachRenderer(renderer);
             ShowMesh();
-            UpdateMappedField();
+            UpdateMappedField(true);
         }
 
-        protected override void UpdateRendererConfig()
-        {
-            base.UpdateRendererConfig();
-        }
 
         private void GatherGroupingsFromEntry(long key)
         {
@@ -173,9 +166,26 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
-            meshRend.UseDynamicArrays = true;
-            meshRend.Mesh = MeshNormals.MakeNormals(meanMesh);
-            UpdateRendererConfig();
+            // Set the base mesh, but we'll only keep indices from it. Also set the key to
+            // allow deduplication when saving.
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meanMesh, pcaEntry.Payload.PcaExtra.TemplateKey);
+
+            // Override positions with the mean PCA model. Override normals, too.
+            pcaObject.Synthesize(tempSoa.AsSpan());
+            OverrideVertices(tempSoa);           
+        }
+
+        private void OverrideVertices(float[] synthSoa)
+        {
+            MeshUtils.CopySoaToAos(posAos.AsSpan(), MemoryMarshal.Cast<float, byte>(synthSoa.AsSpan()));
+            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(posAos);
+
+            // Recalculate normals and override them, too.
+            if (meanMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
+            {
+                MeshNormals.MakeNormals(normAos.AsSpan(), posAos.AsSpan(), indices);
+                Scene.Mesh0!.NormalOverride = new ReferencedData<Vector3[]>(normAos);
+            }
         }
 
         private void UpdateScatter()
@@ -205,23 +215,17 @@ namespace Warp9.Viewer
             }
         }
 
-        private void UpdateMappedField()
+        protected override void UpdateMappedField(bool recalcField)
         {
-            float[]? data = mappedFieldIndex switch
+            if (recalcField)
             {
-                _ => null
-            };
+                AttributeField = mappedFieldIndex switch
+                {
+                    _ => null
+                };
+            }
 
-            if (data is null)
-            {
-                RenderLut = false;
-            }
-            else
-            {
-                RenderLut = true;
-                meshRend.SetValueField(data);
-                sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
-            }
+            base.UpdateMappedField(recalcField);
         }
     }
 }

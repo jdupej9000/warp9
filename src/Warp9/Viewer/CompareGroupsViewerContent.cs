@@ -22,9 +22,8 @@ namespace Warp9.Viewer
     public class CompareGroupsViewerContent : ColormapMeshViewerContentBase
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
-            base(name)
+            base(proj, name)
         {
-            project = proj;
             entityKey = dcaEntityKey;
 
             if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
@@ -51,7 +50,6 @@ namespace Warp9.Viewer
             sidebar = new CompareGroupsSideBar(this);            
         }
 
-        Project project;
         ProjectEntry dcaEntry;
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
@@ -59,7 +57,8 @@ namespace Warp9.Viewer
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
         long entityKey;       
-        bool compareForm = false;      
+        bool compareForm = false;
+        float[]? field = null;
         int mappedFieldIndex = 0;
 
         static readonly List<string> mappedFieldsList = new List<string>
@@ -72,7 +71,7 @@ namespace Warp9.Viewer
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
         }
 
         public bool ModelsForm
@@ -86,8 +85,12 @@ namespace Warp9.Viewer
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
+            field = null;
             meshMean = GetVisibleMesh();
-            meshRend.Mesh = meshMean;
+
+            if (meshMean is not null)
+                Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meshMean);
+
             base.AttachRenderer(renderer);
         }
 
@@ -126,7 +129,7 @@ namespace Warp9.Viewer
                 meshB = mbB.ToMesh();
             }
 
-            UpdateMappedField();
+            UpdateMappedField(true);
         }
 
         public void SwapGroups()
@@ -182,74 +185,48 @@ namespace Warp9.Viewer
             }
         }
 
-        protected override void UpdateRendererConfig()
+        protected override void UpdateMappedField(bool recalcField)
         {
-            base.UpdateRendererConfig();
-
-            if(lut is not null)
-                sidebar?.SetLut(lut);
-        }
-
-        protected override void UpdateRendererStyle()
-        {
-            MeshRenderStyle style = 0;
-
-            if (renderDiffuse)
-                style |= MeshRenderStyle.DiffuseLighting;
-
-            if (!renderSmooth)
-                style |= MeshRenderStyle.EstimateNormals;
-
-            if (pclA is null || meshB is null)
-                style |= MeshRenderStyle.ColorFlat;
-            else
-                style |= MeshRenderStyle.ColorLut;
-
-            if (valueShow.HasValue)
-            {
-                style |= MeshRenderStyle.ShowValueLevel;
-                meshRend.LevelValue = valueShow.Value;
-            }
-
-            meshRend.Style = style;
-        }
-
-        protected void UpdateMappedField()
-        {
-            UpdateRendererConfig();
             if (pclA is null || meshB is null)
                 return;
 
-            int nv = pclA.VertexCount;
-            float[] field = new float[nv];
-
-            switch (mappedFieldIndex)
+            if (recalcField)
             {
-                case 0: // vertex distance
-                    HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                int nv = pclA.VertexCount;
+                
+                if(field is null) field = new float[nv];
 
-                case 1: // signed vertex distance
-                    HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                switch (mappedFieldIndex)
+                {
+                    case 0: // vertex distance
+                        HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
+                        break;
 
-                case 2: // surface distance
-                    HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                    case 1: // signed vertex distance
+                        HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
+                        break;
 
-                case 3: // signed surface distance
-                    HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                    case 2: // surface distance
+                        HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
+                        break;
+
+                    case 3: // signed surface distance
+                        HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
+                        break;
+
+                    case 4: // triangle expansion
+                        // TODO
+                        break;
+
+                    case 5: // triangle shape
+                        // TODO
+                        break;
+                }
+
+                AttributeField = field;
             }
 
-            meshRend.SetValueField(field);
-            sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
-        }
-
-        protected override void UpdateMappedFieldRange()
-        {
-            base.UpdateMappedFieldRange();
-            sidebar.SetRange(valueMin, valueMax);
+            base.UpdateMappedField(recalcField);
         }
     }
 }

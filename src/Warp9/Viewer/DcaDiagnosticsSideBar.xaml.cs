@@ -19,7 +19,7 @@ namespace Warp9.Viewer
     /// <summary>
     /// Interaction logic for DcaDiagnosticsSideBar.xaml
     /// </summary>
-    public partial class DcaDiagnosticsSideBar : Page
+    public partial class DcaDiagnosticsSideBar : Page, IViewerPage
     {
         public DcaDiagnosticsSideBar(DcaDiagnosticsViewerContent content)
         {

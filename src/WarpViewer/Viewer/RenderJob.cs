@@ -224,7 +224,7 @@ namespace Warp9.Viewer
             return false;
         }
 
-        public void SetVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, VertexDataLayout layout, bool isDynamic = false)
+        public void SetVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, VertexDataLayout layout, bool isDynamic = false, int fakeSize=0)
         {
             if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
             {
@@ -235,11 +235,12 @@ namespace Warp9.Viewer
             }
 
             int vertexStructSize = layout.StrideBytes;
+            int size = fakeSize == 0 ? data.Length : fakeSize;
 
             vertBuffBindings[slot] = Buffer.Create(ctx.Device, data, 
                 BindFlags.VertexBuffer, 
                 SharpDX.DXGI.Format.R8_UInt,
-                data.Length / vertexStructSize, vertexStructSize, isDynamic);
+                size / vertexStructSize, vertexStructSize, isDynamic);
 
             vertBuffBindings[slot].Layout = layout;
 

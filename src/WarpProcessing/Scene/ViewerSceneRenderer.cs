@@ -59,11 +59,14 @@ public class ViewerSceneRenderer
             meshRend.Version, gridRend.Version);
     }
 
-    private void Renderer_Presenting(object? sender, EventArgs e)
+    private void Renderer_Presenting(object? sender, PresentingInfo e)
     {
+        if (Renderer is null)
+            return;
+
         UpdateRenderItem(Scene.Mesh0, meshRend);
         UpdateRenderItem(Scene.Grid, gridRend);
-        UpdateConstant();
+        UpdateConstant(e);
 
         rendererChanged = false;
     }
@@ -73,18 +76,22 @@ public class ViewerSceneRenderer
         if (elem is not null)
         {
             RenderItemDelta delta = ri.Version.Upgrade(elem.Version);
+
+            if (rendererChanged)
+                delta = RenderItemDelta.Full;
+
             elem.ConfigureRenderItem(delta, Project, ri);
         }
     }
 
-    private void UpdateConstant()
+    private void UpdateConstant(PresentingInfo pi)
     {
         if (Renderer is null)
             return;
 
         Matrix4x4.Invert(Scene.ViewMatrix, out Matrix4x4 viewInv);
         Vector3 camera = viewInv.Translation;
-        float aspect = (float)Scene.Viewport.Width / (float)Scene.Viewport.Height;
+        float aspect = (float)pi.ViewportSize.Width / (float)pi.ViewportSize.Height;
 
         ModelConst mc = new ModelConst
         {

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,7 +12,9 @@ using System.Windows.Media.TextFormatting;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.JsonConverters;
 using Warp9.ProjectExplorer;
+using Warp9.Scene;
 using Warp9.Viewer;
 
 namespace Warp9.Navigation
@@ -33,11 +36,13 @@ namespace Warp9.Navigation
                 2 => new PlaneCameraControl(),
                 _ => new EulerCameraControl()
             };
+
             SetCameraControl(ctl);
         }
 
         Window owner;
         WpfInteropRenderer? renderer = null;
+        ViewerSceneRenderer? sceneRend = null;
         IViewerContent? content = null;
         ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
@@ -80,25 +85,12 @@ namespace Warp9.Navigation
 
         public void DetachViewModel()
         {
-            content = null;
+            UnsetContent();
         }
 
         private void CameraControl_UpdateView(object? sender, CameraInfo e)
         {
-            if (renderer is null)
-                return;
-
-            float aspect = viewportSize.X / viewportSize.Y;
-            vpc.viewProj = Matrix4x4.Transpose(e.ViewMat *
-                Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                    MathF.PI / 3, aspect, 0.01f, 100.0f));
-            vpc.camera = new Vector4(e.CameraPos, 1);
-            renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
-
-            clp.cameraPos = e.CameraPos;
-            clp.lightPos = e.CameraPos;
-            renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
-
+            content?.ViewChanged(e);
             Interlocked.Exchange(ref viewDirty, 1);
         }
 
@@ -259,8 +251,7 @@ namespace Warp9.Navigation
 
         private void DisplayBlank()
         {
-            if (this.content is not null)
-                this.content.ViewUpdated -= Content_ViewUpdated;
+            UnsetContent();
 
             EnsureRenderer();
             if (renderer is null)
@@ -274,8 +265,7 @@ namespace Warp9.Navigation
 
         public void DisplayContent(IViewerContent content)
         {
-            if (this.content is not null)
-                this.content.ViewUpdated -= Content_ViewUpdated;
+            UnsetContent();
 
             EnsureRenderer();
             if (renderer is null)
@@ -283,7 +273,7 @@ namespace Warp9.Navigation
 
             renderer.ClearRenderItems();
             content.AttachRenderer(renderer);
-            
+
             Page? sidebar = content.GetSidebar();
             if (sidebar is not null)
             {
@@ -292,11 +282,24 @@ namespace Warp9.Navigation
 
             this.content = content;
             this.content.ViewUpdated += Content_ViewUpdated;
+
+            cameraControl.Scroll(0); // fire the ViewChanged event
+        }
+
+        private void UnsetContent()
+        {
+            if (content is not null)
+            {
+                content.ViewUpdated -= Content_ViewUpdated;
+                content.DetachRenderer();
+                content = null;
+            }
         }
 
         private void Content_ViewUpdated(object? sender, EventArgs e)
         {
             Interlocked.Exchange(ref viewDirty, 1);
+            ImageHost.InvalidateVisual();
         }
 
         private void cmbVis_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -314,6 +317,35 @@ namespace Warp9.Navigation
             {
                 DisplayBlank();
             }
+        }
+
+        private void Snapshot_Click(object sender, RoutedEventArgs e)
+        {
+            if (content is null)
+                return;
+
+            JsonSerializerOptions opts = new JsonSerializerOptions()
+            {
+                AllowTrailingCommas = false,
+                //WriteIndented = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            opts.Converters.Add(new SpecimenTableJsonConverter());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Vector3[]>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Data.Matrix>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<System.Drawing.Bitmap>());
+            opts.Converters.Add(new LutSpecJsonConverter());
+            opts.Converters.Add(new ColorJsonConverter());
+            opts.Converters.Add(new Matrix4x4JsonConverter());
+            opts.Converters.Add(new SizeJsonConverter());
+
+            using FileStream fs = new FileStream("viewer-result.json",FileMode.Create, FileAccess.Write);
+            JsonSerializer.Serialize(fs, content.Scene, opts);
+
         }
     }
 }

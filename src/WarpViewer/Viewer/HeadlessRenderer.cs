@@ -93,6 +93,11 @@ namespace Warp9.Viewer
             return ret;
         }
 
+        protected override Size GetViewportSize()
+        {
+            return new Size(rasterInfoCurrent.Width, rasterInfoCurrent.Height);
+        }
+
         protected void PrepareRenderDone()
         {
             if (device is null) return;

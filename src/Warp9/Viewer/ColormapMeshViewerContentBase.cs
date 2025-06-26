@@ -8,66 +8,67 @@ using System.Windows;
 using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
+using Warp9.Model;
+using Warp9.Scene;
 using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
-    public class ColormapMeshViewerContentBase : IViewerContent, INotifyPropertyChanged
+    public class ColormapMeshViewerContentBase : SceneViewerContentBase
     {
-        public ColormapMeshViewerContentBase(string name)
+        public ColormapMeshViewerContentBase(Project proj, string name) :
+            base(proj, name)
         {
-            Name = name;
+            Scene.Mesh0 = new MeshSceneElement();
+            UpdateLut();
         }
 
-        protected RenderItemMesh meshRend = new RenderItemMesh();
-        protected RenderItemGrid gridRend = new RenderItemGrid();
-        protected bool renderWireframe = false, renderFill = true, renderSmooth = true, renderGrid = true, renderDiffuse = true, renderLut = true;
-        protected float? valueShow = null;
-        protected float valueMin = 0, valueMax = 1;
-        protected Lut? lut = null;
         protected int paletteIndex = 0;
 
-        public event EventHandler? ViewUpdated;
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string Name { get; private init; }
-
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
+        protected LutSpec? LutSpec { get; private set; }
+        protected float[]? AttributeField { get; set; } 
 
         public bool RenderLut
         {
-            get { return renderLut; }
-            set { renderLut = value; UpdateRendererConfig(); OnPropertyChanged("RenderLut"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.UseLut); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.UseLut, value); OnPropertyChanged("RenderLut"); }
         }
 
-        public bool RenderGrid
+        public bool RenderLevel
         {
-            get { return renderGrid; }
-            set { renderGrid = value; UpdateRendererConfig(); OnPropertyChanged("RenderGrid"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.ShowLevel); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.ShowLevel, value); OnPropertyChanged("RenderLevel"); }
         }
 
         public bool RenderWireframe
         {
-            get { return renderWireframe; }
-            set { renderWireframe = value; UpdateRendererConfig(); OnPropertyChanged("RenderWireframe"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Wireframe); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Wireframe, value); OnPropertyChanged("RenderWireframe"); }
         }
 
         public bool RenderFill
         {
-            get { return renderFill; }
-            set { renderFill = value; UpdateRendererConfig(); OnPropertyChanged("RenderFill"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Fill); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Fill, value); OnPropertyChanged("RenderFill"); }
         }
 
         public bool RenderSmoothNormals
         {
-            get { return renderSmooth; }
-            set { renderSmooth = value; UpdateRendererConfig(); OnPropertyChanged("RenderSmoothNormals"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.EstimateNormals); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.EstimateNormals, value); OnPropertyChanged("RenderSmoothNormals"); }
         }
 
         public bool RenderDiffuse
         {
-            get { return renderDiffuse; }
-            set { renderDiffuse = value; UpdateRendererConfig(); OnPropertyChanged("RenderDiffuse"); }
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Diffuse); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Diffuse, value); OnPropertyChanged("RenderDiffuse"); }
+        }
+
+        public bool RenderSpecular
+        {
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Specular); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Specular, value); OnPropertyChanged("RenderSpecular"); }
         }
 
         public int PaletteIndex
@@ -78,105 +79,61 @@ namespace Warp9.Viewer
 
         public float ValueMin
         {
-            get { return valueMin; }
-            set { valueMin = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMin"); }
+            get { return Scene.Mesh0!.AttributeMin; }
+            set { Scene.Mesh0!.AttributeMin = value; UpdateMappedField(false); OnPropertyChanged("ValueMin"); }
         }
 
         public float ValueMax
         {
-            get { return valueMax; }
-            set { valueMax = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMax"); }
-        }
-
-        public virtual void AttachRenderer(WpfInteropRenderer renderer)
-        {
-            renderer.AddRenderItem(meshRend);
-            renderer.AddRenderItem(gridRend);
-            UpdateRendererConfig();
-        }
-
-        public virtual Page? GetSidebar()
-        {
-            return null;
-        }
-
-        public void UpdateViewer()
-        {
-            ViewUpdated?.Invoke(this, EventArgs.Empty);
+            get { return Scene.Mesh0!.AttributeMax; }
+            set { Scene.Mesh0!.AttributeMax = value; UpdateMappedField(false); OnPropertyChanged("ValueMax"); }
         }
 
 
-        public void ViewportResized(System.Drawing.Size size)
+        public override void MeshScaleHover(float? value)
         {
-        }
-        public void MeshScaleHover(float? value)
-        {
-            valueShow = value;
-            UpdateRendererStyle();
-            UpdateViewer();
-        }
-
-        protected virtual void UpdateRendererStyle()
-        {
-            MeshRenderStyle style = 0;
-
-            if (renderDiffuse)
-                style |= MeshRenderStyle.DiffuseLighting;
-
-            if (!renderSmooth)
-                style |= MeshRenderStyle.EstimateNormals;
-
-            if (renderLut)
-                style |= MeshRenderStyle.ColorLut;
-            else
-                style |= MeshRenderStyle.ColorFlat;
-
-            if (valueShow.HasValue)
+            // this is a constant buffer-level change and does not require a commit
+            if (value.HasValue)
             {
-                style |= MeshRenderStyle.ShowValueLevel;
-                meshRend.LevelValue = valueShow.Value;
+                Scene.Mesh0!.LevelValue = value.Value;
+                RenderLevel = true;
             }
-
-            meshRend.Style = style;
+            else
+            {
+                Scene.Mesh0!.LevelValue = 0;
+                RenderLevel = false;
+            }            
         }
 
         private void UpdateLut()
         {
-            lut = null;
-            UpdateRendererConfig();
+            var stops = Palettes[paletteIndex].Stops;
+            LutSpec = new LutSpec(0, stops);
+
+            Scene.Mesh0!.LutSpec = LutSpec;
+            UpdateMappedField(false);
         }
 
-        protected virtual void UpdateRendererConfig()
+        protected virtual void UpdateMappedField(bool recalcField)
         {
-            UpdateRendererStyle();
-            meshRend.RenderWireframe = renderWireframe;
-            meshRend.RenderFace = renderFill;
-            meshRend.RenderPoints = false;
-            meshRend.RenderCull = false;
-            meshRend.FillColor = System.Drawing.Color.LightGray;
-            meshRend.PointWireColor = System.Drawing.Color.Black;
-            Lut lutLocal = lut ?? Lut.Create(256, Palettes[PaletteIndex].Stops);          
-            lut = lutLocal;
-            meshRend.Lut = lutLocal;
-            meshRend.ValueMin = valueMin;
-            meshRend.ValueMax = valueMax;
-            gridRend.Visible = renderGrid;
+            if (recalcField)
+            {
+                if (AttributeField is not null)
+                    Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]>(AttributeField);
+                else
+                    Scene.Mesh0!.AttributeScalar = null;
+
+                RenderLut = AttributeField is not null;
+            }
+
+            if (AttributeField is not null && LutSpec is not null && GetSidebar() is IViewerPage p)
+            {
+                p.SetHist(AttributeField, Lut.Create(256, LutSpec), ValueMin, ValueMax);
+            }
+
+            // TODO: forgo this on range changes
+            Scene.Mesh0!.Version.Commit(RenderItemDelta.Full);
         }
 
-        protected virtual void UpdateMappedFieldRange()
-        {
-
-        }
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            UpdateViewer();
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }

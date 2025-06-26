@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Warp9.Controls;
+using Warp9.Data;
+using Warp9.Scene;
 
 namespace Warp9.Viewer
 {
@@ -13,9 +15,14 @@ namespace Warp9.Viewer
     {
         public string Name { get; }
         public void AttachRenderer(WpfInteropRenderer renderer);
+        public void DetachRenderer();
         public Page? GetSidebar();
         public void ViewportResized(Size size);
+        public void ViewChanged(CameraInfo ci);
+        public void MeshScaleHover(float? e);
 
-        public event EventHandler ViewUpdated;
+        public ViewerScene Scene { get; }
+
+        public event EventHandler ViewUpdated; // TODO: rename
     }
 }

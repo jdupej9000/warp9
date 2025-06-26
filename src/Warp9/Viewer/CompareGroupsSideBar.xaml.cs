@@ -20,7 +20,7 @@ namespace Warp9.Viewer
     /// <summary>
     /// Interaction logic for CompareGroupsSideBar.xaml
     /// </summary>
-    public partial class CompareGroupsSideBar : Page
+    public partial class CompareGroupsSideBar : Page, IViewerPage
     {
         public CompareGroupsSideBar(CompareGroupsViewerContent content)
         {
