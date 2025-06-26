@@ -213,6 +213,14 @@ namespace Warp9.Viewer
                     case 3: // signed surface distance
                         HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
                         break;
+
+                    case 4: // triangle expansion
+                        // TODO
+                        break;
+
+                    case 5: // triangle shape
+                        // TODO
+                        break;
                 }
 
                 AttributeField = field;
