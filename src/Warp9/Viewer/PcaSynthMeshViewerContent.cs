@@ -66,7 +66,8 @@ namespace Warp9.Viewer
             pcaObject = pcaObj;
             meanMesh = baseMesh;
             tempSoa = new float[pcaObj.Dimension];
-            tempAos = new Vector3[pcaObj.Dimension / 3];
+            posAos = new Vector3[pcaObj.Dimension / 3];
+            normAos = new Vector3[pcaObj.Dimension / 3];
 
             Groupings.Add(PcaScatterGrouping.None);
             GatherGroupingsFromEntry(pcaEntityKey);
@@ -83,7 +84,7 @@ namespace Warp9.Viewer
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
         float[] tempSoa;
-        Vector3[] tempAos;
+        Vector3[] posAos, normAos;
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -119,10 +120,7 @@ namespace Warp9.Viewer
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
-            MeshUtils.CopySoaToAos(tempAos.AsSpan(), 
-                MemoryMarshal.Cast<float, byte>(tempSoa.AsSpan()));
-
-            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(tempAos);
+            OverrideVertices(tempSoa);
             UpdateViewer();
         }
 
@@ -133,7 +131,6 @@ namespace Warp9.Viewer
             UpdateMappedField();
         }
 
-      
 
         private void GatherGroupingsFromEntry(long key)
         {
@@ -169,7 +166,26 @@ namespace Warp9.Viewer
 
         private void ShowMesh()
         {
-            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(MeshNormals.MakeNormals(meanMesh));
+            // Set the base mesh, but we'll only keep indices from it. Also set the key to
+            // allow deduplication when saving.
+            Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meanMesh, pcaEntry.Payload.PcaExtra.TemplateKey);
+
+            // Override positions with the mean PCA model. Override normals, too.
+            pcaObject.Synthesize(tempSoa.AsSpan());
+            OverrideVertices(tempSoa);           
+        }
+
+        private void OverrideVertices(float[] synthSoa)
+        {
+            MeshUtils.CopySoaToAos(posAos.AsSpan(), MemoryMarshal.Cast<float, byte>(synthSoa.AsSpan()));
+            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(posAos);
+
+            // Recalculate normals and override them, too.
+            if (meanMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
+            {
+                MeshNormals.MakeNormals(normAos.AsSpan(), posAos.AsSpan(), indices);
+                Scene.Mesh0!.NormalOverride = new ReferencedData<Vector3[]>(normAos);
+            }
         }
 
         private void UpdateScatter()

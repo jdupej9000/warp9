@@ -34,6 +34,7 @@ namespace Warp9.Scene
 
         ReferencedData<Mesh>? mesh = null;
         ReferencedData<Vector3[]>? positionOverride = null;
+        ReferencedData<Vector3[]>? normalsOverride = null;
         ReferencedData<float[]>? attributeScalar = null;
         ReferencedData<Lut>? lut = null;
 
@@ -69,6 +70,14 @@ namespace Warp9.Scene
         {
             get { return positionOverride; }
             set { positionOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
+        }
+
+        [JsonPropertyName("mesh-normal-override")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ReferencedData<Vector3[]>? NormalOverride
+        {
+            get { return normalsOverride; }
+            set { normalsOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
         }
 
         [JsonPropertyName("mesh-attrsc-override")]
@@ -136,6 +145,12 @@ namespace Warp9.Scene
                 changed = true;
             }
 
+            if (normalsOverride is not null && normalsOverride.IsLoaded && normalsOverride.Value is not null)
+            {
+                ri.UpdateData(normalsOverride.Value, MeshSegmentType.Normal);
+                changed = true;
+            }
+
             if (changed)
                 ri.Version.Commit(RenderItemDelta.Dynamic);
         }
@@ -144,6 +159,8 @@ namespace Warp9.Scene
         {
             if (mesh is not null)
                 mesh = ModelUtils.Resolve(proj, mesh);
+
+            // TODO: dynamic overrides
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)
