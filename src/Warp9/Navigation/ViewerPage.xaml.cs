@@ -333,6 +333,7 @@ namespace Warp9.Navigation
 
             opts.Converters.Add(new SpecimenTableJsonConverter());
             opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Vector3[]>());
             opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Data.Matrix>());

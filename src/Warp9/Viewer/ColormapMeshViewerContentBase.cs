@@ -108,12 +108,17 @@ namespace Warp9.Viewer
                     Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]>(AttributeField);
                 else
                     Scene.Mesh0!.AttributeScalar = null;
+
+                RenderLut = AttributeField is not null;
             }
 
             if (AttributeField is not null && LutSpec is not null && GetSidebar() is IViewerPage p)
             {
                 p.SetHist(AttributeField, Lut.Create(256, LutSpec), ValueMin, ValueMax);
             }
+
+            // TODO: forgo this on range changes
+            Scene.Mesh0!.Version.Commit(RenderItemDelta.Full);
         }
 
     }

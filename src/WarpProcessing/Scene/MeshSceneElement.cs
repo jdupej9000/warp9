@@ -97,7 +97,7 @@ namespace Warp9.Scene
         public LutSpec? LutSpec
         {
             get { return lutSpec; }
-            set { lutSpec = value; if(value != lutSpec) lutChanged = true; Version.Commit(RenderItemDelta.Full); }
+            set { lutSpec = value; Version.Commit(RenderItemDelta.Full); }
         }
 
         public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib)
@@ -131,20 +131,15 @@ namespace Warp9.Scene
             ri.UseDynamicArrays = true;
 
             ri.Mesh = (mesh is not null && mesh.IsLoaded) ? mesh.Value : null;
-
-            if (lutChanged)
+                        
+            if (lutSpec is null)
             {
-                if (lutSpec is null)
-                {
-                    ri.Lut = null;
-                }
-                else
-                {
-                    lut = Lut.Create(LutWidth, lutSpec);
-                    ri.Lut = lut;
-                }
-
-                lutChanged = false;
+                ri.Lut = null;
+            }
+            else
+            {
+                lut = Lut.Create(LutWidth, lutSpec);
+                ri.Lut = lut;
             }
 
             if (attributeScalar is not null && attributeScalar.IsLoaded && attributeScalar.Value is not null)

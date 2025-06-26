@@ -361,6 +361,7 @@ namespace Warp9.Model
             };
 
             opts.Converters.Add(new SpecimenTableJsonConverter());
+            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
             opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Matrix>());
