@@ -36,7 +36,11 @@ namespace Warp9.Scene
         ReferencedData<Vector3[]>? positionOverride = null;
         ReferencedData<Vector3[]>? normalsOverride = null;
         ReferencedData<float[]>? attributeScalar = null;
-        ReferencedData<Lut>? lut = null;
+        LutSpec? lutSpec = null;
+        Lut? lut = null;
+        bool lutChanged = false;
+
+        const int LutWidth = 256;
 
         [JsonIgnore]
         public RenderItemVersion Version { get; } = new RenderItemVersion();
@@ -88,12 +92,12 @@ namespace Warp9.Scene
             set { attributeScalar = value; Version.Commit(RenderItemDelta.Full); }
         }
 
-        [JsonPropertyName("lut")]
+        [JsonPropertyName("lut-spec")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ReferencedData<Lut>? Lut
+        public LutSpec? LutSpec
         {
-            get { return lut; }
-            set { lut = value; Version.Commit(RenderItemDelta.Full); }
+            get { return lutSpec; }
+            set { lutSpec = value; if(value != lutSpec) lutChanged = true; Version.Commit(RenderItemDelta.Full); }
         }
 
         public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib)
@@ -127,7 +131,21 @@ namespace Warp9.Scene
             ri.UseDynamicArrays = true;
 
             ri.Mesh = (mesh is not null && mesh.IsLoaded) ? mesh.Value : null;
-            ri.Lut = (lut is not null && lut.IsLoaded) ? lut.Value : null;
+
+            if (lutChanged)
+            {
+                if (lutSpec is null)
+                {
+                    ri.Lut = null;
+                }
+                else
+                {
+                    lut = Lut.Create(LutWidth, lutSpec);
+                    ri.Lut = lut;
+                }
+
+                lutChanged = false;
+            }
 
             if (attributeScalar is not null && attributeScalar.IsLoaded && attributeScalar.Value is not null)
                 ri.SetValueField(attributeScalar.Value);
