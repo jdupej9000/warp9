@@ -20,11 +20,14 @@ namespace Warp9.Viewer
             base(proj, name)
         {
             Scene.Mesh0 = new MeshSceneElement();
+            UpdateLut();
         }
 
         protected int paletteIndex = 0;
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
+        protected LutSpec? LutSpec { get; private set; }
+        protected float[]? AttributeField { get; set; } 
 
         public bool RenderLut
         {
@@ -71,13 +74,13 @@ namespace Warp9.Viewer
         public float ValueMin
         {
             get { return Scene.Mesh0!.AttributeMin; }
-            set { Scene.Mesh0!.AttributeMin = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMin"); }
+            set { Scene.Mesh0!.AttributeMin = value; UpdateMappedField(false); OnPropertyChanged("ValueMin"); }
         }
 
         public float ValueMax
         {
             get { return Scene.Mesh0!.AttributeMax; }
-            set { Scene.Mesh0!.AttributeMax = value; UpdateMappedFieldRange(); OnPropertyChanged("ValueMax"); }
+            set { Scene.Mesh0!.AttributeMax = value; UpdateMappedField(false); OnPropertyChanged("ValueMax"); }
         }
 
 
@@ -88,35 +91,29 @@ namespace Warp9.Viewer
            // UpdateViewer();
         }
 
-      
-
         private void UpdateLut()
         {
-            //lut = null;
-            //UpdateRendererConfig();
+            var stops = Palettes[paletteIndex].Stops;
+            LutSpec = new LutSpec(0, stops);
+
+            Scene.Mesh0!.LutSpec = LutSpec;
+            UpdateMappedField(false);
         }
 
-       /* protected virtual void UpdateRendererConfig()
+        protected virtual void UpdateMappedField(bool recalcField)
         {
-            UpdateRendererStyle();
-            meshRend.RenderWireframe = renderWireframe;
-            meshRend.RenderFace = renderFill;
-            meshRend.RenderPoints = false;
-            meshRend.RenderCull = false;
-            meshRend.FillColor = System.Drawing.Color.LightGray;
-            meshRend.PointWireColor = System.Drawing.Color.Black;
-            Lut lutLocal = lut ?? Lut.Create(256, Palettes[PaletteIndex].Stops);          
-            lut = lutLocal;
-            meshRend.Lut = lutLocal;
-            meshRend.ValueMin = valueMin;
-            meshRend.ValueMax = valueMax;
-            gridRend.Visible = renderGrid;
-        }
-        */
+            if (recalcField)
+            {
+                if (AttributeField is not null)
+                    Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]>(AttributeField);
+                else
+                    Scene.Mesh0!.AttributeScalar = null;
+            }
 
-        protected virtual void UpdateMappedFieldRange()
-        {
-
+            if (AttributeField is not null && LutSpec is not null && GetSidebar() is IViewerPage p)
+            {
+                p.SetHist(AttributeField, Lut.Create(256, LutSpec), ValueMin, ValueMax);
+            }
         }
 
     }

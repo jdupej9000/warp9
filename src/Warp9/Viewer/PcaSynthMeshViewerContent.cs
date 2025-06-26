@@ -94,7 +94,7 @@ namespace Warp9.Viewer
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
         }
 
         public List<string> MappedFieldsList => mappedFieldsList;
@@ -128,7 +128,7 @@ namespace Warp9.Viewer
         {
             base.AttachRenderer(renderer);
             ShowMesh();
-            UpdateMappedField();
+            UpdateMappedField(true);
         }
 
 
@@ -215,23 +215,17 @@ namespace Warp9.Viewer
             }
         }
 
-        private void UpdateMappedField()
+        protected override void UpdateMappedField(bool recalcField)
         {
-            float[]? data = mappedFieldIndex switch
+            if (recalcField)
             {
-                _ => null
-            };
+                AttributeField = mappedFieldIndex switch
+                {
+                    _ => null
+                };
+            }
 
-            if (data is null)
-            {
-                RenderLut = false;
-            }
-            else
-            {
-                RenderLut = true;
-               // meshRend.SetValueField(data);
-                //sidebar.SetHist(data, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), valueMin, valueMax);
-            }
+            base.UpdateMappedField(recalcField);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Warp9.Viewer
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
         }
 
         public bool ModelsForm
@@ -127,7 +127,7 @@ namespace Warp9.Viewer
                 meshB = mbB.ToMesh();
             }
 
-            UpdateMappedField();
+            UpdateMappedField(true);
         }
 
         public void SwapGroups()
@@ -183,41 +183,37 @@ namespace Warp9.Viewer
             }
         }
 
-        protected void UpdateMappedField()
+        protected override void UpdateMappedField(bool recalcField)
         {
             if (pclA is null || meshB is null)
                 return;
 
-            int nv = pclA.VertexCount;
-            float[] field = new float[nv];
-
-            switch (mappedFieldIndex)
+            if (recalcField)
             {
-                case 0: // vertex distance
-                    HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                int nv = pclA.VertexCount;
+                float[] field = new float[nv];
 
-                case 1: // signed vertex distance
-                    HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                switch (mappedFieldIndex)
+                {
+                    case 0: // vertex distance
+                        HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
+                        break;
 
-                case 2: // surface distance
-                    HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                    case 1: // signed vertex distance
+                        HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
+                        break;
 
-                case 3: // signed surface distance
-                    HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
-                    break;
+                    case 2: // surface distance
+                        HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
+                        break;
+
+                    case 3: // signed surface distance
+                        HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
+                        break;
+                }
             }
 
-            Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]> (field);
-            //sidebar.SetHist(field, meshRend.Lut ?? Lut.Create(256, Lut.ViridisColors), ValueMin, ValueMax);
-        }
-
-        protected override void UpdateMappedFieldRange()
-        {
-            base.UpdateMappedFieldRange();
-            sidebar.SetRange(ValueMin, ValueMax);
+            base.UpdateMappedField(recalcField);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Warp9.Viewer
     /// <summary>
     /// Interaction logic for PcaSynthMeshSideBar.xaml
     /// </summary>
-    public partial class PcaSynthMeshSideBar : Page
+    public partial class PcaSynthMeshSideBar : Page, IViewerPage
     {
         public PcaSynthMeshSideBar(PcaSynthMeshViewerContent content)
         {
