@@ -366,6 +366,9 @@ namespace Warp9.Model
             opts.Converters.Add(new ReferencedDataJsonConverter<Matrix>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Bitmap>());
             opts.Converters.Add(new LutSpecJsonConverter());
+            opts.Converters.Add(new ColorJsonConverter());
+            opts.Converters.Add(new Matrix4x4JsonConverter());
+            opts.Converters.Add(new SizeJsonConverter());
         }
 
         public static Project CreateEmpty()

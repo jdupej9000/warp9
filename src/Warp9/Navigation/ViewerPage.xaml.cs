@@ -2,6 +2,7 @@
 using System.IO;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ using System.Windows.Media.TextFormatting;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.JsonConverters;
 using Warp9.ProjectExplorer;
 using Warp9.Scene;
 using Warp9.Viewer;
@@ -319,8 +321,30 @@ namespace Warp9.Navigation
 
         private void Snapshot_Click(object sender, RoutedEventArgs e)
         {
-            // get content.Scene and do JSON for now,
-            // later store that into project
+            if (content is null)
+                return;
+
+            JsonSerializerOptions opts = new JsonSerializerOptions()
+            {
+                AllowTrailingCommas = false,
+                //WriteIndented = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            opts.Converters.Add(new SpecimenTableJsonConverter());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Vector3[]>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<Data.Matrix>());
+            opts.Converters.Add(new ReferencedDataJsonConverter<System.Drawing.Bitmap>());
+            opts.Converters.Add(new LutSpecJsonConverter());
+            opts.Converters.Add(new ColorJsonConverter());
+            opts.Converters.Add(new Matrix4x4JsonConverter());
+            opts.Converters.Add(new SizeJsonConverter());
+
+            using FileStream fs = new FileStream("viewer-result.json",FileMode.Create, FileAccess.Write);
+            JsonSerializer.Serialize(fs, content.Scene, opts);
+
         }
     }
 }
