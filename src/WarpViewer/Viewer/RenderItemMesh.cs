@@ -48,6 +48,9 @@ namespace Warp9.Viewer
 
         bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderBlend = false;
 
+        private static VertexDataLayout FakeNormalsLayout = new VertexDataLayout(false)
+            .AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 0);
+
         public bool RenderPoints
         {
             get { return renderPoints; }
@@ -99,7 +102,7 @@ namespace Warp9.Viewer
         public bool UseDynamicArrays
         {
             get { return useDynamicArrays; }
-            set { useDynamicArrays = value; useDynamicArrays = true; }
+            set { useDynamicArrays = value; Commit(); }
         }
 
         public Mesh? Mesh
@@ -216,6 +219,8 @@ namespace Warp9.Viewer
             MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
             if (normalView is not null)
                 job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), useDynamicArrays);
+            else if(useDynamicArrays)
+                job.SetVertexBuffer(ctx, 2, Array.Empty<byte>(), FakeNormalsLayout, useDynamicArrays, posView.RawData.Length);
 
             if (valueBuffer is not null)
             {

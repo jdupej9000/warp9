@@ -62,7 +62,9 @@ namespace Warp9.Viewer
             int dataSize = elemSize * itemCount;
 
             using DataStream ds = new DataStream(dataSize, true, true);
-            (ds as System.IO.Stream).Write(d);
+            if(!d.IsEmpty)
+                (ds as System.IO.Stream).Write(d);
+
             ds.Position = 0;
 
             SharpDX.Direct3D11.Buffer buff = new SharpDX.Direct3D11.Buffer(
