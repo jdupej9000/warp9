@@ -56,6 +56,12 @@ namespace Warp9.Viewer
             set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Diffuse, value); OnPropertyChanged("RenderDiffuse"); }
         }
 
+        public bool RenderSpecular
+        {
+            get { return Scene.Mesh0!.Flags.HasFlag(MeshRenderFlags.Specular); }
+            set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.Specular, value); OnPropertyChanged("RenderSpecular"); }
+        }
+
         public int PaletteIndex
         {
             get { return paletteIndex; }
