@@ -23,11 +23,11 @@ namespace Warp9.Viewer
         public CorrMeshSideBar(CorrMeshViewerContent content)
         {
             InitializeComponent();
-            Content = content;
+            ViewContent = content;
             DataContext = content;
         }
 
-        CorrMeshViewerContent Content { get; init; }
+        CorrMeshViewerContent ViewContent { get; init; }
 
         private void btnSpecimenInc_Click(object sender, RoutedEventArgs e)
         {

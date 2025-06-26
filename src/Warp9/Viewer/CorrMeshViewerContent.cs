@@ -43,7 +43,7 @@ namespace Warp9.Viewer
         public int MeshIndex
         {
             get { return meshIndex; }
-            set { ShowMesh(value); OnPropertyChanged("MeshIndex"); }
+            set { ShowMesh(value); Scene.Mesh0!.Version.Commit(RenderItemDelta.Full); OnPropertyChanged("MeshIndex"); }
         }
 
         public bool RenderWireframe
@@ -79,6 +79,7 @@ namespace Warp9.Viewer
 
         private void ShowMesh(int index)
         {
+            meshIndex = index;
             SpecimenTable tab = dcaEntry.Payload.Table!;
             long corrPclRef = tab.Columns[ModelConstants.CorrespondencePclColumnName].GetData<ProjectReferenceLink>()[index].ReferenceIndex;
 
@@ -98,7 +99,6 @@ namespace Warp9.Viewer
 
             Mesh corrMesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
             Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(corrMesh);
-
         }
     }
 }
