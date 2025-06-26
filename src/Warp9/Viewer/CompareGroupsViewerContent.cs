@@ -57,7 +57,8 @@ namespace Warp9.Viewer
         Mesh? meshMean = null;
         CompareGroupsSideBar sidebar;
         long entityKey;       
-        bool compareForm = false;      
+        bool compareForm = false;
+        float[]? field = null;
         int mappedFieldIndex = 0;
 
         static readonly List<string> mappedFieldsList = new List<string>
@@ -84,6 +85,7 @@ namespace Warp9.Viewer
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
+            field = null;
             meshMean = GetVisibleMesh();
 
             if (meshMean is not null)
@@ -191,7 +193,8 @@ namespace Warp9.Viewer
             if (recalcField)
             {
                 int nv = pclA.VertexCount;
-                float[] field = new float[nv];
+                
+                if(field is null) field = new float[nv];
 
                 switch (mappedFieldIndex)
                 {
@@ -211,6 +214,8 @@ namespace Warp9.Viewer
                         HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
                         break;
                 }
+
+                AttributeField = field;
             }
 
             base.UpdateMappedField(recalcField);
