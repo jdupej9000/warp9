@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.IO;
+using Warp9.JsonConverters;
 
 namespace Warp9.Model
 {
@@ -364,6 +365,7 @@ namespace Warp9.Model
             opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Matrix>());
             opts.Converters.Add(new ReferencedDataJsonConverter<Bitmap>());
+            opts.Converters.Add(new LutSpecJsonConverter());
         }
 
         public static Project CreateEmpty()

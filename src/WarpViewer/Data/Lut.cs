@@ -30,41 +30,19 @@ namespace Warp9.Data
             return Color.FromArgb(colors[pos]);
         }
 
-        public static Lut Create(int width, params (float, Color)[] stops)
+        public static Lut Create(int width, LutSpec spec)
         {
             byte[] raw = new byte[width * 4];
             Span<int> colors = MemoryMarshal.Cast<byte, int>(raw.AsSpan());
 
-            int nstops = stops.Length;
-            for (int s = 0; s < nstops - 1; s++)
-            {
-                (float f0, Color c0) = stops[s];
-                (float f1, Color c1) = stops[s + 1];
-                int i0 = (int)(width * f0);
-                int i1 = (int)(width * f1);
-
-                Vector4 color0 = RenderUtils.ToNumColor(c0);
-                Vector4 color1 = RenderUtils.ToNumColor(c1);
-
-                for (int i = i0; i < Math.Min(width, i1); i++)
-                {
-                    Vector4 color = Vector4.Lerp(color0, color1, (float)(i - i0) / (i1 - i0));
-                    colors[i] = RenderUtils.ToColor(color).ToArgb();
-                }
-            }
-
-            (float flast, Color clast) = stops[stops.Length - 1];
-            int ilast = (int)(width * flast);
-            if (ilast >= width) ilast = width - 1;
-            for (int i = ilast; i < width; i++)
-                colors[i] = clast.ToArgb();
+            spec.SampleRgba8(colors);
 
             return new Lut(width, SharpDX.DXGI.Format.R8G8B8A8_UNorm, raw);
         }
 
-        public static Lut CreateQuantized(int width, int numStops, params (float, Color)[] stops)
+        public static Lut Create(int width, params (float, Color)[] stops)
         {
-            throw new NotImplementedException();
+            return Create(width, new LutSpec(0, stops));
         }
 
         // https://www.kennethmoreland.com/color-advice/
