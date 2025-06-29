@@ -155,6 +155,34 @@ namespace Warp9.ProjectExplorer
         }
     }
 
+
+    public class TestMdProjectItem : ProjectItem
+    {
+        public TestMdProjectItem(Warp9ViewModel vm, long key, string name) :
+            base(vm, typeof(MdViewPage))
+        {
+            Name = name;
+        }
+
+        public long Key { get; init; }
+
+        public override void Update()
+        {
+            base.Update();
+        }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            base.ConfigurePresenter(pres);
+
+            if (pres is not MdViewPage page)
+                throw new ArgumentException();
+
+            Project proj = ParentViewModel.Project;
+            page.RenderMarkdown("## Hello");
+        }
+    }
+
     public class MeshCorrespondenceProjectItem : ProjectItem
     {
         public MeshCorrespondenceProjectItem(Warp9ViewModel vm, long key) :
@@ -162,6 +190,7 @@ namespace Warp9.ProjectExplorer
         {
             Key = key;
             Children.Add(new SpecimenTableProjectItem(vm, key, "Results table"));
+            Children.Add(new TestMdProjectItem(vm, key, "MD"));
         }
 
         public long Key { get; init; }

@@ -40,6 +40,9 @@
     <Compile Update="Navigation\MatrixViewPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Navigation\MdViewPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Navigation\ProjectSettingsPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
