@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Markdig.Wpf.Signed" Version="0.5.0.1" />
     <PackageReference Include="Material.Icons.WPF" Version="2.2.0" />
     <PackageReference Include="TqkLibrary.Wpf.Interop.DirectX" Version="1.0.1" />
   </ItemGroup>
