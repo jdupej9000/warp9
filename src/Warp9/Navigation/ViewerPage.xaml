@@ -29,14 +29,14 @@
                 <Label Height="4" />
                 <TextBlock Style="{DynamicResource TextBlockSidebarSection}" Margin="4,0,4,4">View</TextBlock>
                 <StackPanel Orientation="Horizontal" Margin="4,0,0,4">
-                    <Button Style="{DynamicResource ControlButton}" Content="Front" Width="35" Margin="0,0,1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Back" Width="35" Margin="0,0,1,0"/>
+                    <Button Style="{DynamicResource ControlButton}" Content="Front" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Back" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="1"/>
                     <Label Width="3" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Left" Width="35" Margin="0,0,1,0"/>
-                    <Button Style="{DynamicResource ControlButton}" Content="Right" Width="35" Margin="0,0,1,0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Left" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="2"/>
+                    <Button Style="{DynamicResource ControlButton}" Content="Right" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="3" />
                     <Label Width="3" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Top" Width="35" Margin="0,0,1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Btm" Width="35" Margin="0,0,1,0"/>
+                    <Button Style="{DynamicResource ControlButton}" Content="Top" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="4" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Btm" Width="35" Margin="0,0,1,0" Click="SetView_Click" Tag="5"/>
                 </StackPanel>
 
 

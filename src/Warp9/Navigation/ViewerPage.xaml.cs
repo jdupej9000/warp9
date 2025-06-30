@@ -347,5 +347,39 @@ namespace Warp9.Navigation
             JsonSerializer.Serialize(fs, content.Scene, opts);
 
         }
+
+        private void SetView_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && int.TryParse(btn.Tag as string, out int viewIndex))
+            {   
+                switch (viewIndex)
+                {
+                    case 0:
+                        cameraControl.Execute(CameraCommand.SetFront);
+                        break;
+
+                    case 1:
+                        cameraControl.Execute(CameraCommand.SetBack);
+                        break;
+
+                    case 2:
+                        cameraControl.Execute(CameraCommand.SetLeft);
+                        break;
+
+                    case 3:
+                        cameraControl.Execute(CameraCommand.SetRight);
+                        break;
+
+                    case 4:
+                        cameraControl.Execute(CameraCommand.SetTop);
+                        break;
+
+                    case 5:
+                        cameraControl.Execute(CameraCommand.SetBottom);
+                        break;
+
+                }
+            }
+        }
     }
 }

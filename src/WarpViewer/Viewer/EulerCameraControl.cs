@@ -77,6 +77,33 @@ namespace Warp9.Viewer
             view = Matrix4x4.Identity;
         }
 
+        public void Execute(CameraCommand command)
+        {
+            switch (command)
+            {
+                case CameraCommand.SetFront:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(0, 0, 0);
+                    break;
+                case CameraCommand.SetBack:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(MathF.PI, 0, 0);
+                    break;
+                case CameraCommand.SetRight:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(MathF.PI / 2, 0, 0);
+                    break;
+                case CameraCommand.SetLeft:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(-MathF.PI / 2, 0, 0);
+                    break;
+                case CameraCommand.SetTop:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(0, MathF.PI / 2, 0);
+                    break;
+                case CameraCommand.SetBottom:
+                    prevRot = Matrix4x4.CreateFromYawPitchRoll(0, -MathF.PI / 2, 0);
+                    break;
+            }
+
+            Update(Vector2.Zero, Vector3.Zero, true);
+        }
+
         private void Update(Vector2 rotDelta, Vector3 transDelta, bool release = false)
         {
             Matrix4x4 newRot = Matrix4x4.Multiply(Matrix4x4.CreateFromYawPitchRoll(rotDelta.X, rotDelta.Y, 0), prevRot);

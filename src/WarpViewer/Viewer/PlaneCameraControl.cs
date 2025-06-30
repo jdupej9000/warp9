@@ -64,6 +64,11 @@ namespace Warp9.Viewer
           
         }
 
+        public void Execute(CameraCommand command)
+        {
+            throw new NotImplementedException();
+        }
+
         private Vector3 MakeFullCamera(Vector3 cam)
         {
             return radius * cam + cur_offset;

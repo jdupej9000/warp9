@@ -76,6 +76,11 @@ namespace Warp9.Viewer
             view = Matrix4x4.Identity;
         }
 
+        public void Execute(CameraCommand command)
+        {
+            throw new NotImplementedException();
+        }
+
         private Quaternion GetRotation(Vector2 pt)
         {
             Vector3 en = ToSphere(ToScreenRelative(pt));
