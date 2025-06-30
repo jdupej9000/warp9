@@ -138,12 +138,12 @@ namespace Warp9.Utils
                 fdb.AddEmphText("Match rejection");
                 List<string> rej = new List<string>();
                 if (dca.DcaConfig.RejectDistant)
-                    rej.Add($"if distance>{dca.DcaConfig.RejectDistanceThreshold}");
+                    rej.Add($"if distance > {dca.DcaConfig.RejectDistanceThreshold}");
 
                 if (dca.DcaConfig.RejectExpanded)
                 {
-                    rej.Add($"if expansion<{dca.DcaConfig.RejectExpandedLowThreshold}");
-                    rej.Add($"if expansion?{dca.DcaConfig.RejectExpandedHighThreshold}");
+                    rej.Add($"if expansion < {dca.DcaConfig.RejectExpandedLowThreshold}");
+                    rej.Add($"if expansion > {dca.DcaConfig.RejectExpandedHighThreshold}");
                 }
 
                 fdb.AddText(string.Join(" OR ", rej));
