@@ -23,6 +23,23 @@ namespace Warp9.Jobs
             return false;
         }
 
+        public void Add<T>(string key, T value)
+        {
+            if (repository.TryGetValue(key, out var val) && val is List<T> list)
+            {
+                list.Add(value);
+            }
+            else
+            {
+                list = new List<T>
+                {
+                    value
+                };
+                repository[key] = list;
+            }
+        }
+
+
         public void Set<T>(string key, int index, T value)
         {
             if (repository.TryGetValue(key, out var val) && val is List<T> list)

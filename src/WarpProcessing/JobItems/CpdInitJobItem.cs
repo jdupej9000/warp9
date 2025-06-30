@@ -9,7 +9,7 @@ namespace Warp9.JobItems
 {
     public class CpdInitJobItem : ProjectJobItem
     {
-        public CpdInitJobItem(int index, long specTableKey, int baseIndex, string meshColumn, string result) :
+        public CpdInitJobItem(int index, long specTableKey, int baseIndex, string meshColumn, string? logItem, string result) :
             this(index, specTableKey, null, baseIndex, meshColumn, result, null)
         { }
 
@@ -38,6 +38,7 @@ namespace Warp9.JobItems
         public string MeshColumn { get; init; }
         public int BaseMeshIndex { get; init; }
         public string InitObjectItem { get; init; }
+        public string? LogItem {get; init; }
         public CpdConfiguration CpdConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
@@ -67,7 +68,7 @@ namespace Warp9.JobItems
 
             ctx.Workspace.Set(InitObjectItem, cpdCtx);
             ctx.WriteLog(ItemIndex, MessageKind.Information, 
-                string.Format("CPD-LR initialization complete (m={0}, eigs={1}).", cpdCtx.NumVertices, cpdCtx.NumEigenvectors));
+                string.Format("CPD-LR initialization complete (m={0}, eigs={1}).", cpdCtx.NumVertices, cpdCtx.NumEigenvectors), LogItem);
             return true;
         }
     }

@@ -1,4 +1,5 @@
-﻿using Warp9.Data;
+﻿using System.Drawing;
+using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Native;
@@ -8,11 +9,12 @@ namespace Warp9.JobItems
 {
     public class CpdRegJobItem : ProjectJobItem
     {
-        public CpdRegJobItem(int index, long specTableKey, string? gpaItem, string initItem, string meshColumn, int meshIndex, string result) :
+        public CpdRegJobItem(int index, long specTableKey, string? gpaItem, string initItem, string meshColumn, int meshIndex, string? logItem, string result) :
             base(index, "CPD registration", JobItemFlags.None)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;
+            LogItem = logItem;
             InitItem = initItem;
             MeshColumn = meshColumn;
             MeshIndex = meshIndex;
@@ -21,6 +23,7 @@ namespace Warp9.JobItems
 
         public long SpecimenTableKey { get; init; }
         public string? GpaItem { get; init; }
+        public string? LogItem {get; init; }
         public string InitItem { get; init; }
         public string MeshColumn { get; init; }
         public int MeshIndex { get; init; }
@@ -50,6 +53,9 @@ namespace Warp9.JobItems
             ctx.Workspace.Set(ResultItem, MeshIndex, pclBent);
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, "CPD registration complete: " + resultInfo.ToString());
+
+            if (LogItem != null)
+                ctx.Workspace.Add(LogItem, $"[{MeshIndex}] {resultInfo}");
 
             return regStatus == WarpCoreStatus.WCORE_OK;
         }

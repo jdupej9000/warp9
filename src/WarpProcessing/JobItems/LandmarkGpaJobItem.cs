@@ -14,14 +14,14 @@ namespace Warp9.JobItems
     /// </summary>
     public class LandmarkGpaJobItem : ProjectJobItem
     {
-        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, string sizeResultKey, GpaConfiguration? cfg) :
+        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, string sizeResultKey, string? logKey, GpaConfiguration? cfg) :
             base(index, "Landmark GPA", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
             LandmarkColumnName = colName;
             WorkspaceResultKey = resultKey;
             SizeResultKey = sizeResultKey;
-
+            LogKey = logKey;
             Config = cfg ?? new GpaConfiguration();
         }
 
@@ -29,6 +29,7 @@ namespace Warp9.JobItems
         public string LandmarkColumnName { get; init; }
         public string WorkspaceResultKey { get; init; }
         public string SizeResultKey { get; init; }
+        public string? LogKey { get; init; }
         public GpaConfiguration Config { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
@@ -56,14 +57,16 @@ namespace Warp9.JobItems
             for (int i = 0; i < pcls.Length; i++)
                 ctx.Workspace.Set(SizeResultKey, i, res.GetTransform(i).cs);
 
-            ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA complete: " + res.ToString());
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA complete: " + res.ToString(), LogKey);
 
             //for (int i = 0; i < res.NumData; i++)
             //    ctx.WriteLog(ItemIndex, MessageKind.Information, string.Format("   GPA {0}:", i) +  res.GetTransform(i).ToString());
 
             float[] dispPost = LandmarkDispersion.Calculate(res.Mean, res.EnumerateTransformed());
+
             ctx.WriteLog(ItemIndex, MessageKind.Information, "Landmark dispersions: " +
-                string.Join(", ", dispPost.Select((t) => t.ToString("F3"))));
+                string.Join(", ", dispPost.Select((t) => t.ToString("F3"))),
+                LogKey);
 
             return true;
         }

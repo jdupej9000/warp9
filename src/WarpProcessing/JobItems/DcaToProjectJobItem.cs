@@ -12,7 +12,7 @@ namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string corrRejection, string corrWhitelist, string resultEntryName, DcaConfiguration cfg) :
+        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string corrRejection, string corrWhitelist, string? logItem, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
@@ -21,6 +21,7 @@ namespace Warp9.JobItems
             ResultEntryName = resultEntryName;
             CorrespondenceSizeItem = corrSizeItem;
             GpaItem = gpaItem;
+            LogItem = logItem;
             DcaConfig = cfg;
             RejectionItem = corrRejection;
             VertexWhitelistItem = corrWhitelist;
@@ -32,6 +33,7 @@ namespace Warp9.JobItems
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
         public string? GpaItem { get; init; }
+        public string? LogItem { get; init; }
         public string RejectionItem { get; init; }
         public string VertexWhitelistItem { get; init; }
         public DcaConfiguration DcaConfig { get; init; }
@@ -137,6 +139,9 @@ namespace Warp9.JobItems
                 MeanLandmarksKey = meanLandmarksKey,
                 VertexRejectionRatesKey = rejectionRatesKey
             };
+
+            if (LogItem is not null && ctx.Workspace.TryGet(LogItem, out List<string>? logItems) && logItems is not null)
+                entry.Payload.Text = string.Join("\n", logItems);
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, 
                 string.Format("The entry '{0}' has been added to the project.", ResultEntryName));

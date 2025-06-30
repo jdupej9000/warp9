@@ -16,7 +16,8 @@ namespace Warp9.Jobs
         private static readonly string CorrespondenceSizeKey = "corr.size";
         private static readonly string RejectionKey = "corr.reject";
         private static readonly string VertexWhitelistKey = "corr.vxwhlst";
-        
+        private static readonly string LogKey = "log";
+
         public static IEnumerable<ProjectJobItem> Create(DcaConfiguration cfg, Project proj, bool debug=false)
         {
             int index = 0;
@@ -38,7 +39,7 @@ namespace Warp9.Jobs
                 case DcaRigidPreregKind.LandmarkFittedGpa:
                     yield return new LandmarkGpaJobItem(index++, cfg.SpecimenTableKey,
                         cfg.LandmarkColumnName ?? throw new InvalidOperationException(),
-                        GpaPreregKey, CorrespondenceSizeKey, null);
+                        GpaPreregKey, CorrespondenceSizeKey, LogKey, null);
                     gpaRegItem = GpaPreregKey;
                     break;
 
@@ -68,7 +69,7 @@ namespace Warp9.Jobs
                     for (int i = 0; i < numSpecs; i++)
                     {
                         if (i != baseMeshIndex)
-                            yield return new CpdRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, NonrigidRegKey);
+                            yield return new CpdRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, LogKey, NonrigidRegKey);
                     }
                     break;
 
@@ -124,7 +125,7 @@ namespace Warp9.Jobs
 
             yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, 
                 GpaPreregKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, 
-                RejectionKey, VertexWhitelistKey,
+                RejectionKey, VertexWhitelistKey, LogKey,
                 cfg.ResultEntryName, cfg);
         }
     }

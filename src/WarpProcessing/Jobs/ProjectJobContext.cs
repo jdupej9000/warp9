@@ -19,7 +19,7 @@ namespace Warp9.Jobs
         public JobWorkspace Workspace { get; init; } = new JobWorkspace();
         public Project Project { get; init; }
 
-        public void WriteLog(int jobItemIndex, MessageKind kind, string message)
+        public void WriteLog(int jobItemIndex, MessageKind kind, string message, string? logWorkspaceItem=null)
         {
             string fmtMsg;
 
@@ -36,6 +36,9 @@ namespace Warp9.Jobs
                 LogMessage(this, fmtMsg);
             else
                 Console.WriteLine(fmtMsg);
+
+            if (logWorkspaceItem is not null)
+                Workspace.Add(logWorkspaceItem, message);
         }
 
         public bool TryGetSpecTableMesh(long specTableKey, string columnName, int index, [MaybeNullWhen(false)] out Mesh? m)

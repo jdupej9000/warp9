@@ -11,6 +11,6 @@
     {
         JobWorkspace Workspace { get; }
 
-        void WriteLog(int jobItemIndex, MessageKind kind, string message);
+        void WriteLog(int jobItemIndex, MessageKind kind, string message, string? logWorkspaceItem=null);
     }
 }
