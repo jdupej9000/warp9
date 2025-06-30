@@ -33,6 +33,7 @@ namespace Warp9
             views.Add(typeof(ProjectSettingsPage), pageProjectSettings);
             views.Add(typeof(LogPage), pageLog);
             views.Add(typeof(MatrixViewPage), pageMatrixView);
+            views.Add(typeof(SummaryPage), pageSummary);
 
             JobEngine.ProgressChanged += JobEngine_ProgressChanged;
         }
@@ -41,6 +42,7 @@ namespace Warp9
 
         MainLandingPage pageLanding = new MainLandingPage();
         LogPage pageLog = new LogPage();
+        SummaryPage pageSummary = new SummaryPage();
         TextEditorPage pageTextEditor = new TextEditorPage();
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();

@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using Warp9.Data;
 using Warp9.Model;
 using Warp9.Navigation;
+using Warp9.Themes;
 using Warp9.Viewer;
 
 namespace Warp9.ProjectExplorer
@@ -158,9 +162,10 @@ namespace Warp9.ProjectExplorer
     public class MeshCorrespondenceProjectItem : ProjectItem
     {
         public MeshCorrespondenceProjectItem(Warp9ViewModel vm, long key) :
-            base(vm, typeof(ViewerPage))
+            base(vm, typeof(SummaryPage))
         {
             Key = key;
+            Children.Add(new MeshCorrespondenceViewerProjectItem(vm, key, "DCA viewer"));
             Children.Add(new SpecimenTableProjectItem(vm, key, "Results table"));
         }
 
@@ -175,6 +180,41 @@ namespace Warp9.ProjectExplorer
 
             base.Update();
         }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            base.ConfigurePresenter(pres);
+
+            if (pres is not SummaryPage page)
+                throw new ArgumentException();
+
+            FlowDocument doc = new FlowDocument();
+
+            Paragraph p = new Paragraph(new Run("Hello, world!"));
+            p.FontSize = 36;
+            doc.Blocks.Add(p);
+            
+            p = new Paragraph(new Run("The ultimate programming greeting!"));
+            p.FontSize = 14;
+            p.FontStyle = FontStyles.Italic;
+            p.TextAlignment = TextAlignment.Left;
+            p.Foreground = ThemesController.GetBrush("Brush.BackgroundHot");
+            doc.Blocks.Add(p);
+
+            page.Document = doc;
+        }
+    }
+
+    public class MeshCorrespondenceViewerProjectItem : ProjectItem
+    {
+        public MeshCorrespondenceViewerProjectItem(Warp9ViewModel vm, long key, string name) :
+            base(vm, typeof(ViewerPage))
+        {
+            Name = name;
+            Key = key;
+        }
+
+        public long Key { get; init; }
 
         public override void ConfigurePresenter(IWarp9View pres)
         {

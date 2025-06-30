@@ -54,14 +54,17 @@ namespace Warp9.Themes
             RefreshControls();
         }
 
-        public static object GetResource(object key)
+        public static object? GetResource(object key)
         {
             return ThemeDictionary[key];
         }
 
         public static Brush GetBrush(string name)
         {
-            object r = GetResource(name);
+            object? r = GetResource(name);
+
+            if (r is null)
+                r = ControlColours[name];
 
             if (r is Color c)
                 return new SolidColorBrush(c);
