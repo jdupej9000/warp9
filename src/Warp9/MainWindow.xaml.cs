@@ -61,7 +61,7 @@ namespace Warp9
 
             string? currentArchivePath = model.Project.Archive?.FileName;
             string? destPath = null;
-            if (currentArchivePath is not null)
+            if (!forceNewPath && currentArchivePath is not null)
             {
                 destPath = currentArchivePath;
             }
