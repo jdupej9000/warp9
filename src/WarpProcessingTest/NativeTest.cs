@@ -102,7 +102,8 @@ namespace Warp9.Test
         [TestMethod]
         public void CpdInitDefaultTest()
         {
-            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            PointCloud pcl = mesh;
             WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, new CpdConfiguration());
 
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
@@ -119,17 +120,69 @@ namespace Warp9.Test
             Console.WriteLine("Eigenvalues: " +
                 string.Join(", ", lambda.ToArray().Select((l) => l.ToString())));
 
-            /*StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < m; i++)
-            {
-                for (int j = 0; j < neig - 1; j++)
-                    sb.Append(q[j * m + i].ToString() + ",");
+            Console.WriteLine("Q: " + q.Length + " Bytes.");
 
-                sb.Append(q[(neig-1) * m + i].ToString());
-                sb.AppendLine();
+            TestOrthogonality(q, m, neig);
+
+            Bitmap bmpEigenvectors = VisualizeEigenvectors(mesh, new Size(128, 128), neig, q);
+            bmpEigenvectors.Save(Path.Combine(BitmapAsserts.ResultPath, "CpdInitDefaultTest_0.png"));
+        }
+
+        private static Bitmap VisualizeEigenvectors(Mesh m, Size frameSize, int neigs, ReadOnlySpan<float> d)
+        {
+            HeadlessRenderer rend = ComplexTests.CreateRenderer();
+            RenderItemMesh rim = new RenderItemMesh();
+            rim.Mesh = m;
+            rim.Lut = Lut.Create(256, Lut.JetColors);
+            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+            rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            rim.ValueMax = 0.02f;
+            rim.ValueMin = -0.02f;
+            rend.AddRenderItem(rim);
+
+            int nv = m.VertexCount;
+
+            Bitmap ret = new Bitmap(frameSize.Width, frameSize.Height * neigs, PixelFormat.Format32bppArgb);
+            BitmapData bmp = ret.LockBits(new Rectangle(0, 0, frameSize.Width, frameSize.Height * neigs),
+                ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+
+            float[] attr = new float[nv];
+
+            unsafe
+            {
+                int numBytesFrame = bmp.Stride * frameSize.Height;
+
+                for (int i = 0; i < neigs; i++)
+                {
+                    d.Slice(i * nv, nv).CopyTo(attr.AsSpan());
+                    rim.SetValueField(attr);
+
+                    rend.Present();
+                    Span<byte> s = new Span<byte>((void*)(bmp.Scan0 + i * numBytesFrame), numBytesFrame);
+                    rend.ExtractColor(s);
+                }
             }
 
-            File.WriteAllText(TestUtils.MakeResultPath("CpdInitDefaultTest_0.txt"), sb.ToString());*/
+            ret.UnlockBits(bmp);
+            return ret;
+        }
+
+        private static void TestOrthogonality(ReadOnlySpan<float> d, int nv, int neigs)
+        {
+            for (int i = 0; i < neigs - 1; i++)
+            {
+                for (int j = i + 1; j < neigs; j++)
+                {
+                    double dot = 0;
+
+                    for (int k = 0; k < nv; k++)
+                    {
+                        dot += (double)d[k + i * nv] * d[k + j * nv];
+                    }
+
+                    Console.WriteLine($"Q{i} . Q{j} = {dot}");
+                }
+            }
         }
 
         [DoNotParallelize]

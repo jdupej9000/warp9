@@ -12,7 +12,7 @@ namespace Warp9.Test
     [TestClass]
     public class ComplexTests
     {
-        private static HeadlessRenderer CreateRenderer()
+        public static HeadlessRenderer CreateRenderer()
         {
             Assert.IsTrue(HeadlessRenderer.TryCreate(0, out HeadlessRenderer? r));
             Assert.IsNotNull(r);
