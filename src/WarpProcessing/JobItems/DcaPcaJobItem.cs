@@ -46,6 +46,9 @@ namespace Warp9.JobItems
             if (dcaCorrPcls.Any((t) => t is null))
                 return false;
 
+            int nv = dcaCorrPcls[0]!.VertexCount;
+            int ns = dcaCorrPcls.Count;
+
             if (Config.RestoreSize)
             {
                 if (Config.ParentSizeColumn is null)
@@ -57,10 +60,15 @@ namespace Warp9.JobItems
 
                 SpecimenTableColumn<double>? csColumn = ModelUtils.TryGetSpecimenTableColumn<double>(
                     ctx.Project, Config.ParentEntityKey, Config.ParentSizeColumn);
-                // TODO
-            }
 
-            int nv = dcaCorrPcls[0]!.VertexCount;
+                if (csColumn is not null)
+                {
+                    IReadOnlyList<double> cs = csColumn.GetData<double>();
+
+                    for (int i = 0; i < ns; i++)
+                        dcaCorrPcls[i] = MeshScaling.ScalePosition(dcaCorrPcls[i]!, (float)cs[i]).ToPointCloud();
+                }
+            }
 
             bool[] allow = new bool[nv];
             if (Config.RejectionMode == PcaRejectionMode.None)
@@ -95,7 +103,7 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            int ns = dcaCorrPcls.Count;
+            
             int npcs = 50;
             ctx.WriteLog(ItemIndex, MessageKind.Information, $"Transforming source data ({dcaCorrPcls.Count} datapoints), keeping {npcs} PCs.");
             
