@@ -134,8 +134,8 @@ namespace Warp9.Test
             RenderItemMesh rim = new RenderItemMesh();
             rim.Mesh = m;
             rim.Lut = Lut.Create(256, Lut.JetColors);
-            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
-            rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.EstimateNormals;
+            rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.4f, -2.0f, -2.0f);
             rim.ValueMax = 0.02f;
             rim.ValueMin = -0.02f;
             rend.AddRenderItem(rim);
