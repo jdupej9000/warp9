@@ -102,7 +102,7 @@ public class ViewerSceneRenderer
         ViewProjConst vpc = new ViewProjConst
         {
             viewProj = Matrix4x4.Transpose(Scene.ViewMatrix *
-               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, aspect, 0.01f, 100.0f)),
+               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, aspect, 0.01f, 1000.0f)),
 
             camera = new Vector4(camera, 1)
         };
