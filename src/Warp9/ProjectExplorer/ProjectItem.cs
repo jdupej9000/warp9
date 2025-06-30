@@ -10,6 +10,7 @@ using Warp9.Data;
 using Warp9.Model;
 using Warp9.Navigation;
 using Warp9.Themes;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9.ProjectExplorer
@@ -188,20 +189,10 @@ namespace Warp9.ProjectExplorer
             if (pres is not SummaryPage page)
                 throw new ArgumentException();
 
-            FlowDocument doc = new FlowDocument();
-
-            Paragraph p = new Paragraph(new Run("Hello, world!"));
-            p.FontSize = 36;
-            doc.Blocks.Add(p);
-            
-            p = new Paragraph(new Run("The ultimate programming greeting!"));
-            p.FontSize = 14;
-            p.FontStyle = FontStyles.Italic;
-            p.TextAlignment = TextAlignment.Left;
-            p.Foreground = ThemesController.GetBrush("Brush.BackgroundHot");
-            doc.Blocks.Add(p);
-
-            page.Document = doc;
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                page.Document = EntitySummary.SummarizeDca(ParentViewModel.Project, entry);
+            else
+                page.Document = new FlowDocument();
         }
     }
 
