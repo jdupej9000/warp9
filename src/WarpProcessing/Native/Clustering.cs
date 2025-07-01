@@ -1,5 +1,6 @@
 ﻿using SharpDX;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -21,7 +22,7 @@ namespace Warp9.Native
             labels = new int[n];
             centers = new Vector3[k];
 
-            float[] ct = new float[3 * k];
+            float[] ct = ArrayPool<float>.Shared.Rent(3 * k);
 
             unsafe
             {
@@ -35,6 +36,8 @@ namespace Warp9.Native
 
             for(int i = 0; i < k; i++)
                 centers[i] = new Vector3(ct[i], ct[i + k], ct[i + 2*k]);
+
+            ArrayPool<float>.Shared.Return(ct);
         }
     }
 }

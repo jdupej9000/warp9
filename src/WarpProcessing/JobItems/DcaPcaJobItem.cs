@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.Xml;
@@ -43,7 +44,7 @@ namespace Warp9.JobItems
                 return false;
 
             List<PointCloud?> dcaCorrPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(proj, corrColumn).ToList();
-            if (dcaCorrPcls.Any((t) => t is null))
+            if (dcaCorrPcls.Exists((t) => t is null))
                 return false;
 
             int nv = dcaCorrPcls[0]!.VertexCount;
@@ -108,7 +109,7 @@ namespace Warp9.JobItems
             ctx.WriteLog(ItemIndex, MessageKind.Information, $"Transforming source data ({dcaCorrPcls.Count} datapoints), keeping {npcs} PCs.");
             
             int npcsall = pca.NumPcs;
-            float[] scores = new float[npcsall];
+            float[] scores = ArrayPool<float>.Shared.Rent(npcsall);
             Matrix<float> scoresMat = new Matrix<float>(npcs, ns);
             for (int i = 0; i < ns; i++)
             {
@@ -122,6 +123,7 @@ namespace Warp9.JobItems
                 for (int j = 0; j < npcs; j++)
                     scoresMat[i, j] = scores[j];
             }
+            ArrayPool<float>.Shared.Return(scores);
 
             MatrixCollection mcPca = pca.ToMatrixCollection();
             mcPca[Pca.KeyScores] = scoresMat;

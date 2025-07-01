@@ -12,6 +12,7 @@ namespace Warp9.Native
             if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> dataPosSrc))
                 return pcl;
 
+            // TODO: remove copy
             byte[] dataPosDest = new byte[dataPosSrc.Length];
             Span<Rigid3> rigidSpan = stackalloc Rigid3[1];
             rigidSpan[0] = rigid;

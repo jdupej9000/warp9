@@ -60,19 +60,23 @@ namespace Warp9.Utils
                         break;
 
                     case ColumnImportType.Image:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Image, project ?? throw new ArgumentNullException());
+                        ArgumentNullException.ThrowIfNull(project);
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Image, project);
                         break;
 
                     case ColumnImportType.Mesh:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Mesh, project ?? throw new ArgumentNullException());
+                        ArgumentNullException.ThrowIfNull(project);
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Mesh, project);
                         break;
 
                     case ColumnImportType.Landmarks:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.PointCloud, project ?? throw new ArgumentNullException());
+                        ArgumentNullException.ThrowIfNull(project);
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.PointCloud, project);
                         break;
 
                     case ColumnImportType.Matrix:
-                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Matrix, project ?? throw new ArgumentNullException());
+                        ArgumentNullException.ThrowIfNull(project);
+                        AddReferenceColumn(table, tableProvider, op.SourceColumnIndices[0], op.Name, tableProvider.WorkingDirectory, SpecimenTableColumnType.Matrix, project);
                         break;
 
                     case ColumnImportType.Landmarks2DAos:

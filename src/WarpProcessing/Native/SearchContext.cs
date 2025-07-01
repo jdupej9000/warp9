@@ -14,6 +14,7 @@ namespace Warp9.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct ResultInfoDPtBary
     {
+        // TODO: x,y,z -> Vector3
         public float d, x, y, z, u, v, w, _reserved0;
     }
 

@@ -152,7 +152,10 @@ namespace Warp9.IO
 
         private void ReadFixed16AsFloat32(Span<byte> buffer, int cols, int rows)
         {
-            float[] limits = new float[cols * 2];
+            if (cols > 16) 
+                throw new InvalidOperationException("Do not stackalloc in ReadFixed16AsFloat32.");
+
+            Span<float> limits = stackalloc float[cols * 2];
             reader.Read(MemoryMarshal.Cast<float, byte>(limits));
 
             for (int i = 0; i < cols; i++)

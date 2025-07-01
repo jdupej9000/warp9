@@ -10,7 +10,7 @@ namespace Warp9.JobItems
     public class CpdRegJobItem : ProjectJobItem
     {
         public CpdRegJobItem(int index, long specTableKey, string? gpaItem, string initItem, string meshColumn, int meshIndex, string? logItem, string result) :
-            base(index, "CPD registration", JobItemFlags.None)
+            base(index, "CPD registration", JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;
@@ -23,7 +23,7 @@ namespace Warp9.JobItems
 
         public long SpecimenTableKey { get; init; }
         public string? GpaItem { get; init; }
-        public string? LogItem {get; init; }
+        public string? LogItem { get; init; }
         public string InitItem { get; init; }
         public string MeshColumn { get; init; }
         public int MeshIndex { get; init; }
@@ -40,9 +40,9 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            if(!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? pcl) || pcl is null)
+            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? pcl) || pcl is null)
                 return false;
-         
+
             if (!ctx.Workspace.TryGet(InitItem, out CpdContext? cpdContext) || cpdContext is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization is invalid.");
@@ -57,7 +57,7 @@ namespace Warp9.JobItems
             if (LogItem != null)
                 ctx.Workspace.Add(LogItem, $"[{MeshIndex}] {resultInfo}");
 
-            return regStatus == WarpCoreStatus.WCORE_OK;
+            return regStatus == WarpCoreStatus.WCORE_OK || resultInfo.iter > 0;
         }
     }
 }

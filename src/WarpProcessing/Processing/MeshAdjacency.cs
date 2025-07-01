@@ -58,7 +58,7 @@ namespace Warp9.Processing
             valence[nv] = sumValence;
 
             // === PASS 2 - Record adjacency information
-            int[] ptr = new int[nv];
+            int[] ptr = ArrayPool<int>.Shared.Rent(nv);
             int[] adj = new int[sumValence];
             int idx = 0;
             foreach (FaceIndices fi in MeshUtils.EnumerateFaceIndices(m))
@@ -74,6 +74,8 @@ namespace Warp9.Processing
 
                 idx++;
             }
+
+            ArrayPool<int>.Shared.Return(ptr);
 
             return new MeshAdjacency(nv, m.FaceCount, valence, adj);
         }

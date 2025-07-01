@@ -96,7 +96,7 @@ namespace Warp9.Viewer
             return rejectionRates.Data;
         }
 
-        private float[]? MakeIndexMap()
+        private float[] MakeIndexMap()
         {
             float[] ret = new float[nv];
             for(int i = 0; i < nv; i++)

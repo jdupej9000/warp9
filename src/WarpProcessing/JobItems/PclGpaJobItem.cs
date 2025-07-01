@@ -34,7 +34,7 @@ namespace Warp9.JobItems
             }
             else if (ctx.Workspace.TryGet(MeshListItem, out meshes) && meshes is not null)
             {
-                pointClouds = meshes.Select((t) => (PointCloud)t).ToArray();
+                pointClouds = meshes.ConvertAll((t) => (PointCloud)t).ToArray();
             }
             else
             {

@@ -221,13 +221,13 @@ namespace Warp9.IO
             List<Vector3>? pos = null, norm = null;
             List<FaceIndices>? idx = null;
 
-            if (elements.Any((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.PosX)))
+            if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.PosX)))
                 pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
 
-            if (elements.Any((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.NormX)))
+            if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.NormX)))
                 norm = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
 
-            if (elements.Any((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.FaceIndices)))
+            if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.FaceIndices)))
                 idx = mb.GetIndexSegmentForEditing();
 
             if (format == "binary_little_endian")

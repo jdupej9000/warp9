@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -22,8 +23,8 @@ namespace Warp9.Processing
             }
 
             int nv = src.VertexCount;
-            ResultInfoDPtBary[] proj = new ResultInfoDPtBary[nv];
-            int[] hitIndex = new int[nv];
+            ResultInfoDPtBary[] proj = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
+            int[] hitIndex = ArrayPool<int>.Shared.Rent(nv);
 
             if (src.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
                searchCtx.NearestSoa(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
@@ -37,6 +38,8 @@ namespace Warp9.Processing
                 return mb.ToPointCloud();
             }
 
+            ArrayPool<ResultInfoDPtBary>.Shared.Return(proj);
+            ArrayPool<int>.Shared.Return(hitIndex);
             searchCtx.Dispose();
             return null;
         }
@@ -55,14 +58,14 @@ namespace Warp9.Processing
             // TODO: optimize this, clamp searches on previous results
 
             int nv = src.VertexCount;
-            ResultInfoDPtBary[] projNN = new ResultInfoDPtBary[nv];
-            int[] hitIndexNN = new int[nv];
+            ResultInfoDPtBary[] projNN = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
+            int[] hitIndexNN = ArrayPool<int>.Shared.Rent(nv);
 
-            float[] projRay0 = new float[nv];
-            int[] hitIndexRay0 = new int[nv];
+            float[] projRay0 = ArrayPool<float>.Shared.Rent(nv);
+            int[] hitIndexRay0 = ArrayPool<int>.Shared.Rent(nv);
 
-            float[] projRay1 = new float[nv];
-            int[] hitIndexRay1 = new int[nv];
+            float[] projRay1 = ArrayPool<float>.Shared.Rent(nv);
+            int[] hitIndexRay1 = ArrayPool<int>.Shared.Rent(nv);
 
             if (src.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrPos) &&
                 src.TryGetRawData(MeshSegmentType.Normal, -1, out ReadOnlySpan<byte> pclNrNormal))
@@ -105,6 +108,13 @@ namespace Warp9.Processing
 
                 return mb.ToPointCloud();
             }
+
+            ArrayPool<float>.Shared.Return(projRay0);
+            ArrayPool<float>.Shared.Return(projRay1);
+            ArrayPool<int>.Shared.Return(hitIndexRay0);
+            ArrayPool<int>.Shared.Return(hitIndexRay1);
+            ArrayPool<int>.Shared.Return(hitIndexNN);
+            ArrayPool<ResultInfoDPtBary>.Shared.Return(projNN);
 
             searchCtx.Dispose();
             return null;

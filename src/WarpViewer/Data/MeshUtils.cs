@@ -18,17 +18,12 @@ namespace Warp9.Data
         };
 
 
-        public static IEnumerable<FaceIndices> EnumerateFaceIndices(IFaceCollection faces)
+        public static ReadOnlySpan<FaceIndices> EnumerateFaceIndices(IFaceCollection faces)
         {
-            if (!faces.IsIndexed)
-                yield break;
+            if (!faces.IsIndexed || !faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> ret))
+                return ReadOnlySpan<FaceIndices>.Empty;
 
-            int nt = faces.FaceCount;
-            for (int i = 0; i < nt; i++)
-            {
-                faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> ret);
-                yield return ret[i];
-            }
+            return ret;
         }
 
         public static void CopySoaToAos(Span<float> dest, ReadOnlySpan<byte> src)

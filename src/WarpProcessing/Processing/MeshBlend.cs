@@ -34,7 +34,7 @@ namespace Warp9.Processing
         public static PointCloud? WeightedMean(IEnumerable<(PointCloud?, float)> pcls)
         {
             byte[] meanPos = Array.Empty<byte>();
-
+            
             int n = 0;
             foreach (var pcl in pcls)
             {

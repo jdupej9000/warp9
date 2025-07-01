@@ -164,7 +164,7 @@ namespace Warp9.Viewer
                 dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CentroidSizeColumnName, out SpecimenTableColumn? col2) &&
                 col2 is SpecimenTableColumn<double> csCol)
             {
-                cs = csCol.Data.Select((t) => (float)t).ToArray();
+                cs = csCol.Data.ConvertAll((t) => (float)t).ToArray();
             }
 
             if (cs is not null)
