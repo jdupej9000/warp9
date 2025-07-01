@@ -405,9 +405,9 @@ namespace warpcore::impl
             const __m512 x2 = _mm512_loadu_ps(x + i + 2 * n);
 
             for (int j = 0; j < m; j++) {
-                const __m512 d0 = _mm512_sub_ps(_mm512_set1_ps(t[j]), x0);
-                const __m512 d1 = _mm512_sub_ps(_mm512_set1_ps(t[j + m]), x1);
-                const __m512 d2 = _mm512_sub_ps(_mm512_set1_ps(t[j + 2 * m]), x2);
+                const __m512 d0 = _mm512_sub_ps(x0, _mm512_set1_ps(t[j]));
+                const __m512 d1 = _mm512_sub_ps(x1, _mm512_set1_ps(t[j + m]));
+                const __m512 d2 = _mm512_sub_ps(x2, _mm512_set1_ps(t[j + 2 * m]));
                 __m512 dist = _mm512_mul_ps(d0, d0);
                 dist = _mm512_fmadd_ps(d1, d1, dist);
                 dist = _mm512_fmadd_ps(d2, d2, dist);
