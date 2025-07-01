@@ -134,10 +134,12 @@ namespace Warp9.Test
             RenderItemMesh rim = new RenderItemMesh();
             rim.Mesh = m;
             rim.Lut = Lut.Create(256, Lut.JetColors);
-            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.EstimateNormals;
+            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.ShowValueLevel;
             rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.4f, -2.0f, -2.0f);
             rim.ValueMax = 0.02f;
             rim.ValueMin = -0.02f;
+            rim.LevelValue = 0;
+            rim.FillColor = Color.Black;
             rend.AddRenderItem(rim);
 
             int nv = m.VertexCount;
