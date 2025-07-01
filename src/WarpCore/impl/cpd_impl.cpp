@@ -202,20 +202,21 @@ namespace warpcore::impl
         const float ef = -0.5f / (beta * beta);
         const __m256 ef8 = _mm256_set1_ps(ef);
       
+        const __m256 ycol0 = _mm256_broadcast_ss(y + col);
+        const __m256 ycol1 = _mm256_broadcast_ss(y + m + col);
+        const __m256 ycol2 = _mm256_broadcast_ss(y + 2 * m + col);
+
         const int mch = round_down(m, 8);
-       /* for(int i = 0; i < mch; i += 8) {
-            __m256 d = _mm256_setzero_ps();
-            
-            for(int j = 0; j < 3; j++) {
-                const __m256 dj = _mm256_sub_ps(_mm256_loadu_ps(y + j*m + i), _mm256_broadcast_ss(y + j*m + col));
-                d = _mm256_fmadd_ps(dj, dj, d);
-            }
-
-            const __m256 t = expf_fast(_mm256_mul_ps(d, ef8));
+        for(int i = 0; i < mch; i += 8) {
+            __m256 d0 = _mm256_sub_ps(_mm256_loadu_ps(y + i), ycol0);
+            __m256 d1 = _mm256_sub_ps(_mm256_loadu_ps(y + m + i), ycol1);
+            __m256 d2 = _mm256_sub_ps(_mm256_loadu_ps(y + 2 * m + i), ycol2);
+            __m256 d = _mm256_fmadd_ps(d0, d0, _mm256_fmadd_ps(d1, d1, _mm256_mul_ps(d2, d2)));          
+            __m256 t = expf_fast(_mm256_mul_ps(d, ef8));
             _mm256_storeu_ps(gi + i, t);
-        }*/
+        }
 
-        for(int i = 0/*mch*/; i < m; i++) {
+        for(int i = mch; i < m; i++) {
             float d = 0;
             for(int j = 0; j < 3; j++) {
                 const float dj = y[j*m+i] - y[j*m+col];
