@@ -47,6 +47,9 @@ namespace warpcore::impl
         float* tau = new float[m];
         float ci[3];
 
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         // Cluster points y and find points which are closest to cluster centers -> centerIdx.
         kmeans<3>(y, m, k, centers, labels);
         for(int i = 0; i < k; i++) {
@@ -72,12 +75,18 @@ namespace warpcore::impl
 
     float cpd_estimate_sigma(const float* x, const float* y, int m, int n, float* tmp)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         cpd_sigmapart(m, n, x, y, tmp);
         return reduce_add(tmp, n) / (3 * m * n);
     }
 
     void cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
@@ -99,6 +108,9 @@ namespace warpcore::impl
         float* _p1 = _p0 + m * k;
         float* _p2 = _p1 + m * k;
         float* _p3 = _p2 + m * k;
+
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         dxinva(px, p1, m, 3, _p0);
         cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1);
@@ -155,6 +167,9 @@ namespace warpcore::impl
 
     float cpd_update_sigma2(const float* x, const float* t, const float* pt1, const float* p1, const float* px, int m, int n)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         float ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
         ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
         return ret / (3 * reduce_add(p1, m));
@@ -162,6 +177,9 @@ namespace warpcore::impl
 
     void cpd_samplefirst_g(const float* y, int m, float beta, float* gi)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         const float ef = -0.5f / (beta * beta);
 
         for(int i = 0; i < m; i++) {
@@ -178,6 +196,9 @@ namespace warpcore::impl
 
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         const float ef = -0.5f / (beta * beta);
         const __m256 ef8 = _mm256_set1_ps(ef);
       
@@ -207,6 +228,9 @@ namespace warpcore::impl
 
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         const __m256i order = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         const float ef = -0.5f / (beta * beta);
         const __m256 ef8 = _mm256_set1_ps(ef);
