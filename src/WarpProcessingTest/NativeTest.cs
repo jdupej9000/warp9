@@ -122,7 +122,7 @@ namespace Warp9.Test
 
             Console.WriteLine("Q: " + q.Length + " Bytes.");
 
-            TestOrthogonality(q, m, neig);
+            TestEigenvectors(q, m, neig);
 
             Bitmap bmpEigenvectors = VisualizeEigenvectors(mesh, new Size(128, 128), neig, q);
             bmpEigenvectors.Save(Path.Combine(BitmapAsserts.ResultPath, "CpdInitDefaultTest_0.png"));
@@ -167,8 +167,9 @@ namespace Warp9.Test
             return ret;
         }
 
-        private static void TestOrthogonality(ReadOnlySpan<float> d, int nv, int neigs)
+        private static void TestEigenvectors(ReadOnlySpan<float> d, int nv, int neigs)
         {
+            bool fail = false;
             for (int i = 0; i < neigs - 1; i++)
             {
                 for (int j = i + 1; j < neigs; j++)
@@ -176,13 +177,31 @@ namespace Warp9.Test
                     double dot = 0;
 
                     for (int k = 0; k < nv; k++)
-                    {
                         dot += (double)d[k + i * nv] * d[k + j * nv];
-                    }
 
-                    Console.WriteLine($"Q{i} . Q{j} = {dot}");
+                    if (dot > 1e-6)
+                    {
+                        Console.WriteLine($"Q{i} . Q{j} = {dot}");
+                        fail = true;
+                    }
                 }
             }
+
+            for (int i = 0; i < neigs - 1; i++)
+            {
+                double dot = 0;
+
+                for (int k = 0; k < nv; k++)
+                    dot += (double)d[k + i * nv] * d[k + i * nv];
+
+                if (Math.Abs(dot - 1) > 1e-4)
+                {
+                    Console.WriteLine($"| Q{i} | = {Math.Sqrt(dot)}");
+                    fail = true;
+                }              
+            }
+
+            Assert.IsFalse(fail);
         }
 
         [DoNotParallelize]
