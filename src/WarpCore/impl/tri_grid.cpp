@@ -51,8 +51,8 @@ namespace warpcore::impl
         make_cell_histogram(grid, idx_range, nt, hist);
         const int ng = reduce_add_i32(hist, num_cells);
 
-        grid->buff_vert.resize(ng * 9);
-        grid->buff_idx.resize(ng);
+        grid->buff_vert.resize(ng * 9 + 96); // pad to avoid access violations when searching
+        grid->buff_idx.resize(ng + 96);
         float* vert_base = grid->buff_vert.data();
         int* idx_base = grid->buff_idx.data();
         int offs = 0;

@@ -34,6 +34,7 @@ struct cpdresult {
     int32_t conv;
     float err, sigma2;
     float time, time_e;
+    int32_t debug;
 };
 
 

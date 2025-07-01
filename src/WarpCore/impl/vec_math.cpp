@@ -12,7 +12,7 @@ namespace warpcore::impl
 
     float WCORE_VECCALL expf_fast(float xx)
     {
-        return expf(xx);
+        //return expf(xx);
 
         __m128 x = _mm_set_ss(xx);
 
@@ -198,6 +198,13 @@ namespace warpcore::impl
         return _mm_cvtss_f32(reduce);
     }
 
+    int is_corrupted(__m256 v) 
+    {
+        // https://stackoverflow.com/questions/30674291/how-to-check-inf-for-avx-intrinsic-m256
+        __m256 self_sub_v8 = _mm256_sub_ps(v, v);
+        return _mm256_movemask_epi8(_mm256_castps_si256(self_sub_v8));
+    }
+
     void WCORE_VECCALL demux(__m256i& a, __m256i& b, __m256i& c)
     {
         __m256i a0 = _mm256_blend_epi32(a, b, 0b10010010);
@@ -307,13 +314,17 @@ namespace warpcore::impl
         const int n8 = round_down(n, 8);
 
          for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n8; j+=8) {
-                const __m256 t = _mm256_div_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
-                _mm256_storeu_ps(y + i * n + j, t);
-            }
+           // for(int j = 0; j < n8; j+=8) {
+             //   const __m256 t = _mm256_div_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
+               // _mm256_storeu_ps(y + i * n + j, t);
+            //}
 
-            for(int j = n8; j < n; j++)
-                y[i * n + j] = x[i * n + j] / v[j];
+             for (int j = 0; j < n; j++) {
+                 if (fabs(v[j]) > 1e-4f)
+                     y[i * n + j] = x[i * n + j] / v[j];
+                 else
+                     y[i * n + j] = 0;
+             }
         }
     }
 
@@ -440,13 +451,16 @@ namespace warpcore::impl
       
         int n16 = round_down(n, 16);
         for(int i = 0; i < m; i++) {
+            const float* ai = a + i * n;
             __m256 accum = _mm256_setzero_ps();
             
             for(int j = 0; j < n16; j+=16) {
-                const __m256 aj0 = _mm256_loadu_ps(a + j + i * n);
-                const __m256 bj0 = _mm256_loadu_ps(b + j);
-                const __m256 aj1 = _mm256_loadu_ps(a + j + i * n + 8);
+                const __m256 aj0 = _mm256_loadu_ps(ai + j);
+                const __m256 aj1 = _mm256_loadu_ps(ai + j + 8);
+
+                const __m256 bj0 = _mm256_loadu_ps(b + j);                
                 const __m256 bj1 = _mm256_loadu_ps(b + j + 8);
+
                 const __m256 p0 = _mm256_mul_ps(_mm256_mul_ps(aj0, aj0), bj0);
                 const __m256 p1 = _mm256_mul_ps(_mm256_mul_ps(aj1, aj1), bj1);
 
@@ -455,7 +469,7 @@ namespace warpcore::impl
 
             float part = 0;
             for(int j = n16; j < n; j++) {
-                const float aj = a[j + i * n];
+                const float aj = ai[j];
                 part += aj * aj * b[j]; 
             }
 
@@ -525,6 +539,19 @@ namespace warpcore::impl
         for (int c = 0; c < cols; c++) {
             float f = 1.0f / sqrtf(dot(mat + c * rows, mat + c * rows, rows));
             scale(mat + c * rows, f, rows);
+        }
+    }
+
+    void check_finite(const float* x, size_t len)
+    {
+        size_t num_bad = 0;
+        for (size_t i = 0; i < len; i++) {
+            if (!std::_Is_finite(x[i]))
+                num_bad++;
+        }
+
+        if (num_bad) {
+            throw std::exception{};
         }
     }
 };

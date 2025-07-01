@@ -58,6 +58,9 @@ namespace Warp9.Test
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
             cfg.CpdConfig.UseGpu = true;
+            cfg.CpdConfig.Beta = 2;
+            cfg.CpdConfig.Lambda = 2;
+
 
             IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project, true);
             ProjectJobContext jobCtx = new ProjectJobContext(project);

@@ -24,13 +24,18 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
     if(cpd == NULL || (y == NULL && init != NULL) || cpd->d != 3)
         return WCORE_INVALID_ARGUMENT;
 
+    // We determine the number of eigenvectors as ceil(cbrt(m)). For numerics' sake, we
+    // sample the G matrix in more columns than we need eigenvectors. After orthogonalization,
+    // we discard the extras.
     const int num_eigs = (cpd->neigen > 0) ? cpd->neigen : cpd_lowrank_numcols(cpd->m);
+    const int num_g_cols = num_eigs + num_eigs / 4;
+
     cpd->neigen = num_eigs;
 
     const int m = cpd->m;
 
     if(init == NULL)
-        return sizeof(float) * (m * num_eigs + 2 * m);
+        return sizeof(float) * (m * num_g_cols + 2 * m);
 
     float* lambda = (float*)init;
     float* lambda_inv = lambda + m;
@@ -42,7 +47,7 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
         //    break;
 
         case CPD_INIT_CLUSTERED:
-            cpd_init_clustered((const float*)y, m, num_eigs, cpd->beta, q, lambda);
+            cpd_init_clustered((const float*)y, m, num_eigs, num_g_cols, cpd->beta, q, lambda);
             break;
 
         default:
@@ -63,6 +68,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     if(cpd->d != 3)
         return WCORE_INVALID_ARGUMENT;
 
+    int debug = 0;
     auto t0 = std::chrono::high_resolution_clock::now();
 
     bool use_cuda = cpd->flags & CPD_USE_GPU;
@@ -128,6 +134,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
+            debug = 1;
             break;
         }
         
@@ -136,11 +143,17 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         sigma2 = cpd_update_sigma2((const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
+            debug = 2;
             break;
         }
 
-        std::memcpy(t, ttemp, sizeof(float) * 3 * m);
         conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol, tol_old);
+
+        if ((conv & CPD_CONV_NUMERIC_ERROR) == 0)
+            std::memcpy(t, ttemp, sizeof(float) * 3 * m);
+        else
+            debug = 3;
+
         tol_old = tol;
         it++;
     }
@@ -159,6 +172,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         result->err = tol;
         result->time_e = 1e-6f * etime;
         result->time = 1e-6f * std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count();
+        result->debug = debug;
     }
 
     return (it < maxit) ? WCORE_OK : WCORE_NONCONVERGENCE;

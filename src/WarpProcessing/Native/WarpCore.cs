@@ -105,11 +105,20 @@ namespace Warp9.Native
         public int conv;
         public float err, sigma2;
         public float time, time_e;
+        public int debug;
 
         public readonly override string ToString()
         {
-            return string.Format("it={0}, err={1}, s2={2}, t={3:F3}s, te={4:F3}s, pe={5:F1}%, conv={6}",
-                iter, err, sigma2, time, time_e, 100.0 * time_e / time, (CPD_CONV)conv);
+            if (((CPD_CONV)conv).HasFlag(CPD_CONV.CPD_CONV_NUMERIC_ERROR))
+            {
+                return string.Format("it={0}, err={1}, s2={2}, t={3:F3}s, te={4:F3}s, pe={5:F1}%, conv={6}, debug={7}",
+                 iter, err, sigma2, time, time_e, 100.0 * time_e / time, (CPD_CONV)conv, debug);
+            }
+            else
+            {
+                return string.Format("it={0}, err={1}, s2={2}, t={3:F3}s, te={4:F3}s, pe={5:F1}%, conv={6}",
+                    iter, err, sigma2, time, time_e, 100.0 * time_e / time, (CPD_CONV)conv);
+            }
         }
     }
 

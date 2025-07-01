@@ -132,8 +132,15 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
     }
 
     if (i < n) {
-        psum[i] = 1.0f / (sum + denomAdd);
-        pt1[i] = sum / (sum + denomAdd);
+        if (fabs(sum + denomAdd) > 1e-4) {
+            float psumi = 1.0f / (sum + denomAdd);
+            psum[i] = psumi;
+            pt1[i] = sum * psumi;
+        }
+        else {
+            psum[i] = 1000;
+            pt1[i] = 0;
+        }
     }
 }
 

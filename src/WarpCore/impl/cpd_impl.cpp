@@ -39,10 +39,10 @@ namespace warpcore::impl
         return 4 * m * k;
     }
 
-    void cpd_init_clustered(const float* y, int m, int k, float beta, float* q, float* lambda)
+    void cpd_init_clustered(const float* y, int m, int k, int kextra, float beta, float* q, float* lambda)
     {
         float* centers = new float[3*m];
-        int* labels = new int[m+k];
+        int* labels = new int[m+kextra];
         int* centerIdx = labels + m;
         float* tau = new float[m];
         float ci[3];
@@ -51,18 +51,18 @@ namespace warpcore::impl
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         // Cluster points y and find points which are closest to cluster centers -> centerIdx.
-        kmeans<3>(y, m, k, centers, labels);
-        for(int i = 0; i < k; i++) {
-            get_row<float, 3>(centers, k, i, ci);
+        kmeans<3>(y, m, kextra, centers, labels);
+        for(int i = 0; i < kextra; i++) {
+            get_row<float, 3>(centers, kextra, i, ci);
             centerIdx[i] = nearest<3>(y, m, ci);
         }
 
-        for(int i = 0; i < k; i++)
+        for(int i = 0; i < kextra; i++)
             cpd_sample_g(y, m, centerIdx[i], beta, q + i * m);
 
         // Orthogonalize q with a QR decomposition.
-        LAPACKE_sgeqrf(LAPACK_COL_MAJOR, m, k, q, m, tau);
-        LAPACKE_sorgqr(LAPACK_COL_MAJOR, m, k, k, q, m, tau);
+        LAPACKE_sgeqrf(LAPACK_COL_MAJOR, m, kextra, q, m, tau);
+        LAPACKE_sorgqr(LAPACK_COL_MAJOR, m, kextra, kextra, q, m, tau);
 
         // Compute lambda (eigenvalues).
         std::memset(lambda, 0, k * sizeof(float));
@@ -212,7 +212,7 @@ namespace warpcore::impl
             __m256 d1 = _mm256_sub_ps(_mm256_loadu_ps(y + m + i), ycol1);
             __m256 d2 = _mm256_sub_ps(_mm256_loadu_ps(y + 2 * m + i), ycol2);
             __m256 d = _mm256_fmadd_ps(d0, d0, _mm256_fmadd_ps(d1, d1, _mm256_mul_ps(d2, d2)));          
-            __m256 t = expf_fast(_mm256_mul_ps(d, ef8));
+            __m256 t = _mm256_exp_ps(_mm256_mul_ps(d, ef8));
             _mm256_storeu_ps(gi + i, t);
         }
 
@@ -223,7 +223,7 @@ namespace warpcore::impl
                 d += dj * dj;
             }
 
-            gi[i] = expf_fast(ef * d);
+            gi[i] = expf(ef * d);
         }
     }
 
@@ -382,7 +382,7 @@ namespace warpcore::impl
             }
             accum = _mm256_add_ps(accum, accumb);
             
-            const __m256 denom = _mm256_rcp_ps(_mm256_add_ps(accum, denomAdd8));
+            const __m256 denom = _mm256_div_ps(_mm256_set1_ps(1), _mm256_add_ps(accum, denomAdd8));
             _mm256_storeu_ps(psum + i, denom);
             _mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
         }
@@ -426,7 +426,7 @@ namespace warpcore::impl
             }
             accum = _mm512_add_ps(accum, accumb);
 
-            const __m512 denom = _mm512_rcp14_ps(_mm512_add_ps(accum, denomAddb));
+            const __m512 denom = _mm512_div_ps(_mm512_set1_ps(1), _mm512_add_ps(accum, denomAddb));
             _mm512_storeu_ps(psum + i, denom);
             _mm512_storeu_ps(pt1 + i, _mm512_mul_ps(denom, accum));
         }

@@ -2,6 +2,7 @@
 
 #include "../config.h"
 #include <immintrin.h>
+#include <intrin.h>
 
 namespace warpcore::impl
 {
@@ -17,6 +18,8 @@ namespace warpcore::impl
 
     float WCORE_VECCALL reduce_min(__m256 v);
     float WCORE_VECCALL reduce_max(__m256 v);
+
+    int is_corrupted(__m256 v);
 
     void WCORE_VECCALL demux(__m256i& a, __m256i& b, __m256i& c);
 
@@ -54,4 +57,8 @@ namespace warpcore::impl
     float dot(const float* x, const float* y, int n);
     void scale(float* x, float f, int n);
     void normalize_columns(float* mat, int rows, int cols);
+
+    void check_finite(const float* x, size_t len);
+
+    #define ASSERT_NORMAL(x) { if(is_corrupted(x)) __debugbreak(); }
 };
