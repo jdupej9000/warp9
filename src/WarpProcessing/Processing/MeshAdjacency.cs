@@ -11,16 +11,20 @@ namespace Warp9.Processing
 {
     public class MeshAdjacency
     {
-        private MeshAdjacency(int nv, int nt, int[] ptr, int[] triIdx)
+        private MeshAdjacency(int nv, int nt, int[] ptr, int[] triIdx, int[] vxPtr, int[] vxIdx)
         {
             triIdxPtr = ptr;
             triIdxList = triIdx;
+            vertIdxPtr = vxPtr;
+            vertIdxList = vxIdx;
             NumVertices = nv;
             NumFaces = nt;
         }
 
         int[] triIdxPtr;
         int[] triIdxList;
+        int[] vertIdxPtr;
+        int[] vertIdxList;
 
         public int NumVertices { get; }
         public int NumFaces { get; }
@@ -33,10 +37,18 @@ namespace Warp9.Processing
             return triIdxList.AsSpan(triIdxPtr[vertIdx], triIdxPtr[vertIdx + 1] - triIdxPtr[vertIdx]);
         }
 
-        // This does not zero the val array, nor does it check its size.
-        public static void AccumulateValence(Span<int> val, IFaceCollection faces)
+        public ReadOnlySpan<int> GetRing0Vertices(int vertIdx)
         {
-            foreach (FaceIndices fi in MeshUtils.EnumerateFaceIndices(faces))
+            if (vertIdx < 0 || vertIdx >= NumVertices)
+                return ReadOnlySpan<int>.Empty;
+
+            return vertIdxList.AsSpan(vertIdxPtr[vertIdx], vertIdxPtr[vertIdx + 1] - vertIdxPtr[vertIdx]);
+        }
+
+        // This does not zero the val array, nor does it check its size.
+        public static void AccumulateValence(Span<int> val, ReadOnlySpan<FaceIndices> faces)
+        {
+            foreach (FaceIndices fi in faces)
             {
                 val[fi.I0]++;
                 val[fi.I1]++;
@@ -44,16 +56,13 @@ namespace Warp9.Processing
             }
         }
 
-        public static MeshAdjacency Create(Mesh m)
+        public static MeshAdjacency Create(int nv, ReadOnlySpan<FaceIndices> faces)
         {
-            if (!m.IsIndexed)
-                throw new ArgumentException("The mesh must be indexed to compute vertex-face adjacency.");
-
-            int nv = m.VertexCount;
+            int nt = faces.Length;
 
             // === PASS 1 - Compute valence of vertices
             int[] valence = new int[nv + 1];
-            AccumulateValence(valence.AsSpan(), m);
+            AccumulateValence(valence.AsSpan(), faces);
             int sumValence = MiscUtils.CumSum(valence);
             valence[nv] = sumValence;
 
@@ -61,7 +70,7 @@ namespace Warp9.Processing
             int[] ptr = ArrayPool<int>.Shared.Rent(nv);
             int[] adj = new int[sumValence];
             int idx = 0;
-            foreach (FaceIndices fi in MeshUtils.EnumerateFaceIndices(m))
+            foreach (FaceIndices fi in faces)
             {
                 adj[valence[fi.I0] + ptr[fi.I0]] = idx;
                 ptr[fi.I0]++;
@@ -77,7 +86,33 @@ namespace Warp9.Processing
 
             ArrayPool<int>.Shared.Return(ptr);
 
-            return new MeshAdjacency(nv, m.FaceCount, valence, adj);
+            // === PASS 3 - Build vertex adjacency from face adjacency
+            List<int> vertAdj = new List<int>();
+            int[] vertAdjPtr = new int[nv + 1];
+            HashSet<int> vertAdjAccum = new HashSet<int>();
+            int vertAdjIdx = 0;
+            for (int i = 0; i < nv; i++)
+            {
+                vertAdjPtr[i] = vertAdjIdx;
+                vertAdjAccum.Clear();
+
+                for (int j = valence[i]; j < valence[i + 1]; j++)
+                {
+                    FaceIndices fi = faces[j];
+                    if (fi.I0 != i) vertAdjAccum.Add(fi.I0);
+                    if (fi.I1 != i) vertAdjAccum.Add(fi.I1);
+                    if (fi.I2 != i) vertAdjAccum.Add(fi.I2);
+                }
+
+                foreach(int ringVert in vertAdjAccum)
+                    vertAdj.Add(ringVert);
+
+                vertAdjIdx += vertAdjAccum.Count;
+            }
+            
+            vertAdjPtr[nv] = vertAdjIdx;
+
+            return new MeshAdjacency(nv, nt, valence, adj, vertAdjPtr, vertAdj.ToArray());
         }
     }
 }

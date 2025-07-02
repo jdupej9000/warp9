@@ -35,7 +35,7 @@ namespace Warp9.Processing
                 t4 += pt.Y * pt.Z;
                 t5 += pt.Z * pt.Z;
             }
-
+            
             return new Plane();
         }
 
