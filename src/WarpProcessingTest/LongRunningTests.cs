@@ -57,6 +57,7 @@ namespace Warp9.Test
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.BaseMeshIndex = 0;
+            cfg.BaseMeshOptimize = true;
             cfg.CpdConfig.UseGpu = true;
             cfg.CpdConfig.Beta = 2;
             cfg.CpdConfig.Lambda = 2;
@@ -89,7 +90,9 @@ namespace Warp9.Test
 
             Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));
 
-            Mesh baseMesh = GetMeshFromProject(project, cfg.SpecimenTableKey, cfg.MeshColumnName, cfg.BaseMeshIndex);
+            if (!ctx.Workspace.TryGet("base", out Mesh? baseMesh) || baseMesh is null)
+                Assert.Fail("Cannot get base mesh.");
+
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(1024, 1024);
             Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);
@@ -99,7 +102,10 @@ namespace Warp9.Test
                     new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col: Color.Gray),
                     new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
             }
-           
+
+            TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
+                new TestRenderItem(TriStyle.MeshFilled, baseMesh, col: Color.Gray));
+                
         }
     }
 }

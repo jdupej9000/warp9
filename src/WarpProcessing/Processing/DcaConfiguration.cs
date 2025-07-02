@@ -45,6 +45,9 @@ namespace Warp9.Processing
         [JsonPropertyName("base-idx")]
         public int BaseMeshIndex { get; set; }
 
+        [JsonPropertyName("base-optimize")]
+        public bool BaseMeshOptimize {get; set; }
+
         [JsonIgnore]
         public string ResultEntryName { get; set; } = "DCA";
 

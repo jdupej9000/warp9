@@ -68,6 +68,9 @@ namespace Warp9.Processing
 
             // === PASS 2 - Record adjacency information
             int[] ptr = ArrayPool<int>.Shared.Rent(nv);
+            for (int i = 0; i < nv; i++)
+                ptr[i] = 0;
+
             int[] adj = new int[sumValence];
             int idx = 0;
             foreach (FaceIndices fi in faces)

@@ -46,7 +46,9 @@
                                 <RowDefinition Height="28"/>
                                 <RowDefinition Height="28"/>
                                 <RowDefinition Height="28"/>
-                            </Grid.RowDefinitions>
+                                <RowDefinition Height="28"/>
+
+                        </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="12" />
                                 <ColumnDefinition Width="120" />
@@ -67,7 +69,9 @@
 
                             <TextBlock Grid.Row="4" Grid.Column="1" VerticalAlignment="Center">Base specimen</TextBlock>
                             <ComboBox Grid.Row="4" Grid.Column="2" x:Name="cmbBase" VerticalAlignment="Center"/>
-                        </Grid>
+
+                        <CheckBox Grid.Row="5" Grid.Column="2" Content="Optimize base mesh" IsChecked="{Binding BaseMeshOptimize, Mode=TwoWay}" />
+                    </Grid>
                         
                         <Label Height="4" />
                     </StackPanel>

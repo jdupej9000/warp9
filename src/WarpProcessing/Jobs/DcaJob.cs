@@ -8,6 +8,7 @@ namespace Warp9.Jobs
 {
     public static class DcaJob
     {
+        private static readonly string BaseMeshKey = "base";
         private static readonly string GpaPreregKey = "rigid";
         private static readonly string GpaPreregMeshKey = "rigid.reg";
         private static readonly string NonrigidInitKey = "nonrigid.init";
@@ -47,6 +48,14 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
+            // TODO: warn if this is used with TPS registration, or move landmarks to the optimized mesh.
+            yield return new DcaBaseMeshItem(index++,
+                cfg.SpecimenTableKey, meshColumn, baseMeshIndex, 
+                gpaRegItem, 
+                BaseMeshKey, cfg.BaseMeshOptimize);
+
+            bool baseSpecimenReused = !cfg.BaseMeshOptimize;
+
             if (debug)
             {
                 for (int i = 0; i < numSpecs; i++)
@@ -64,11 +73,11 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
 
                 case DcaNonrigidRegistrationKind.LowRankCpd:
-                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, baseMeshIndex, meshColumn, NonrigidInitKey, cfg.CpdConfig);
+                    yield return new CpdInitJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, BaseMeshKey, meshColumn, NonrigidInitKey, cfg.CpdConfig);
                     yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, NonrigidRegKey);
                     for (int i = 0; i < numSpecs; i++)
                     {
-                        if (i != baseMeshIndex)
+                        if (i != baseMeshIndex || !baseSpecimenReused)
                             yield return new CpdRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, NonrigidInitKey, meshColumn, i, LogKey, NonrigidRegKey);
                     }
                     break;
@@ -85,10 +94,13 @@ namespace Warp9.Jobs
 
                 case DcaSurfaceProjectionKind.ClosestPoint:
                 case DcaSurfaceProjectionKind.RaycastWithFallback:
-                    yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
+
+                    if(baseSpecimenReused)
+                        yield return new SingleRigidRegJobItem(index++, cfg.SpecimenTableKey, gpaRegItem, meshColumn, baseMeshIndex, CorrespondenceRegKey);
+
                     for (int i = 0; i < numSpecs; i++)
                     {
-                        if (i != baseMeshIndex)
+                        if (i != baseMeshIndex || !baseSpecimenReused)
                             yield return new SurfaceProjectionJobItem(index++, cfg.SpecimenTableKey, meshColumn, i, baseMeshIndex, NonrigidRegKey, gpaRegItem, cfg.SurfaceProjection== DcaSurfaceProjectionKind.RaycastWithFallback, CorrespondenceRegKey);
                     }
                     break;
@@ -124,7 +136,7 @@ namespace Warp9.Jobs
                 yield return new WorkspaceCleanupJobItem(index++, NonrigidInitKey, NonrigidRegKey);
 
             yield return new DcaToProjectJobItem(index++, cfg.SpecimenTableKey, 
-                GpaPreregKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, 
+                GpaPreregKey, BaseMeshKey, CorrespondenceRegKey, null, CorrespondenceSizeKey, 
                 RejectionKey, VertexWhitelistKey, LogKey,
                 cfg.ResultEntryName, cfg);
         }

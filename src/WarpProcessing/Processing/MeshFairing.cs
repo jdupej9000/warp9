@@ -12,7 +12,7 @@ namespace Warp9.Processing
 {
     public static class MeshFairing
     {
-        public static MeshBuilder Optimize(Mesh m, float smootingFactor = 0.5f)
+        public static MeshBuilder Optimize(Mesh m, float smoothingFactor = 0.5f)
         {
             MeshView? pos = m.GetView(MeshViewKind.Pos3f);
             if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
@@ -27,12 +27,12 @@ namespace Warp9.Processing
             List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
             CollectionsMarshal.SetCount(posSeg, nv);
 
-            Optimize(CollectionsMarshal.AsSpan(posSeg), posData, faces);
+            Optimize(CollectionsMarshal.AsSpan(posSeg), posData, faces, smoothingFactor);
 
             return mb;
         }
 
-        public static void Optimize(Span<Vector3> posOpt, ReadOnlySpan<Vector3> pos, ReadOnlySpan<FaceIndices> faces, float smootingFactor = 0.5f)
+        public static void Optimize(Span<Vector3> posOpt, ReadOnlySpan<Vector3> pos, ReadOnlySpan<FaceIndices> faces, float smoothingFactor = 0.5f)
         {
             if (posOpt.Overlaps(pos))
                 throw new InvalidOperationException("Result and source position spans must not overlap.");
@@ -57,7 +57,7 @@ namespace Warp9.Processing
 
                     meanPos /= ring0.Length;
 
-                    posOpt[i] = Vector3.Lerp(pos[i] , meanPos, smootingFactor);
+                    posOpt[i] = (1-smoothingFactor) * pos[i] + smoothingFactor * meanPos;
                 }
             }
         }

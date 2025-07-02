@@ -12,7 +12,7 @@ namespace Warp9.JobItems
 {
     public class DcaToProjectJobItem : ProjectJobItem
     {
-        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string corrRejection, string corrWhitelist, string? logItem, string resultEntryName, DcaConfiguration cfg) :
+        public DcaToProjectJobItem(int index, long specTableKey, string? gpaItem, string baseMeshItem, string corrPclsItem, string? corrLmsItem, string corrSizeItem, string corrRejection, string corrWhitelist, string? logItem, string resultEntryName, DcaConfiguration cfg) :
             base(index, "Updating project", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
@@ -21,6 +21,7 @@ namespace Warp9.JobItems
             ResultEntryName = resultEntryName;
             CorrespondenceSizeItem = corrSizeItem;
             GpaItem = gpaItem;
+            BaseMeshItem = baseMeshItem;
             LogItem = logItem;
             DcaConfig = cfg;
             RejectionItem = corrRejection;
@@ -33,6 +34,7 @@ namespace Warp9.JobItems
         public string? CorrespondenceLandmarksItem { get; init; }
         public string ResultEntryName { get; init; }
         public string? GpaItem { get; init; }
+        public string BaseMeshItem { get; init; }
         public string? LogItem { get; init; }
         public string RejectionItem { get; init; }
         public string VertexWhitelistItem { get; init; }
@@ -42,6 +44,9 @@ namespace Warp9.JobItems
         {
             Project proj = ctx.Project;
             SpecimenTable specTab = new SpecimenTable();
+
+            if (!ctx.Workspace.TryGet(BaseMeshItem, out Mesh? baseMesh) || baseMesh is null)
+                return false;
 
             PointCloud pclBase;
 
@@ -113,11 +118,11 @@ namespace Warp9.JobItems
                 rejectionRatesKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, rejObject);
             }
 
-            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
-                return false;
+            //if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, DcaConfig.MeshColumnName!, DcaConfig.BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
+             //   return false;
 
-            Mesh baseMeshCorr = Mesh.FromPointCloud(pclBase, baseMesh);
-            long baseMeshCorrRef = proj.AddReferenceDirect(ProjectReferenceFormat.W9Mesh, baseMeshCorr);
+            //Mesh baseMeshCorr = Mesh.FromPointCloud(pclBase, baseMesh);
+            long baseMeshCorrRef = proj.AddReferenceDirect(ProjectReferenceFormat.W9Mesh, baseMesh);
 
             long meanLandmarksKey = default;
 

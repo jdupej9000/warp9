@@ -9,16 +9,16 @@ namespace Warp9.JobItems
 {
     public class CpdInitJobItem : ProjectJobItem
     {
-        public CpdInitJobItem(int index, long specTableKey, int baseIndex, string meshColumn, string? logItem, string result) :
-            this(index, specTableKey, null, baseIndex, meshColumn, result, null)
+        public CpdInitJobItem(int index, long specTableKey, string baseKey, string meshColumn, string? logItem, string result) :
+            this(index, specTableKey, null, baseKey, meshColumn, result, null)
         { }
 
-        public CpdInitJobItem(int index, long specTableKey, string? gpaItem, int baseIndex, string meshColumn, string result, CpdConfiguration? cpdCfg) :
+        public CpdInitJobItem(int index, long specTableKey, string? gpaItem, string baseKey, string meshColumn, string result, CpdConfiguration? cpdCfg) :
             base(index, "CPD initialization", JobItemFlags.FailuesAreFatal | JobItemFlags.RunsAlone)
         {
             SpecimenTableKey = specTableKey;
             GpaItem = gpaItem;
-            BaseMeshIndex = baseIndex;
+            BaseMeshKey = baseKey;
             InitObjectItem = result;
             MeshColumn = meshColumn;
 
@@ -36,26 +36,16 @@ namespace Warp9.JobItems
         public long SpecimenTableKey { get; init; }
         public string? GpaItem { get; init; }
         public string MeshColumn { get; init; }
-        public int BaseMeshIndex { get; init; }
+        public string BaseMeshKey { get; init; }
         public string InitObjectItem { get; init; }
         public string? LogItem {get; init; }
         public CpdConfiguration CpdConfig { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
-            ctx.WriteLog(ItemIndex, MessageKind.Error,
-                    string.Format("Initializing CPD for mesh '{0}'.", BaseMeshIndex));
+            ctx.WriteLog(ItemIndex, MessageKind.Information, "Initializing CPD.");
 
-            SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
-                ctx.Project, SpecimenTableKey, MeshColumn);
-            if (column is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error,
-                    string.Format("Cannot find column '{0}' in entity '{1}'.", MeshColumn, SpecimenTableKey));
-                return false;
-            }
-
-            if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, BaseMeshIndex, GpaItem, out Mesh? baseMesh) || baseMesh is null)
+            if (!ctx.Workspace.TryGet(BaseMeshKey, out Mesh? baseMesh) || baseMesh is null)
                 return false;
 
             CpdConfiguration cpdCfg = CpdConfig;
