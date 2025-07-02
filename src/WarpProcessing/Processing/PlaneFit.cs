@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Utils;
 
 namespace Warp9.Processing
 {
@@ -35,13 +36,27 @@ namespace Warp9.Processing
                 t4 += pt.Y * pt.Z;
                 t5 += pt.Z * pt.Z;
             }
-            
-            return new Plane();
-        }
 
-        // TODO: need eigenvectors + eigenvalues of a 3x3 symmetric matrix
-        // e.g.: https://hal.science/hal-01501221/document
-        // or  http://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
-        // or! https://www.geometrictools.com/GTE/Mathematics/SymmetricEigensolver3x3.h
+            Span<float> A = stackalloc float[9];
+            A[0] = t0; A[1] = t1; A[2] = t2;
+            A[3] = t1; A[2] = t3; A[4] = t4;
+            A[5] = t2; A[6] = t4; A[7] = t5;
+
+            Span<float> Q = stackalloc float[9];
+            Span<float> w = stackalloc float[9];
+            Eigs3.DecomposeQL(A, Q, w);
+
+            int minLambdaIdx = 0;
+
+            if (w[minLambdaIdx] > w[1])
+                minLambdaIdx = 1;
+
+            if (w[minLambdaIdx] > w[2])
+                minLambdaIdx = 2;
+
+            Vector3 normal = new Vector3(Q[3 * minLambdaIdx], Q[3 * minLambdaIdx + 1], Q[3 * minLambdaIdx + 2]);
+
+            return new Plane(normal, -Vector3.Dot(center, normal));
+        }
     }
 }
