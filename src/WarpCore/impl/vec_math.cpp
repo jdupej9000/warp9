@@ -10,6 +10,11 @@ namespace warpcore::impl
     void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y);
     void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y);
 
+    __m256 _mm256_abs_ps(__m256 x)
+    {
+        return _mm256_andnot_ps(_mm256_set1_ps(-0.0f), x);
+    }
+
     float WCORE_VECCALL expf_fast(float xx)
     {
         //return expf(xx);

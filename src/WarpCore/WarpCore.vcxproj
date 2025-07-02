@@ -201,6 +201,7 @@
       <Warning>W3</Warning>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MD</Runtime>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-ftz=true %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

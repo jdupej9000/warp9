@@ -14,8 +14,8 @@ int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_o
 
 constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
 constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-6f;
-constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-3f;
-constexpr float CPD_REL_ERROR_CONV_THRESH = 2e-3f;
+constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-5f;
+constexpr float CPD_REL_ERROR_CONV_THRESH = 1e-3f;
 
 using namespace warpcore::impl;
 
@@ -197,7 +197,7 @@ int cpd_get_convergence(const cpdinfo* cpd, int it,float sigma2, float sigma2_ol
     if (err < cpd->tol)
         conv |= CPD_CONV_TOL;
 
-    if ((err_old - err) / err < CPD_REL_ERROR_CONV_THRESH)
+    if (abs(err_old - err) / err_old < CPD_REL_ERROR_CONV_THRESH)
         conv |= CPD_CONV_RTOL;
 
     return conv;

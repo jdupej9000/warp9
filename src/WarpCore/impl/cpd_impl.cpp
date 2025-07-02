@@ -24,6 +24,9 @@ namespace warpcore::impl
     void cpd_p1px_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     void cpd_p1px_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     
+    constexpr float PT1_CUTOFF = 1e5f;
+    constexpr float PT1_CUTOFF_REC = 1.0f / 1e5f;
+
     constexpr bool cpd_is_tier_complete(int x) 
     {
         return (x & 0xff) == 0;
@@ -337,9 +340,16 @@ namespace warpcore::impl
             }
             sumAccum += sumAccumB;
 
-            const float rcp = 1.0f / (sumAccum + denomAdd);
-            psum[i] = rcp;
-            pt1[i] = sumAccum * rcp;
+            const float sumCorr = sumAccum + denomAdd;
+            if (fabs(sumCorr) > PT1_CUTOFF_REC) {
+                const float rcp = 1.0f / sumCorr;
+                psum[i] = rcp;
+                pt1[i] = sumAccum * rcp;
+            }
+            else {
+                psum[i] = PT1_CUTOFF;
+                pt1[i] = 0;
+            }
         }
     }
 
@@ -382,9 +392,15 @@ namespace warpcore::impl
             }
             accum = _mm256_add_ps(accum, accumb);
             
-            const __m256 denom = _mm256_div_ps(_mm256_set1_ps(1), _mm256_add_ps(accum, denomAdd8));
+            __m256 sumCorr = _mm256_add_ps(accum, denomAdd8);
+            __m256 sumCorrNormal = _mm256_cmp_ps(_mm256_abs_ps(sumCorr), _mm256_set1_ps(PT1_CUTOFF_REC), _CMP_GT_OQ);
+            sumCorr = _mm256_blendv_ps(_mm256_set1_ps(1), sumCorr, sumCorrNormal); // replace zeros to prevent division by zero
+
+            __m256 denom = _mm256_div_ps(_mm256_set1_ps(1), sumCorr);
+            denom = _mm256_blendv_ps(_mm256_set1_ps(PT1_CUTOFF), denom, sumCorrNormal);
+
             _mm256_storeu_ps(psum + i, denom);
-            _mm256_storeu_ps(pt1 + i, _mm256_mul_ps(denom, accum));
+            _mm256_storeu_ps(pt1 + i, _mm256_and_ps(_mm256_mul_ps(denom, accum), sumCorrNormal)); // pt1=0 where sumCorrNormal==0
         }
 
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
@@ -426,9 +442,15 @@ namespace warpcore::impl
             }
             accum = _mm512_add_ps(accum, accumb);
 
-            const __m512 denom = _mm512_div_ps(_mm512_set1_ps(1), _mm512_add_ps(accum, denomAddb));
+            __m512 sumCorr = _mm512_add_ps(accum, denomAddb);
+            const __mmask16 sumCorrNormal = _mm512_cmplt_ps_mask(_mm512_set1_ps(PT1_CUTOFF_REC), _mm512_abs_ps(sumCorr));
+            sumCorr = _mm512_mask_blend_ps(sumCorrNormal, _mm512_set1_ps(1), sumCorr); // replace zeros to prevent division by zero
+
+            __m512 denom = _mm512_div_ps(_mm512_set1_ps(1), sumCorr);
+            denom = _mm512_mask_blend_ps(sumCorrNormal, _mm512_set1_ps(PT1_CUTOFF), denom);
+
             _mm512_storeu_ps(psum + i, denom);
-            _mm512_storeu_ps(pt1 + i, _mm512_mul_ps(denom, accum));
+            _mm512_storeu_ps(pt1 + i, _mm512_mask_blend_ps(sumCorrNormal, _mm512_setzero_ps(), _mm512_mul_ps(denom, accum)));
         }
 
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
