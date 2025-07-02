@@ -98,7 +98,7 @@ namespace Warp9.Processing
 
                 for (int j = valence[i]; j < valence[i + 1]; j++)
                 {
-                    FaceIndices fi = faces[j];
+                    FaceIndices fi = faces[adj[j]];
                     if (fi.I0 != i) vertAdjAccum.Add(fi.I0);
                     if (fi.I1 != i) vertAdjAccum.Add(fi.I1);
                     if (fi.I2 != i) vertAdjAccum.Add(fi.I2);

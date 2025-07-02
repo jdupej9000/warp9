@@ -47,5 +47,19 @@ namespace Warp9.Test
             TestUtils.Render(rend, "VertexSharingTest_0.png", TeapotModelMatrix,
                 new TestRenderItem(TriStyle.MeshFilled, teapotNorm, mrs: MeshRenderStyle.PhongBlinn));
         }
+
+        [TestMethod]
+        public void MeshFairingTest()
+        {
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+
+            Mesh faired = MeshFairing.Optimize(teapot, 0.5f).ToMesh();
+
+            HeadlessRenderer rend = TestUtils.CreateRenderer(false);
+            TestUtils.Render(rend, "MeshFairingTest_0.png", TeapotModelMatrix,
+                new TestRenderItem(TriStyle.MeshFilled, faired, mrs: MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals),
+                new TestRenderItem(TriStyle.MeshFilled, teapot, col: Color.Yellow, mrs: MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals));
+        }
     }
 }
