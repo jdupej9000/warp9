@@ -58,13 +58,19 @@ namespace warpcore::impl
      * @param maxIt Maximum number of iterations.
      */
     template<int NDim>
-    void kmeans(const float* x, int n, int k, float* cent, int* label, int convCount = -1, int maxIt = 100)
+    void kmeans(const float* x, int n, int k, float* cent, int* label, int* ci = nullptr, int convCount = -1, int maxIt = 100)
     {
         if(convCount < 0)
             convCount = n / 1000;
 
         float row[NDim];
-        int* ci = new int[k];
+        
+        bool own_ci = false;
+        if (ci == nullptr) {
+            ci = new int[k];
+            own_ci = true;
+        }
+
         float* d = new float[2 * n];
         float* dc = d + n;
 
@@ -101,7 +107,9 @@ namespace warpcore::impl
             it++;
         } while(it < maxIt && changed > convCount);
 
-        delete[] ci;
+        if(own_ci)
+            delete[] ci;
+
         delete[] d;
     }
 };

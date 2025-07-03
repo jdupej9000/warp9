@@ -14,7 +14,10 @@ namespace warpcore::impl
     float cumsum(const float* x, int n, float* sums);
     void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
     void range(const float* x, int n, float& min, float& max);
-    
+    size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg);
+    void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
+    void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx);
+
     template<typename T>
     int binary_search(const T* x, int n, const T& v)
     {
@@ -48,6 +51,24 @@ namespace warpcore::impl
     {
         for (int j = 0; j < NDim; j++)
             r[j] = x[j * n + i];
+    }
+
+    template<typename T, int NDim>
+    void get_rows(const T* x, int n, const int* idx, int nidx, T* r)
+    {
+        for (int j = 0; j < NDim; j++) {
+            // TODO: this can become an avx2 gather if slow
+            for (int i = 0; i < nidx; i++) {
+                r[j * nidx + i] = x[j * n + idx[i]];
+            }
+        }
+    }
+
+    template<typename T, int NDim>
+    void put_row(T* x, int n, int i, const T* r)
+    {
+        for (int j = 0; j < NDim; j++)
+            x[j * n + i] = r[j];
     }
 
     template<typename T, int NDim>

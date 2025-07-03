@@ -54,7 +54,7 @@ namespace warpcore::impl
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         // Cluster points y and find points which are closest to cluster centers -> centerIdx.
-        kmeans<3>(y, m, kextra, centers, labels);
+        kmeans<3>(y, m, kextra, centers, labels, nullptr);
         for(int i = 0; i < kextra; i++) {
             get_row<float, 3>(centers, kextra, i, ci);
             centerIdx[i] = nearest<3>(y, m, ci);

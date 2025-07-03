@@ -107,7 +107,7 @@ extern "C" int clust_kmeans(const float* x, int d, int n, int k, float* cent, in
     if (x == nullptr || d != 3 || cent == nullptr || label == nullptr)
         return WCORE_INVALID_ARGUMENT;
 
-    warpcore::impl::kmeans<3>(x, n, k, cent, label);
+    warpcore::impl::kmeans<3>(x, n, k, cent, label, nullptr);
 
     return WCORE_OK;
 }

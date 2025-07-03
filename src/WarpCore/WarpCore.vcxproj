@@ -162,9 +162,11 @@
     <ClInclude Include="impl\pcl_utils.h" />
     <ClInclude Include="impl\random.h" />
     <ClInclude Include="impl\search_impl.h" />
+    <ClInclude Include="impl\tps.h" />
     <ClInclude Include="impl\tri_grid.h" />
     <ClInclude Include="impl\utils.h" />
     <ClInclude Include="impl\vec_math.h" />
+    <ClInclude Include="impute.h" />
     <ClInclude Include="misc.h" />
     <ClInclude Include="p3f.h" />
     <ClInclude Include="pca.h" />
@@ -182,9 +184,11 @@
     <ClCompile Include="impl\pcl_utils.cpp" />
     <ClCompile Include="impl\random.cpp" />
     <ClCompile Include="impl\search_impl.cpp" />
+    <ClCompile Include="impl\tps.cpp" />
     <ClCompile Include="impl\tri_grid.cpp" />
     <ClCompile Include="impl\utils.cpp" />
     <ClCompile Include="impl\vec_math.cpp" />
+    <ClCompile Include="impute.cpp" />
     <ClCompile Include="misc.cpp" />
     <ClCompile Include="p3f.cpp" />
     <ClCompile Include="pca.cpp" />

@@ -58,6 +58,7 @@ namespace warpcore::impl
 
     float dot(const float* x, const float* y, int n);
     void scale(float* x, float f, int n);
+    void add(float* x, float f, int n);
     void normalize_columns(float* mat, int rows, int cols);
 
     void check_finite(const float* x, size_t len);

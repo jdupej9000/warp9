@@ -81,6 +81,12 @@
     <ClInclude Include="pca.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="impute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\tps.h">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -133,6 +139,12 @@
     </ClCompile>
     <ClCompile Include="pca.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\tps.cpp">
+      <Filter>Source Files\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

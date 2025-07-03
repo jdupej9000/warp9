@@ -539,6 +539,21 @@ namespace warpcore::impl
             x[i] *= f;
     }
 
+    void add(float* x, float f, int n)
+    {
+        const int BlockSize = 8;
+        const int nb = round_down(n, BlockSize);
+        const __m256 fb = _mm256_set1_ps(f);
+
+        for (int i = 0; i < nb; i += BlockSize) {
+            __m256 xf = _mm256_add_ps(_mm256_loadu_ps(x + i), fb);
+            _mm256_storeu_ps(x + i, xf);
+        }
+
+        for (int i = nb; i < n; i++)
+            x[i] += f;
+    }
+
     void normalize_columns(float* mat, int rows, int cols)
     {
         for (int c = 0; c < cols; c++) {
