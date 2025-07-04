@@ -106,6 +106,18 @@ namespace warpcore::impl
 		return ret;
 	}
 
+	size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg)
+	{
+		size_t ret = 0;
+		for (int i = 0; i < dim; i++) {
+			ret = compress(xc, x, allow, n, neg);
+			xc += ret;
+			x += n;
+		}
+
+		return ret;
+	}
+
 	void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero)
 	{
 		constexpr size_t BLK = 32;
@@ -150,7 +162,7 @@ namespace warpcore::impl
 		// idx   = 1,3,5
 		// idx  <- 5,10,-1
 
-		const int32_t* allow_mask = (const int32_t*)allow;
+		const uint32_t* allow_mask = (const uint32_t*)allow;
 		int num_allowed = 0;
 
 		constexpr int BLK = 32;
@@ -160,10 +172,10 @@ namespace warpcore::impl
 		for (int i = 0; i < max_idx_b; i++) {
 			int nab = _mm_popcnt_u32(allow_mask[i]);
 			
-			if (idx[j] >= num_allowed + nab) {
+			if (num_allowed + nab >= idx[j]) {
 				// one or more mappings occur in this BLK-sized range
 
-				int sumw = 0;
+				int sumw = num_allowed;
 				for (int k = 0; k < BLK; k++) {
 					if ((allow_mask[i] >> k) & 0x1) {
 						sumw++;

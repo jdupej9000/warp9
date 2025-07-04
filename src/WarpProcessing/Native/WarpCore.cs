@@ -88,6 +88,10 @@ namespace Warp9.Native
         PCA_SCALE_TO_UNITY = 1
     };
 
+    public enum PCL_IMPUTE_METHOD : int
+    {
+        TPS_DECIMATED = 0
+    };
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpdInfo
@@ -196,6 +200,14 @@ namespace Warp9.Native
         public int n, m, npcs, flags;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ImputeInfo
+    {
+        public PCL_IMPUTE_METHOD method;
+        public int d, n;
+        public int decim_count;
+    };
+
     public static class WarpCore
     {
 
@@ -243,5 +255,8 @@ namespace Warp9.Native
 
         [DllImport("WarpCore.dll")]
         public static extern int pca_scores_to_data(ref PcaInfo pca, nint scores, nint pcs, nint data);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int pcl_impute(ref ImputeInfo info, nint data, nint templ, nint valid_mask);
     }
 }

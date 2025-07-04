@@ -114,6 +114,8 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <UseDynamicDebugging>false</UseDynamicDebugging>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -206,6 +208,7 @@
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MD</Runtime>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-ftz=true %(AdditionalOptions)</AdditionalOptions>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_70,sm_70</CodeGeneration>
     </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

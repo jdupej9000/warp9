@@ -58,6 +58,31 @@ namespace Warp9.Test
             return mb.ToPointCloud();
         }
 
+        private static PointCloud TranslateTwistPcl(PointCloud pcl, Vector3 t, float twist)
+        {
+            MeshBuilder mb = pcl.ToBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+
+            Random rand = new Random(74656);
+            for (int i = 0; i < pos.Count; i++)
+            {
+                Vector3 pt = pos[i];
+
+                float angle = twist * pt.X;
+                float s = MathF.Sin(angle);
+                float c = MathF.Cos(angle);
+
+                Vector3 twisted = new Vector3(
+                    pt.X,
+                    c * pt.Y - s * pt.Z,
+                    s * pt.Y + c * pt.Z);
+
+                pos[i] = twisted + t;                
+            }
+
+            return mb.ToPointCloud();
+        }
+
         private static void ComparePcls(PointCloud pcl1, PointCloud pcl2)
         {
             MeshView? view1 = pcl1.GetView(MeshViewKind.Pos3f);
@@ -268,6 +293,31 @@ namespace Warp9.Test
                new TestRenderItem(TriStyle.PointCloud, gpa.GetTransformed(2), wireCol: Color.DarkBlue));
         }
 
+        [DoNotParallelize]
+        [TestMethod]
+        public void ImputeTest()
+        {
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            PointCloud twisted = TranslateTwistPcl(teapot, new Vector3(0.5f, -0.2f, 0.1f), 0.25f);
+
+            int nv = teapot.VertexCount;
+            bool[] allow = new bool[nv];
+
+            for(int i = 0; i < nv; i++)
+                allow[i] = true;
+
+            for(int i = nv/2; i < nv; i++)
+                allow[i] = false;
+
+            PointCloud? imputed = MeshImputation.ImputePositions(teapot, twisted, allow, 30);
+            Assert.IsNotNull(imputed);
+
+            TestUtils.Render("ImputeTest_0.png",
+               new TestRenderItem(TriStyle.PointCloud, twisted, wireCol: Color.DarkCyan),
+               new TestRenderItem(TriStyle.PointCloud, imputed, wireCol: Color.White));
+        }
+
+     
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);

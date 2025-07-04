@@ -9,6 +9,7 @@ namespace warpcore::impl
 {
 	tps3d::tps3d(int n)
 	{
+		m_n = n;
 		m_data = new float[2 * 3 * m_n + 4 * 3];
 	}
 
@@ -37,13 +38,14 @@ namespace warpcore::impl
 		for (int i = 0; i < n; i++) {			
 			float d = p3f_dist(p3f_set(p[i], p[i + n], p[i + 2 * n]), x);
 			float u = d * d * d;
-			ret = p3f_fma(u, p3f_set(p[i], p[i + n], p[i + 2 * n]), ret);
+			ret = p3f_fma(u, p3f_set(w[i], w[i + n], w[i + 2 * n]), ret);
 		}
 
 		return ret;
 	}
 
-	void tps3d::transform_soa(float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
+	// If allow[i] != neg, transforms x[i] and saves y[i] for i=0..m. x==y is permitted
+	void tps3d::transform_soa(float* y, const float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
 	{
 		const int32_t* allow_mask = (const int32_t*)allow;
 		uint32_t toggle = neg ? 0xffffffff : 0x0;
@@ -51,11 +53,11 @@ namespace warpcore::impl
 		// TODO: optimize
 		alignas(16) float row[4];
 		for (int i = 0; i < m; i++) {
-			if (((allow_mask[i >> 5] ^ neg) >> (i & 0x1f)) & 0x1) {
+			if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
 				get_row<float, 3>(x, m, i, row);
 				p3f transformed = transform(p3f_set(row), noaffine);
 				_mm_storeu_ps(row, transformed);
-				put_row<float, 3>(x, m, i, row);
+				put_row<float, 3>(y, m, i, row);
 			}
 		}
 	}
@@ -91,7 +93,8 @@ namespace warpcore::impl
 
 		float* m = new float[n4 * n4];
 		float* b = new float[n4 * 3];
-		float* rhs = new float[n4 * 3];
+		memset(m, 0, sizeof(float) * n4 * n4);
+		memset(b, 0, sizeof(float) * 3 * n4);
 
 		for (int i = 0; i < n; i++) {
 			m[i] = 1;
@@ -122,20 +125,19 @@ namespace warpcore::impl
 
 		int* piv = new int[n4];
 		std::memset(piv, 0, n4 * sizeof(int));
-		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, b, n4, piv, rhs, n4);
+		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
 		delete[] piv;
 
 		memcpy(tps->ptr_p(), src, sizeof(float) * 3 * n);
 
-		memcpy(tps->ptr_w(), rhs + 4, sizeof(float) * n);
-		memcpy(tps->ptr_w() + n, rhs + 4 + n4, sizeof(float) * n);
-		memcpy(tps->ptr_w() + 2 * n, rhs + 4 + 2 * n4, sizeof(float) * n);
+		memcpy(tps->ptr_w(), b + 4, sizeof(float) * n);
+		memcpy(tps->ptr_w() + n, b + 4 + n4, sizeof(float) * n);
+		memcpy(tps->ptr_w() + 2 * n, b + 4 + 2 * n4, sizeof(float) * n);
 
-		memcpy(tps->ptr_a(), rhs, sizeof(float) * 4);
-		memcpy(tps->ptr_a() + 4, rhs + n4, sizeof(float) * 4);
-		memcpy(tps->ptr_a() + 8, rhs + 2 * n4, sizeof(float) * 4);
+		memcpy(tps->ptr_a(), b, sizeof(float) * 4);
+		memcpy(tps->ptr_a() + 4, b + n4, sizeof(float) * 4);
+		memcpy(tps->ptr_a() + 8, b + 2 * n4, sizeof(float) * 4);
 
-		delete[] rhs;
 		delete[] m;
 		delete[] b;
 	}
