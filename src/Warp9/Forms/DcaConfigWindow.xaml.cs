@@ -79,6 +79,8 @@ namespace Warp9.Forms
 
             if (cmbSpecTable.Items.Count > 0)
                 cmbSpecTable.SelectedIndex = 0;
+
+            cmbImpute.SelectedIndex = (int)cfg.RejectImputation;
         }
 
         private void UpdateColumnSelectors()
@@ -135,6 +137,7 @@ namespace Warp9.Forms
             }
 
             configuration.BaseMeshIndex = cmbBase.SelectedIndex;
+            configuration.RejectImputation = (DcaImputationKind)cmbImpute.SelectedIndex;
 
             DialogResult = true;
         }

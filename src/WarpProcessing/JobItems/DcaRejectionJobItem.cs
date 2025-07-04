@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Jobs;
+using Warp9.Native;
 using Warp9.Processing;
 
 namespace Warp9.JobItems
@@ -54,6 +55,19 @@ namespace Warp9.JobItems
 
             bool[] vertexWhitelist = rejection.ToVertexWhitelist((int)MathF.Ceiling(DcaConfig.RejectCountPercent * corrPcls.Count));
             ctx.Workspace.Set(ResultWhitelist, vertexWhitelist);
+
+            if (DcaConfig.RejectImputation == DcaImputationKind.Tps)
+            {
+                int numImpute = dcaBaseMesh.VertexCount - vertexWhitelist.Count();
+                ctx.WriteLog(ItemIndex, MessageKind.Information, $"Imputing {numImpute} vertices in each surface using {DcaConfig.RejectImputation}.");
+
+                for (int i = 0; i < corrPcls.Count; i++)
+                {
+                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], vertexWhitelist, 30);
+                    if (imputed is not null)
+                        corrPcls[i] = imputed;
+                }
+            }
 
             return true;
         }

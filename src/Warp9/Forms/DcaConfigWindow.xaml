@@ -205,8 +205,11 @@
                         <Label Height="4" />
 
                         <TextBlock Margin="2">Imputation method</TextBlock>
-                        <ComboBox Margin="2"/>
-                        <Label Height="4" />
+                    <ComboBox Margin="2" x:Name="cmbImpute">
+                        <ComboBoxItem>None</ComboBoxItem>
+                        <ComboBoxItem>TPS</ComboBoxItem>
+                    </ComboBox>
+                    <Label Height="4" />
                     </StackPanel>
 
                 <Label Height="8" />

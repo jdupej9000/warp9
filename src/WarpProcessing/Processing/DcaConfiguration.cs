@@ -30,6 +30,12 @@ namespace Warp9.Processing
         GpaOnWhitelisted
     }
 
+    public enum DcaImputationKind
+    {
+        None = 0,
+        Tps = 1
+    };
+
     public class DcaConfiguration
     {
         [JsonPropertyName("spec-table-entry")]
@@ -80,6 +86,9 @@ namespace Warp9.Processing
 
         [JsonPropertyName("reject-count-percent")]
         public float RejectCountPercent { get; set; } = 5;
+
+        [JsonPropertyName("reject-impute")]
+        public DcaImputationKind RejectImputation { get; set; } = DcaImputationKind.Tps;
 
         [JsonPropertyName("cpd-config")]
         public CpdConfiguration CpdConfig { get; set; } = new CpdConfiguration();
