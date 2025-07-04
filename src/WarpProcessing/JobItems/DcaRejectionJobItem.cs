@@ -53,17 +53,18 @@ namespace Warp9.JobItems
                 DcaConfig.RejectExpandedLowThreshold, DcaConfig.RejectExpandedHighThreshold);
             ctx.Workspace.Set(ResultItem, rejection);
 
-            bool[] vertexWhitelist = rejection.ToVertexWhitelist((int)MathF.Ceiling(DcaConfig.RejectCountPercent * corrPcls.Count));
+            bool[] vertexWhitelist = rejection.ToVertexWhitelist((int)MathF.Ceiling(DcaConfig.RejectCountPercent * corrPcls.Count / 100));
             ctx.Workspace.Set(ResultWhitelist, vertexWhitelist);
 
             if (DcaConfig.RejectImputation == DcaImputationKind.Tps)
             {
-                int numImpute = dcaBaseMesh.VertexCount - vertexWhitelist.Count();
+                int numImpute = vertexWhitelist.Count((t) => t == false);
                 ctx.WriteLog(ItemIndex, MessageKind.Information, $"Imputing {numImpute} vertices in each surface using {DcaConfig.RejectImputation}.");
 
                 for (int i = 0; i < corrPcls.Count; i++)
                 {
-                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], vertexWhitelist, 30);
+                    // TODO: impute only vertices rejected in each mesh
+                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], vertexWhitelist, 250);
                     if (imputed is not null)
                         corrPcls[i] = imputed;
                 }
