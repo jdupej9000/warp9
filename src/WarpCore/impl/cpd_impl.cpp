@@ -11,7 +11,6 @@
 
 namespace warpcore::impl
 {
-    void cpd_samplefirst_g(const float* y, int m, float beta, float* gi);
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
@@ -177,25 +176,6 @@ namespace warpcore::impl
         ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
         return ret / (3 * reduce_add(p1, m));
     }
-
-    void cpd_samplefirst_g(const float* y, int m, float beta, float* gi)
-    {
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-
-        const float ef = -0.5f / (beta * beta);
-
-        for(int i = 0; i < m; i++) {
-            float d = 0;
-            for(int j = 0; j < 3; j++) {
-                const float dj = y[j*m+i];
-                d += dj * dj;
-            }
-
-            gi[i] = expf(ef * d);
-        }
-    }
-
 
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi)
     {
