@@ -76,7 +76,7 @@ namespace Warp9.Processing
         public bool RejectExpanded { get; set; } = true;
 
         [JsonPropertyName("reject-dist-thresh")]
-        public float RejectDistanceThreshold { get; set; } = 0.1f;
+        public float RejectDistanceThreshold { get; set; } = 1.5f;
 
         [JsonPropertyName("reject-exp-low-thresh")]
         public float RejectExpandedLowThreshold { get; set; } = 0.25f;

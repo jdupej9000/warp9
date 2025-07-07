@@ -190,7 +190,7 @@
                                 <RowDefinition Height="24"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0">Max. distance</TextBlock>
+                            <TextBlock Grid.Row="0" Grid.Column="0">Distance factor</TextBlock>
                             <TextBox Grid.Row="1" Grid.Column="0" Height="20" Text="{Binding Path=RejectDistanceThreshold, Mode=TwoWay}" />
 
                             <TextBlock Grid.Row="0" Grid.Column="1">Min. expansion</TextBlock>

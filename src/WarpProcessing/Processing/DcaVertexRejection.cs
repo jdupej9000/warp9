@@ -57,7 +57,7 @@ namespace Warp9.Processing
             return ret;
         }
 
-        public static DcaVertexRejection Create(Mesh baseMesh, IReadOnlyList<PointCloud> floating, float minTriScale=0.1f, float maxTriScale=10.0f)
+        public static DcaVertexRejection Create(Mesh baseMesh, IReadOnlyList<PointCloud> floating, bool rejectExpanded=true, bool rejectDistant=true, float minTriScale=0.1f, float maxTriScale=10.0f, float distFactor=1.5f)
         {
             int nv = baseMesh.VertexCount;
             int[] numRejections = new int[nv];
@@ -82,8 +82,12 @@ namespace Warp9.Processing
                     throw new InvalidOperationException("Cannot make vertex view in a floating mesh.");
 
                 Array.Fill(currentRejection, false);
-                ApplyFaceScalingRejection(currentRejection, faces, vertBase, vertFloat, minTriScale, maxTriScale);
-                ApplyTranslationRejection(currentRejection, vertBase, vertFloat, work, 1.5f);
+
+                if(rejectExpanded)
+                    ApplyFaceScalingRejection(currentRejection, faces, vertBase, vertFloat, minTriScale, maxTriScale);
+
+                if(rejectDistant)
+                    ApplyTranslationRejection(currentRejection, vertBase, vertFloat, work, distFactor);
 
                 AccumulateRejection(numRejections.AsSpan(), currentRejection.AsSpan());
                 BitMask.MakeBitMask(allMasks.AsSpan().Slice(idx * nmask, nmask), currentRejection);
