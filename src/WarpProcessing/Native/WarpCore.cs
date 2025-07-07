@@ -93,6 +93,12 @@ namespace Warp9.Native
         TPS_DECIMATED = 0
     };
 
+    [Flags]
+    public enum PCL_IMPUTE_FLAGS : int
+    {
+        PCL_IMPUTE_NEGATE_MASK = 1
+    };
+
     [StructLayout(LayoutKind.Sequential)]
     public struct CpdInfo
     {
@@ -206,6 +212,7 @@ namespace Warp9.Native
         public PCL_IMPUTE_METHOD method;
         public int d, n;
         public int decim_count;
+        public PCL_IMPUTE_FLAGS flags;
     };
 
     public static class WarpCore

@@ -309,7 +309,7 @@ namespace Warp9.Test
             for(int i = nv/2; i < nv; i++)
                 allow[i] = false;
 
-            PointCloud? imputed = MeshImputation.ImputePositions(teapot, twisted, allow, 30);
+            PointCloud? imputed = MeshImputation.ImputePositions(teapot, twisted, BitMask.MakeBitMask(allow), 30);
             Assert.IsNotNull(imputed);
 
             TestUtils.Render("ImputeTest_0.png",

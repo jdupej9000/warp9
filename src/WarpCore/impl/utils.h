@@ -17,7 +17,7 @@ namespace warpcore::impl
     size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg);
     void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
     size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg);
-    void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx);
+    void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
 
     template<typename T>
     int binary_search(const T* x, int n, const T& v)

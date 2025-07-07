@@ -18,10 +18,12 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 
 	int ret = WCORE_INVALID_ARGUMENT;
 
+	bool negate_mask = !!(info->flags & PCL_IMPUTE_NEGATE_MASK);
+
 	// Obtain a matrix of just allowed data.
 	int max_valid = info->d * info->n;
 	float* data_valid = new float[max_valid];
-	int num_valid = compress(info->d, data_valid, (const float*)data, valid_mask, info->n, false);
+	int num_valid = compress(info->d, data_valid, (const float*)data, valid_mask, info->n, negate_mask);
 
 	if (info->method == PCL_IMPUTE_METHOD::TPS_DECIMATED) {
 		// Cluster allowed vertices (if their valid_mask==1) to TPS_CLUSTERS number of
@@ -44,7 +46,14 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		delete[] cx;
 		
 		std::sort(ci, ci + num_tps_points);
-		expand_indices(ci, valid_mask, num_tps_points, info->n);
+
+		for (int i = 1; i < num_tps_points; i++) {
+			if (ci[i - 1] == ci[i]) {
+				throw new std::exception();
+			}
+		}
+
+		expand_indices(ci, valid_mask, num_tps_points, info->n, negate_mask);
 
 		float* tps_src = new float[2 * 3 * num_tps_points];
 		float* tps_dest = tps_src + 3 * num_tps_points;
@@ -54,7 +63,7 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 
 		tps3d tps{ num_tps_points };
 		tps_fit3d_soa(&tps, tps_src, tps_dest);
-		tps.transform_soa((float*)data, (const float*)templ, info->n, valid_mask, false, true);
+		tps.transform_soa((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
 
 		ret = WCORE_OK;
 	}

@@ -151,7 +151,7 @@ namespace warpcore::impl
 		}
 	}
 
-	void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx)
+	void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg)
 	{
 		// replace each idx with the index of the idx'th allowed bit
 		// idx must be sorted
@@ -164,22 +164,22 @@ namespace warpcore::impl
 
 		const uint32_t* allow_mask = (const uint32_t*)allow;
 		int num_allowed = 0;
+		int32_t mask_mod = neg ? 0xffffffff : 0x0;
 
 		constexpr int BLK = 32;
 		int max_idx_b = max_idx / BLK;
 		int allow_idx = 0;
 		int j = 0;
 		for (int i = 0; i < max_idx_b; i++) {
-			int nab = _mm_popcnt_u32(allow_mask[i]);
+			int32_t m = allow_mask[i] ^ mask_mod;
+			int nab = _mm_popcnt_u32(m);
 			
 			if (num_allowed + nab >= idx[j]) {
 				// one or more mappings occur in this BLK-sized range
-
-				int sumw = num_allowed;
+				int sumw = num_allowed;				
 				for (int k = 0; k < BLK; k++) {
-					if ((allow_mask[i] >> k) & 0x1) {
+					if ((m >> k) & 0x1) {
 						sumw++;
-
 						if (sumw == idx[j]) {
 							idx[j] = BLK * i + k;
 							j++;
@@ -194,13 +194,12 @@ namespace warpcore::impl
 		}
 
 		// finish off the last incomplete DWORD
-		int32_t mask_last = allow_mask[max_idx_b];
+		int32_t mask_last = allow_mask[max_idx_b] ^ mask_mod;
 		int blk_left = std::min(BLK, max_idx - max_idx_b);
 		int sumw = 0;
 		for (int k = 0; k < BLK; k++) {
 			if ((mask_last >> k) & 0x1) {
 				sumw++;
-
 				if (sumw == idx[j]) {
 					idx[j] = BLK * max_idx_b + k;
 					j++;

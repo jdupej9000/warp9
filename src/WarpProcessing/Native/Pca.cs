@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Native
 {
@@ -145,36 +146,7 @@ namespace Warp9.Native
             return ret;
         }
 
-        public static int[] MakeBitField(bool[] data, int repeat = 1)
-        {
-            int len = (data.Length * repeat + 31) / 32;
-            int[] ret = new int[len];
-
-            int accum = 0, pos = 0, retpos = 0;
-            for (int rep = 0; rep < repeat; rep++)
-            {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (data[i])
-                        accum |= 1 << pos;
-
-                    pos++;
-
-                    if (pos == 32)
-                    {
-                        ret[retpos++] = accum;
-                        accum = 0;
-                        pos = 0;
-                    }
-                }
-            }
-
-            if (pos != 0)
-                ret[retpos] = accum;
-
-            return ret;
-        }
-
+       
         public static Pca? FromMatrixCollection(MatrixCollection mc)
         {
             if (mc.TryGetMatrix(KeyPcsMean, out Matrix<float>? matPcsMean) &&
@@ -224,7 +196,7 @@ namespace Warp9.Native
                 handles[i] = pins[i].AddrOfPinnedObject() + offset;
             }
 
-            int[] allowBitField = MakeBitField(vertexAllow, 3);
+            int[] allowBitField = BitMask.MakeBitMask(vertexAllow, 3);
 
             PcaInfo pcaInfo = new PcaInfo { m = m, n = n, npcs = n, flags = 0 };
 

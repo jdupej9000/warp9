@@ -58,13 +58,11 @@ namespace Warp9.JobItems
 
             if (DcaConfig.RejectImputation == DcaImputationKind.Tps)
             {
-                int numImpute = vertexWhitelist.Count((t) => t == false);
-                ctx.WriteLog(ItemIndex, MessageKind.Information, $"Imputing {numImpute} vertices in each surface using {DcaConfig.RejectImputation}.");
+                ctx.WriteLog(ItemIndex, MessageKind.Information, $"Imputing vertices using TPS fitted to correctly registered points.");
 
                 for (int i = 0; i < corrPcls.Count; i++)
                 {
-                    // TODO: impute only vertices rejected in each mesh
-                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], vertexWhitelist, 250);
+                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i), 100, true);
                     if (imputed is not null)
                         corrPcls[i] = imputed;
                 }
