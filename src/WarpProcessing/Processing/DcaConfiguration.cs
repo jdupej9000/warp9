@@ -88,7 +88,7 @@ namespace Warp9.Processing
         public float RejectCountPercent { get; set; } = 5;
 
         [JsonPropertyName("reject-impute")]
-        public DcaImputationKind RejectImputation { get; set; } = DcaImputationKind.Tps;
+        public DcaImputationKind RejectImputation { get; set; } = DcaImputationKind.None;
 
         [JsonPropertyName("cpd-config")]
         public CpdConfiguration CpdConfig { get; set; } = new CpdConfiguration();

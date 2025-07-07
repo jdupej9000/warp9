@@ -45,14 +45,6 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(floatingMesh, GridSize, out SearchContext? searchCtx) || searchCtx is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "Could not initialize the spatial searching structure.");
-                return false;
-            }
-
-            ctx.WriteLog(ItemIndex, MessageKind.Information, "Search structure created: " + searchCtx.ToString());
-
             if (!ctx.Workspace.TryGet(NonrigidMeshesItem, MeshIndex, out PointCloud? pclNonrigid) || pclNonrigid is null)
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error,
@@ -66,12 +58,12 @@ namespace Warp9.JobItems
                 if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, BaseMeshIndex, null, out Mesh? baseMesh) || baseMesh is null)
                     return false;
 
-                Mesh nonrigidWithNorm = MeshNormals.MakeNormals(Mesh.FromPointCloud(pclNonrigid, baseMesh));
-                pclProj = MeshSnap.ProjectWithRaycastNearest(MeshNormals.MakeNormals(nonrigidWithNorm), floatingMesh);
+                Mesh nonrigidWithNorm = MeshNormals.MakeNormals(Mesh.FromPointCloud(pclNonrigid, baseMesh), NormalsAlgorithm.FastRobust);
+                pclProj = MeshSnap.ProjectWithRaycastNearest(MeshNormals.MakeNormals(nonrigidWithNorm), floatingMesh, GridSize);
             }
             else
             {
-                pclProj = MeshSnap.ProjectToNearest(pclNonrigid, floatingMesh);           
+                pclProj = MeshSnap.ProjectToNearest(pclNonrigid, floatingMesh, GridSize);           
             }
 
             if (pclProj is not null)

@@ -183,7 +183,7 @@ namespace Warp9.Viewer
             // Recalculate normals and override them, too.
             if (meanMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
             {
-                MeshNormals.MakeNormals(normAos.AsSpan(), posAos.AsSpan(), indices);
+                MeshNormals.MakeNormalsFast(normAos.AsSpan(), posAos.AsSpan(), indices);
                 Scene.Mesh0!.NormalOverride = new ReferencedData<Vector3[]>(normAos);
             }
         }
