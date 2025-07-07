@@ -2,6 +2,7 @@
 using System.IO;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
+using System.Security.RightsManagement;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +44,7 @@ namespace Warp9.Navigation
         Window owner;
         WpfInteropRenderer? renderer = null;
         ViewerSceneRenderer? sceneRend = null;
+        Warp9ViewModel? viewModel = null;
         IViewerContent? content = null;
         ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
@@ -81,11 +83,13 @@ namespace Warp9.Navigation
 
         public void AttachViewModel(Warp9ViewModel vm)
         {
+            viewModel = vm;
         }
 
         public void DetachViewModel()
         {
             UnsetContent();
+            viewModel = null;
         }
 
         private void CameraControl_UpdateView(object? sender, CameraInfo e)
@@ -324,28 +328,7 @@ namespace Warp9.Navigation
             if (content is null)
                 return;
 
-            JsonSerializerOptions opts = new JsonSerializerOptions()
-            {
-                AllowTrailingCommas = false,
-                //WriteIndented = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            };
-
-            opts.Converters.Add(new SpecimenTableJsonConverter());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Vector3[]>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Data.Matrix>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<System.Drawing.Bitmap>());
-            opts.Converters.Add(new LutSpecJsonConverter());
-            opts.Converters.Add(new ColorJsonConverter());
-            opts.Converters.Add(new Matrix4x4JsonConverter());
-            opts.Converters.Add(new SizeJsonConverter());
-
-            using FileStream fs = new FileStream("viewer-result.json",FileMode.Create, FileAccess.Write);
-            JsonSerializer.Serialize(fs, content.Scene, opts);
-
+            viewModel?.AddSnapshot(content.Scene);
         }
 
         private void SetView_Click(object sender, RoutedEventArgs e)
