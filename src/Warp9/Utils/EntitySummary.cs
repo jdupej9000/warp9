@@ -48,7 +48,10 @@ namespace Warp9.Utils
 
                 fdb.StartRow();
                 fdb.AddEmphText("Base specimen index");
-                fdb.AddText(dca.DcaConfig.BaseMeshIndex.ToString());
+                if(dca.DcaConfig.BaseMeshOptimize)
+                    fdb.AddText(dca.DcaConfig.BaseMeshIndex.ToString() + " optimized");
+                else
+                    fdb.AddText(dca.DcaConfig.BaseMeshIndex.ToString());
                 fdb.EndRow();
 
                 fdb.StartRow();
@@ -138,7 +141,7 @@ namespace Warp9.Utils
                 fdb.AddEmphText("Match rejection");
                 List<string> rej = new List<string>();
                 if (dca.DcaConfig.RejectDistant)
-                    rej.Add($"if distance > {dca.DcaConfig.RejectDistanceThreshold}");
+                    rej.Add($"if distance > {dca.DcaConfig.RejectDistanceThreshold}*IQR");
 
                 if (dca.DcaConfig.RejectExpanded)
                 {
@@ -147,6 +150,16 @@ namespace Warp9.Utils
                 }
 
                 fdb.AddText(string.Join(" OR ", rej));
+                fdb.EndRow();
+
+                fdb.StartRow();
+                fdb.AddEmphText("Match imputation");
+                fdb.AddText(dca.DcaConfig.RejectImputation switch
+                {
+                    Processing.DcaImputationKind.None => "None",
+                    Processing.DcaImputationKind.Tps => "TPS on good vertices",
+                    _ => "(unknown)"
+                });
                 fdb.EndRow();
 
                 fdb.StartRow();

@@ -53,7 +53,6 @@ namespace Warp9.JobItems
                 DcaConfig.RejectExpanded, DcaConfig.RejectExpanded,
                 DcaConfig.RejectExpandedLowThreshold, DcaConfig.RejectExpandedHighThreshold, DcaConfig.RejectDistanceThreshold);
 
-
             ctx.Workspace.Set(ResultItem, rejection);
 
             bool[] vertexWhitelist = rejection.ToVertexWhitelist((int)MathF.Ceiling(DcaConfig.RejectCountPercent * corrPcls.Count / 100));
