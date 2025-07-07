@@ -26,6 +26,12 @@ namespace Warp9.Scene
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GridSceneElement? Grid { get; set; }
 
+        public IEnumerable<ISceneElement> EnumSceneElements()
+        {
+            if (Mesh0 is not null) yield return Mesh0;
+            if (Grid is not null) yield return Grid;
+        }
+
         public override string ToString()
         {
             return string.Format("m0:({0}) g:({1})",

@@ -14,7 +14,7 @@ namespace Warp9.JsonConverters
     {
         public override ReferencedData<T>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            reader.Read();
+            //reader.Read();
             if (reader.TokenType != JsonTokenType.Number)
                 throw new JsonException();
 

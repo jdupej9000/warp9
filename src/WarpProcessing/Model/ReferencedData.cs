@@ -9,6 +9,11 @@ namespace Warp9.Model
 {
     public class ReferencedData<T> where T : class
     {
+        public ReferencedData() 
+        {
+            // for Json only
+        }
+
         public ReferencedData(long key)
         {
             Key = key;
@@ -25,5 +30,14 @@ namespace Warp9.Model
         public T? Value { get; set; }
 
         public bool IsLoaded => Value is not null;
+        public bool HasReference => Key != -1;
+
+        public ReferencedData<T> WithReference(long key)
+        {
+            if (Value is null)
+                throw new NullReferenceException("Value cannot be null when saving to a project reference.");
+
+            return new ReferencedData<T>(Value, key);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -10,6 +11,15 @@ namespace Warp9.Model
 {
     public class SnapshotInfo
     {
+        public SnapshotInfo()
+        {
+        }
+
+        public SnapshotInfo(long key)
+        {
+            Id = key;
+        }
+
         [JsonIgnore]
         public long Id { get; set; } = -1;
 
@@ -20,7 +30,7 @@ namespace Warp9.Model
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Filter { get; set; } = null;
 
-        [JsonPropertyName("filter")]
+        [JsonPropertyName("comment")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Comment { get; set; } = null;
 

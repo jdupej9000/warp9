@@ -15,7 +15,7 @@ namespace Warp9.JsonConverters
         {
             int w = 0, h = 0;
 
-            reader.Read();
+            //reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
 

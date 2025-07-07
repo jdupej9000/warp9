@@ -12,5 +12,6 @@ namespace Warp9.Scene
     {
         public RenderItemVersion Version { get; }
         public void ConfigureRenderItem(RenderItemDelta delta, Project proj, RenderItemBase rib);
+        public void PersistData(Project project);
     }
 }

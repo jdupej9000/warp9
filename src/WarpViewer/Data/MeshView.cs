@@ -9,7 +9,8 @@ namespace Warp9.Data
     public enum MeshViewKind
     {
         Pos3f,
-        Normal3f
+        Normal3f,
+        Attrib1f
     }
 
     public class MeshView
@@ -52,7 +53,10 @@ namespace Warp9.Data
                 case MeshViewKind.Normal3f:
                     ret.AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 0);
                     break;
-               
+
+                case MeshViewKind.Attrib1f:
+                    ret.AddTex(SharpDX.DXGI.Format.R32_Float, 1, 0);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -71,6 +75,14 @@ namespace Warp9.Data
                     {
                         for (int i = 0; i < vec3.Length; i++)
                             sb.AppendLine(vec3[i].ToString());
+                    }
+                    break;
+
+                case MeshViewKind.Attrib1f:
+                    if (AsTypedData(out ReadOnlySpan<float> vec1))
+                    {
+                        for (int i = 0; i < vec1.Length; i++)
+                            sb.AppendLine(vec1[i].ToString());
                     }
                     break;
 

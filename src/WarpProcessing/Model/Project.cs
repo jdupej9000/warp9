@@ -28,6 +28,7 @@ namespace Warp9.Model
         IProjectArchive? archive;
         readonly Dictionary<long, ProjectReference> references = new Dictionary<long, ProjectReference>();
         Dictionary<long, ProjectEntry> entries = new Dictionary<long, ProjectEntry>();
+        Dictionary<long, SnapshotInfo> snapshots = new Dictionary<long, SnapshotInfo>();
         ProjectSettings settings = new ProjectSettings();
         UniqueIdGenerator objectIdGen = new UniqueIdGenerator();
         UniqueIdGenerator specimenIdGen = new UniqueIdGenerator();
@@ -154,6 +155,14 @@ namespace Warp9.Model
             return entry;
         }
 
+        public SnapshotInfo AddNewSnapshot()
+        {
+            long index = objectIdGen.Next();
+            SnapshotInfo info = new SnapshotInfo(index);
+            snapshots[index] = info;
+            return info;
+        }
+
         private void LoadManifest()
         {
             if (archive is null || !archive.ContainsFile(ManifestFileName))
@@ -192,6 +201,7 @@ namespace Warp9.Model
             manifest.Settings = settings;
             manifest.References = refs;
             manifest.Entries = entries;
+            manifest.Snapshots = snapshots;
             manifest.Counters[ObjectIdGenName] = objectIdGen;
             manifest.Counters[SpecimenIdGenName] = specimenIdGen;
 

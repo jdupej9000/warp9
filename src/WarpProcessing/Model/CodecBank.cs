@@ -70,12 +70,22 @@ namespace Warp9.Model
             ));
 
             ret.Add(ProjectReferenceFormat.PngImage, new Codec<Bitmap>(
-               (s, b, c) => b.Save(s, System.Drawing.Imaging.ImageFormat.Png),
-               (s, c) => new Bitmap(Bitmap.FromStream(s))));
+               (s, b, c) => {
+                   using MemoryStream ms = new MemoryStream();
+                   b.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                   ms.Seek(0, SeekOrigin.Begin);
+                   ms.CopyTo(s);
+               },
+               (s, c) => new Bitmap(Image.FromStream(s))));
 
             ret.Add(ProjectReferenceFormat.JpegImage, new Codec<Bitmap>(
-                (s, b, c) => b.Save(s, System.Drawing.Imaging.ImageFormat.Jpeg),
-                (s, c) => new Bitmap(Bitmap.FromStream(s))));
+                (s, b, c) => {
+                    using MemoryStream ms = new MemoryStream();
+                    b.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    ms.CopyTo(s);
+                },
+                (s, c) => new Bitmap(Image.FromStream(s))));
 
             ret.Add(ProjectReferenceFormat.MorphoLandmarks, new Codec<PointCloud>(
                 null,

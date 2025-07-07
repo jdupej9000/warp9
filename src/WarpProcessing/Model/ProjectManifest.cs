@@ -18,6 +18,9 @@ namespace Warp9.Model
 
         [JsonPropertyName("refs")]
         public Dictionary<long, ProjectReferenceInfo> References { get; set; } = new Dictionary<long, ProjectReferenceInfo>();
+       
+        [JsonPropertyName("snapshots")]
+        public Dictionary<long, SnapshotInfo> Snapshots { get; set; } = new Dictionary<long, SnapshotInfo>();
 
         [JsonPropertyName("counters")]
         public Dictionary<string, UniqueIdGenerator> Counters { get; set; } = new Dictionary<string, UniqueIdGenerator>();

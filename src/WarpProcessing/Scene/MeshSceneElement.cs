@@ -38,7 +38,6 @@ namespace Warp9.Scene
         ReferencedData<float[]>? attributeScalar = null;
         LutSpec? lutSpec = null;
         Lut? lut = null;
-        bool lutChanged = false;
 
         const int LutWidth = 256;
 
@@ -125,6 +124,56 @@ namespace Warp9.Scene
             ri.RenderDepth = true;
         }
 
+        public void PersistData(Project project)
+        {
+            // Add the mesh as a reference unless it has been loaded from a reference.
+            if (mesh is not null && !mesh.HasReference)
+            {
+                long key = project.AddReferenceDirect(ProjectReferenceFormat.W9Mesh, mesh.Value!);
+                mesh.Key = key;
+            }
+
+            // Shove all the dynamic updates into a point cloud and store that as 
+            // a reference if there are any updates.
+            MeshBuilder mb = new MeshBuilder();
+            bool dynamicChanged = false;
+            if (positionOverride is not null && !positionOverride.HasReference)
+            {
+                List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                pos.AddRange(positionOverride.Value!);
+                dynamicChanged = true;
+            }
+
+            if (normalsOverride is not null && !normalsOverride.HasReference)
+            {
+                List<Vector3> normal = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+                normal.AddRange(normalsOverride.Value!);
+                dynamicChanged = true;
+            }
+
+            if (attributeScalar is not null && !attributeScalar.HasReference)
+            {
+                List<float> attr = mb.GetSegmentForEditing<float>(MeshSegmentType.AttribScalar);
+                attr.AddRange(attributeScalar.Value!);
+                dynamicChanged = true;
+            }
+
+            if (dynamicChanged)
+            {
+                PointCloud pclDyn = mb.ToPointCloud();
+                long dynKey = project.AddReferenceDirect(ProjectReferenceFormat.W9Pcl, pclDyn);
+
+                if (positionOverride is not null && !positionOverride.HasReference)
+                    positionOverride.Key = dynKey;
+
+                if (normalsOverride is not null && !normalsOverride.HasReference)
+                    normalsOverride.Key = dynKey;
+
+                if (attributeScalar is not null && !attributeScalar.HasReference)
+                    attributeScalar.Key = dynKey;
+            }
+        }
+
         private void ConfigureFull(Project proj, RenderItemMesh ri)
         {
             ResolveReferences(proj);
@@ -173,7 +222,14 @@ namespace Warp9.Scene
             if (mesh is not null)
                 mesh = ModelUtils.Resolve(proj, mesh);
 
-            // TODO: dynamic overrides
+            if (positionOverride is not null)
+                positionOverride = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Pos3f, positionOverride);
+
+            if (normalsOverride is not null)
+                normalsOverride = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Normal3f, normalsOverride);
+
+            if (attributeScalar is not null)
+                attributeScalar = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Attrib1f, attributeScalar);
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)

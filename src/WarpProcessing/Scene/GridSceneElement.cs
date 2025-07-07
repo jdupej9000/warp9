@@ -26,5 +26,9 @@ namespace Warp9.Scene
 
             ri.Version.Commit(delta);
         }
+
+        public void PersistData(Project project)
+        {
+        }
     }
 }

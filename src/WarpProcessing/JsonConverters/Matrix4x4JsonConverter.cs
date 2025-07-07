@@ -15,7 +15,7 @@ namespace Warp9.JsonConverters
         {
             Matrix4x4 ret = default;
 
-            reader.Read();
+            //reader.Read();
             if (reader.TokenType != JsonTokenType.StartArray)
                 throw new JsonException();
 

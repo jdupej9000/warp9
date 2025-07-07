@@ -13,7 +13,7 @@ namespace Warp9.JsonConverters
     {
         public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            reader.Read();
+            //reader.Read();
             if (reader.TokenType != JsonTokenType.String)
                 throw new JsonException();
 

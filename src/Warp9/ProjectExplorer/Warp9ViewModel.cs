@@ -48,37 +48,31 @@ namespace Warp9.ProjectExplorer
             foreach (ProjectItem pi in Items)
                 pi.Update();
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Items"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Items)));
         }
 
-        public void AddSnapshot(ViewerScene scene)
+        public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null)
         {
-            JsonSerializerOptions opts = new JsonSerializerOptions()
-            {
-                AllowTrailingCommas = false,
-                //WriteIndented = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            };
+            // TODO: maybe this should not be in view model
+            // TODO: clone the scene
 
-            opts.Converters.Add(new SpecimenTableJsonConverter());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Mesh>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<float[]>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Vector3[]>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<PointCloud>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<Data.Matrix>());
-            opts.Converters.Add(new ReferencedDataJsonConverter<System.Drawing.Bitmap>());
-            opts.Converters.Add(new LutSpecJsonConverter());
-            opts.Converters.Add(new ColorJsonConverter());
-            opts.Converters.Add(new Matrix4x4JsonConverter());
-            opts.Converters.Add(new SizeJsonConverter());
+            // Create the snapshot in the project.
+            SnapshotInfo si = Project.AddNewSnapshot();
+            si.Scene = scene;
+            si.Name = name ?? DateTime.Now.ToString();
+            si.Filter = filter;
 
-            using FileStream fs = new FileStream("viewer-result.json", FileMode.Create, FileAccess.Write);
-            JsonSerializer.Serialize(fs, scene, opts);
+            // All data that exists only in arrays and buffers must be converted into serializable
+            // objects and added into the project as references.
+            foreach (ISceneElement sceneElem in scene.EnumSceneElements())
+                sceneElem.PersistData(Project);
 
+            // Render the thumbnail and add it as a reference into the project.
             sceneRenderer.Scene = scene;
             renderer.Present();
-            using (Bitmap bmp = renderer.ExtractColorAsBitmap())
-                bmp.Save("viewer-result.png");
+            Bitmap thumbnail = renderer.ExtractColorAsBitmap();
+            long thumbnailKey = Project.AddReferenceDirect<Bitmap>(ProjectReferenceFormat.PngImage, thumbnail);
+            si.ThumbnailKey = thumbnailKey;
         }
     }
 }

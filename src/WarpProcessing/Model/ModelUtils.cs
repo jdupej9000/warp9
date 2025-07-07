@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Warp9.Data;
 
 namespace Warp9.Model
 {
@@ -31,6 +32,30 @@ namespace Warp9.Model
                 return new ReferencedData<T>(val, x.Key);
 
             return x;
+        }
+
+        public static ReferencedData<T[]> ResolveAsMeshView<T>(Project proj, MeshViewKind viewKind, ReferencedData<T[]> x) where T : struct
+        {
+            if (x.IsLoaded)
+                return x;
+
+            PointCloud pcl;
+
+            if (proj.TryGetReference(x.Key, out Mesh? valm) && valm is not null)
+                pcl = valm;
+            else if (proj.TryGetReference(x.Key, out PointCloud? valp) && valp is not null)
+                pcl = valp;
+            else
+                return x;
+
+            MeshView? view = pcl.GetView(viewKind);
+            if (view is null)
+                return x;
+
+            if(!view.AsTypedData(out ReadOnlySpan<T> typedView))
+                return x;
+
+            return new ReferencedData<T[]>(typedView.ToArray(), x.Key);
         }
 
         public static SpecimenTable? TryGetSpecimenTable(Project proj, long tableKey)
