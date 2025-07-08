@@ -311,6 +311,8 @@ namespace Warp9.ProjectExplorer
         {
             if (pres is not GalleryPage page)
                 throw new ArgumentException();
+
+            page.UpdateGallery();
         }
     }
 }

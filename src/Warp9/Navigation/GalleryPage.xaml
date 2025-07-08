@@ -22,20 +22,20 @@
         </StackPanel>
         <Label Height="8" DockPanel.Dock="Top" />
 
-        <ListView x:Name="lstItems" DockPanel.Dock="Bottom">
+        <ListBox x:Name="lstItems" DockPanel.Dock="Bottom" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="5" HorizontalAlignment="Stretch"/>
+                    <WrapPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-            <ListView.ItemTemplate>
+            <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Stretch">
-                        <Image Source="{Binding Thumbnail}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />
-                        <TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                    <StackPanel Orientation="Vertical" Width="160" Height="200" Margin="4">
+                        <Image Source="{Binding Path=Thumbnail}" HorizontalAlignment="Center" VerticalAlignment="Top" Stretch="UniformToFill" />
+                        <TextBlock Text="{Binding Path=Title}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,4,0,0" />
                     </StackPanel>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </DockPanel>
 </Page>

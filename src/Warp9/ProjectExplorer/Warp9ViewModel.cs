@@ -26,7 +26,7 @@ namespace Warp9.ProjectExplorer
             renderer.Shaders.AddShader(StockShaders.VsDefault);
             renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
             renderer.Shaders.AddShader(StockShaders.PsDefault);
-            renderer.RasterFormat = new RasterInfo(128, 128);
+            renderer.RasterFormat = new RasterInfo(256, 256);
             sceneRenderer = new ViewerSceneRenderer(project);
             sceneRenderer.AttachToRenderer(renderer);
 

@@ -43,7 +43,7 @@ namespace Warp9.Model
         public bool IsArchiveOpen => archive?.IsOpen ?? false;
         public ProjectSettings Settings => settings;
         public IReadOnlyDictionary<long, ProjectEntry> Entries => entries;
-
+        public IReadOnlyDictionary<long, SnapshotInfo> Snapshots => snapshots;
 
         public bool TryGetReference<T>(long index, [MaybeNullWhen(false)] out T value)
         {
