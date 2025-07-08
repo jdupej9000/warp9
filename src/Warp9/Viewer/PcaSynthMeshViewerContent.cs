@@ -133,7 +133,7 @@ namespace Warp9.Viewer
             UpdateViewer();
 
             description = string.Format("PCA synthesis PC{0}={1}, PC{2}={3}",
-               indexPcScatterX, sppi.Pos.X, indexPcScatterY, sppi.Pos.Y);
+               indexPcScatterX + 1, sppi.Pos.X, indexPcScatterY + 1, sppi.Pos.Y);
         }
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
