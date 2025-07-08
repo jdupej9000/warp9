@@ -34,6 +34,7 @@ namespace Warp9
             views.Add(typeof(LogPage), pageLog);
             views.Add(typeof(MatrixViewPage), pageMatrixView);
             views.Add(typeof(SummaryPage), pageSummary);
+            views.Add(typeof(GalleryPage), pageGallery);
 
             JobEngine.ProgressChanged += JobEngine_ProgressChanged;
         }
@@ -47,6 +48,7 @@ namespace Warp9
         SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
         MatrixViewPage pageMatrixView = new MatrixViewPage();
+        GalleryPage pageGallery = new GalleryPage();
         JobEngine jobEngine = new JobEngine();
         Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
         ViewerPage pageViewer;

@@ -33,6 +33,7 @@ namespace Warp9.ProjectExplorer
             Items.Add(new GeneralProjectItem(this));
             Items.Add(new DatasetsProjectItem(this));
             Items.Add(new ResultsProjectItem(this));
+            Items.Add(new GalleryProjectItem(this));
         }
 
         HeadlessRenderer renderer;

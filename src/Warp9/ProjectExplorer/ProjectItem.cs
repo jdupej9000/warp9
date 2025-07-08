@@ -254,49 +254,63 @@ namespace Warp9.ProjectExplorer
             page.SetContent(
                 new PcaSynthMeshViewerContent(proj, Key, "Shape synthesis"));
         }
-
-        public class PcaTableProjectItem : ProjectItem
+    }
+    public class PcaTableProjectItem : ProjectItem
+    {
+        public PcaTableProjectItem(Warp9ViewModel vm, long key) :
+            base(vm, typeof(MatrixViewPage))
         {
-            public PcaTableProjectItem(Warp9ViewModel vm, long key) :
-                base(vm, typeof(MatrixViewPage))
+            Key = key;
+        }
+
+        public long Key { get; init; }
+
+        public override void Update()
+        {
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                Name = entry.Name;
+            else
+                Name = "(error)";
+
+            base.Update();
+        }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            base.ConfigurePresenter(pres);
+
+            if (pres is not MatrixViewPage page)
+                throw new ArgumentException();
+
+            Project proj = ParentViewModel.Project;
+
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) &&
+                entry.Payload.PcaExtra is not null &&
+                proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? mat) &&
+                mat is not null)
             {
-                Key = key;
+                page.SetMatrices(new MatrixViewProvider(mat[1], "Variance", "Variance"),
+                    (new MatrixViewProvider(mat[3], "Scores", "PC{0}")));
             }
-
-            public long Key { get; init; }
-
-            public override void Update()
+            else
             {
-                if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
-                    Name = entry.Name;
-                else
-                    Name = "(error)";
-
-                base.Update();
+                throw new InvalidOperationException();
             }
+        }
+    }
 
-            public override void ConfigurePresenter(IWarp9View pres)
-            {
-                base.ConfigurePresenter(pres);
+    public class GalleryProjectItem : ProjectItem
+    {
+        public GalleryProjectItem(Warp9ViewModel vm) :
+            base(vm, typeof(GalleryPage))
+        {
+            Name = "Gallery";
+        }
 
-                if (pres is not MatrixViewPage page)
-                    throw new ArgumentException();
-
-                Project proj = ParentViewModel.Project;
-
-                if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) &&
-                    entry.Payload.PcaExtra is not null &&
-                    proj.TryGetReference(entry.Payload.PcaExtra.DataKey, out MatrixCollection? mat) &&
-                    mat is not null)
-                {
-                    page.SetMatrices(new MatrixViewProvider(mat[1], "Variance", "Variance"),
-                        (new MatrixViewProvider(mat[3], "Scores", "PC{0}")));
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
-            }
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            if (pres is not GalleryPage page)
+                throw new ArgumentException();
         }
     }
 }
