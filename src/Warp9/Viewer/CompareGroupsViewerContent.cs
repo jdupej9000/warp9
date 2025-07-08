@@ -120,10 +120,11 @@ namespace Warp9.Viewer
             string descA = ModelUtils.DescribeSpecimenSelection(selectionA.Table, selectionA.Selected, out bool complA);
             string descB = ModelUtils.DescribeSpecimenSelection(selectionB.Table, selectionB.Selected, out bool complB);
 
-            return string.Format("{0} of ({1}){2} - ({2}){3}",
+            return string.Format("{0} on {5} of ({1}){2} - ({3}){4}",
                 mappedFieldsList[mappedFieldIndex],
                 descB, complB ? "?" : string.Empty,
-                descA, complA ? "?" : string.Empty);
+                descA, complA ? "?" : string.Empty,
+                ModelsForm ? "form" : "shape");
         }
 
         public void UpdateGroups(bool a, bool b)

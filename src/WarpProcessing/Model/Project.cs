@@ -32,10 +32,12 @@ namespace Warp9.Model
         ProjectSettings settings = new ProjectSettings();
         UniqueIdGenerator objectIdGen = new UniqueIdGenerator();
         UniqueIdGenerator specimenIdGen = new UniqueIdGenerator();
+        UniqueIdGenerator snapshotIdGen = new UniqueIdGenerator();
 
 
         public static readonly string ManifestFileName = "manifest.json";
         private static readonly string ObjectIdGenName = "objects";
+        private static readonly string SnapshotIdGenName = "snapshots";
         private static readonly string SpecimenIdGenName = "specimens";
         private static JsonSerializerOptions? opts;
 
@@ -157,7 +159,7 @@ namespace Warp9.Model
 
         public SnapshotInfo AddNewSnapshot()
         {
-            long index = objectIdGen.Next();
+            long index = snapshotIdGen.Next();
             SnapshotInfo info = new SnapshotInfo(index);
             snapshots[index] = info;
             return info;
@@ -194,6 +196,11 @@ namespace Warp9.Model
                 specimenIdGen = igspec;
             else
                 specimenIdGen = new UniqueIdGenerator();
+
+            if (manifest.Counters.TryGetValue(SnapshotIdGenName, out UniqueIdGenerator? igsnap))
+                snapshotIdGen = igsnap;
+            else
+                snapshotIdGen = new UniqueIdGenerator();
         }
 
         public void MakeManifest(Stream s, Dictionary<long, ProjectReferenceInfo> refs)
@@ -205,6 +212,7 @@ namespace Warp9.Model
             manifest.Snapshots = snapshots;
             manifest.Counters[ObjectIdGenName] = objectIdGen;
             manifest.Counters[SpecimenIdGenName] = specimenIdGen;
+            manifest.Counters[SnapshotIdGenName] = snapshotIdGen;
 
             JsonSerializer.Serialize(s, manifest, opts);
         }

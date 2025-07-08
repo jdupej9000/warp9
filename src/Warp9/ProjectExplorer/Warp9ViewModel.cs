@@ -60,7 +60,7 @@ namespace Warp9.ProjectExplorer
             // Create the snapshot in the project.
             SnapshotInfo si = Project.AddNewSnapshot();
             si.Scene = scene;
-            si.Name = name ?? DateTime.Now.ToString();
+            si.Name = name ?? string.Format("img{0:D6}", si.Id);
             si.Filter = filter;
             si.Comment = comment;
 
