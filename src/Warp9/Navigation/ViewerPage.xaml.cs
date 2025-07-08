@@ -328,7 +328,7 @@ namespace Warp9.Navigation
             if (content is null)
                 return;
 
-            viewModel?.AddSnapshot(content.Scene);
+            viewModel?.AddSnapshot(content.Scene, comment:content.DescribeScene());
         }
 
         private void SetView_Click(object sender, RoutedEventArgs e)

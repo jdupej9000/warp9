@@ -82,6 +82,12 @@ namespace Warp9.Viewer
         {
         }
 
+        public virtual string DescribeScene()
+        {
+            return Name;
+        }
+
+
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

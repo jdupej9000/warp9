@@ -183,6 +183,7 @@ namespace Warp9.Model
 
             entries = manifest.Entries;
             settings = manifest.Settings;
+            snapshots = manifest.Snapshots;
 
             if (manifest.Counters.TryGetValue(ObjectIdGenName, out UniqueIdGenerator? igobj))
                 objectIdGen = igobj;

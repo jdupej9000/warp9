@@ -85,6 +85,7 @@ namespace Warp9.Viewer
         int indexPcScatterX = 0, indexPcScatterY = 1;
         float[] tempSoa;
         Vector3[] posAos, normAos;
+        string description = "PCA synthesis";
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
@@ -117,11 +118,22 @@ namespace Warp9.Viewer
             return sidebar;
         }
 
+        public override string DescribeScene()
+        {
+            if(mappedFieldIndex != 0)
+                return description + " " + mappedFieldsList[mappedFieldIndex];
+
+            return description;
+        }
+
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
             pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
             OverrideVertices(tempSoa);
             UpdateViewer();
+
+            description = string.Format("PCA synthesis PC{0}={1}, PC{2}={3}",
+               indexPcScatterX, sppi.Pos.X, indexPcScatterY, sppi.Pos.Y);
         }
 
         public override void AttachRenderer(WpfInteropRenderer renderer)

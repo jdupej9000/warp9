@@ -47,7 +47,7 @@ namespace Warp9.Viewer
 
         internal bool TryUpdateDynamic(DeviceContext ctx, ReadOnlySpan<byte> data)
         {
-            if (!isDynamic || data.Length > itemCount * elementSize) return false;
+            if (!isDynamic || data.Length != itemCount * elementSize) return false;
 
             ctx.MapSubresource(buffer, MapMode.WriteDiscard, MapFlags.None, out DataStream ds);
             (ds as System.IO.Stream).Write(data);

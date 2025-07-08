@@ -64,6 +64,10 @@ namespace Warp9.Viewer
             set { SetMeshRendFlag(Scene.Mesh0!, MeshRenderFlags.EstimateNormals, value); OnPropertyChanged("RenderSmoothNormals"); }
         }
 
+        public override string DescribeScene()
+        {
+            return string.Format("Correspondence mesh #{0}", meshIndex);
+        }
 
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {

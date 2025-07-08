@@ -75,5 +75,21 @@ namespace Warp9.Navigation
 
             lstItems.ItemsSource = GalleryItems;
         }
+
+        private void lstItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstItems.SelectedItems.Count == 1 &&
+                e.AddedItems.Count == 1 &&
+                e.AddedItems[0] is GalleryItem gi)
+            {
+                pnlItem.DataContext = gi;
+            }
+            else
+            {
+                pnlItem.DataContext = null;
+            }
+
+            e.Handled = true;
+        }
     }
 }

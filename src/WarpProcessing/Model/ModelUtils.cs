@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Warp9.Data;
+using System.Linq;
+using static System.ComponentModel.Design.ObjectSelectorEditor;
+using System.Buffers;
 
 namespace Warp9.Model
 {
@@ -142,6 +146,120 @@ namespace Warp9.Model
                     yield return new SpecimenTableInfo(kvp.Key, kvp.Value.Name, table);
                 }
             }
+        }
+
+        public static string DescribeSpecimenSelection(SpecimenTable spec, bool[] sel, out bool isComplete)
+        {
+            int firstSel = Array.IndexOf(sel, true);
+            if (firstSel == -1)
+            {
+                isComplete = true;
+                return "nothing";
+            }
+
+            int n = sel.Length;
+            bool[] selSynth = ArrayPool<bool>.Shared.Rent(n);
+            Array.Fill(selSynth, true);
+
+            List<string> conditions = new List<string>();
+
+            foreach (var kvp in spec.Columns)
+            {
+                SpecimenTableColumn col = kvp.Value;
+                if (kvp.Value.ColumnType == SpecimenTableColumnType.Integer && 
+                    col is SpecimenTableColumn<long> colint)
+                {
+                    bool isOneValue = !colint.Data
+                        .Index()
+                        .Where((t) => sel[t.Index])
+                        .Any((t) => t.Item != colint.Data[firstSel]);
+
+                    if (isOneValue)
+                    {
+                        conditions.Add($"{kvp.Key}={colint.Data[firstSel]}");
+                        for (int i = 0; i < n; i++)
+                        {
+                            if (colint.Data[i] != colint.Data[firstSel])
+                                selSynth[i] = false;
+                        }
+                    }
+                }
+                else if (kvp.Value.ColumnType == SpecimenTableColumnType.Factor &&
+                   col is SpecimenTableColumn<int> colfact)
+                {
+                    bool isOneValue = !colfact.Data
+                        .Index()
+                        .Where((t) => sel[t.Index])
+                        .Any((t) => t.Item != colfact.Data[firstSel]);
+
+                    if (isOneValue)
+                    {
+                        conditions.Add($"{kvp.Key}={col.Names![colfact.Data[firstSel]]}");
+                        for (int i = 0; i < n; i++)
+                        {
+                            if (colfact.Data[i] != colfact.Data[firstSel])
+                                selSynth[i] = false;
+                        }
+                    }
+                }
+                else if (kvp.Value.ColumnType == SpecimenTableColumnType.String &&
+                   col is SpecimenTableColumn<string> colstr)
+                {
+                    bool isOneValue = !colstr.Data
+                        .Index()
+                        .Where((t) => sel[t.Index])
+                        .Any((t) => t.Item != colstr.Data[firstSel]);
+
+                    if (isOneValue)
+                    {
+                        conditions.Add($"{kvp.Key}={colstr.Data[firstSel]}");
+                        for (int i = 0; i < n; i++)
+                        {
+                            if (colstr.Data[i] != colstr.Data[firstSel])
+                                selSynth[i] = false;
+                        }
+                    }
+                }
+                else if (kvp.Value.ColumnType == SpecimenTableColumnType.Integer &&
+                   col is SpecimenTableColumn<bool> colbool)
+                {
+                    bool isOneValue = !colbool.Data
+                        .Index()
+                        .Where((t) => sel[t.Index])
+                        .Any((t) => t.Item != colbool.Data[firstSel]);
+
+                    if (isOneValue)
+                    {
+                        conditions.Add($"{kvp.Key}={colbool.Data[firstSel]}");
+                        for (int i = 0; i < n; i++)
+                        {
+                            if (colbool.Data[i] != colbool.Data[firstSel])
+                                selSynth[i] = false;
+                        }
+                    }
+                }
+            }
+
+            isComplete = true;
+            for (int i = 0; i < n; i++)
+            {
+                if (sel[i] != selSynth[i])
+                {
+                    isComplete = false;
+                    break;
+                }
+            }
+
+            ArrayPool<bool>.Shared.Return(selSynth);
+
+            if (conditions.Count == 0)
+            {
+                int numSel = sel.Count((t) => t == true);
+                isComplete = false;
+                return string.Format("{0} points", numSel);
+            }
+            
+            return string.Join(" and ", conditions);
         }
     }
 }

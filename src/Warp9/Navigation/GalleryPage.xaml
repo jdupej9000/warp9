@@ -11,7 +11,7 @@
 
     <DockPanel Background="{DynamicResource Brush.Background}" Margin="8">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="32">
-            <mi:MaterialIcon Kind="TableLarge" />
+            <mi:MaterialIcon Kind="ViewGalleryOutline" />
             <TextBlock Text="Gallery" Margin="8,0,0,0" VerticalAlignment="Center" Style="{DynamicResource GroupBoxHeaderBlock}" />
         </StackPanel>
 
@@ -22,20 +22,42 @@
         </StackPanel>
         <Label Height="8" DockPanel.Dock="Top" />
 
-        <ListBox x:Name="lstItems" DockPanel.Dock="Bottom" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Vertical" Width="160" Height="200" Margin="4">
-                        <Image Source="{Binding Path=Thumbnail}" HorizontalAlignment="Center" VerticalAlignment="Top" Stretch="UniformToFill" />
-                        <TextBlock Text="{Binding Path=Title}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,4,0,0" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox x:Name="lstItems" Grid.Row="0" Grid.Column="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="lstItems_SelectionChanged">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" Width="160" Height="200" Margin="4">
+                            <Image Source="{Binding Path=Thumbnail}" HorizontalAlignment="Center" VerticalAlignment="Top" Stretch="UniformToFill" />
+                            <TextBlock Text="{Binding Path=Title}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <ScrollViewer Grid.Row="0" Grid.Column="1">
+                <StackPanel Orientation="Vertical" Margin="8,0,8,8" x:Name="pnlItem">
+                    <TextBlock Text="Name" Margin="0,0,0,2" />
+                    <TextBox Height="24" VerticalContentAlignment="Center" Text="{Binding Path=Info.Name, Mode=TwoWay}" />
+                    <Label Height="8" />
+
+                    <TextBlock Text="Comment" Margin="0,0,0,2" />
+                    <TextBox Height="120" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Path=Info.Comment, Mode=TwoWay}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        
     </DockPanel>
 </Page>

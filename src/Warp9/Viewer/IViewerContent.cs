@@ -20,6 +20,7 @@ namespace Warp9.Viewer
         public void ViewportResized(Size size);
         public void ViewChanged(CameraInfo ci);
         public void MeshScaleHover(float? e);
+        public string DescribeScene();
 
         public ViewerScene Scene { get; }
 

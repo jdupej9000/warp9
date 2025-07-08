@@ -97,6 +97,7 @@ namespace Warp9.Model
         public bool IsSynchronized => false;
         public object SyncRoot => throw new NotImplementedException();
         public bool[] Selected => selected;
+        public SpecimenTable Table => specTable;
         public IReadOnlyDictionary<string, SpecimenTableColumn> TableColumns => specTable.Columns;
 
         public event PropertyChangedEventHandler? PropertyChanged;

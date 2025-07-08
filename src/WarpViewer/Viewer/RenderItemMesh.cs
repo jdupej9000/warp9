@@ -181,7 +181,7 @@ namespace Warp9.Viewer
                 if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
                 {
                     ReadOnlySpan<byte> posUpdData = MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize);                        
-                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData);
+                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
                 }
 
                 if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)

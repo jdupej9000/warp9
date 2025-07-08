@@ -52,7 +52,7 @@ namespace Warp9.ProjectExplorer
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Items)));
         }
 
-        public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null)
+        public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null, string? comment = null)
         {
             // TODO: maybe this should not be in view model
             // TODO: clone the scene
@@ -62,6 +62,7 @@ namespace Warp9.ProjectExplorer
             si.Scene = scene;
             si.Name = name ?? DateTime.Now.ToString();
             si.Filter = filter;
+            si.Comment = comment;
 
             // All data that exists only in arrays and buffers must be converted into serializable
             // objects and added into the project as references.

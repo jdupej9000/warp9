@@ -39,7 +39,7 @@ namespace Warp9.Viewer
 
         static readonly List<string> mappedFieldsList = new List<string>
         {
-            "Vertex rejection ratio", "Index"
+            "Vertex rejection ratio", "Vertex index"
         };
 
         public int MappedFieldIndex
@@ -62,6 +62,11 @@ namespace Warp9.Viewer
         public override Page? GetSidebar()
         {
             return sidebar;
+        }
+
+        public override string DescribeScene()
+        {
+            return mappedFieldsList[mappedFieldIndex];
         }
 
         private void ShowMesh()

@@ -115,6 +115,17 @@ namespace Warp9.Viewer
             UpdateGroups(group == 0, group == 1);
         }
 
+        public override string DescribeScene()
+        {
+            string descA = ModelUtils.DescribeSpecimenSelection(selectionA.Table, selectionA.Selected, out bool complA);
+            string descB = ModelUtils.DescribeSpecimenSelection(selectionB.Table, selectionB.Selected, out bool complB);
+
+            return string.Format("{0} of ({1}){2} - ({2}){3}",
+                mappedFieldsList[mappedFieldIndex],
+                descB, complB ? "?" : string.Empty,
+                descA, complA ? "?" : string.Empty);
+        }
+
         public void UpdateGroups(bool a, bool b)
         {
             if (a)
