@@ -18,7 +18,7 @@
 
         <Label Height="8" DockPanel.Dock="Top" />
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,1,0" Content="Render..."/>
+            <Button DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,1,0" Content="Render..." Click="btnRender_Click"/>
         </StackPanel>
         <Label Height="8" DockPanel.Dock="Top" />
 

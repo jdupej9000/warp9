@@ -5,9 +5,11 @@ using System.IO;
 using System.Numerics;
 using System.Text.Json;
 using Warp9.Data;
+using Warp9.Forms;
 using Warp9.JsonConverters;
 using Warp9.Model;
 using Warp9.Scene;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9.ProjectExplorer
@@ -75,6 +77,17 @@ namespace Warp9.ProjectExplorer
             Bitmap thumbnail = renderer.ExtractColorAsBitmap();
             long thumbnailKey = Project.AddReferenceDirect<Bitmap>(ProjectReferenceFormat.PngImage, thumbnail);
             si.ThumbnailKey = thumbnailKey;
+        }
+
+        public void RenderSnapshots(IReadOnlyList<SnapshotInfo> snapshots)
+        {
+            GalleryRenderSettings settings = new GalleryRenderSettings();
+            settings.ModViewList.AddRange(snapshots.Select((s) => s.Name));
+
+            RenderSettingsWindow dlg = new RenderSettingsWindow();
+            dlg.AttachSettings(settings);
+            if (dlg.ShowDialog() ?? false != true)
+                return;
         }
     }
 }

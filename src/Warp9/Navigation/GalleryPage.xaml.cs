@@ -91,5 +91,21 @@ namespace Warp9.Navigation
 
             e.Handled = true;
         }
+
+        private void btnRender_Click(object sender, RoutedEventArgs e)
+        {
+            List<SnapshotInfo> snapshots = new List<SnapshotInfo>();
+
+            foreach (var item in lstItems.SelectedItems)
+            {
+                if (item is GalleryItem gi)
+                    snapshots.Add(gi.Info);
+            }
+
+            if (snapshots.Count > 0)
+            {
+                viewModel?.RenderSnapshots(snapshots);
+            }
+        }
     }
 }
