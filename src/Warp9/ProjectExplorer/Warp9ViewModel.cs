@@ -86,8 +86,10 @@ namespace Warp9.ProjectExplorer
 
             RenderSettingsWindow dlg = new RenderSettingsWindow();
             dlg.AttachSettings(settings);
-            if (dlg.ShowDialog() ?? false != true)
+            if (dlg.ShowDialog().GetValueOrDefault() != true)
                 return;
+
+            SnapshotRenderer.RenderSnaphots(Project, snapshots, settings);
         }
     }
 }
