@@ -90,6 +90,7 @@ namespace Warp9.Data
             {
                 MeshViewKind.Pos3f => MakeVertexView(MeshSegmentType.Position, kind),
                 MeshViewKind.Normal3f => MakeVertexView(MeshSegmentType.Normal, kind),
+                MeshViewKind.Attrib1f => MakeVertexView(MeshSegmentType.AttribScalar, kind),
                 _ => throw new NotSupportedException()
             };
 
