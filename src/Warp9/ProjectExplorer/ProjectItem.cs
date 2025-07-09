@@ -15,6 +15,15 @@ using Warp9.Viewer;
 
 namespace Warp9.ProjectExplorer
 {
+    public enum ProjectItemKind
+    {
+        Folder,
+        Gallery,
+        Viewer,
+        Table,
+        Other
+    }
+
     public class ProjectItem
     {
         protected ProjectItem(Warp9ViewModel vm, Type? presenterType)
@@ -24,6 +33,7 @@ namespace Warp9.ProjectExplorer
         }
 
         public string Name { get; set; } = string.Empty;
+        public ProjectItemKind Kind => GetKind();
         public ObservableCollection<ProjectItem> Children { get; set; } = new ObservableCollection<ProjectItem>();
         public Warp9ViewModel ParentViewModel { get; init; }
         public Type? PagePresenterType { get; init; }
@@ -34,6 +44,11 @@ namespace Warp9.ProjectExplorer
         {
             foreach (ProjectItem pi in Children)
                 pi.Update();
+        }
+
+        protected virtual ProjectItemKind GetKind()
+        {
+            return ProjectItemKind.Other;
         }
     }
 
@@ -46,6 +61,8 @@ namespace Warp9.ProjectExplorer
             Children.Add(new GeneralCommentProjectItem(vm));
             Children.Add(new GeneralSettingsProjectItem(vm));
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Folder;
     }
 
     public class GeneralCommentProjectItem : ProjectItem
@@ -98,6 +115,8 @@ namespace Warp9.ProjectExplorer
 
             base.Update();
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Folder;
     }
 
     public class SpecimenTableProjectItem : ProjectItem
@@ -127,6 +146,8 @@ namespace Warp9.ProjectExplorer
             else
                 Name = "(error)";
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
     }
 
     public class ResultsProjectItem : ProjectItem
@@ -158,6 +179,8 @@ namespace Warp9.ProjectExplorer
 
             base.Update();
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Folder;
     }
 
     public class MeshCorrespondenceProjectItem : ProjectItem
@@ -220,6 +243,8 @@ namespace Warp9.ProjectExplorer
                 new CompareGroupsViewerContent(proj, Key, "Compare groups"),
                 new DcaDiagnosticsViewerContent(proj, Key, "DCA diagnostics"));
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Viewer;
     }
 
     public class PcaProjectItem : ProjectItem
@@ -254,6 +279,8 @@ namespace Warp9.ProjectExplorer
             page.SetContent(
                 new PcaSynthMeshViewerContent(proj, Key, "Shape synthesis"));
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Viewer;
     }
     public class PcaTableProjectItem : ProjectItem
     {
@@ -297,6 +324,8 @@ namespace Warp9.ProjectExplorer
                 throw new InvalidOperationException();
             }
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
     }
 
     public class GalleryProjectItem : ProjectItem
@@ -314,5 +343,7 @@ namespace Warp9.ProjectExplorer
 
             page.UpdateGallery();
         }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Gallery;
     }
 }

@@ -13,6 +13,7 @@
         Closing="Window_Closing"
         Title="Warp9" Height="650" Width="800">
     <Window.Resources>
+        <projexp:ProjectItemTypeToIconConverter x:Key="ProjItemTypeCvt" />
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
 
         <Menu x:Key="ChromeMenu" WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Center">
@@ -83,7 +84,10 @@
                     <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
                         <TreeView.ItemTemplate>                           
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                <TextBlock Text="{Binding Name}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Background="{Binding Kind, Converter={StaticResource ProjItemTypeCvt}}" Width="16" Height="16" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>                                
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
