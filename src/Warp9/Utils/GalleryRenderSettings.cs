@@ -14,6 +14,9 @@ namespace Warp9.Utils
         public string Directory { get; set; } = string.Empty;
         public int FormatIndex { get; set; } = 0;
         public IEnumerable<string> FormatList => Formats;
+        public int BackgroundIndex { get; set; } = 0;
+        public IEnumerable<string> BackgroundList => BackgroundColors.Select((t) => t.Item1);
+        public Color BackgroundColor => BackgroundColors[BackgroundIndex].Item2;
         public int AdapterIndex { get; set; } = 0;
         public IEnumerable<string> AdapterList => HeadlessRenderer.EnumAdapters().Values;
         public bool OverwriteExistingFiles { get; set; } = true;
@@ -26,9 +29,7 @@ namespace Warp9.Utils
         public int ModResolutionHeight { get; set;} = 4096;
         public bool ModResolutionAspect { get; set; } = false;
 
-        public bool ModBackground {get; set; } = true;
-        public int ModBackgroundIndex { get; set; } = 0;
-        public IEnumerable<string> ModBackgroundList => BackgroundColors.Select((t) => t.Item1);
+       
 
         public bool ModView { get; set; } = false;
         public int ModViewIndex { get; set; } = 0;

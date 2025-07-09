@@ -32,6 +32,7 @@
                     <RowDefinition Height="28"/>
                     <RowDefinition Height="28"/>
                     <RowDefinition Height="28"/>
+                    <RowDefinition Height="28"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="Destination directory" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" />
@@ -43,15 +44,20 @@
                           ItemsSource="{Binding Path=FormatList}"
                           SelectedIndex="{Binding Path=FormatIndex, Mode=TwoWay}"/>
 
-                <TextBlock Text="Graphics adapter" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" />
-                <ComboBox Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"
+                <TextBlock Text="Background" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" />
+                <ComboBox Grid.Column="1" Grid.Row="2"
+                          ItemsSource="{Binding Path=BackgroundList}"
+                          SelectedIndex="{Binding Path=BackgroundIndex, Mode=TwoWay}"/>
+
+                <TextBlock Text="Graphics adapter" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" />
+                <ComboBox Grid.Column="1" Grid.Row="3" VerticalAlignment="Center"
                           ItemsSource="{Binding Path=AdapterList}"
                           SelectedIndex="{Binding Path=AdapterIndex, Mode=TwoWay}"/>
 
-                <CheckBox Content="Overwrite existing files" Grid.Column="0" Grid.Row="3" 
+                <CheckBox Content="Overwrite existing files" Grid.Column="0" Grid.Row="4" 
                           IsChecked="{Binding Path=OverwriteExistingFiles, Mode=TwoWay}" />
 
-                <CheckBox Content="Autocrop" Grid.Column="0" Grid.Row="4" 
+                <CheckBox Content="Autocrop" Grid.Column="0" Grid.Row="5" 
                           IsChecked="{Binding Path=OverwriteExistingFiles, Mode=TwoWay}"/>
             </Grid>
         </GroupBox>
@@ -67,7 +73,6 @@
                     <RowDefinition Height="28"/>
                     <RowDefinition Height="28"/>
                     <RowDefinition Height="28"/>
-                    <RowDefinition Height="28"/>
                 </Grid.RowDefinitions>
 
                 <CheckBox Content="Set resolution" Grid.Column="0" Grid.Row="0" IsChecked="{Binding ModResolution, Mode=TwoWay}" />
@@ -78,17 +83,12 @@
                     <CheckBox Content="Maintain aspect ratio" Margin="8,0,0,0" IsChecked="{Binding Path=ModResolutionAspect, Mode=TwoWay}"/>
                 </StackPanel>
 
-                <CheckBox Content="Set background color" Grid.Column="0" Grid.Row="1" IsChecked="{Binding ModBackground, Mode=TwoWay}"/>
+                <CheckBox Content="Set view" Grid.Column="0" Grid.Row="1" IsChecked="{Binding ModView, Mode=TwoWay}"/>
                 <ComboBox Grid.Column="1" Grid.Row="1"
-                          ItemsSource="{Binding Path=ModBackgroundList}"
-                          SelectedIndex="{Binding Path=ModBackgroundIndex, Mode=TwoWay}"/>
-
-                <CheckBox Content="Set view" Grid.Column="0" Grid.Row="2" IsChecked="{Binding ModView, Mode=TwoWay}"/>
-                <ComboBox Grid.Column="1" Grid.Row="2"
                           ItemsSource="{Binding Path=ModViewList}"
                           SelectedIndex="{Binding Path=ModViewIndex, Mode=TwoWay}"/>
 
-                <CheckBox Content="Disable grid" Grid.Column="0" Grid.Row="3" IsChecked="{Binding ModDisableGrid, Mode=TwoWay}"/>
+                <CheckBox Content="Disable grid" Grid.Column="0" Grid.Row="2" IsChecked="{Binding ModDisableGrid, Mode=TwoWay}"/>
             </Grid>
         </GroupBox>
 

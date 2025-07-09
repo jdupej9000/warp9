@@ -32,6 +32,16 @@ namespace Warp9.Scene
             if (Grid is not null) yield return Grid;
         }
 
+        public ViewerScene Duplicate()
+        {
+            ViewerScene ret = new ViewerScene();
+            ret.ViewMatrix = ViewMatrix;
+            ret.Viewport = Viewport;
+            ret.Mesh0 = Mesh0?.Duplicate();
+            ret.Grid = Grid?.Duplicate();
+            return ret;
+        }
+
         public override string ToString()
         {
             return string.Format("m0:({0}) g:({1})",

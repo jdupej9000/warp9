@@ -27,6 +27,13 @@ namespace Warp9.Scene
             ri.Version.Commit(delta);
         }
 
+        public GridSceneElement Duplicate()
+        {
+            GridSceneElement ret = new GridSceneElement();
+            ret.Visible = Visible;
+            return ret;
+        }
+
         public void PersistData(Project project)
         {
         }

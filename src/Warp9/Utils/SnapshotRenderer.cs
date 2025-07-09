@@ -19,6 +19,7 @@ namespace Warp9.Utils
             this.settings = settings;
 
             renderer = rend;
+            renderer.CanvasColor = settings.BackgroundColor;
             renderer.Shaders.AddShader(StockShaders.VsDefault);
             renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
             renderer.Shaders.AddShader(StockShaders.PsDefault);
@@ -64,6 +65,11 @@ namespace Warp9.Utils
 
         private ViewerScene ApplyMods(ViewerScene scene)
         {
+            ViewerScene ret = scene.Duplicate();
+
+            if (settings.ModDisableGrid && ret.Grid is not null)
+                ret.Grid.Visible = false;
+
             return scene;
         }
 

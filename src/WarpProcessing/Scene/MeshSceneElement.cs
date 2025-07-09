@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -122,6 +123,23 @@ namespace Warp9.Scene
             ri.PointWireColor = System.Drawing.Color.Black;
             ri.RenderBlend = false;
             ri.RenderDepth = true;
+        }
+
+        public MeshSceneElement Duplicate()
+        {
+            MeshSceneElement ret = new MeshSceneElement();
+            ret.Flags = Flags;
+            ret.AttributeMin = AttributeMin;
+            ret.AttributeMax = AttributeMax;
+            ret.LevelValue = LevelValue;
+            ret.FlatColor = FlatColor;
+            ret.mesh = mesh;
+            ret.positionOverride = positionOverride;
+            ret.normalsOverride = normalsOverride;
+            ret.attributeScalar = attributeScalar;
+            ret.lutSpec = lutSpec;
+
+            return ret;
         }
 
         public void PersistData(Project project)
