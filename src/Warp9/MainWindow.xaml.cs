@@ -35,8 +35,6 @@ namespace Warp9
             views.Add(typeof(MatrixViewPage), pageMatrixView);
             views.Add(typeof(SummaryPage), pageSummary);
             views.Add(typeof(GalleryPage), pageGallery);
-
-            JobEngine.ProgressChanged += JobEngine_ProgressChanged;
         }
 
         Warp9Model? model = null;
@@ -49,11 +47,8 @@ namespace Warp9
         ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
         MatrixViewPage pageMatrixView = new MatrixViewPage();
         GalleryPage pageGallery = new GalleryPage();
-        JobEngine jobEngine = new JobEngine();
         Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
         ViewerPage pageViewer;
-
-        public JobEngine JobEngine => jobEngine;
 
         
         private bool Save(bool forceNewPath = false)
@@ -241,11 +236,27 @@ namespace Warp9
         {
             model?.Dispose();
             model = new Warp9Model(project);
+            model.JobEngine.ProgressChanged += JobEngine_ProgressChanged;
+            model.LogMessage += (s, e) => pageLog.AddMessage(e);
+            model.ModelEvent += Model_ModelEvent;
             DataContext = model.ViewModel;
             UpdateProjectExplorer();
 
             foreach (IWarp9View view in views.Values)
                 view.AttachViewModel(model.ViewModel);
+        }
+
+        private void Model_ModelEvent(object? sender, ModelEventKind e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                switch (e)
+                {
+                    case ModelEventKind.JobStarting:
+                        frameMain.NavigationService.Navigate(pageLog);
+                        break;
+                }
+            });
         }
 
         private void UnsetProject()
@@ -264,9 +275,7 @@ namespace Warp9
 
         private void UpdateProjectExplorer()
         {
-            //treeProject.ItemsSource = model?.ViewModel?.Items ?? new ObservableCollection<ProjectItem>();
             model?.ViewModel?.Update();
-           
         }
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
@@ -303,12 +312,7 @@ namespace Warp9
             if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
                 return;
 
-            ProjectJobContext ctx = new ProjectJobContext(model.Project);
-            ctx.LogMessage += (s,e) => pageLog.AddMessage(e);
-            Job job = Job.Create(DcaJob.Create(config, model.Project), ctx, "DCA");
-
-            frameMain.NavigationService.Navigate(pageLog);
-            JobEngine.Run(job);
+            model.StartJob(DcaJob.Create(config, model.Project), "DCA");
         }
 
         private void mnuProjectComputePca_Click(object sender, RoutedEventArgs e)
@@ -325,18 +329,13 @@ namespace Warp9
             if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
                 return;
 
-            ProjectJobContext ctx = new ProjectJobContext(model.Project);
-            ctx.LogMessage += (s, e) => pageLog.AddMessage(e);
-            Job job = Job.Create(PcaJob.CreateDcaPca(config, model.Project), ctx, "High dimensional PCA");
-
-            frameMain.NavigationService.Navigate(pageLog);
-            JobEngine.Run(job);
+            model.StartJob(PcaJob.CreateDcaPca(config, model.Project), "High dimensional PCA");
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            UnsetProject();
             Options.Save();
-            jobEngine.Dispose();
         }
 
         private void mnuToolsOptions_Click(object sender, RoutedEventArgs e)

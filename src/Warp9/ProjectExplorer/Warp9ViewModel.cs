@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text.Json;
 using Warp9.Data;
 using Warp9.Forms;
+using Warp9.Jobs;
 using Warp9.JsonConverters;
 using Warp9.Model;
 using Warp9.Scene;
@@ -16,9 +17,10 @@ namespace Warp9.ProjectExplorer
 {
     public class Warp9ViewModel : INotifyPropertyChanged, IDisposable
     {
-        public Warp9ViewModel(Project project) 
+        public Warp9ViewModel(Project project, IWarp9Model model) 
         {
             Project = project;
+            Model = model;
 
             if (!HeadlessRenderer.TryCreate(0, out HeadlessRenderer? rend))
                 throw new Exception("Could not initialize a headless renderer.");
@@ -43,6 +45,7 @@ namespace Warp9.ProjectExplorer
 
         public ObservableCollection<ProjectItem> Items { get; init; } = new ObservableCollection<ProjectItem>();
         public Project Project { get; init; }
+        public IWarp9Model Model { get; init; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -94,7 +97,7 @@ namespace Warp9.ProjectExplorer
             if (dlg.ShowDialog().GetValueOrDefault() != true)
                 return;
 
-            SnapshotRenderer.RenderSnaphots(Project, snapshots, settings);
+            Model.StartJob(RenderGalleryJob.Create(snapshots, settings), "Render gallery");
         }
     }
 }

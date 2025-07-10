@@ -1,15 +1,21 @@
 ﻿using System.IO;
 using System.Windows.Markup;
+using Warp9.Jobs;
 using Warp9.Model;
 
 namespace Warp9.ProjectExplorer
 {
-    public class Warp9Model : IDisposable
+    public enum ModelEventKind
+    {
+        JobStarting
+    }
+
+    public class Warp9Model : IWarp9Model, IDisposable
     {
         public Warp9Model(Project project)
         {
             Project = project;
-            ViewModel = new Warp9ViewModel(project);
+            ViewModel = new Warp9ViewModel(project, this);
             ViewModel.Update();
         }
 
@@ -17,6 +23,10 @@ namespace Warp9.ProjectExplorer
         public Warp9ViewModel ViewModel { get; init; }
         public bool IsDirty { get; private set; } = false;
         public string? FileName => Project.Archive?.FileName;
+        public JobEngine JobEngine { get; } = new JobEngine();
+
+        public event EventHandler<string> LogMessage;
+        public event EventHandler<ModelEventKind> ModelEvent;
 
         public void Save(string fileName)
         {
@@ -51,10 +61,26 @@ namespace Warp9.ProjectExplorer
             }
         }
 
+        public void StartJob(IEnumerable<IJobItem> items, string? title = null)
+        {
+            ProjectJobContext ctx = new ProjectJobContext(Project);
+            ctx.LogMessage += OnJobMessage;
+
+            Job job = Job.Create(items, ctx, title);
+            ModelEvent?.Invoke(this, ModelEventKind.JobStarting);
+            JobEngine.Run(job);
+        }
+
         public void Dispose()
         {
+            JobEngine.Dispose();
             GC.SuppressFinalize(this);
             ViewModel.Dispose();
+        }
+
+        private void OnJobMessage(object? sender, string msg)
+        {
+            LogMessage?.Invoke(sender, msg);
         }
     }
 }
