@@ -14,7 +14,7 @@ using Warp9.Viewer;
 
 namespace Warp9.ProjectExplorer
 {
-    public class Warp9ViewModel : INotifyPropertyChanged
+    public class Warp9ViewModel : INotifyPropertyChanged, IDisposable
     {
         public Warp9ViewModel(Project project) 
         {
@@ -52,6 +52,12 @@ namespace Warp9.ProjectExplorer
                 pi.Update();
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Items)));
+        }
+
+        public void Dispose()
+        {
+            renderer.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null, string? comment = null)

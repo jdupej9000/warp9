@@ -14,6 +14,7 @@ namespace Warp9.Viewer
         readonly Func<TKey, TValue> gen;
 
         public TKey LastState { get; set; }
+        public IEnumerable<TValue> CachedObjects => cache.Values;
 
         public virtual TValue Get(TKey key)
         {

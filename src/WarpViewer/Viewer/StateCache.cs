@@ -1,4 +1,5 @@
-﻿using SharpDX.Direct3D11;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
 using System;
 
 namespace Warp9.Viewer
@@ -46,7 +47,7 @@ namespace Warp9.Viewer
         Invalid = 0x7fffffff
     }
 
-    public class StateCache
+    public class StateCache : IDisposable
     {
         public StateCache(Device dev)
         {
@@ -146,6 +147,21 @@ namespace Warp9.Viewer
             desc.AddressW = TextureAddressMode.Clamp;
             
             return new SamplerState(device, desc);
+        }
+
+        public void Dispose()
+        {
+            foreach (RasterizerState rs in rasterizerStateCache.CachedObjects)
+                rs.Dispose();
+
+            foreach (BlendState bs in blendStateCache.CachedObjects)
+                bs.Dispose();
+
+            foreach (DepthStencilState ds in depthStateCache.CachedObjects)
+                ds.Dispose();
+
+            foreach (SamplerState ss in samplerStateCache.CachedObjects)
+                ss.Dispose();
         }
     }
 }

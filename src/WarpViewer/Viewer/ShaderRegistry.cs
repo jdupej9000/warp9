@@ -1,4 +1,5 @@
-﻿using SharpDX.D3DCompiler;
+﻿using SharpDX;
+using SharpDX.D3DCompiler;
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.IO;
 
 namespace Warp9.Viewer
 {
-    internal class Shader
+    internal class Shader : IDisposable
     {
         internal Shader(ShaderSpec spec, CompilationResult result, ShaderSignature signature)
         {
@@ -19,9 +20,21 @@ namespace Warp9.Viewer
         public CompilationResult CompilationResult { get; internal set; }
         public ShaderSignature Signature { get; internal set; }
         public DeviceChild? ShaderObject { get; set; }
+
+        public void Dispose()
+        {
+            ShaderSignature ss = Signature;
+            Utilities.Dispose(ref ss);
+
+            if (ShaderObject is not null)
+            {
+                DeviceChild dc = ShaderObject;
+                Utilities.Dispose(ref dc);
+            }
+        }
     }
 
-    public class ShaderRegistry : Include
+    public class ShaderRegistry : Include, IDisposable
     {
         readonly Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
 
@@ -130,7 +143,10 @@ namespace Warp9.Viewer
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            foreach (var sh in shaders)
+                sh.Value.Dispose();
+
+            shaders.Clear();
         }
 
         public Stream Open(IncludeType type, string fileName, Stream parentStream)

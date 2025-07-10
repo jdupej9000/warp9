@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Warp9.Viewer
 {
-    public class HeadlessRenderer : RendererBase
+    public class HeadlessRenderer : RendererBase, IDisposable
     {
         private HeadlessRenderer(SharpDX.DXGI.AdapterDescription desc, Device d)
         {
@@ -204,6 +204,13 @@ namespace Warp9.Viewer
                 Utilities.Dispose(ref texStagingColor);
         }
 
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            DestroyFboStaging();
+            Destroy();
+        }
+
         public static bool TryCreate(int adapter, out HeadlessRenderer? ret)
         {
             using SharpDX.DXGI.Factory factory = new SharpDX.DXGI.Factory1();
@@ -221,11 +228,14 @@ namespace Warp9.Viewer
 
             SharpDX.DXGI.Adapter a = factory.GetAdapter(adapterIdx);
 
+            DeviceCreationFlags dcf = DeviceCreationFlags.BgraSupport;
+#if (DEBUG)
+    dcf |= DeviceCreationFlags.Debug;
+#endif
+
             try
             {
-                Device device = new Device(a, DeviceCreationFlags.BgraSupport | DeviceCreationFlags.Debug, 
-                    SharpDX.Direct3D.FeatureLevel.Level_11_0);
-
+                Device device = new Device(a, dcf, SharpDX.Direct3D.FeatureLevel.Level_11_0);
                 ret = new HeadlessRenderer(a.Description, device);
                 return true;
             }
@@ -235,6 +245,5 @@ namespace Warp9.Viewer
                 return false;
             }
         }
-
     }
 }

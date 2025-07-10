@@ -4,7 +4,7 @@ using Warp9.Model;
 
 namespace Warp9.ProjectExplorer
 {
-    public class Warp9Model
+    public class Warp9Model : IDisposable
     {
         public Warp9Model(Project project)
         {
@@ -51,6 +51,10 @@ namespace Warp9.ProjectExplorer
             }
         }
 
-        //public void 
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            ViewModel.Dispose();
+        }
     }
 }

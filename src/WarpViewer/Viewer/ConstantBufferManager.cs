@@ -1,9 +1,10 @@
 ﻿using SharpDX.Direct3D11;
+using System;
 using System.Collections.Generic;
 
 namespace Warp9.Viewer
 {
-    public class ConstantBufferManager
+    public class ConstantBufferManager: IDisposable
     {
         public ConstantBufferManager() 
         {
@@ -29,5 +30,10 @@ namespace Warp9.Viewer
             return constBuffers[idx];
         }
 
+        public void Dispose()
+        {
+            foreach (var buffer in constBuffers.Values) 
+                buffer.Dispose();
+        }
     }
 }

@@ -239,6 +239,7 @@ namespace Warp9
 
         private void SetProject(Project project)
         {
+            model?.Dispose();
             model = new Warp9Model(project);
             DataContext = model.ViewModel;
             UpdateProjectExplorer();
@@ -251,6 +252,7 @@ namespace Warp9
         {
             if (model is not null)
             {
+                model.Dispose();
                 model = null;
                 DataContext = null;
                 UpdateProjectExplorer();

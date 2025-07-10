@@ -17,7 +17,7 @@ namespace Warp9.Viewer
         InvalidVertexLayout = 2
     }
 
-    public class RenderJob
+    public class RenderJob : IDisposable
     {
         public RenderJob(ShaderRegistry shaders, ConstantBufferManager cbuffs)
         {
@@ -46,6 +46,18 @@ namespace Warp9.Viewer
         bool rebuildInputLayout = false;
 
         public RenderItemVersion Version { get; } = new RenderItemVersion();
+
+        public void Dispose()
+        {
+            foreach(var kvp in textures)
+                kvp.Value.Dispose();
+
+            foreach(var kvp in vertBuffBindings)
+                kvp.Value.Dispose();
+
+            indexBuffer?.Dispose();
+            inputLayout?.Dispose();
+        }
 
         public bool TrySetConstBuffer<T>(int drawCallId, int buffId, T value) where T : struct
         {
@@ -343,5 +355,7 @@ namespace Warp9.Viewer
                 rebuildInputLayout = false;
             }
         }
+
+       
     }
 }

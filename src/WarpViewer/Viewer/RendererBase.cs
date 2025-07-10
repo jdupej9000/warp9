@@ -1,4 +1,5 @@
-﻿using SharpDX.Direct3D11;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
@@ -48,6 +49,18 @@ namespace Warp9.Viewer
                 renderItems.Clear();
                 jobsDirty = true;
             }
+        }
+
+        protected void Destroy()
+        {
+            shaders.Dispose();
+            constantBufferManager.Dispose();
+            stateCache?.Dispose();
+
+            foreach (var kvp in renderItems)
+                kvp.Value?.Dispose();
+
+            Utilities.Dispose(ref device);
         }
 
         protected void Render()

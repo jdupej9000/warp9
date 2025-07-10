@@ -98,6 +98,8 @@ namespace Warp9.Utils
             SnapshotRenderer sr = new SnapshotRenderer(proj, rend, settings);
             foreach (SnapshotInfo info in snapshots)
                 sr.Render(info);
+
+            rend.Dispose();
         }
     }
 }
