@@ -10,5 +10,6 @@ namespace Warp9.ProjectExplorer
     public interface IWarp9Model
     {
         public void StartJob(IEnumerable<IJobItem> items, string? title=null);
+        public void Save(string path);
     }
 }

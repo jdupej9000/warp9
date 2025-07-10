@@ -39,45 +39,16 @@ namespace Warp9
 
         Warp9Model? model = null;
 
-        MainLandingPage pageLanding = new MainLandingPage();
-        LogPage pageLog = new LogPage();
-        SummaryPage pageSummary = new SummaryPage();
-        TextEditorPage pageTextEditor = new TextEditorPage();
-        SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
-        ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
-        MatrixViewPage pageMatrixView = new MatrixViewPage();
-        GalleryPage pageGallery = new GalleryPage();
-        Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
-        ViewerPage pageViewer;
-
+        readonly LogPage pageLog = new LogPage();
+        readonly SummaryPage pageSummary = new SummaryPage();
+        readonly TextEditorPage pageTextEditor = new TextEditorPage();
+        readonly SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
+        readonly ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
+        readonly MatrixViewPage pageMatrixView = new MatrixViewPage();
+        readonly GalleryPage pageGallery = new GalleryPage();
+        readonly Dictionary<Type, IWarp9View> views = new Dictionary<Type, IWarp9View>();
+        readonly ViewerPage pageViewer;
         
-        private bool Save(bool forceNewPath = false)
-        {
-            if (model is null)
-                return true;
-
-            string? currentArchivePath = model.Project.Archive?.FileName;
-            string? destPath = null;
-            if (!forceNewPath && currentArchivePath is not null)
-            {
-                destPath = currentArchivePath;
-            }
-            else
-            {
-                SaveFileDialog dlg = new SaveFileDialog();
-                dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
-
-                DialogResult res = dlg.ShowDialog();
-                if (res == System.Windows.Forms.DialogResult.OK)
-                    destPath = dlg.FileName;
-            }
-
-            if(destPath != null)
-                model.Save(destPath);
-
-            return true;
-        }
-
         private bool OfferSaveDirtyProject()
         {
             if (model is not null && model.IsDirty)
@@ -88,7 +59,8 @@ namespace Warp9
                 switch (res)
                 {
                     case MessageBoxResult.Yes:
-                        return Save();
+                        model?.ViewModel?.Save();
+                        return true;
 
                     case MessageBoxResult.No:
                         return true;
@@ -152,12 +124,12 @@ namespace Warp9
 
         private void mnuFileSave_Click(object sender, RoutedEventArgs e)
         {
-            Save();
+            model?.ViewModel?.Save();
         }
 
         private void mnuFileSaveAs_Click(object sender, RoutedEventArgs e)
         {
-            Save(true);
+            model?.ViewModel?.Save(true);
         }
 
         private void mnuFileClose_Click(object sender, RoutedEventArgs e)
@@ -246,14 +218,19 @@ namespace Warp9
                 view.AttachViewModel(model.ViewModel);
         }
 
-        private void Model_ModelEvent(object? sender, ModelEventKind e)
+        private void Model_ModelEvent(object? sender, ModelEventInfo e)
         {
             Dispatcher.Invoke(() =>
             {
-                switch (e)
+                switch (e.Kind)
                 {
                     case ModelEventKind.JobStarting:
                         frameMain.NavigationService.Navigate(pageLog);
+                        break;
+
+                    case ModelEventKind.ProjectSaved:
+                        lblStatusMain.Text = $"Saved as '{e.FileName}'.";
+                        prbStatusProgress.Visibility = Visibility.Hidden;
                         break;
                 }
             });
@@ -280,7 +257,7 @@ namespace Warp9
 
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            this.DragMove();
+            DragMove();
         }
 
         private void treeProject_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -300,36 +277,12 @@ namespace Warp9
 
         private void mnuProjectComputeDca_Click(object sender, RoutedEventArgs e)
         {
-            if (model is null)
-                throw new InvalidOperationException();
-
-            DcaConfiguration config = new DcaConfiguration();
-
-            DcaConfigWindow cfgWnd = new DcaConfigWindow();
-            cfgWnd.Attach(model.Project, config);
-            cfgWnd.ShowDialog();
-
-            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
-                return;
-
-            model.StartJob(DcaJob.Create(config, model.Project), "DCA");
+            model?.ViewModel?.ComputeDca();
         }
 
         private void mnuProjectComputePca_Click(object sender, RoutedEventArgs e)
         {
-            if (model is null)
-                throw new InvalidOperationException();
-
-            PcaConfiguration config = new PcaConfiguration();
-
-            PcaConfigWindow cfgWnd = new PcaConfigWindow();
-            cfgWnd.Attach(model.Project, config);
-            cfgWnd.ShowDialog();
-
-            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
-                return;
-
-            model.StartJob(PcaJob.CreateDcaPca(config, model.Project), "High dimensional PCA");
+            model?.ViewModel?.ComputeDcaPca();
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

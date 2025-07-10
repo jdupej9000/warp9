@@ -7,8 +7,11 @@ namespace Warp9.ProjectExplorer
 {
     public enum ModelEventKind
     {
-        JobStarting
+        JobStarting,
+        ProjectSaved
     }
+
+    public record ModelEventInfo(ModelEventKind Kind, string? FileName=null);
 
     public class Warp9Model : IWarp9Model, IDisposable
     {
@@ -26,7 +29,7 @@ namespace Warp9.ProjectExplorer
         public JobEngine JobEngine { get; } = new JobEngine();
 
         public event EventHandler<string> LogMessage;
-        public event EventHandler<ModelEventKind> ModelEvent;
+        public event EventHandler<ModelEventInfo> ModelEvent;
 
         public void Save(string fileName)
         {
@@ -59,6 +62,8 @@ namespace Warp9.ProjectExplorer
                 IProjectArchive? oldArch = Project.SwitchToSavedArchive(archSaved);
                 oldArch?.Dispose();
             }
+
+            ModelEvent?.Invoke(this, new ModelEventInfo(ModelEventKind.ProjectSaved, fileName));
         }
 
         public void StartJob(IEnumerable<IJobItem> items, string? title = null)
@@ -67,7 +72,7 @@ namespace Warp9.ProjectExplorer
             ctx.LogMessage += OnJobMessage;
 
             Job job = Job.Create(items, ctx, title);
-            ModelEvent?.Invoke(this, ModelEventKind.JobStarting);
+            ModelEvent?.Invoke(this, new ModelEventInfo(ModelEventKind.JobStarting));
             JobEngine.Run(job);
         }
 

@@ -4,11 +4,13 @@ using System.Drawing;
 using System.IO;
 using System.Numerics;
 using System.Text.Json;
+using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.Forms;
 using Warp9.Jobs;
 using Warp9.JsonConverters;
 using Warp9.Model;
+using Warp9.Processing;
 using Warp9.Scene;
 using Warp9.Utils;
 using Warp9.Viewer;
@@ -63,6 +65,28 @@ namespace Warp9.ProjectExplorer
             GC.SuppressFinalize(this);
         }
 
+        public void Save(bool forceNewPath = false)
+        {
+            string? currentArchivePath = Project.Archive?.FileName;
+            string? destPath = null;
+            if (!forceNewPath && currentArchivePath is not null)
+            {
+                destPath = currentArchivePath;
+            }
+            else
+            {
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.Filter = "Warp9 Project Files (*.w9)|*.w9";
+
+                DialogResult res = dlg.ShowDialog();
+                if (res == DialogResult.OK)
+                    destPath = dlg.FileName;
+            }
+
+            if (destPath != null)
+                Model.Save(destPath);
+        }
+
         public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null, string? comment = null)
         {
             // TODO: maybe this should not be in view model
@@ -98,6 +122,34 @@ namespace Warp9.ProjectExplorer
                 return;
 
             Model.StartJob(RenderGalleryJob.Create(snapshots, settings), "Render gallery");
+        }
+
+        public void ComputeDca()
+        {
+            DcaConfiguration config = new DcaConfiguration();
+
+            DcaConfigWindow cfgWnd = new DcaConfigWindow();
+            cfgWnd.Attach(Project, config);
+            cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            Model.StartJob(DcaJob.Create(config, Project), "DCA");
+        }
+
+        public void ComputeDcaPca()
+        {
+            PcaConfiguration config = new PcaConfiguration();
+
+            PcaConfigWindow cfgWnd = new PcaConfigWindow();
+            cfgWnd.Attach(Project, config);
+            cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            Model.StartJob(PcaJob.CreateDcaPca(config, Project), "High dimensional PCA");
         }
     }
 }
