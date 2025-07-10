@@ -53,6 +53,7 @@ namespace Warp9.Viewer
 
         protected override void PartialUpdateJobInternal(RenderItemDelta kind, RenderJob job, DeviceContext ctx)
         {
+            job.TryEnableDrawCall(0, visible);
         }
 
         public override void UpdateConstantBuffers(RenderJob job)

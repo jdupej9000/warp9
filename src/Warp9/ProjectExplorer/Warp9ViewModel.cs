@@ -63,7 +63,6 @@ namespace Warp9.ProjectExplorer
         public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null, string? comment = null)
         {
             // TODO: maybe this should not be in view model
-            // TODO: clone the scene
 
             // Create the snapshot in the project.
             SnapshotInfo si = Project.AddNewSnapshot();
@@ -81,7 +80,7 @@ namespace Warp9.ProjectExplorer
             sceneRenderer.Scene = scene;
             renderer.Present();
             Bitmap thumbnail = renderer.ExtractColorAsBitmap();
-            long thumbnailKey = Project.AddReferenceDirect<Bitmap>(ProjectReferenceFormat.PngImage, thumbnail);
+            long thumbnailKey = Project.AddReferenceDirect(ProjectReferenceFormat.PngImage, thumbnail);
             si.ThumbnailKey = thumbnailKey;
         }
 

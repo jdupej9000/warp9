@@ -68,9 +68,12 @@ namespace Warp9.Utils
             ViewerScene ret = scene.Duplicate();
 
             if (settings.ModDisableGrid && ret.Grid is not null)
+            {
                 ret.Grid.Visible = false;
+                ret.Grid.Version.Commit(RenderItemDelta.Full); // this should not be needed
+            }
 
-            return scene;
+            return ret;
         }
 
         private void SaveBitmap(Bitmap bmp, SnapshotInfo info)
