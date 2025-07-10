@@ -111,6 +111,35 @@ namespace Warp9.ProjectExplorer
             si.ThumbnailKey = thumbnailKey;
         }
 
+        public void ImportSpecTable()
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Comma separated values (*.csv)|*.csv";
+
+            if (dlg.ShowDialog() != DialogResult.OK)
+                return;
+
+            CsvImporter importer = CsvImporter.Create(dlg.FileName);
+
+            ImportCsvWindow importDlg = new ImportCsvWindow();
+            importDlg.AttachImporter(importer);
+            importDlg.ShowDialog();
+            if (importDlg.DialogResult != true) return;
+
+            SpecimenTableImportWindow assignDlg = new SpecimenTableImportWindow();
+            assignDlg.AttachImporter(importer);
+            assignDlg.ShowDialog();
+            if (assignDlg.DialogResult != true) return;
+
+            SpecimenTable specTab = SpecimenTableGenerator.FromImporter(importer, assignDlg.ImportOperations, Project);
+            ProjectEntry entry = Project.AddNewEntry(ProjectEntryKind.Specimens);
+            entry.Name = "Imported";
+            entry.Payload.Table = specTab;
+
+            Update();
+        }
+
+
         public void RenderSnapshots(IReadOnlyList<SnapshotInfo> snapshots)
         {
             GalleryRenderSettings settings = new GalleryRenderSettings();

@@ -176,32 +176,7 @@ namespace Warp9
 
         private void mnuProjectImportSpecTable_Click(object sender, RoutedEventArgs e)
         {
-            if (model is null) throw new InvalidOperationException();
-
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Comma separated values (*.csv)|*.csv";
-
-            if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-                return;
-
-            CsvImporter importer = CsvImporter.Create(dlg.FileName);
-
-            ImportCsvWindow importDlg = new ImportCsvWindow();
-            importDlg.AttachImporter(importer);
-            importDlg.ShowDialog();
-            if (importDlg.DialogResult != true) return;
-
-            SpecimenTableImportWindow assignDlg = new SpecimenTableImportWindow();
-            assignDlg.AttachImporter(importer);
-            assignDlg.ShowDialog();
-            if (assignDlg.DialogResult != true) return;
-
-            SpecimenTable specTab = SpecimenTableGenerator.FromImporter(importer, assignDlg.ImportOperations, model.Project);
-            ProjectEntry entry = model.Project.AddNewEntry(ProjectEntryKind.Specimens);
-            entry.Name = "Imported";
-            entry.Payload.Table = specTab;
-            
-            model.ViewModel.Update();
+            model?.ViewModel?.ImportSpecTable();
         }
 
         private void SetProject(Project project)
