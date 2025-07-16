@@ -42,6 +42,13 @@ namespace Warp9.Processing
             return ret;
         }
 
+        public static void Mirror(Span<Vector3> x)
+        {
+            Vector3 reflect = new Vector3(-1, 1, 1);
+            for (int i = 0; i < x.Length; i++)
+                x[i] = x[i] * reflect;
+        }
+
         public static int[] ReverseBilateralLandmarkIndices(ReadOnlySpan<Vector3> pos)
         {
             int n = pos.Length;

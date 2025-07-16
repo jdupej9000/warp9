@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Native;
+using Warp9.Utils;
 
 namespace Warp9.Processing
 {
@@ -117,6 +118,64 @@ namespace Warp9.Processing
             ArrayPool<ResultInfoDPtBary>.Shared.Return(projNN);
 
             searchCtx.Dispose();
+            return null;
+        }
+
+        public static PointCloud? SymmetricSnap(PointCloud original, PointCloud regMirror, IFaceCollection faces)
+        {
+            const int GridSize = 16;
+            Mesh meshOriginal = Mesh.FromPointCloud(original, faces);
+            Mesh meshMirror = Mesh.FromPointCloud(regMirror, faces);
+
+            int nv = original.VertexCount;
+
+            if (SearchContext.TryInitTrigrid(meshOriginal, GridSize, out SearchContext? searchOriginal) == WarpCoreStatus.WCORE_OK &&
+                SearchContext.TryInitTrigrid(meshMirror, GridSize, out SearchContext? searchMirror) == WarpCoreStatus.WCORE_OK &&
+                searchOriginal is not null &&
+                searchMirror is not null &&
+                original.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> rawOriginal) &&
+                regMirror.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> rawMirror) &&
+                faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
+            {
+                MeshBuilder mb = new MeshBuilder();
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                posProj.Capacity = nv;
+
+                int[] projIdxOrig = ArrayPool<int>.Shared.Rent(nv);
+                ResultInfoDPtBary[] projOrig = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
+                searchMirror.NearestSoa(rawOriginal, nv, 1000, projIdxOrig, projOrig);
+
+                int[] projIdxMirror = ArrayPool<int>.Shared.Rent(nv);
+                ResultInfoDPtBary[] projMirror = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
+                searchOriginal.NearestSoa(rawMirror, nv, 1000, projIdxMirror, projMirror);
+
+
+                for (int i = 0; i < nv; i++)
+                {
+                    // Just project the orig point onto the mirror mesh.
+                    Vector3 s0 = MiscUtils.SampleTriangleBarycentric(rawMirror, indices[projIdxOrig[i]], nv, projOrig[i].u, projOrig[i].v);
+
+                    // Project the mirror point with the same index onto the original mesh. Use the hit barycentric
+                    // coordinates to sample the mirror mesh.
+                    Vector3 s1 = MiscUtils.SampleTriangleBarycentric(rawMirror, indices[projIdxMirror[i]], nv, projMirror[i].u, projOrig[i].v);
+
+                    // Blend the two guesses.
+                    Vector3 ptm = Vector3.Lerp(s0, s1, 0.5f);
+
+                    // Blend with the original point to get symmetry.
+                    Vector3 pt = Vector3.Lerp(MiscUtils.FromSoa(rawOriginal, i, nv), ptm, 0.5f);
+
+                    posProj.Add(pt);
+                }
+
+                ArrayPool<int>.Shared.Return(projIdxOrig);
+                ArrayPool<ResultInfoDPtBary>.Shared.Return(projOrig);
+                ArrayPool<int>.Shared.Return(projIdxMirror);
+                ArrayPool<ResultInfoDPtBary>.Shared.Return(projMirror);
+
+                return mb.ToPointCloud();
+            }
+
             return null;
         }
     }

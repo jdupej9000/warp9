@@ -56,10 +56,10 @@ namespace Warp9.Data
             return new Mesh(pcl, 0, Array.Empty<FaceIndices>());
         }
 
-        public static Mesh FromPointCloud(PointCloud pcl, Mesh facesSource)
+        public static Mesh FromPointCloud(PointCloud pcl, IFaceCollection facesSource)
         {
-            if (facesSource.IsIndexed)
-                return new Mesh(pcl, facesSource.FaceCount, facesSource.indexData);
+            if (facesSource.IsIndexed && facesSource is Mesh m && m.indexData is not null)
+                return new Mesh(pcl, facesSource.FaceCount, m.indexData);
             else
                 return FromPointCloud(pcl);
         }
