@@ -362,7 +362,42 @@ namespace Warp9.Test
             TrigridRaycastTestCase("TrigridRaycast1Test_0.png", 1, 128);
         }
 
-        public void TrigridNnTestCase(string referenceFileName, int gridCells, int bitmapSize)
+        [TestMethod]
+        public void TrigridNnBarycentricTest()
+        {
+            (int[] hit, ResultInfoDPtBary[] res, Mesh m) = TrigridNnTestCase(string.Empty, 1, 32, false);
+            m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pos);
+            m.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices);
+
+            int nv = m.VertexCount;
+            int nh = hit.Length;
+            int numTested = 0;
+            for (int i = 0; i < nh; i++)
+            {
+                if (hit[i] < 0) continue;
+                FaceIndices fi = indices[hit[i]];
+                Vector3 posStraight = new Vector3(res[i].x, res[i].y, res[i].z);
+                Vector3 posFromBary = MiscUtils.SampleTriangleBarycentric(pos, fi, nv, res[i].u, res[i].v);
+                float d = Vector3.Distance(posStraight, posFromBary);
+
+                if (d > 1e-6f)
+                {
+                    Console.WriteLine($"idx = {i}, hit = {hit[i]}, nt = {numTested}");
+                    Console.WriteLine("a = " + MiscUtils.FromSoa(pos, fi.I0, nv).ToString());
+                    Console.WriteLine("b = " + MiscUtils.FromSoa(pos, fi.I1, nv).ToString());
+                    Console.WriteLine("c = " + MiscUtils.FromSoa(pos, fi.I2, nv).ToString());
+                    Console.WriteLine($"u = {res[i].u}, v={res[i].v}");
+                    Console.WriteLine($"d = {res[i].d}");
+                    Console.WriteLine("want: " + posStraight.ToString());
+                    Console.WriteLine("got : " + posFromBary.ToString());
+                    Console.WriteLine("err = " + d.ToString());
+                    Assert.Fail();
+                }
+                numTested++;
+            }
+        }
+
+        public (int[], ResultInfoDPtBary[], Mesh) TrigridNnTestCase(string referenceFileName, int gridCells, int bitmapSize, bool render=true)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
@@ -388,12 +423,17 @@ namespace Warp9.Test
             Console.WriteLine("{0:F1} queries per second",
                 bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds);
 
-            Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 0, 2,
-                (i, j) => MathF.Sqrt(res[j * bitmapSize + i].d));
+            if (render)
+            {
+                Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 0, 2,
+                    (i, j) => MathF.Sqrt(res[j * bitmapSize + i].d));
 
-            BitmapAsserts.AssertEqual(referenceFileName, bmp);
+                BitmapAsserts.AssertEqual(referenceFileName, bmp);
+            }
 
             ctx.Dispose();
+
+            return (hit, res, mesh);
         }
 
         [TestMethod]

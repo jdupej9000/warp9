@@ -15,7 +15,7 @@ namespace Warp9.Native
     public struct ResultInfoDPtBary
     {
         // TODO: x,y,z -> Vector3
-        public float d, x, y, z, u, v, w, _reserved0;
+        public float d, x, y, z, u, v, res0, res1;
     }
 
     public class SearchContext : IDisposable

@@ -118,11 +118,12 @@ namespace Warp9.Utils
         {
             ReadOnlySpan<float> f = MemoryMarshal.Cast<byte, float>(x);
 
-            Vector3 a = new Vector3(f[fi.I0], f[fi.I0 + nv], f[fi.I0 + 2 * nv]);
-            Vector3 ba = new Vector3(f[fi.I1], f[fi.I1 + nv], f[fi.I1 + 2 * nv]) - a;
-            Vector3 ca = new Vector3(f[fi.I2], f[fi.I2 + nv], f[fi.I2 + 2 * nv]) - a;
+            Vector3 c = new Vector3(f[fi.I2], f[fi.I2 + nv], f[fi.I2 + 2 * nv]);
+            Vector3 ac = new Vector3(f[fi.I0], f[fi.I0 + nv], f[fi.I0 + 2 * nv]) - c;
+            Vector3 bc = new Vector3(f[fi.I1], f[fi.I1 + nv], f[fi.I1 + 2 * nv]) - c;
+          
 
-            return a + u * ba + v * ca;
+            return c + u * ac + v * bc;
         }
     }
 }

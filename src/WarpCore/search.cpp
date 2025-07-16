@@ -64,13 +64,13 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
         case SEARCH_NN_DPTBARY:
             foreach_row<float, 3, query_info&>(orig, n, qi,
                 [](const float* o, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, qi.cfg->max_dist, (float*)qi.info + 8 * i);
+                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, qi.cfg->max_dist, (float*)qi.info + PtTri_DPtBary::ResultSize * i);
                 });
             return WCORE_OK;
 
         case SEARCH_NN_DPTBARY | SEARCH_SOURCE_IS_AOS:
             for (int i = 0; i < n; i++) {
-                qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, cfg->max_dist, (float*)qi.info + 8 * i);
+                qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, cfg->max_dist, (float*)qi.info + PtTri_DPtBary::ResultSize * i);
             }
             return WCORE_OK;
 

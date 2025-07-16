@@ -66,8 +66,9 @@ namespace warpcore::impl
         constexpr static size_t ResultSize = 8;
         static inline void WCORE_VECCALL store(p3f pt, p3f bary, float d, float* result) noexcept
         {
-            result[0] = sqrtf(d);
-            _mm_storeu_ps(result + 1, pt);
+            __m128 low = _mm_sqrt_ss(_mm_set_ss(d));
+            low = _mm_blend_ps(low, _mm_permute_ps(pt, 0b10010000), 0b1110);
+            _mm_storeu_ps(result, low);
             _mm_storeu_ps(result + 4, bary);
         }
     };

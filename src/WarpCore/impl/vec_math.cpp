@@ -235,10 +235,10 @@ namespace warpcore::impl
 
     __m256 WCORE_VECCALL dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept
     {
+        // There sure are dependent fmas nested, but usually we do at least 2 of these dots back to back.
+        // If inlined, the CPU will able to reorder this.
         return _mm256_fmadd_ps(ax, bx, 
-            _mm256_add_ps(
-                _mm256_mul_ps(ay, by), 
-                _mm256_mul_ps(az, bz)));
+            _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
     }
 
     __m256 WCORE_VECCALL blend_in(__m256 x, __m256 y, __m256 mask) noexcept
