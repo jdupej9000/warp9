@@ -229,16 +229,19 @@ namespace warpcore::impl
 
         int i = find_min_index(dist_best);
         //p3f& retBary, p3f& retPt, float& retDist
-        retDist = extract(dist_best, i);
-        retBary = p3f_set(extract(u_best, i), extract(v_best, i), 1 - extract(u_best, i) - extract(v_best, i));
-
         int j = extract(i_best, i);
+        retDist = extract(dist_best, i);
+        retBary = p3f_set(extract(u_best, i), extract(v_best, i), 0);
+        
         const __m128i tidx = _mm_set_epi32(j, j + 2 * stride, j + stride, j);
         p3f a = _mm_i32gather_ps(vert, tidx, 4);
         p3f b = _mm_i32gather_ps(vert + 3 * stride, tidx, 4);
         p3f c = _mm_i32gather_ps(vert + 6 * stride, tidx, 4);
 
-        retPt = p3f_from_bary(a, b, c, retBary);
+        retPt = p3f_add(a, p3f_add(
+                p3f_mul(p3f_broadcast<0>(retBary), p3f_sub(b, a)),
+                p3f_mul(p3f_broadcast<1>(retBary), p3f_sub(c, a))));
+        // p3f_from_bary(a, b, c, retBary);
 
         return j;
     }

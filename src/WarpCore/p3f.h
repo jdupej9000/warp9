@@ -61,7 +61,7 @@ namespace warpcore
     int p3i_get(p3i x, int i) noexcept;
     bool p3i_equal(p3i x, p3i y) noexcept;
 
-    p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
+   // p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
     p3f p3f_from_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
 
     p3f p3f_proj_to_plane(planef plane, p3f pt) noexcept;

@@ -298,7 +298,7 @@ namespace warpcore
     }
 
 
-    p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept
+   /* p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept
     {
         const p3f v0 = p3f_sub(b, a);
         const p3f v1 = p3f_sub(c, a);
@@ -316,13 +316,13 @@ namespace warpcore
         const float u = 1.0f - v - w;
 
         return p3f_set(u, v, w);
-    }
+    }*/
 
     p3f p3f_from_bary(p3f a, p3f b, p3f c, p3f p) noexcept
     {
-        return p3f_fma(a, p3f_broadcast<0>(p),
-                p3f_fma(b, p3f_broadcast<1>(p), 
-                p3f_mul(c, p3f_broadcast<2>(p))));
+        return p3f_add(a, p3f_add(
+            p3f_mul(p3f_broadcast<0>(p), p3f_sub(b, a)),
+            p3f_mul(p3f_broadcast<1>(p), p3f_sub(c, a))));
     }
 
     p3f p3f_proj_to_plane(planef plane, p3f pt) noexcept
