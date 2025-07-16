@@ -62,7 +62,7 @@ namespace Warp9.JobItems
             //for (int i = 0; i < res.NumData; i++)
             //    ctx.WriteLog(ItemIndex, MessageKind.Information, string.Format("   GPA {0}:", i) +  res.GetTransform(i).ToString());
 
-            float[] dispPost = LandmarkDispersion.Calculate(res.Mean, res.EnumerateTransformed());
+            float[] dispPost = LandmarkUtils.CalculateDispersion(res.Mean, res.EnumerateTransformed());
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, "Landmark dispersions: " +
                 string.Join(", ", dispPost.Select((t) => t.ToString("F3"))),

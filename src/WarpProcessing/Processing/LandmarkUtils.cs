@@ -8,9 +8,9 @@ using Warp9.Data;
 
 namespace Warp9.Processing
 {
-    public static class LandmarkDispersion
+    public static class LandmarkUtils
     {
-        public static float[] Calculate(PointCloud mean, IEnumerable<PointCloud> pcls)
+        public static float[] CalculateDispersion(PointCloud mean, IEnumerable<PointCloud> pcls)
         {
             int nv = mean.VertexCount;
 

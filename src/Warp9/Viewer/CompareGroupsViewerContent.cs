@@ -136,8 +136,8 @@ namespace Warp9.Viewer
 
             if (b)
             {
-                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm), meshMean);
-                mbB.CopyIndicesFrom(meshMean);
+                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm), meshMean!, NormalsAlgorithm.FastRobust);
+                mbB.CopyIndicesFrom(meshMean!);
                 meshB = mbB.ToMesh();
             }
 

@@ -17,12 +17,12 @@ namespace Warp9.Processing
 
     public static class MeshNormals
     {
-        public static Mesh MakeNormals(Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.Fast)
+        public static Mesh MakeNormals(Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
         {
             return MakeNormals(m, m, algo).ToMesh();
         }
 
-        public static MeshBuilder MakeNormals(PointCloud? pcl, Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.Fast)
+        public static MeshBuilder MakeNormals(PointCloud? pcl, Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
         {
             if (pcl is null)
                 return new MeshBuilder();
