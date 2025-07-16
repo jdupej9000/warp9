@@ -240,6 +240,6 @@ namespace warpcore::impl
 
         retPt = p3f_from_bary(a, b, c, retBary);
 
-        return i;
+        return j;
     }
 };
