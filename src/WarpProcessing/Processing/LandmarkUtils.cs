@@ -49,6 +49,10 @@ namespace Warp9.Processing
             int[] bestOrder = new int[n];
             int[] curOrder = new int[n];
 
+            // Go through every nontrivial landmark pair. The two landmarks define a plane passing through the midpoint,
+            // orthogonal to the line segment. Calculate the distances (as sum of squares) to the closest landmarks,
+            // after reflecting about that plane. Use the closest landmark assignment that minimizes that error.
+
             for (int i = 0; i < n - 1; i++) 
             {
                 for (int j = i + 1; j < n; j++)

@@ -11,6 +11,18 @@ namespace Warp9.Utils
 {
     public static class MiscUtils
     {
+        public static void Permute<T>(Span<T> dest, ReadOnlySpan<T> src, ReadOnlySpan<int> index)
+           where T : struct
+        {
+            int n = index.Length;
+
+            if (dest.Length < n || src.Length < n)
+                throw new ArgumentException();
+
+            for (int i = 0; i < n; i++)
+                dest[i] = src[index[i]];
+        }
+
         public static ReadOnlySpan<byte> ArrayToBytes(Array arr, int elemSize = -1)
         {
             ReadOnlySpan<byte> ret = MemoryMarshal.CreateReadOnlySpan(
