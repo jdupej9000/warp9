@@ -293,6 +293,25 @@ namespace Warp9.Test
                new TestRenderItem(TriStyle.PointCloud, gpa.GetTransformed(2), wireCol: Color.DarkBlue));
         }
 
+        [TestMethod]
+        public void OpaTeapotsTest()
+        {
+            Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);          
+            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(1.0f, 0.0f, 0.0f), 1.10f, 0.1f);
+
+            Rigid3 rigid = RigidTransform.FitOpa(pcl1, pcl2);
+            PointCloud? pcl2a = RigidTransform.TransformPosition(pcl2, rigid);
+            Assert.IsNotNull(pcl2a);
+
+            HeadlessRenderer rend = TestUtils.CreateRenderer();
+            rend.RasterFormat = new RasterInfo(512, 512);
+            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.5f, 0f, -0.5f);
+            TestUtils.Render(rend, "OpaTeapotsTest_0.png", modelMat,
+               new TestRenderItem(TriStyle.PointCloud, pcl1, wireCol: Color.White),
+               new TestRenderItem(TriStyle.PointCloud, pcl2, wireCol: Color.FromArgb(40,40,40)),
+               new TestRenderItem(TriStyle.PointCloud, pcl2a, wireCol: Color.Red));
+        }
+
         [DoNotParallelize]
         [TestMethod]
         public void ImputeTest()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Warp9.Data;
@@ -52,6 +53,33 @@ namespace Warp9.Native
             }
 
             return pclStat;
+        }
+
+        // Find rigid transform floating -> templ.
+        public static Rigid3 FitOpa(PointCloud templ, PointCloud floating)
+        {
+            if (!templ.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> t))
+                throw new InvalidOperationException();
+
+            if (!floating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+                throw new InvalidOperationException();
+
+            Rigid3 ret = new Rigid3();
+            WarpCoreStatus s = WarpCoreStatus.WCORE_OK;
+
+            unsafe
+            {
+                fixed (byte* ptrT = &MemoryMarshal.GetReference(t))
+                fixed (byte* ptrX = &MemoryMarshal.GetReference(x))
+                {
+                    s = (WarpCoreStatus)WarpCore.opa_fit((nint)ptrT, (nint)ptrX, 3, templ.VertexCount, ref ret);
+                }
+            }
+
+            if (s != WarpCoreStatus.WCORE_OK)
+                throw new InvalidOperationException();
+
+            return ret;
         }
 
         public static WarpCoreStatus FitGpa(IReadOnlyList<PointCloud> pcls, out PointCloud meanPcl, out Rigid3[] transforms, out GpaResult result)

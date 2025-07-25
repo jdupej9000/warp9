@@ -49,6 +49,36 @@ extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, v
     return (it < MAX_IT) ? WCORE_OK : WCORE_NONCONVERGENCE;
 }
 
+extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, rigid3* xform)
+{
+    if (templ == nullptr || floating == nullptr || d != 3 || m < 4 || xform == NULL)
+        return WCORE_INVALID_ARGUMENT;
+
+    const float* t = (const float*)templ;
+    const float* x = (const float*)floating;
+
+    // make a normalized template (center at 0, cs = 1)
+    float* temp_mean = new float[d * m];    
+    rigid3 outer;
+    warpcore::impl::pcl_center(t, d, m, outer.offs);
+    outer.cs = warpcore::impl::pcl_cs(t, d, m, outer.offs);
+    warpcore::impl::pcl_transform(x, d, m, false, 1.0f / outer.cs, outer.offs, temp_mean);
+    outer.rot[0] = 1; outer.rot[1] = 0; outer.rot[2] = 0;
+    outer.rot[3] = 0; outer.rot[4] = 1; outer.rot[5] = 0;
+    outer.rot[6] = 0; outer.rot[7] = 0; outer.rot[8] = 1;
+
+    // transform floating onto the normalized template
+    rigid3 inner;
+    warpcore::impl::opa_fit(x, temp_mean, d, m, inner.offs, &inner.cs, inner.rot);
+
+    // xform(x) = outer(inner(x))
+    warpcore::impl::rigid_combine(xform, &inner, &outer);
+
+    delete[] temp_mean;
+
+    return WCORE_OK;
+}
+
 extern "C" int rigid_transform(const void* x, int d, int m, const rigid3* xform, void* res)
 {
     if(d != 3 || m < 4 || xform == NULL)
