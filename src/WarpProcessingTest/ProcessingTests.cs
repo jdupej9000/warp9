@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
+using Warp9.Model;
 using Warp9.Processing;
 using Warp9.Viewer;
 
@@ -60,6 +61,31 @@ namespace Warp9.Test
             TestUtils.Render(rend, "MeshFairingTest_0.png", TeapotModelMatrix,
                 new TestRenderItem(TriStyle.MeshFilled, faired, mrs: MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals),
                 new TestRenderItem(TriStyle.MeshFilled, teapot, col: Color.Yellow, mrs: MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals));
+        }
+
+        [TestMethod]
+        public void ReverseBilateralLandmarkIndicesTest()
+        {
+            string facesFile = LongRunningTests.GetExternalDependency("faces.w9");
+
+            using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
+            using Project project = Project.Load(archive);
+
+            for (int row = 0; row < 10; row++)
+            {
+                PointCloud pcl = LongRunningTests.GetPointCloudFromProject(project, 21, "Landmarks", row);
+                MeshView? view = pcl.GetView(MeshViewKind.Pos3f);
+                if (view is null || !view.AsTypedData(out ReadOnlySpan<Vector3> pos))
+                {
+                    Assert.Fail("Cannot get pcl view.");
+                    return; // To make the compiler happy.
+                }
+
+                int[] rev = LandmarkUtils.ReverseBilateralLandmarkIndices(pos);
+                string order = string.Join(",", rev.Select((t) => t.ToString()));
+
+                Assert.AreEqual("3,2,1,0,4,5,7,6,8", order);
+            }
         }
     }
 }

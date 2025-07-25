@@ -94,7 +94,7 @@ namespace Warp9.Processing
             float bestDist = float.MaxValue;
             int bestIdx = 0;
             int n = pos.Length;
-            for (int i = 0; i > n; i++)
+            for (int i = 0; i < n; i++)
             {
                 float dist = Vector3.DistanceSquared(pos[i], reflected);
                 if (dist < bestDist)
