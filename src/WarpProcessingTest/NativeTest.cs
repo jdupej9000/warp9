@@ -403,6 +403,10 @@ namespace Warp9.Test
             SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
             Assert.IsNotNull(ctx);
 
+            Aabb bbox = ctx.GetSpan();
+            Assert.IsFalse(bbox.IsInvalid);
+            Console.WriteLine(bbox.ToString());
+
             // x0=<-3, 0, -2>, x1=<3.434, 3.15, 2>, center=<0.053937342, 1.7241387, -0.00024491842>, cs=2.0256174
             TestUtils.GenerateGrid(bitmapSize, bitmapSize,
                 new Vector3(-3.5f, 5.2f, 0f), new Vector3(3.5f, 5.2f, 0f), new Vector3(-3.5f, -1.8f, 0f),

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Warp9.Data;
 
@@ -28,6 +29,14 @@ namespace Warp9.Native
 
         nint nativeContext;
         SEARCH_STRUCTURE structKind;
+
+        public Aabb GetSpan()
+        {
+            if(TryGetInfo(SEARCH_INFO.SEARCHINFO_AABB, 0, out Aabb ret))
+                return ret;
+
+            return new Aabb();
+        }
 
         public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
@@ -150,6 +159,24 @@ namespace Warp9.Native
                 WarpCore.search_free(nativeContext);
                 nativeContext = nint.Zero;
             }
+        }
+
+        private bool TryGetInfo<T>(SEARCH_INFO kind, int param, out T info) where T: struct
+        {
+            int tsize = Marshal.SizeOf<T>();
+            info = new T();
+            ref T pinfo = ref info;
+            int retsize = 0;
+
+            unsafe 
+            {
+                fixed (T* p = &pinfo)
+                {
+                    retsize = WarpCore.search_info(nativeContext, (int)kind, param, (nint)p, tsize);
+                }
+            }
+
+            return tsize >= retsize && retsize > 0;
         }
 
         public static WarpCoreStatus TryInitTrigrid(Mesh m, int numCells, out SearchContext? searchCtx)

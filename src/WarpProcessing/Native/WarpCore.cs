@@ -82,6 +82,11 @@ namespace Warp9.Native
         SEARCH_INVERT_DIRECTION = 0x20000000
     };
 
+    public enum SEARCH_INFO : int
+    {
+        SEARCHINFO_AABB = 0
+    };
+
     [Flags]
     public enum PCA_FLAGS : int
     {
@@ -250,6 +255,9 @@ namespace Warp9.Native
 
         [DllImport("WarpCore.dll")]
         public static extern int search_query(nint ctx, int kind, ref SearchQueryConfig cfg, nint orig, nint dir, int n, nint hit, nint info);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int search_info(nint ctx, int kind, int param, nint res, int ressize);
 
         [DllImport("WarpCore.dll")]
         public static extern int clust_kmeans(nint x, int d, int n, int k, nint cent, nint label);

@@ -22,6 +22,10 @@ enum SEARCH_KIND {
     SEARCH_INVERT_DIRECTION = 0x20000000
 };
 
+enum SEARCH_INFO {
+    SEARCHINFO_AABB = 0
+};
+
 struct trigrid_config { 
     int num_cells; 
 };
@@ -34,4 +38,5 @@ struct search_query_config
 extern "C" WCEXPORT int search_build(int structure, const float* vert, const int* idx, int nv, int nt, const void* config, void** ctx);
 extern "C" WCEXPORT int search_free(void* ctx);
 extern "C" WCEXPORT int search_direct(int kind, const float* orig, const float* dir, const float* vert, int n);
+extern "C" WCEXPORT int search_info(const void* ctx, int kind, int param, void* res, int ressize);
 extern "C" WCEXPORT int search_query(const void* ctx, int kind, search_query_config* cfg, const float* orig, const float* dir, int n, int* hit, void* info);

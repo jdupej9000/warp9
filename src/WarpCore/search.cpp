@@ -45,6 +45,31 @@ extern "C" int search_free(void* ctx)
     return WCORE_INVALID_ARGUMENT;
 }
 
+extern "C" int search_info(const void* ctx, int kind, int param, void* res, int ressize)
+{
+    if (!ctx)
+        return 0;
+
+    int ret = 0;
+
+    int structure = *(const int*)ctx;
+    if (structure == SEARCH_TRIGRID3) {
+        const trigrid* grid = (const trigrid*)ctx;
+
+        switch (kind) {
+        case SEARCHINFO_AABB:
+            ret = 24;
+            if (ressize >= ret) {
+                memcpy(res, grid->x0, sizeof(float) * 3);
+                memcpy((uint8_t*)res + 12, grid->x1, sizeof(float) * 3);
+            }
+            break;
+        }
+    }
+
+    return ret;
+}
+
 extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg, const float* orig, const float* dir, int n, int* hit, void* info)
 {
     if(!ctx)
