@@ -12,7 +12,7 @@ namespace Warp9.IO
         internal Mesh? Mesh { get; init; }
         internal PointCloud? PointCloud { get; init; }
         internal Matrix? Matrix { get; init; }
-        internal MeshSegmentType MeshSegment { get; init; }
+        internal MeshSegmentSemantic MeshSegment { get; init; }
         internal int MeshSegmentDimension { get; init; }
         internal ChunkSemantic Semantic { get; init; }
         internal ChunkEncoding Encoding { get; init; }
@@ -215,12 +215,12 @@ namespace Warp9.IO
         {
             if (s.PositionFormat != ChunkEncoding.Ignore &&
                 s.PositionDimension > 0 &&
-                pcl.HasSegment(MeshSegmentType.Position))
+                pcl.HasSegment(MeshSegmentSemantic.Position))
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
                     PointCloud = pcl,
-                    MeshSegment = MeshSegmentType.Position,
+                    MeshSegment = MeshSegmentSemantic.Position,
                     MeshSegmentDimension = s.PositionDimension,
                     Semantic = ChunkSemantic.Position,
                     Encoding = s.PositionFormat
@@ -229,12 +229,12 @@ namespace Warp9.IO
 
             if (s.NormalFormat != ChunkEncoding.Ignore &&
                 s.NormalDimension > 0 &&
-                pcl.HasSegment(MeshSegmentType.Normal))
+                pcl.HasSegment(MeshSegmentSemantic.Normal))
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
                     PointCloud = pcl,
-                    MeshSegment = MeshSegmentType.Normal,
+                    MeshSegment = MeshSegmentSemantic.Normal,
                     MeshSegmentDimension = s.NormalDimension,
                     Semantic = ChunkSemantic.Normal,
                     Encoding = s.NormalFormat
@@ -243,12 +243,12 @@ namespace Warp9.IO
 
             if (s.Tex0Format != ChunkEncoding.Ignore &&
                s.Tex0Dimension > 0 &&
-               pcl.HasSegment(MeshSegmentType.Tex0))
+               pcl.HasSegment(MeshSegmentSemantic.Tex0))
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
                     PointCloud = pcl,
-                    MeshSegment = MeshSegmentType.Tex0,
+                    MeshSegment = MeshSegmentSemantic.Tex0,
                     MeshSegmentDimension = s.Tex0Dimension,
                     Semantic = ChunkSemantic.TexCoord,
                     Encoding = s.Tex0Format
@@ -257,12 +257,12 @@ namespace Warp9.IO
 
             if (s.AttribScalarFormat != ChunkEncoding.Ignore &&
              s.AttribScalarDimension > 0 &&
-             pcl.HasSegment(MeshSegmentType.AttribScalar))
+             pcl.HasSegment(MeshSegmentSemantic.AttribScalar))
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
                     PointCloud = pcl,
-                    MeshSegment = MeshSegmentType.AttribScalar,
+                    MeshSegment = MeshSegmentSemantic.AttribScalar,
                     MeshSegmentDimension = s.AttribScalarDimension,
                     Semantic = ChunkSemantic.AttribScalar,
                     Encoding = s.AttribScalarFormat

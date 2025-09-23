@@ -157,21 +157,21 @@ namespace Warp9.Scene
             bool dynamicChanged = false;
             if (positionOverride is not null && !positionOverride.HasReference)
             {
-                List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
                 pos.AddRange(positionOverride.Value!);
                 dynamicChanged = true;
             }
 
             if (normalsOverride is not null && !normalsOverride.HasReference)
             {
-                List<Vector3> normal = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+                List<Vector3> normal = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal);
                 normal.AddRange(normalsOverride.Value!);
                 dynamicChanged = true;
             }
 
             if (attributeScalar is not null && !attributeScalar.HasReference)
             {
-                List<float> attr = mb.GetSegmentForEditing<float>(MeshSegmentType.AttribScalar);
+                List<float> attr = mb.GetSegmentForEditing<float>(MeshSegmentSemantic.AttribScalar);
                 attr.AddRange(attributeScalar.Value!);
                 dynamicChanged = true;
             }
@@ -221,13 +221,13 @@ namespace Warp9.Scene
 
             if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
             {
-                ri.UpdateData(positionOverride.Value, MeshSegmentType.Position);
+                ri.UpdateData(positionOverride.Value, MeshSegmentSemantic.Position);
                 changed = true;
             }
 
             if (normalsOverride is not null && normalsOverride.IsLoaded && normalsOverride.Value is not null)
             {
-                ri.UpdateData(normalsOverride.Value, MeshSegmentType.Normal);
+                ri.UpdateData(normalsOverride.Value, MeshSegmentSemantic.Normal);
                 changed = true;
             }
 

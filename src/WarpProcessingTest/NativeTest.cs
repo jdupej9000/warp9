@@ -46,7 +46,7 @@ namespace Warp9.Test
         private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -61,7 +61,7 @@ namespace Warp9.Test
         private static PointCloud TranslateTwistPcl(PointCloud pcl, Vector3 t, float twist)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -385,7 +385,7 @@ namespace Warp9.Test
         public void TrigridNnBarycentricTest()
         {
             (int[] hit, ResultInfoDPtBary[] res, Mesh m) = TrigridNnTestCase(string.Empty, 1, 32, false);
-            m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pos);
+            m.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pos);
             m.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices);
 
             int nv = m.VertexCount;
@@ -506,7 +506,7 @@ namespace Warp9.Test
                 Assert.IsTrue(labels[i] >= 0 && labels[i] < n);
 
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             verts.AddRange(centers);
             PointCloud pclK = builder.ToPointCloud();
 

@@ -21,10 +21,10 @@ namespace Warp9.Test
         public void WithNormalsTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh teapotNorm = MeshNormals.MakeNormals(teapot);
-            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentType.Normal));
+            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentSemantic.Normal));
 
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "WithNormalsTest_0.png", TeapotModelMatrix,
@@ -35,14 +35,14 @@ namespace Warp9.Test
         public void VertexSharingTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh teapotShared = MeshVertexSharing.ShareVerticesByPosition(teapot);
             Assert.AreEqual(3241, teapotShared.VertexCount);
             Assert.AreEqual(teapot.FaceCount, teapotShared.FaceCount);
 
             Mesh teapotNorm = MeshNormals.MakeNormals(teapotShared);
-            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentType.Normal));
+            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentSemantic.Normal));
 
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "VertexSharingTest_0.png", TeapotModelMatrix,
@@ -53,7 +53,7 @@ namespace Warp9.Test
         public void MeshFairingTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh faired = MeshFairing.Optimize(teapot, 0.5f).ToMesh();
 

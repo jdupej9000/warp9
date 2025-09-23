@@ -5,7 +5,7 @@ namespace Warp9.Data
 {
     public class Mesh : PointCloud, IFaceCollection
     {
-        internal Mesh(int nv, int nt, byte[] vx, Dictionary<MeshSegmentType, MeshSegment> segs, FaceIndices[] ix) :
+        internal Mesh(int nv, int nt, byte[] vx, Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> segs, FaceIndices[] ix) :
             base(nv, vx, segs)
         {
             FaceCount = nt;
@@ -21,7 +21,7 @@ namespace Warp9.Data
 
         readonly FaceIndices[]? indexData;
 
-        public static new readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>(), Array.Empty<FaceIndices>());
+        public static new readonly Mesh Empty = new Mesh(0, 0, Array.Empty<byte>(), new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>(), Array.Empty<FaceIndices>());
        
         public int FaceCount { get; private init; }
         public bool IsIndexed => indexData is not null && indexData.Length > 0;

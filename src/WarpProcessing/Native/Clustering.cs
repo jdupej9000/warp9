@@ -15,7 +15,7 @@ namespace Warp9.Native
     {
         public static void FitKMeans(PointCloud pcl, int k, out int[] labels, out Vector3[] centers)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> x))
                 throw new InvalidOperationException();
 
             int n = pcl.VertexCount;

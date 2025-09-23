@@ -87,10 +87,10 @@ namespace Warp9.Native
             int sizeBytesT = info.d * info.m * Marshal.SizeOf<float>();
             byte[] t = new byte[sizeBytesT];
 
-            if (!pclTarget.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!pclTarget.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> x))
                 throw new InvalidOperationException();
 
-            if (!pclFloating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> y))
+            if (!pclFloating.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> y))
                 throw new InvalidOperationException();
 
             unsafe
@@ -121,7 +121,7 @@ namespace Warp9.Native
         {
             CpdInfo info = cfg.ToCpdInfo(pclFloating.VertexCount);
 
-            if (!pclFloating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclFloatingData))
+            if (!pclFloating.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclFloatingData))
                 throw new InvalidOperationException();
 
             unsafe

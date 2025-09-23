@@ -45,7 +45,7 @@ namespace Warp9.Processing
                 else if (3 * 4 * pcl.Item1.VertexCount != meanPos.Length)
                     throw new InvalidOperationException();
 
-                pcl.Item1.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> byteData);
+                pcl.Item1.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> byteData);
                 Add(MemoryMarshal.Cast<byte, float>(meanPos.AsSpan()), MemoryMarshal.Cast<byte, float>(byteData), pcl.Item2);
 
                 n++;

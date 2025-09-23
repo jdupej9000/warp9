@@ -30,7 +30,7 @@ namespace Warp9.Processing
                 throw new InvalidOperationException();
 
             MeshBuilder mb = new MeshBuilder();
-            List<Vector3> newPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> newPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             List<FaceIndices> newIdx = mb.GetIndexSegmentForEditing();
 
             int vert = 0;

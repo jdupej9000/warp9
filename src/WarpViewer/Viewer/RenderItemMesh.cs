@@ -152,16 +152,16 @@ namespace Warp9.Viewer
             Commit();
         }
 
-        public void UpdateData<T>(T[] data, MeshSegmentType kind)
+        public void UpdateData<T>(T[] data, MeshSegmentSemantic kind)
         {
             switch (kind)
             {
-                case MeshSegmentType.Position:
+                case MeshSegmentSemantic.Position:
                     posUpdateDyn = data;
                     posUpdateDynElemSize = Marshal.SizeOf<T>();
                     break;
 
-                case MeshSegmentType.Normal:
+                case MeshSegmentSemantic.Normal:
                     normalUpdateDyn = data;
                     normalUpdateDynElemSize = Marshal.SizeOf<T>();
                     break;

@@ -13,7 +13,7 @@ namespace Warp9.Processing
     {
         private static ReadOnlySpan<float> GetPosSoa(PointCloud pcl)
         {
-            if(!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> posByte))
+            if(!pcl.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> posByte))
                 return ReadOnlySpan<float>.Empty;
 
             return MemoryMarshal.Cast<byte, float>(posByte);
@@ -21,7 +21,7 @@ namespace Warp9.Processing
 
         private static ReadOnlySpan<float> GetNormalsSoa(PointCloud pcl)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Normal, -1, out ReadOnlySpan<byte> posByte))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Normal, -1, out ReadOnlySpan<byte> posByte))
                 return ReadOnlySpan<float>.Empty;
 
             return MemoryMarshal.Cast<byte, float>(posByte);

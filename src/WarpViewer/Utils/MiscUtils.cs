@@ -124,5 +124,35 @@ namespace Warp9.Utils
 
             return a + u * ba + v * ca;
         }
+
+        public static void TypeComposition<T>(out int numElems, out int elemSize)
+            where T : struct
+        {
+            if (typeof(T) == typeof(Vector2))
+            {
+                numElems = 2;
+                elemSize = sizeof(float);
+            }
+            else if (typeof(T) == typeof(Vector3))
+            {
+                numElems = 3;
+                elemSize = sizeof(float);
+            }
+            else if (typeof(T) == typeof(Vector4))
+            {
+                numElems = 4;
+                elemSize = sizeof(float);
+            }
+            else if (typeof(T) == typeof(Matrix4x4))
+            {
+                numElems = 16;
+                elemSize = sizeof(float);
+            }
+            else
+            {
+                numElems = 1;
+                elemSize = Marshal.SizeOf<T>();
+            }
+        }
     }
 }

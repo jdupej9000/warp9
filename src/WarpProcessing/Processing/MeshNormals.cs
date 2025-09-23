@@ -37,7 +37,7 @@ namespace Warp9.Processing
             MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
 
-            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal);
             CollectionsMarshal.SetCount(normalsSeg, nv);
 
             switch (algo)

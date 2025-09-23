@@ -20,7 +20,7 @@ namespace Warp9.Processing
             MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
 
-            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             CollectionsMarshal.SetCount(posSeg, nv);
 
             for (int i = 0; i < nv; i++)

@@ -17,13 +17,13 @@ namespace Warp9.Processing
 
             float[] ret = new float[nv];
 
-            mean.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> meanPosByte);
+            mean.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> meanPosByte);
             ReadOnlySpan<float> meanPos = MemoryMarshal.Cast<byte, float>(meanPosByte);
 
             int numMesh = 0;
             foreach (PointCloud pcl in pcls)
             {
-                pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclPosByte);
+                pcl.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclPosByte);
                 ReadOnlySpan<float> pclPos = MemoryMarshal.Cast<byte, float>(pclPosByte);
 
                 for (int i = 0; i < nv; i++)

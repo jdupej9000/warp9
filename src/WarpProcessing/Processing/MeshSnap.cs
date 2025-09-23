@@ -27,11 +27,11 @@ namespace Warp9.Processing
             ResultInfoDPtBary[] proj = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
             int[] hitIndex = ArrayPool<int>.Shared.Rent(nv);
 
-            if (src.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
+            if (src.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
                searchCtx.NearestSoa(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
             {
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
 
                 for (int i = 0; i < nv; i++)
                     posProj.Add(new Vector3(proj[i].x, proj[i].y, proj[i].z));
@@ -47,7 +47,7 @@ namespace Warp9.Processing
 
         public static PointCloud? ProjectWithRaycastNearest(PointCloud src, Mesh target, int gridSize = 16)
         {
-            if (!src.HasSegment(MeshSegmentType.Normal))
+            if (!src.HasSegment(MeshSegmentSemantic.Normal))
                 return null;
 
             if (WarpCoreStatus.WCORE_OK != SearchContext.TryInitTrigrid(target, gridSize, out SearchContext? searchCtx) ||
@@ -68,8 +68,8 @@ namespace Warp9.Processing
             float[] projRay1 = ArrayPool<float>.Shared.Rent(nv);
             int[] hitIndexRay1 = ArrayPool<int>.Shared.Rent(nv);
 
-            if (src.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclNrPos) &&
-                src.TryGetRawData(MeshSegmentType.Normal, -1, out ReadOnlySpan<byte> pclNrNormal))
+            if (src.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclNrPos) &&
+                src.TryGetRawData(MeshSegmentSemantic.Normal, -1, out ReadOnlySpan<byte> pclNrNormal))
             {
                 ReadOnlySpan<float> pclNrPosF = MemoryMarshal.Cast<byte, float>(pclNrPos);
                 ReadOnlySpan<float> pclNrNormF = MemoryMarshal.Cast<byte, float>(pclNrNormal);
@@ -80,7 +80,7 @@ namespace Warp9.Processing
                     return null;
 
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
 
                 for (int i = 0; i < nv; i++)
                 {
@@ -133,12 +133,12 @@ namespace Warp9.Processing
                 SearchContext.TryInitTrigrid(meshMirror, GridSize, out SearchContext? searchMirror) == WarpCoreStatus.WCORE_OK &&
                 searchOriginal is not null &&
                 searchMirror is not null &&
-                original.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> rawOriginal) &&
-                regMirror.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> rawMirror) &&
+                original.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> rawOriginal) &&
+                regMirror.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> rawMirror) &&
                 faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
             {
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
                 posProj.Capacity = nv;
 
                 int[] projIdxOrig = ArrayPool<int>.Shared.Rent(nv);

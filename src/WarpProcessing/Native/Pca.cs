@@ -95,7 +95,7 @@ namespace Warp9.Native
             if (pcl.VertexCount * 3 != Dimension || scores.Length < NumPcs)
                 return false;
 
-            if (!pcl.TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length))
+            if (!pcl.TryGetRawDataSegment(MeshSegmentSemantic.Position, -1, out int offset, out int length))
                 return false;
 
             byte[] raw = pcl.RawData;
@@ -189,7 +189,7 @@ namespace Warp9.Native
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
             {
-                pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
+                pcls[i].TryGetRawDataSegment(MeshSegmentSemantic.Position, -1, out int offset, out int length);
                 // TODO: check length
 
                 pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);

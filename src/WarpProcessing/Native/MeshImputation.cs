@@ -13,8 +13,8 @@ namespace Warp9.Native
     {
         public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int decim=300, bool negate_mask = false)
         {
-            if (!template.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> templPosSoa) ||
-                !destination.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> destPosSoa))
+            if (!template.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> templPosSoa) ||
+                !destination.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> destPosSoa))
             {
                 return null;
             }

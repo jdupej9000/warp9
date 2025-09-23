@@ -185,7 +185,7 @@ namespace Warp9.Native
             Span<TriGridConfig> cfgSpan = stackalloc TriGridConfig[1];
             cfgSpan[0] = cfg;
 
-            if (!m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> posRaw))
+            if (!m.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> posRaw))
                 throw new InvalidOperationException();
 
             bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<FaceIndices> idxRaw);

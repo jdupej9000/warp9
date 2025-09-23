@@ -11,7 +11,7 @@ namespace Warp9.IO
     internal struct WarpBinImportChunk
     {
         public WarpBinChunkInfo Chunk;
-        public MeshSegmentType SegmentType;
+        public MeshSegmentSemantic SegmentType;
         public MeshSegment Segment;
     }
 
@@ -76,15 +76,15 @@ namespace Warp9.IO
                 else if (nv != chunk.Rows)
                     return false;
 
-                MeshSegmentType segType = chunk.Semantic switch
+                MeshSegmentSemantic segType = chunk.Semantic switch
                 {
-                    ChunkSemantic.Position => MeshSegmentType.Position,
-                    ChunkSemantic.Normal => MeshSegmentType.Normal,
-                    ChunkSemantic.TexCoord => MeshSegmentType.Tex0,
-                    _ => MeshSegmentType.Invalid
+                    ChunkSemantic.Position => MeshSegmentSemantic.Position,
+                    ChunkSemantic.Normal => MeshSegmentSemantic.Normal,
+                    ChunkSemantic.TexCoord => MeshSegmentSemantic.Tex0,
+                    _ => MeshSegmentSemantic.Invalid
                 };
 
-                if (segType == MeshSegmentType.Invalid)
+                if (segType == MeshSegmentSemantic.Invalid)
                     continue;
 
                 MeshSegment? seg = chunk.Columns switch
@@ -127,7 +127,7 @@ namespace Warp9.IO
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
                         Chunk = chunk,
-                        SegmentType = MeshSegmentType.Invalid,
+                        SegmentType = MeshSegmentSemantic.Invalid,
                         Segment = seg
                     };
 
@@ -236,7 +236,7 @@ namespace Warp9.IO
                 return null;
            
             byte[] vertData = new byte[vertDataSize];
-            Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
+            Dictionary<MeshSegmentSemantic, MeshSegment> vertSegments = new Dictionary<MeshSegmentSemantic, MeshSegment>();
 
             TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int idxDataSize);
             FaceIndices[] idxData = new FaceIndices[idxDataSize];

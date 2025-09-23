@@ -10,7 +10,7 @@ namespace Warp9.Native
     {
         public static PointCloud? TransformPosition(PointCloud pcl, Rigid3 rigid)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> dataPosSrc))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> dataPosSrc))
                 return pcl;
 
             // TODO: remove copy
@@ -39,7 +39,7 @@ namespace Warp9.Native
 
         public static PclStat3 MakePclStats(PointCloud pcl)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> data))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> data))
                 throw new InvalidOperationException();
 
             PclStat3 pclStat = new PclStat3();
@@ -58,10 +58,10 @@ namespace Warp9.Native
         // Find rigid transform floating -> templ.
         public static Rigid3 FitOpa(PointCloud templ, PointCloud floating)
         {
-            if (!templ.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> t))
+            if (!templ.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> t))
                 throw new InvalidOperationException();
 
-            if (!floating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!floating.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> x))
                 throw new InvalidOperationException();
 
             Rigid3 ret = new Rigid3();
@@ -93,7 +93,7 @@ namespace Warp9.Native
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
             { 
-                pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
+                pcls[i].TryGetRawDataSegment(MeshSegmentSemantic.Position, -1, out int offset, out int length);
                 if (specimenDataSize == -1)
                 {
                     specimenDataSize = length;

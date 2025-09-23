@@ -201,7 +201,7 @@ namespace Warp9.IO
             int nt = faces.Count;
 
             MeshBuilder builder = new MeshBuilder();
-            builder.SetSegment(MeshSegmentType.Position, position);
+            builder.SetSegment(MeshSegmentSemantic.Position, position);
 
             List<FaceIndices> fidx = builder.GetIndexSegmentForEditing();
             fidx.Clear();
@@ -218,7 +218,7 @@ namespace Warp9.IO
 
             int nt = faces.Count;
 
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             pos.Capacity = nt * 3;
             for (int i = 0; i < nt; i++)
             {
@@ -230,7 +230,7 @@ namespace Warp9.IO
 
             if (normal.Count > 0)
             {
-                List<Vector3> norm = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+                List<Vector3> norm = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal);
                 norm.Capacity = nt * 3;
                 for (int i = 0; i < nt; i++)
                 {
@@ -243,7 +243,7 @@ namespace Warp9.IO
 
             if (tex0.Count > 0)
             {
-                List<Vector2> t = builder.GetSegmentForEditing<Vector2>(MeshSegmentType.Tex0);
+                List<Vector2> t = builder.GetSegmentForEditing<Vector2>(MeshSegmentSemantic.Tex0);
                 t.Capacity = nt * 3;
                 for (int i = 0; i < nt; i++)
                 {

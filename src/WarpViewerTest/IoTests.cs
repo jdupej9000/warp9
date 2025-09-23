@@ -107,7 +107,7 @@ namespace Warp9.Test
         public void SimplePointCloudWarpBinTransportTest()
         {
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             for (int i = 0; i < 5; i++)
                 pos.Add(new Vector3(i, 10 * i, 100 * i));
 
@@ -131,7 +131,7 @@ namespace Warp9.Test
         public void SimplePointCloudWarpBinFixed16TransportTest()
         {
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             for (int i = 0; i < 5; i++)
                 pos.Add(new Vector3(i, 10 * i, 100 * i));
 

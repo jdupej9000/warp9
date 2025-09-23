@@ -23,7 +23,7 @@ namespace Warp9.Test
         {
             Assert.AreEqual(pcl1.VertexCount, pcl2.VertexCount);
 
-            foreach (MeshSegmentType mst in Enum.GetValues(typeof(MeshSegmentType)))
+            foreach (MeshSegmentSemantic mst in Enum.GetValues(typeof(MeshSegmentSemantic)))
             {
                 bool gotSeg1 = pcl1.TryGetRawData(mst, -1, out ReadOnlySpan<byte> data1);
                 bool gotSeg2 = pcl1.TryGetRawData(mst, -1, out ReadOnlySpan<byte> data2);

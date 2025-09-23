@@ -14,7 +14,7 @@ namespace Warp9.Processing
 
         public static PointCloud FlipPosCoord(PointCloud pcl, bool flipX, bool flipY, bool flipZ)
         {
-            if(!pcl.TryGetRawData(MeshSegmentType.Position, 0, out ReadOnlySpan<byte> dataRaw))
+            if(!pcl.TryGetRawData(MeshSegmentSemantic.Position, 0, out ReadOnlySpan<byte> dataRaw))
                 throw new ArgumentException(nameof(pcl));
 
             int nv = pcl.VertexCount;

@@ -24,7 +24,7 @@ namespace Warp9.Processing
             MeshBuilder mb = m.ToBuilder();
             int nv = m.VertexCount;
 
-            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
             CollectionsMarshal.SetCount(posSeg, nv);
 
             Optimize(CollectionsMarshal.AsSpan(posSeg), posData, faces, smoothingFactor);
