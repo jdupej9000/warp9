@@ -12,7 +12,7 @@ namespace Warp9.IO
     {
         public WarpBinChunkInfo Chunk;
         public MeshSegmentSemantic SegmentType;
-        public MeshSegment Segment;
+        public ReadOnlyMeshSegment Segment;
     }
 
     public class WarpBinImport : IDisposable
@@ -87,12 +87,12 @@ namespace Warp9.IO
                 if (segType == MeshSegmentSemantic.Invalid)
                     continue;
 
-                MeshSegment? seg = chunk.Columns switch
+                ReadOnlyMeshSegment? seg = chunk.Columns switch
                 {
-                    1 => new MeshSegment<float>(offset, chunk.Rows),
-                    2 => new MeshSegment<Vector2>(offset, chunk.Rows),
-                    3 => new MeshSegment<Vector3>(offset, chunk.Rows),
-                    4 => new MeshSegment<Vector4>(offset, chunk.Rows),
+                    1 => ReadOnlyMeshSegment.Create<float>(offset, chunk.Rows),
+                    2 => ReadOnlyMeshSegment.Create<Vector2>(offset, chunk.Rows),
+                    3 => ReadOnlyMeshSegment.Create<Vector3>(offset, chunk.Rows),
+                    4 => ReadOnlyMeshSegment.Create<Vector4>(offset, chunk.Rows),
                     _ => null
                 };
 
@@ -106,7 +106,7 @@ namespace Warp9.IO
                     Segment = seg
                 });
 
-                offset += seg.TotalLength;
+                offset += seg.Length;
             }
 
             bufferSize = offset;
@@ -123,7 +123,7 @@ namespace Warp9.IO
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
                     bufferSize = chunk.Rows;
-                    MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows);
+                    ReadOnlyMeshSegment seg = ReadOnlyMeshSegment.Create<FaceIndices>(0, chunk.Rows);
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
                         Chunk = chunk,
@@ -236,7 +236,7 @@ namespace Warp9.IO
                 return null;
            
             byte[] vertData = new byte[vertDataSize];
-            Dictionary<MeshSegmentSemantic, MeshSegment> vertSegments = new Dictionary<MeshSegmentSemantic, MeshSegment>();
+            Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> vertSegments = new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>();
 
             TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int idxDataSize);
             FaceIndices[] idxData = new FaceIndices[idxDataSize];
@@ -250,22 +250,24 @@ namespace Warp9.IO
                 if (nv == 0) 
                     nv = chunk.Chunk.Rows;
 
+                throw new Exception("Contents is SoA, but we want to read as AoS.");
+
                 //reader.BaseStream.Seek(chunk.Chunk.StreamPos, SeekOrigin.Begin);
 
                 switch (chunk.Chunk.Encoding)
                 {
                     case ChunkEncoding.Float32:
                     case ChunkEncoding.Int32:
-                        reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.TotalLength);
+                        reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.Length);
                         break;
 
                     case ChunkEncoding.Fixed16:
-                        ReadFixed16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                        ReadFixed16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
                            chunk.Chunk.Columns, chunk.Chunk.Rows);
                         break;
 
                     case ChunkEncoding.Normalized16:
-                        ReadNormalized16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                        ReadNormalized16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
                            chunk.Chunk.Columns * chunk.Chunk.Rows);
                         break;
 
