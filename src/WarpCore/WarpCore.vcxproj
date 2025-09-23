@@ -89,6 +89,8 @@
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
       <Warning>InheritFromHost</Warning>
+      <CodeGeneration>compute_75,sm_75</CodeGeneration>
+      <FastMath>true</FastMath>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,11 +146,11 @@
       <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
-      <FastMath>false</FastMath>
+      <FastMath>true</FastMath>
       <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
       <CudaRuntime>Shared</CudaRuntime>
       <NvccCompilation>compile</NvccCompilation>
-      <CodeGeneration>compute_70,sm_70</CodeGeneration>
+      <CodeGeneration>compute_75,sm_75</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
