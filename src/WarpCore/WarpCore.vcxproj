@@ -44,8 +44,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)thirdparty\openblas\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)thirdparty\openblas\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)..\..\thirdparty\openblas\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\thirdparty\openblas\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -78,7 +78,7 @@
       <Command>copy $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy /Y $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
+      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </PostBuildEvent>
     <CudaCompile>
       <Optimization>O2</Optimization>
@@ -127,7 +127,7 @@
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
+      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </PostBuildEvent>
     <CudaLink>
       <GPUDebugInfo>false</GPUDebugInfo>
@@ -208,7 +208,12 @@
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
       <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MD</Runtime>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-ftz=true %(AdditionalOptions)</AdditionalOptions>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_70,sm_70</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_75,sm_75</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_75,sm_75</CodeGeneration>
+      <GPUDebugInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</GPUDebugInfo>
+      <GPUDebugInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</GPUDebugInfo>
+      <GenerateLineInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateLineInfo>
+      <GenerateLineInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateLineInfo>
     </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

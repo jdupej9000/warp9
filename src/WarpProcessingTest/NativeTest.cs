@@ -297,18 +297,27 @@ namespace Warp9.Test
         public void OpaTeapotsTest()
         {
             Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);          
-            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(1.0f, 0.0f, 0.0f), 1.10f, 0.1f);
+            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(1.0f, 0.0f, 0.0f), 0.60f, 0.0f);
 
             Rigid3 rigid = RigidTransform.FitOpa(pcl1, pcl2);
             PointCloud? pcl2a = RigidTransform.TransformPosition(pcl2, rigid);
             Assert.IsNotNull(pcl2a);
+            
+            PclStat3 stat1 = RigidTransform.MakePclStats(pcl1);
+            Console.WriteLine(string.Format("Target: x0={0}, x1={1}, center={2}, cs={3}",
+                stat1.x0.ToString(), stat1.x1.ToString(), stat1.center.ToString(), stat1.size));
+            
+            PclStat3 stat2a = RigidTransform.MakePclStats(pcl2a);
+            Console.WriteLine(string.Format("Result: x0={0}, x1={1}, center={2}, cs={3}",
+                stat2a.x0.ToString(), stat2a.x1.ToString(), stat2a.center.ToString(), stat2a.size));
+
 
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(512, 512);
             Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.5f, 0f, -0.5f);
             TestUtils.Render(rend, "OpaTeapotsTest_0.png", modelMat,
                new TestRenderItem(TriStyle.PointCloud, pcl1, wireCol: Color.White),
-               new TestRenderItem(TriStyle.PointCloud, pcl2, wireCol: Color.FromArgb(40,40,40)),
+               new TestRenderItem(TriStyle.PointCloud, pcl2, wireCol: Color.FromArgb(80,80,80)),
                new TestRenderItem(TriStyle.PointCloud, pcl2a, wireCol: Color.Red));
         }
 

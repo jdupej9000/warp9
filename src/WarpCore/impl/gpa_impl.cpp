@@ -99,21 +99,21 @@ namespace warpcore::impl
 
     void rigid_combine(rigid3* ret, const rigid3* f, const rigid3* g)
     {
-        // returns h(x) = g(f(x))
+        float fcsr = 1 / f->cs;
         ret->cs = f->cs * g->cs;
 
-        ret->offs[0] = f->offs[0] + f->cs * (f->rot[0] * g->offs[0] + f->rot[1] * g->offs[1] + f->rot[2] * g->offs[2]);
-        ret->offs[1] = f->offs[0] + f->cs * (f->rot[3] * g->offs[0] + f->rot[4] * g->offs[1] + f->rot[5] * g->offs[2]);
-        ret->offs[2] = f->offs[0] + f->cs * (f->rot[6] * g->offs[0] + f->rot[7] * g->offs[1] + f->rot[8] * g->offs[2]);
+        ret->offs[0] = f->offs[0] + fcsr * (f->rot[0] * g->offs[0] + f->rot[1] * g->offs[1] + f->rot[2] * g->offs[2]);
+        ret->offs[1] = f->offs[1] + fcsr * (f->rot[3] * g->offs[0] + f->rot[4] * g->offs[1] + f->rot[5] * g->offs[2]);
+        ret->offs[2] = f->offs[2] + fcsr * (f->rot[6] * g->offs[0] + f->rot[7] * g->offs[1] + f->rot[8] * g->offs[2]);
 
-        ret->rot[0] = f->rot[0] * g->rot[0] + f->rot[3] * g->rot[1] + f->rot[6] * g->rot[2];
-        ret->rot[1] = f->rot[1] * g->rot[0] + f->rot[4] * g->rot[1] + f->rot[7] * g->rot[2];
-        ret->rot[2] = f->rot[2] * g->rot[0] + f->rot[5] * g->rot[1] + f->rot[8] * g->rot[2];
-        ret->rot[3] = f->rot[0] * g->rot[3] + f->rot[3] * g->rot[4] + f->rot[6] * g->rot[5];
-        ret->rot[4] = f->rot[1] * g->rot[3] + f->rot[4] * g->rot[4] + f->rot[7] * g->rot[5];
-        ret->rot[5] = f->rot[2] * g->rot[3] + f->rot[5] * g->rot[4] + f->rot[8] * g->rot[5];
-        ret->rot[6] = f->rot[0] * g->rot[6] + f->rot[3] * g->rot[7] + f->rot[6] * g->rot[8];
-        ret->rot[7] = f->rot[1] * g->rot[6] + f->rot[4] * g->rot[7] + f->rot[7] * g->rot[8];
-        ret->rot[8] = f->rot[2] * g->rot[6] + f->rot[5] * g->rot[7] + f->rot[8] * g->rot[8];
+        ret->rot[0] = g->rot[0] * f->rot[0] + g->rot[3] * f->rot[1] + g->rot[6] * f->rot[2];
+        ret->rot[1] = g->rot[1] * f->rot[0] + g->rot[4] * f->rot[1] + g->rot[7] * f->rot[2];
+        ret->rot[2] = g->rot[2] * f->rot[0] + g->rot[5] * f->rot[1] + g->rot[8] * f->rot[2];
+        ret->rot[3] = g->rot[0] * f->rot[3] + g->rot[3] * f->rot[4] + g->rot[6] * f->rot[5];
+        ret->rot[4] = g->rot[1] * f->rot[3] + g->rot[4] * f->rot[4] + g->rot[7] * f->rot[5];
+        ret->rot[5] = g->rot[2] * f->rot[3] + g->rot[5] * f->rot[4] + g->rot[8] * f->rot[5];
+        ret->rot[6] = g->rot[0] * f->rot[6] + g->rot[3] * f->rot[7] + g->rot[6] * f->rot[8];
+        ret->rot[7] = g->rot[1] * f->rot[6] + g->rot[4] * f->rot[7] + g->rot[7] * f->rot[8];
+        ret->rot[8] = g->rot[2] * f->rot[6] + g->rot[5] * f->rot[7] + g->rot[8] * f->rot[8];
     }
 };
