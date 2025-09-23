@@ -84,6 +84,8 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
 
 __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx)
 {
+    asm volatile (".pragma \"enable_smem_spilling\";");
+
     __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
@@ -146,6 +148,8 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
 
 __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, float* ctx)
 {
+    asm volatile (".pragma \"enable_smem_spilling\";");
+
     __shared__ float x012sum[4 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
@@ -214,6 +218,8 @@ __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float 
 
 __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx)
 {
+    asm volatile (".pragma \"enable_smem_spilling\";");
+
     __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
