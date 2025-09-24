@@ -51,7 +51,11 @@ namespace Warp9.Data
         public int StructElemSize { get; private init; }
         public int Length => NumItems * NumStructElems * StructElemSize;
 
-        public List<T> Data => data;
+        public List<T> Data 
+        { 
+            get { return data; } 
+            set { data = value; } 
+        }
 
         public ReadOnlySpan<byte> GetRawData()
         {

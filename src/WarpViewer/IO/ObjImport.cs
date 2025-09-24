@@ -19,7 +19,7 @@ namespace Warp9.IO
         {
             internal ObjFace(int flags, ReadOnlySpan<int> indices)
             {
-                // Somebody, somewhere decided that OBJ indexes vertice base 1. Go figure.
+                // Somebody, somewhere decided that OBJ indexes vertices base 1. Go figure.
                 IdxPos = new FaceIndices(indices[0] - 1, indices[3] - 1, indices[6] - 1);
                 IdxTex = new FaceIndices(indices[1] - 1, indices[4] - 1, indices[7] - 1);
                 IdxNorm = new FaceIndices(indices[2] - 1, indices[5] - 1, indices[8] - 1);
@@ -201,7 +201,7 @@ namespace Warp9.IO
             int nt = faces.Count;
 
             MeshBuilder builder = new MeshBuilder();
-            builder.SetSegment(MeshSegmentSemantic.Position, position);
+            builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data = position;
 
             List<FaceIndices> fidx = builder.GetIndexSegmentForEditing();
             fidx.Clear();
@@ -218,7 +218,7 @@ namespace Warp9.IO
 
             int nt = faces.Count;
 
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             pos.Capacity = nt * 3;
             for (int i = 0; i < nt; i++)
             {
@@ -230,7 +230,7 @@ namespace Warp9.IO
 
             if (normal.Count > 0)
             {
-                List<Vector3> norm = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal);
+                List<Vector3> norm = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;
                 norm.Capacity = nt * 3;
                 for (int i = 0; i < nt; i++)
                 {
@@ -243,7 +243,7 @@ namespace Warp9.IO
 
             if (tex0.Count > 0)
             {
-                List<Vector2> t = builder.GetSegmentForEditing<Vector2>(MeshSegmentSemantic.Tex0);
+                List<Vector2> t = builder.GetSegmentForEditing<Vector2>(MeshSegmentSemantic.Tex0, false).Data;
                 t.Capacity = nt * 3;
                 for (int i = 0; i < nt; i++)
                 {
