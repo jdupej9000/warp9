@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.Utils;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Warp9.Viewer
 {
@@ -49,7 +50,7 @@ namespace Warp9.Viewer
         bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderBlend = false;
 
         private static VertexDataLayout FakeNormalsLayout = new VertexDataLayout(false)
-            .AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 0);
+            .AddNormal(MeshSegmentFormat.Float32x3, 0);
 
         public bool RenderPoints
         {
@@ -202,30 +203,38 @@ namespace Warp9.Viewer
 
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
-                       
-            MeshView? posView = mesh.GetView(MeshViewKind.Pos3f);
-            if (posView is null)
+
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> posData, out MeshSegmentFormat posFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddPosition(posFmt, 0);
+
+                if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
+                    job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), layout, useDynamicArrays);
+                else
+                    job.SetVertexBuffer(ctx, 0, posData, layout, useDynamicArrays);
+            }
+            else
             {
                 SetError("Mesh has no vertex position view.");
                 return true;
             }
 
-            if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), posView.GetLayout(), useDynamicArrays);
-            else
-                job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Normal, out ReadOnlySpan<byte> normData, out MeshSegmentFormat normFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddNormal(posFmt, 0);
 
-
-            MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
-            if (normalView is not null)
-                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), useDynamicArrays);
-            else if(useDynamicArrays)
-                job.SetVertexBuffer(ctx, 2, Array.Empty<byte>(), FakeNormalsLayout, useDynamicArrays, posView.RawData.Length);
+                if (useDynamicArrays)
+                    job.SetVertexBuffer(ctx, 2, Array.Empty<byte>(), FakeNormalsLayout, useDynamicArrays, posData.Length);
+                else
+                    job.SetVertexBuffer(ctx, 2, normData, layout, useDynamicArrays);
+            }
 
             if (valueBuffer is not null)
             {
                 VertexDataLayout layoutValue = new VertexDataLayout();
-                layoutValue.AddTex(SharpDX.DXGI.Format.R32_Float, 1, 0);
+                layoutValue.AddTex(MeshSegmentFormat.Float32, 1, 0);
                 job.SetVertexBuffer(ctx, 1, MemoryMarshal.Cast<float, byte>(valueBuffer.AsSpan()), layoutValue);
             }
 

@@ -1,6 +1,8 @@
 ﻿using SharpDX.Direct3D11;
 using System.Collections.Generic;
 using System.Linq;
+using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
@@ -16,27 +18,27 @@ namespace Warp9.Viewer
         InputClassification inputCls;
         int stepRate;
         
-        public VertexDataLayout AddPosition(SharpDX.DXGI.Format fmt, int byteOffset)
+        public VertexDataLayout AddPosition(MeshSegmentFormat fmt, int byteOffset)
         {
-            inputElements.Add(new InputElement("POSITION", 0, fmt, byteOffset, 0, inputCls, stepRate));
+            inputElements.Add(new InputElement("POSITION", 0, MiscUtils.GetDxgiFormat(fmt), byteOffset, 0, inputCls, stepRate));
             return this;
         }
 
-        public VertexDataLayout AddNormal(SharpDX.DXGI.Format fmt, int byteOffset)
+        public VertexDataLayout AddNormal(MeshSegmentFormat fmt, int byteOffset)
         {
-            inputElements.Add(new InputElement("NORMAL", 0, fmt, byteOffset, 0, inputCls, stepRate));
+            inputElements.Add(new InputElement("NORMAL", 0, MiscUtils.GetDxgiFormat(fmt), byteOffset, 0, inputCls, stepRate));
             return this;
         }
 
-        public VertexDataLayout AddTex(SharpDX.DXGI.Format fmt, int index, int byteOffset)
+        public VertexDataLayout AddTex(MeshSegmentFormat fmt, int index, int byteOffset)
         {
-            inputElements.Add(new InputElement("TEXCOORD", index, fmt, byteOffset, 0, inputCls, stepRate));
+            inputElements.Add(new InputElement("TEXCOORD", index, MiscUtils.GetDxgiFormat(fmt), byteOffset, 0, inputCls, stepRate));
             return this;
         }
 
-        public VertexDataLayout AddColor(SharpDX.DXGI.Format fmt, int index, int byteOffset)
+        public VertexDataLayout AddColor(MeshSegmentFormat fmt, int index, int byteOffset)
         {
-            inputElements.Add(new InputElement("COLOR", index, fmt, byteOffset, 0, inputCls, stepRate));
+            inputElements.Add(new InputElement("COLOR", index, MiscUtils.GetDxgiFormat(fmt), byteOffset, 0, inputCls, stepRate));
             return this;
         }
 

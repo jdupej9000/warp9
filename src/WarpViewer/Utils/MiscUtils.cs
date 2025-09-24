@@ -125,34 +125,59 @@ namespace Warp9.Utils
             return a + u * ba + v * ca;
         }
 
-        public static void TypeComposition<T>(out int numElems, out int elemSize)
+        public static MeshSegmentFormat TypeComposition<T>()
             where T : struct
         {
-            if (typeof(T) == typeof(Vector2))
-            {
-                numElems = 2;
-                elemSize = sizeof(float);
-            }
+            if (typeof(T) == typeof(float))
+                return MeshSegmentFormat.Float32;
+            else if (typeof(T) == typeof(Vector2))
+                return MeshSegmentFormat.Float32x2;
             else if (typeof(T) == typeof(Vector3))
-            {
-                numElems = 3;
-                elemSize = sizeof(float);
-            }
+                return MeshSegmentFormat.Float32x3;
             else if (typeof(T) == typeof(Vector4))
-            {
-                numElems = 4;
-                elemSize = sizeof(float);
-            }
+                return MeshSegmentFormat.Float32x4;
             else if (typeof(T) == typeof(Matrix4x4))
+                return MeshSegmentFormat.Float32x16;
+
+            return MeshSegmentFormat.Unknown;
+        }
+
+        public static int GetNumStructElems(MeshSegmentFormat fmt)
+        {
+            return fmt switch
             {
-                numElems = 16;
-                elemSize = sizeof(float);
-            }
-            else
+                MeshSegmentFormat.Float32 => 1,
+                MeshSegmentFormat.Float32x2 => 2,
+                MeshSegmentFormat.Float32x3 => 3,
+                MeshSegmentFormat.Float32x4 => 4,
+                MeshSegmentFormat.Float32x16 => 16,
+                _ => 0
+            };
+        }
+
+        public static int GetStructElemSize(MeshSegmentFormat fmt)
+        {
+            return fmt switch
             {
-                numElems = 1;
-                elemSize = Marshal.SizeOf<T>();
-            }
+                MeshSegmentFormat.Float32 => 4,
+                MeshSegmentFormat.Float32x2 => 4,
+                MeshSegmentFormat.Float32x3 => 4,
+                MeshSegmentFormat.Float32x4 => 4,
+                MeshSegmentFormat.Float32x16 => 4,
+                _ => 0
+            };
+        }
+
+        public static SharpDX.DXGI.Format GetDxgiFormat(MeshSegmentFormat fmt)
+        {
+            return fmt switch
+            {
+                MeshSegmentFormat.Float32 => SharpDX.DXGI.Format.R32_Float,
+                MeshSegmentFormat.Float32x2 => SharpDX.DXGI.Format.R32G32_Float,
+                MeshSegmentFormat.Float32x3 => SharpDX.DXGI.Format.R32G32B32_Float,
+                MeshSegmentFormat.Float32x4 => SharpDX.DXGI.Format.R32G32B32A32_Float,
+                _ => SharpDX.DXGI.Format.Unknown
+            };
         }
     }
 }

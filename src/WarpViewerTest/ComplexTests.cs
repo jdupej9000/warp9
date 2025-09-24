@@ -79,10 +79,6 @@ namespace Warp9.Test
         public void RenderTeapotDynamicTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            MeshView? viewPos = teapot.GetView(MeshViewKind.Pos3f);
-            if (viewPos == null)
-                Assert.Fail("Cannot get pos array.");
-
             HeadlessRenderer rend = CreateRenderer();
 
             RenderItemMesh renderItemMesh = new RenderItemMesh();
@@ -96,8 +92,8 @@ namespace Warp9.Test
 
             rend.CanvasColor = Color.Black;
             rend.Present(); // this should look like RenderTeapotPhongTest but orange, we're not interested in this result
-
-            if (!viewPos.AsTypedData(out ReadOnlySpan<Vector3> pos))
+            
+            if(!teapot.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
                 Assert.Fail("Cannot get typed pos array.");
 
             int nv = pos.Length;
@@ -163,9 +159,8 @@ namespace Warp9.Test
         {
             Mesh m = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             float[] v = new float[m.VertexCount];
-            MeshView? posView = m.GetView(MeshViewKind.Pos3f);
-            Assert.IsNotNull(posView);
-            Assert.IsTrue(posView.AsTypedData(out ReadOnlySpan<Vector3> pos));
+            if (!m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
+                Assert.Fail();
 
             for (int i = 0; i < m.VertexCount; i++)
                 v[i] = MathF.Abs(Vector3.Dot(Vector3.Normalize(pos[i]), Vector3.UnitY));

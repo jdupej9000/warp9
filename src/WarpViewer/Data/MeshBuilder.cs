@@ -39,17 +39,16 @@ namespace Warp9.Data
     {
         public MeshSegmentBuilder()
         {
-            MiscUtils.TypeComposition<T>(out int ne, out int es);
-            NumStructElems = ne;
-            StructElemSize = es;
+            Format = MiscUtils.TypeComposition<T>();
         }
 
         List<T> data = new List<T>();
 
         public int NumItems => data.Count;
-        public int NumStructElems { get; private init; }
-        public int StructElemSize { get; private init; }
+        public int NumStructElems => MiscUtils.GetNumStructElems(Format);
+        public int StructElemSize => MiscUtils.GetStructElemSize(Format);
         public int Length => NumItems * NumStructElems * StructElemSize;
+        public MeshSegmentFormat Format { get; private init; }
 
         public List<T> Data 
         { 

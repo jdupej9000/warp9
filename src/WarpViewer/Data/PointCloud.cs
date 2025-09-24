@@ -40,15 +40,17 @@ namespace Warp9.Data
             return meshSegments.ContainsKey(kind);
         }
 
-        public bool TryGetRawData(MeshSegmentSemantic kind, out ReadOnlySpan<byte> data)
+        public bool TryGetRawData(MeshSegmentSemantic kind, out ReadOnlySpan<byte> data, out MeshSegmentFormat fmt)
         {
-            if (TryGetRawDataSegment(kind, out int offset, out int length))
+            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg))
             {
-                data = new ReadOnlySpan<byte>(vertexData, offset, length);
+                data = new ReadOnlySpan<byte>(vertexData, seg.Offset, seg.Length);
+                fmt = seg.Format;
                 return true;
             }
-
+           
             data = ReadOnlySpan<byte>.Empty;
+            fmt = MeshSegmentFormat.Unknown;
             return false;
         }
 

@@ -32,7 +32,7 @@ namespace Warp9.IO
             else if (Item is PointCloud pcl && Semantic != ChunkSemantic.Indices)
             {
                 fmt = ChunkNativeFormat.Float;
-                return pcl.TryGetRawData(MeshSegment, out data);
+                return pcl.TryGetRawData(MeshSegment, out data, out _);
             }
             else if (Item is Matrix<float> mf32)
             {
