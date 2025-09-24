@@ -9,9 +9,7 @@ namespace Warp9.IO
 {
     internal class WarpBinExportTask
     {
-        internal Mesh? Mesh { get; init; }
-        internal PointCloud? PointCloud { get; init; }
-        internal Matrix? Matrix { get; init; }
+        internal object? Item { get; init; }
         internal MeshSegmentSemantic MeshSegment { get; init; }
         internal int MeshSegmentDimension { get; init; }
         internal ChunkSemantic Semantic { get; init; }
@@ -19,36 +17,30 @@ namespace Warp9.IO
 
         internal bool TryGetRawData(out ChunkNativeFormat fmt, out ReadOnlySpan<byte> data)
         {
-            if (Mesh is not null && Semantic == ChunkSemantic.Indices)
+            if (Item is Mesh m && Semantic == ChunkSemantic.Indices)
             {
                 fmt = ChunkNativeFormat.Int32x3;
-                if (!Mesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> dataFi))
+                if (!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> dataFi))
                 {
                     data = ReadOnlySpan<byte>.Empty;
                     return false;
                 }
 
                 data = MemoryMarshal.Cast<FaceIndices, byte>(dataFi);
-
                 return true;
             }
-            else if (Mesh is not null && Semantic != ChunkSemantic.Indices)
+            else if (Item is PointCloud pcl && Semantic != ChunkSemantic.Indices)
             {
                 fmt = ChunkNativeFormat.Float;
-                return Mesh.TryGetRawData(MeshSegment, -1, out data);
+                return pcl.TryGetRawData(MeshSegment, out data);
             }
-            else if (PointCloud is not null)
-            {
-                fmt = ChunkNativeFormat.Float;
-                return PointCloud.TryGetRawData(MeshSegment, -1, out data);
-            }
-            else if (Matrix is Matrix<float> mf32)
+            else if (Item is Matrix<float> mf32)
             {
                 fmt = ChunkNativeFormat.Float;
                 data = mf32.GetRawData();
                 return true;
             }
-            else if (Matrix is Matrix<int> mi32)
+            else if (Item is Matrix<int> mi32)
             {
                 fmt = ChunkNativeFormat.Int32;
                 data = mi32.GetRawData();
@@ -140,28 +132,40 @@ namespace Warp9.IO
 
         private static void FindExtremes(Span<float> ext, ReadOnlySpan<float> data, int dim, int numElems)
         {
-            for (int i = 0; i < dim; i++)
+            for (int j = 0; j < numElems; j++)
             {
-                ReadOnlySpan<float> channel = data.Slice(i * numElems);
-                float min = float.MaxValue, max = float.MinValue;
+                int i0 = dim * j;
 
-                for (int j = 0; j < numElems; j++)
+                for (int i = 0; i < dim; i++)
                 {
-                    if (!float.IsNormal(channel[j])) continue;
-                    if(channel[j] < min) min = channel[j];
-                    if(channel[j] > max) max = channel[j];
-                }
+                    if (ext[2 * i] > data[i0 + i])
+                        ext[2 * i] = data[i0 + i];
 
-                ext[2 * i] = min;
-                ext[2 * i + 1] = max;
+                    if (ext[2 * i + 1] < data[i0 + i])
+                        ext[2 * i + 1] = data[i0 + i];
+                }
             }
         }
 
-        private static void WriteFloat32AsInt16(BinaryWriter wr, ReadOnlySpan<float> data, float min, float max)
+        private static void WriteFloat32AsInt16(BinaryWriter wr, ReadOnlySpan<float> data, ReadOnlySpan<float> lim, int dim, int numElems)
         {
-            float norm = 65535.0f / (max - min);
-            for (int i = 0; i < data.Length; i++)
-                wr.Write((ushort)((data[i] - min) * norm));
+            if (dim > 4) throw new ArgumentOutOfRangeException();
+
+            Span<float> min = stackalloc float[dim];
+            Span<float> norm = stackalloc float[dim];
+
+            for (int i = 0; i < dim; i++)
+            {
+                min[i] = lim[2 * i];
+                norm[i] = 65535.0f / (lim[2 * i + 1] - lim[2 * i]);
+            }
+
+            for (int j = 0; j < numElems; j++)
+            {
+                for (int i = 0; i < dim; i++)
+                    wr.Write((ushort)((data[dim * j + i] - min[i]) * norm[i]));
+
+            }
         }
 
         private static void Write(BinaryWriter wr, ReadOnlySpan<byte> data, int dim, int numElems, ChunkNativeFormat fmtFrom, ChunkEncoding fmtTo)
@@ -184,15 +188,21 @@ namespace Warp9.IO
                         FindExtremes(extr, dataf, dim, numElems);
                         wr.Write(MemoryMarshal.Cast<float, byte>(extr));
 
-                        for (int i = 0; i < dim; i++)
-                            WriteFloat32AsInt16(wr, dataf.Slice(i * numElems, numElems), extr[2 * i], extr[2 * i + 1]); 
+                        WriteFloat32AsInt16(wr, dataf, extr, dim, numElems);
                     }
                     break;
 
                 case (ChunkNativeFormat.Float, ChunkEncoding.Normalized16): 
                     {
                         ReadOnlySpan<float> dataf = MemoryMarshal.Cast<byte, float>(data);
-                        WriteFloat32AsInt16(wr, dataf, 0, 1);
+                        Span<float> extr = stackalloc float[2 * dim];
+                        for (int i = 0; i < dim; i++)
+                        {
+                            extr[2 * i] = 0;
+                            extr[2 * i + 1] = 1;
+                        }
+
+                        WriteFloat32AsInt16(wr, dataf, extr, dim, numElems);
                     }
                     break;
 
@@ -219,7 +229,7 @@ namespace Warp9.IO
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
-                    PointCloud = pcl,
+                    Item = pcl,
                     MeshSegment = MeshSegmentSemantic.Position,
                     MeshSegmentDimension = s.PositionDimension,
                     Semantic = ChunkSemantic.Position,
@@ -233,7 +243,7 @@ namespace Warp9.IO
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
-                    PointCloud = pcl,
+                    Item = pcl,
                     MeshSegment = MeshSegmentSemantic.Normal,
                     MeshSegmentDimension = s.NormalDimension,
                     Semantic = ChunkSemantic.Normal,
@@ -247,7 +257,7 @@ namespace Warp9.IO
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
-                    PointCloud = pcl,
+                    Item = pcl,
                     MeshSegment = MeshSegmentSemantic.Tex0,
                     MeshSegmentDimension = s.Tex0Dimension,
                     Semantic = ChunkSemantic.TexCoord,
@@ -261,7 +271,7 @@ namespace Warp9.IO
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
-                    PointCloud = pcl,
+                    Item = pcl,
                     MeshSegment = MeshSegmentSemantic.AttribScalar,
                     MeshSegmentDimension = s.AttribScalarDimension,
                     Semantic = ChunkSemantic.AttribScalar,
@@ -277,7 +287,7 @@ namespace Warp9.IO
             {
                 export.AddChunk(new WarpBinExportTask()
                 {
-                    Mesh = m,
+                    Item = m,
                     Semantic = ChunkSemantic.Indices,
                     MeshSegmentDimension = 1,
                     Encoding = s.IndexFormat
@@ -293,8 +303,8 @@ namespace Warp9.IO
                 {
                     export.AddChunk(new WarpBinExportTask()
                     {
-                        Matrix = kvp.Value,
-                        Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Float, kvp.Key),
+                        Item = kvp.Value,
+                        Semantic = (ChunkSemantic)WarpBinCommon.EncodeMatrixSemantic(ChunkNativeFormat.Float, kvp.Key),
                         MeshSegmentDimension = kvp.Value.Columns,
                         Encoding = s.MatrixFormat
                     });
@@ -303,8 +313,8 @@ namespace Warp9.IO
                 {
                     export.AddChunk(new WarpBinExportTask()
                     {
-                        Matrix = kvp.Value,
-                        Semantic = (ChunkSemantic)WarpBinCommon.MakeMatrixSemantic(ChunkNativeFormat.Int32, kvp.Key),
+                        Item = kvp.Value,
+                        Semantic = (ChunkSemantic)WarpBinCommon.EncodeMatrixSemantic(ChunkNativeFormat.Int32, kvp.Key),
                         MeshSegmentDimension = kvp.Value.Columns,
                         Encoding = ChunkEncoding.Int32
                     });

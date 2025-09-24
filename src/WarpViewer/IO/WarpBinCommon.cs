@@ -71,7 +71,7 @@ namespace Warp9.IO
             };
         }
 
-        public static short MakeMatrixSemantic(ChunkNativeFormat fmt, int index)
+        public static short EncodeMatrixSemantic(ChunkNativeFormat fmt, int index)
         {
             if ((int)fmt > 15 || index > 4095)
                 throw new ArgumentException();
