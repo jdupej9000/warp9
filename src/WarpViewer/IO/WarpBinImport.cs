@@ -81,6 +81,7 @@ namespace Warp9.IO
                     ChunkSemantic.Position => MeshSegmentSemantic.Position,
                     ChunkSemantic.Normal => MeshSegmentSemantic.Normal,
                     ChunkSemantic.TexCoord => MeshSegmentSemantic.Tex0,
+                    ChunkSemantic.AttribScalar => MeshSegmentSemantic.AttribScalar,
                     _ => MeshSegmentSemantic.Invalid
                 };
 
@@ -138,15 +139,15 @@ namespace Warp9.IO
             return false;
         }
 
-        private void ReadInt16AsFloat32(Span<byte> buffer, int count, float min, float max)
+        private void ReadNorm16AsFloat32(Span<byte> buffer, int count)
         {
-            float d = (max - min) / 65535.0f;
+            float d = 1.0f / 65535.0f;
             Span<float> dest = MemoryMarshal.Cast<byte, float>(buffer.Slice(0, count * 4));
             
             for (int i = 0; i < count; i++)
             {
                 ushort x = reader.ReadUInt16();
-                dest[i] = min + x * d;
+                dest[i] = x * d;
             }
         }
 
@@ -157,14 +158,22 @@ namespace Warp9.IO
 
             Span<float> limits = stackalloc float[cols * 2];
             reader.Read(MemoryMarshal.Cast<float, byte>(limits));
+            Span<float> min = stackalloc float[cols];
+            Span<float> norm = stackalloc float[cols];
 
             for (int i = 0; i < cols; i++)
-                ReadInt16AsFloat32(buffer.Slice(i * rows * 4), rows, limits[2 * i], limits[2 * i + 1]);
-        }
+            {
+                min[i] = limits[2 * i];
+                norm[i] = (limits[2 * i + 1] - limits[2 * i]) / 65535.0f;
+            }
 
-        private void ReadNormalized16AsFloat32(Span<byte> buffer, int count)
-        {
-            ReadInt16AsFloat32(buffer, count, 0, 1);
+            Span<float> f = MemoryMarshal.Cast<byte, float>(buffer);
+            for (int j = 0; j < rows; j++)
+            {
+                int i0 = j * cols;
+                for (int i = 0; i < cols; i++)
+                    f[i0 + i] = reader.ReadUInt16() * norm[i] + min[i];
+            }
         }
 
         private MatrixCollection ReadMatrix()
@@ -188,14 +197,6 @@ namespace Warp9.IO
                     {
                         case ChunkEncoding.Float32:
                             reader.Read(m.GetRawData());
-                            break;
-
-                        case ChunkEncoding.Fixed16:
-                            ReadFixed16AsFloat32(m.GetRawData(), cols, rows);
-                            break;
-
-                        case ChunkEncoding.Normalized16:
-                            ReadNormalized16AsFloat32(m.GetRawData(), cols * rows);
                             break;
 
                         default:
@@ -250,8 +251,6 @@ namespace Warp9.IO
                 if (nv == 0) 
                     nv = chunk.Chunk.Rows;
 
-                throw new Exception("Contents is SoA, but we want to read as AoS.");
-
                 //reader.BaseStream.Seek(chunk.Chunk.StreamPos, SeekOrigin.Begin);
 
                 switch (chunk.Chunk.Encoding)
@@ -267,7 +266,7 @@ namespace Warp9.IO
                         break;
 
                     case ChunkEncoding.Normalized16:
-                        ReadNormalized16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
+                        ReadNorm16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
                            chunk.Chunk.Columns * chunk.Chunk.Rows);
                         break;
 
