@@ -190,13 +190,13 @@ namespace Warp9.Viewer
         private void OverrideVertices(float[] synthSoa)
         {
             MeshUtils.CopySoaToAos(posAos.AsSpan(), MemoryMarshal.Cast<float, byte>(synthSoa.AsSpan()));
-            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(posAos);
+            Scene.Mesh0!.PositionOverride = new ReferencedData<BufferSegment<Vector3>>(new BufferSegment<Vector3>(posAos));
 
             // Recalculate normals and override them, too.
             if (meanMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
             {
                 MeshNormals.MakeNormalsFast(normAos.AsSpan(), posAos.AsSpan(), indices);
-                Scene.Mesh0!.NormalOverride = new ReferencedData<Vector3[]>(normAos);
+                Scene.Mesh0!.NormalOverride = new ReferencedData<BufferSegment<Vector3>>(new BufferSegment<Vector3>(normAos));
             }
         }
 

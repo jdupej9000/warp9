@@ -128,7 +128,7 @@ namespace Warp9.Viewer
             if (recalcField)
             {
                 if (AttributeField is not null)
-                    Scene.Mesh0!.AttributeScalar = new ReferencedData<float[]>(AttributeField);
+                    Scene.Mesh0!.AttributeScalar = new ReferencedData<BufferSegment<float>>(new BufferSegment<float>(AttributeField));
                 else
                     Scene.Mesh0!.AttributeScalar = null;
 
