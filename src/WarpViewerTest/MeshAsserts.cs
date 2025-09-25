@@ -25,10 +25,11 @@ namespace Warp9.Test
 
             foreach (MeshSegmentSemantic mst in Enum.GetValues(typeof(MeshSegmentSemantic)))
             {
-                bool gotSeg1 = pcl1.TryGetRawData(mst, -1, out ReadOnlySpan<byte> data1);
-                bool gotSeg2 = pcl1.TryGetRawData(mst, -1, out ReadOnlySpan<byte> data2);
+                bool gotSeg1 = pcl1.TryGetRawData(mst, out ReadOnlySpan<byte> data1, out MeshSegmentFormat fmt1);
+                bool gotSeg2 = pcl1.TryGetRawData(mst, out ReadOnlySpan<byte> data2, out MeshSegmentFormat fmt2);
 
                 Assert.AreEqual(gotSeg1, gotSeg2);
+                Assert.AreEqual(fmt1, fmt2);
 
                 // TODO: switch on segment type
                 if (gotSeg1)

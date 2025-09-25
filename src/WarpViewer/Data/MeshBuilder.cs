@@ -159,6 +159,7 @@ namespace Warp9.Data
                     throw new InvalidOperationException();
 
                 src.CopyTo(vertData.AsSpan(ptr, src.Length));
+                ptr += src.Length;
             }
         }
 

@@ -316,7 +316,7 @@ namespace Warp9.Test
             };
 
             MeshBuilder mb = new MeshBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             for (int i = 0; i < vb.Length; i += 3)
                 pos.Add(new Vector3(scale * vb[i], scale * vb[i + 1], scale * vb[i + 2]));
 
@@ -330,11 +330,10 @@ namespace Warp9.Test
         public static PointCloud SelectIndices(PointCloud pcl, Predicate<int> sel)
         {
             int nv = pcl.VertexCount;
-            MeshView posView = pcl.GetView(MeshViewKind.Pos3f, true) ?? throw new InvalidOperationException();
-            posView.AsTypedData(out ReadOnlySpan<Vector3> posAll);
-
+            pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posAll);
+          
             MeshBuilder mb = new MeshBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             for (int i = 0; i < nv; i++)
             {
                 if (sel(i))

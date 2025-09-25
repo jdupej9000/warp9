@@ -81,14 +81,9 @@ namespace Warp9.Test
             for (int i = 0; i < nt; i++)
                 Assert.AreEqual(idx0[i], idx2[i]);
 
-            MeshView? v0 = m0.GetView(MeshViewKind.Pos3f);
-            Assert.IsNotNull(v0);
-            Assert.IsTrue(v0.AsTypedData(out ReadOnlySpan<Vector3> vx0));
-
-            MeshView? v2 = m2.GetView(MeshViewKind.Pos3f);
-            Assert.IsNotNull(v2);
-            Assert.IsTrue(v2.AsTypedData(out ReadOnlySpan<Vector3> vx2));
-
+            Assert.IsTrue(m0.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vx0));
+            Assert.IsTrue(m2.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vx2));
+           
             int nv = m2.VertexCount;
             for (int i = 0; i < nv; i++)
                 Assert.IsTrue(Vector3.Distance(vx0[i], vx2[i]) < 1e-6f);
@@ -107,7 +102,7 @@ namespace Warp9.Test
         public void SimplePointCloudWarpBinTransportTest()
         {
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             for (int i = 0; i < 5; i++)
                 pos.Add(new Vector3(i, 10 * i, 100 * i));
 
@@ -131,7 +126,7 @@ namespace Warp9.Test
         public void SimplePointCloudWarpBinFixed16TransportTest()
         {
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             for (int i = 0; i < 5; i++)
                 pos.Add(new Vector3(i, 10 * i, 100 * i));
 
