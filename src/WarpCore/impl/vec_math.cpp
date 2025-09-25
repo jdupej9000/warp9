@@ -210,6 +210,22 @@ namespace warpcore::impl
         return _mm256_movemask_epi8(_mm256_castps_si256(self_sub_v8));
     }
 
+    void WCORE_VECCALL demux(__m256& a, __m256& b, __m256& c)
+    {
+        __m256 a0 = _mm256_blend_ps(a, b, 0b10010010);
+        __m256 a1 = _mm256_blend_ps(a0, c, 0b00100100);
+        __m256 ax = _mm256_permutevar8x32_ps(a1, _mm256_setr_epi32(0, 3, 6, 1, 4, 7, 2, 5));
+        __m256 b0 = _mm256_blend_ps(a, b, 0b00100100);
+        __m256 b1 = _mm256_blend_ps(b0, c, 0b01001001);
+        __m256 bx = _mm256_permutevar8x32_ps(b1, _mm256_setr_epi32(1, 4, 7, 2, 5, 0, 3, 6));
+        __m256 c0 = _mm256_blend_ps(a, b, 0b01001001);
+        __m256 c1 = _mm256_blend_ps(c0, c, 0b10010010);
+        __m256 cx = _mm256_permutevar8x32_ps(c1, _mm256_setr_epi32(2, 5, 0, 3, 6, 1, 4, 7));
+        a = ax;
+        b = bx;
+        c = cx;
+    }
+
     void WCORE_VECCALL demux(__m256i& a, __m256i& b, __m256i& c)
     {
         __m256i a0 = _mm256_blend_epi32(a, b, 0b10010010);
