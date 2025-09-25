@@ -101,18 +101,18 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
     float sum = 0;
     float x0 = 0, x1 = 0, x2 = 0;
     if (i < n) {
-        x0 = x[3 * i];
-        x1 = x[3 * i + 1];
-        x2 = x[3 * i + 2];
+        x0 = x[0 * n + i];
+        x1 = x[1 * n + i];
+        x2 = x[2 * n + i];
     }
 
     for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
         int jthread = jb + thread;
-        t012[3 * thread + 0] = t[3 * (m + jthread)];
-        t012[3 * thread + 1] = t[3 * (m + jthread) + 1];
-        t012[3 * thread + 2] = t[3 * (m + jthread) + 2];
+        t012[3 * thread + 0] = t[0 * m + jthread];
+        t012[3 * thread + 1] = t[1 * m + jthread];
+        t012[3 * thread + 2] = t[2 * m + jthread];
 
         __syncthreads();
 
@@ -167,18 +167,18 @@ __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float 
 
     float t0 = 0, t1 = 0, t2 = 0;
     if (j < m) {
-        t0 = t[3 * j];
-        t1 = t[3 * j + 1];
-        t2 = t[3 * j + 2];
+        t0 = t[0 * m + j];
+        t1 = t[1 * m + j];
+        t2 = t[2 * m + j];
     }
 
     for (int ib = 0; ib < n; ib += BLOCK_SIZE) {
         int nb = __min(n, ib + BLOCK_SIZE) - ib;
 
         int ithread = ib + thread;
-        x012sum[4 * thread + 0] = x[(n + ithread) * 3];
-        x012sum[4 * thread + 1] = x[(n + ithread) * 3 + 1];
-        x012sum[4 * thread + 2] = x[(n + ithread) * 3 + 2];
+        x012sum[4 * thread + 0] = x[0 * n + ithread];
+        x012sum[4 * thread + 1] = x[1 * n + ithread];
+        x012sum[4 * thread + 2] = x[2 * n + ithread];
         x012sum[4 * thread + 3] = psum[ithread];
 
         __syncthreads();
@@ -231,18 +231,18 @@ __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx)
 
     float x0 = 0, x1 = 0, x2 = 0, accum = 0;
     if (i < n) {
-        x0 = x[3 * i];
-        x1 = x[3 * i + 1];
-        x2 = x[3 * i + 2];
+        x0 = x[i];
+        x1 = x[n + i];
+        x2 = x[2 * n + i];
     }
 
     for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
         int jthread = jb + thread;
-        t012[3 * thread + 0] = t[(m + jthread) * 3];
-        t012[3 * thread + 1] = t[(m + jthread) * 3 + 1];
-        t012[3 * thread + 2] = t[(m + jthread) * 3 + 2];
+        t012[3 * thread + 0] = t[0 * m + jthread];
+        t012[3 * thread + 1] = t[1 * m + jthread];
+        t012[3 * thread + 2] = t[2 * m + jthread];
         
         __syncthreads();
 
