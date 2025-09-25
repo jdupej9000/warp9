@@ -162,6 +162,16 @@ namespace warpcore::impl
         }
     }    
 
+    template<typename T, int NDim, int NStride = 1>
+    void soa_to_aos(T* x, int n, const T* y)
+    {
+        for (int d = 0; d < NDim; d++) {
+            for (int i = 0; i < n; i++) {
+                x[(i * NDim + d) * NStride] = *(y++);
+            }
+        }
+    }
+
     template<int NDim>
     int nearest(const float* x, int n, const float* t)
     {

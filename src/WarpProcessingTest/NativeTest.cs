@@ -46,7 +46,7 @@ namespace Warp9.Test
         private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, true).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)

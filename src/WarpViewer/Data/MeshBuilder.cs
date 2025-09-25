@@ -25,7 +25,7 @@ namespace Warp9.Data
 
             MeshSegmentBuilder<T> ret = new MeshSegmentBuilder<T>();
             List<T> buffer = ret.Data;
-            buffer.Capacity = seg.NumItems;
+            CollectionsMarshal.SetCount(buffer, seg.NumItems);
 
             Span<T> bufferSpan = CollectionsMarshal.AsSpan(buffer);
             data.AsSpan(seg.Offset, seg.Length).CopyTo(MemoryMarshal.Cast<T, byte>(bufferSpan));
