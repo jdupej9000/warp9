@@ -104,7 +104,7 @@ namespace warpcore::impl
         int k8 = round_down(k, 8);
 
         __m256 rms_accum = _mm256_setzero_ps();
-        for(int i = 0; i < k8 ; i += 8) {
+        for(int i = 0; i < k8; i += 8) {
             const __m256 r = _mm256_sub_ps(_mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i));
             rms_accum = _mm256_fmadd_ps(r, r, rms_accum);
         }
@@ -120,8 +120,39 @@ namespace warpcore::impl
 
     void pcl_aabb(const float* x, int d, int m, float* x0, float* x1)
     {
-        for(int i = 0; i < d; i++) {
-            reduce_minmax(x + i * m, m, x0 + i, x1 + i);
+        assert(d == 3);
+        int dm = d * m;
+
+        __m256 xmin8 = _mm256_set1_ps(x0[0]), ymin8 = _mm256_set1_ps(x0[1]), zmin8 = _mm256_set1_ps(x0[2]);
+        __m256 xmax8 = _mm256_set1_ps(x1[0]), ymax8 = _mm256_set1_ps(x1[1]), zmax8 = _mm256_set1_ps(x1[2]);
+
+        int dm24 = dm - (dm % 24);
+        for (int i = 0; i < dm24; i += 24) {
+            __m256 x0 = _mm256_loadu_ps(x + i);
+            __m256 x1 = _mm256_loadu_ps(x + i + 8);
+            __m256 x2 = _mm256_loadu_ps(x + i + 16);
+            demux(x0, x1, x2);
+
+            xmin8 = _mm256_min_ps(xmin8, x0);
+            xmax8 = _mm256_max_ps(xmax8, x0);
+            ymin8 = _mm256_min_ps(ymin8, x1);
+            ymax8 = _mm256_max_ps(ymax8, x1);
+            zmin8 = _mm256_min_ps(zmin8, x2);
+            zmax8 = _mm256_max_ps(zmax8, x2);
+        }
+
+        x0[0] = reduce_min(xmin8);
+        x0[1] = reduce_min(ymin8);
+        x0[2] = reduce_min(zmin8);
+        x1[0] = reduce_max(xmax8);
+        x1[1] = reduce_max(ymax8);
+        x1[2] = reduce_max(zmax8);
+
+        for (int i = dm24; i < dm; i += 3) {
+            for (int j = 0; j < d; j++) {
+                x0[j] = std::fmin(x0[j], x[i+j]);
+                x1[j] = std::fmax(x1[j], x[i+j]);
+            }            
         }
     }
 };

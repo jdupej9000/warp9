@@ -26,8 +26,7 @@ namespace warpcore::impl
         const int num_cells = grid->ncell[0] * grid->ncell[1] * grid->ncell[2];
         grid->cells = new trigrid_cell[num_cells];
 
-        for (int i = 0; i < 4; i++)
-        {
+        for (int i = 0; i < 4; i++) {
             grid->x0[i] = FLT_MAX;
             grid->x1[i] = FLT_MIN;
         }
@@ -143,20 +142,20 @@ namespace warpcore::impl
         for(int i = 0; i < nvcell; i++) {
             const int fidx = 3 * face[i];
 
-            const int idx0 = idx[fidx];
-            dest[i + 0 * nvcell] = vert[idx0 + 0 * nv];
-            dest[i + 1 * nvcell] = vert[idx0 + 1 * nv];
-            dest[i + 2 * nvcell] = vert[idx0 + 2 * nv];
+            const int idx0 = idx[fidx] * 3;
+            dest[i + 0 * nvcell] = vert[idx0 + 0];
+            dest[i + 1 * nvcell] = vert[idx0 + 1];
+            dest[i + 2 * nvcell] = vert[idx0 + 2];
 
-            const int idx1 = idx[fidx + 1];
-            dest[i + 3 * nvcell] = vert[idx1 + 0 * nv];
-            dest[i + 4 * nvcell] = vert[idx1 + 1 * nv];
-            dest[i + 5 * nvcell] = vert[idx1 + 2 * nv];
+            const int idx1 = idx[fidx + 1] * 3;
+            dest[i + 3 * nvcell] = vert[idx1 + 0];
+            dest[i + 4 * nvcell] = vert[idx1 + 1];
+            dest[i + 5 * nvcell] = vert[idx1 + 2];
 
-            const int idx2 = idx[fidx + 2];
-            dest[i + 6 * nvcell] = vert[idx2 + 0 * nv];
-            dest[i + 7 * nvcell] = vert[idx2 + 1 * nv];
-            dest[i + 8 * nvcell] = vert[idx2 + 2 * nv];
+            const int idx2 = idx[fidx + 2] * 3;
+            dest[i + 6 * nvcell] = vert[idx2 + 0];
+            dest[i + 7 * nvcell] = vert[idx2 + 1];
+            dest[i + 8 * nvcell] = vert[idx2 + 2];
         }
     }
 
@@ -196,6 +195,7 @@ namespace warpcore::impl
         constexpr int ROUND_FLOOR = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
         constexpr int ROUND_CEIL = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
         const __m256i seq = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        const __m256i three = _mm256_set1_epi32(3);
 
         for(int i = 0; i < nt; i+=8) {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
@@ -203,23 +203,26 @@ namespace warpcore::impl
             __m256i idx0, idx1, idx2;
             load_safe(idx + 3 * i, nt - i, idx0, idx1, idx2);
             demux(idx0, idx1, idx2);
+            idx0 = _mm256_mullo_epi32(idx0, three);
+            idx1 = _mm256_mullo_epi32(idx1, three);
+            idx2 = _mm256_mullo_epi32(idx2, three);
 
             __m256i idxi = _mm256_and_si256(idx0, mask); // mask out out-of-range elements (only in the last pass)
             __m256 x = _mm256_i32gather_ps(vert, idxi, 4);
             __m256 xmin = x, xmax = x;
-            __m256 y = _mm256_i32gather_ps(vert + nv, idxi, 4);
+            __m256 y = _mm256_i32gather_ps(vert + 1, idxi, 4);
             __m256 ymin = y, ymax = y;
-            __m256 z = _mm256_i32gather_ps(vert + 2 * nv, idxi, 4);
+            __m256 z = _mm256_i32gather_ps(vert + 2, idxi, 4);
             __m256 zmin = z, zmax = z;
 
             idxi = _mm256_and_si256(idx1, mask);
             x = _mm256_i32gather_ps(vert, idxi, 4);
             xmin = _mm256_min_ps(xmin, x);
             xmax = _mm256_max_ps(xmax, x);
-            y = _mm256_i32gather_ps(vert + nv, idxi, 4);
+            y = _mm256_i32gather_ps(vert + 1, idxi, 4);
             ymin = _mm256_min_ps(ymin, y);
             ymax = _mm256_max_ps(ymax, y);
-            z = _mm256_i32gather_ps(vert + 2 * nv, idxi, 4);
+            z = _mm256_i32gather_ps(vert + 2, idxi, 4);
             zmin = _mm256_min_ps(zmin, z);
             zmax = _mm256_max_ps(zmax, z);
 
@@ -227,10 +230,10 @@ namespace warpcore::impl
             x = _mm256_i32gather_ps(vert, idxi, 4);
             xmin = _mm256_min_ps(xmin, x);
             xmax = _mm256_max_ps(xmax, x);
-            y = _mm256_i32gather_ps(vert + nv, idxi, 4);
+            y = _mm256_i32gather_ps(vert + 1, idxi, 4);
             ymin = _mm256_min_ps(ymin, y);
             ymax = _mm256_max_ps(ymax, y);
-            z = _mm256_i32gather_ps(vert + 2 * nv, idxi, 4);
+            z = _mm256_i32gather_ps(vert + 2, idxi, 4);
             zmin = _mm256_min_ps(zmin, z);
             zmax = _mm256_max_ps(zmax, z);
 
