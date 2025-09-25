@@ -74,8 +74,7 @@ namespace Warp9.Test
             for (int row = 0; row < 10; row++)
             {
                 PointCloud pcl = LongRunningTests.GetPointCloudFromProject(project, 21, "Landmarks", row);
-                MeshView? view = pcl.GetView(MeshViewKind.Pos3f);
-                if (view is null || !view.AsTypedData(out ReadOnlySpan<Vector3> pos))
+                if (!(pcl.TryGetData( MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos)))
                 {
                     Assert.Fail("Cannot get pcl view.");
                     return; // To make the compiler happy.

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Warp9.Data
@@ -38,13 +39,22 @@ namespace Warp9.Data
             this.length = length;
         }
 
-        readonly T[]? typedData;
+        T[]? typedData;
         readonly byte[]? data;
         readonly int offset, length;
         GCHandle? pin;
 
+        [JsonIgnore]
         public ReadOnlySpan<byte> RawData => (data is not null) ? data.AsSpan(offset, length) : MemoryMarshal.Cast<T, byte>(typedData!.AsSpan());
+
+        [JsonIgnore]
         public ReadOnlySpan<T> Data => MemoryMarshal.Cast<byte, T>(RawData);
+
+        public T[] DataArray
+        {
+            get { return Data.ToArray(); }
+            set { typedData = value; }
+        }
 
         public T this[int i] => Data[i];
 

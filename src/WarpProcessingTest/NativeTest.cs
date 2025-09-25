@@ -46,7 +46,7 @@ namespace Warp9.Test
         private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -61,7 +61,7 @@ namespace Warp9.Test
         private static PointCloud TranslateTwistPcl(PointCloud pcl, Vector3 t, float twist)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -85,15 +85,9 @@ namespace Warp9.Test
 
         private static void ComparePcls(PointCloud pcl1, PointCloud pcl2)
         {
-            MeshView? view1 = pcl1.GetView(MeshViewKind.Pos3f);
-            MeshView? view2 = pcl2.GetView(MeshViewKind.Pos3f);
-
-            if (view1 is null || view2 is null)
-                throw new InvalidOperationException();
-
-            view1.AsTypedData(out ReadOnlySpan<Vector3> v1);
-            view2.AsTypedData(out ReadOnlySpan<Vector3> v2);
-
+            Assert.IsTrue(pcl1.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> v1));
+            Assert.IsTrue(pcl2.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> v2));
+           
             float dmin = float.MaxValue;
             float dmax = float.MinValue;
             float dsum = 0;
@@ -182,7 +176,7 @@ namespace Warp9.Test
                 for (int i = 0; i < neigs; i++)
                 {
                     d.Slice(i * nv, nv).CopyTo(attr.AsSpan());
-                    rim.SetValueField(attr);
+                    rim.SetValueField(new BufferSegment<float>(attr));
 
                     rend.Present();
                     Span<byte> s = new Span<byte>((void*)(bmp.Scan0 + i * numBytesFrame), numBytesFrame);
@@ -385,7 +379,7 @@ namespace Warp9.Test
         public void TrigridNnBarycentricTest()
         {
             (int[] hit, ResultInfoDPtBary[] res, Mesh m) = TrigridNnTestCase(string.Empty, 1, 32, false);
-            m.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pos);
+            m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos);
             m.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices);
 
             int nv = m.VertexCount;
@@ -402,9 +396,9 @@ namespace Warp9.Test
                 if (d > 1e-6f)
                 {
                     Console.WriteLine($"idx = {i}, hit = {hit[i]}, nt = {numTested}");
-                    Console.WriteLine("a = " + MiscUtils.FromSoa(pos, fi.I0, nv).ToString());
-                    Console.WriteLine("b = " + MiscUtils.FromSoa(pos, fi.I1, nv).ToString());
-                    Console.WriteLine("c = " + MiscUtils.FromSoa(pos, fi.I2, nv).ToString());
+                    Console.WriteLine("a = " + pos[fi.I0].ToString());
+                    Console.WriteLine("b = " + pos[fi.I1].ToString());
+                    Console.WriteLine("c = " + pos[fi.I2].ToString());
                     Console.WriteLine($"u = {res[i].u}, v={res[i].v}");
                     Console.WriteLine($"d = {res[i].d}");
                     Console.WriteLine("want: " + posStraight.ToString());
@@ -506,7 +500,7 @@ namespace Warp9.Test
                 Assert.IsTrue(labels[i] >= 0 && labels[i] < n);
 
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             verts.AddRange(centers);
             PointCloud pclK = builder.ToPointCloud();
 
