@@ -27,11 +27,11 @@ namespace Warp9.Processing
             ResultInfoDPtBary[] proj = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
             int[] hitIndex = ArrayPool<int>.Shared.Rent(nv);
 
-            if (src.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclNrData) &&
-               searchCtx.NearestSoa(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
+            if (src.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclNrData) &&
+               searchCtx.NearestAos(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
             {
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
                 for (int i = 0; i < nv; i++)
                     posProj.Add(new Vector3(proj[i].x, proj[i].y, proj[i].z));
@@ -68,19 +68,16 @@ namespace Warp9.Processing
             float[] projRay1 = ArrayPool<float>.Shared.Rent(nv);
             int[] hitIndexRay1 = ArrayPool<int>.Shared.Rent(nv);
 
-            if (src.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> pclNrPos) &&
-                src.TryGetRawData(MeshSegmentSemantic.Normal, -1, out ReadOnlySpan<byte> pclNrNormal))
+            if (src.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclNrPos) &&
+                src.TryGetData(MeshSegmentSemantic.Normal, out ReadOnlySpan<Vector3> pclNrNormal))
             {
-                ReadOnlySpan<float> pclNrPosF = MemoryMarshal.Cast<byte, float>(pclNrPos);
-                ReadOnlySpan<float> pclNrNormF = MemoryMarshal.Cast<byte, float>(pclNrNormal);
-
-                if (!searchCtx.NearestSoa(pclNrPos, nv, 1e3f, hitIndexNN.AsSpan(), projNN.AsSpan()) ||
-                    !searchCtx.RaycastSoa(pclNrPos, pclNrNormal, nv, hitIndexRay0.AsSpan(), projRay0.AsSpan(), false) ||
-                    !searchCtx.RaycastSoa(pclNrPos, pclNrNormal, nv, hitIndexRay1.AsSpan(), projRay1.AsSpan(), true))
+                if (!searchCtx.NearestAos(pclNrPos, nv, 1e3f, hitIndexNN.AsSpan(), projNN.AsSpan()) ||
+                    !searchCtx.RaycastAos(pclNrPos, pclNrNormal, nv, hitIndexRay0.AsSpan(), projRay0.AsSpan(), false) ||
+                    !searchCtx.RaycastAos(pclNrPos, pclNrNormal, nv, hitIndexRay1.AsSpan(), projRay1.AsSpan(), true))
                     return null;
 
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
                 for (int i = 0; i < nv; i++)
                 {
@@ -95,8 +92,8 @@ namespace Warp9.Processing
                     }
                     else
                     {
-                        Vector3 p0 = new Vector3(pclNrPosF[i], pclNrPosF[i + nv], pclNrPosF[i + 2 * nv]);
-                        Vector3 n = new Vector3(pclNrNormF[i], pclNrNormF[i + nv], pclNrNormF[i + 2 * nv]);
+                        Vector3 p0 = pclNrPos[i];
+                        Vector3 n = pclNrNormal[i];
 
                         if (ray0 < ray1)                       
                             pt = p0 + ray0 * n;                      
@@ -133,21 +130,21 @@ namespace Warp9.Processing
                 SearchContext.TryInitTrigrid(meshMirror, GridSize, out SearchContext? searchMirror) == WarpCoreStatus.WCORE_OK &&
                 searchOriginal is not null &&
                 searchMirror is not null &&
-                original.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> rawOriginal) &&
-                regMirror.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> rawMirror) &&
+                original.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> rawOriginal) &&
+                regMirror.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> rawMirror) &&
                 faces.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
             {
                 MeshBuilder mb = new MeshBuilder();
-                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+                List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
                 posProj.Capacity = nv;
 
                 int[] projIdxOrig = ArrayPool<int>.Shared.Rent(nv);
                 ResultInfoDPtBary[] projOrig = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
-                searchMirror.NearestSoa(rawOriginal, nv, 1000, projIdxOrig, projOrig);
+                searchMirror.NearestAos(rawOriginal, nv, 1000, projIdxOrig, projOrig);
 
                 int[] projIdxMirror = ArrayPool<int>.Shared.Rent(nv);
                 ResultInfoDPtBary[] projMirror = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
-                searchOriginal.NearestSoa(rawMirror, nv, 1000, projIdxMirror, projMirror);
+                searchOriginal.NearestAos(rawMirror, nv, 1000, projIdxMirror, projMirror);
 
 
                 for (int i = 0; i < nv; i++)
@@ -163,7 +160,7 @@ namespace Warp9.Processing
                     Vector3 ptm = Vector3.Lerp(s0, s1, 0.5f);
 
                     // Blend with the original point to get symmetry.
-                    Vector3 pt = Vector3.Lerp(MiscUtils.FromSoa(rawOriginal, i, nv), ptm, 0.5f);
+                    Vector3 pt = Vector3.Lerp(rawOriginal[i], ptm, 0.5f);
 
                     posProj.Add(pt);
                 }

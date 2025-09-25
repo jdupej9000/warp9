@@ -97,12 +97,12 @@ namespace Warp9.Test
                 Assert.Fail("Cannot get typed pos array.");
 
             int nv = pos.Length;
-            byte[] pos2b = new byte[nv * Marshal.SizeOf<Vector3>()];
-            Span<Vector3> pos2 = MemoryMarshal.Cast<byte, Vector3>(pos2b.AsSpan());
+            Vector3[] pos2 = new Vector3[nv];
+           
             for (int i = 0; i < nv; i++)
                 pos2[i] = pos[i] * 1.25f;
 
-            renderItemMesh.UpdateData(pos2b, MeshSegmentSemantic.Position);
+            renderItemMesh.UpdateData(new BufferSegment<Vector3>(pos2), MeshSegmentSemantic.Position);
             rend.Present(); // now the teapot should appear larger
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
@@ -174,7 +174,7 @@ namespace Warp9.Test
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
             renderItemMesh.LevelValue = 0.65f;
             renderItemMesh.FillColor = Color.Red;
-            renderItemMesh.SetValueField(v);
+            renderItemMesh.SetValueField(new BufferSegment<float>(v));
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;

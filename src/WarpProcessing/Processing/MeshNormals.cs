@@ -27,8 +27,7 @@ namespace Warp9.Processing
             if (pcl is null)
                 return new MeshBuilder();
 
-            MeshView? pos = pcl.GetView(MeshViewKind.Pos3f);
-            if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
+            if(!pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
             if (!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
@@ -37,7 +36,7 @@ namespace Warp9.Processing
             MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
 
-            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal);
+            List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;
             CollectionsMarshal.SetCount(normalsSeg, nv);
 
             switch (algo)

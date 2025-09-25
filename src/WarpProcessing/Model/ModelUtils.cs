@@ -38,7 +38,7 @@ namespace Warp9.Model
             return x;
         }
 
-        public static ReferencedData<T[]> ResolveAsMeshView<T>(Project proj, MeshViewKind viewKind, ReferencedData<T[]> x) where T : struct
+        public static ReferencedData<BufferSegment<T>> ResolveAsMeshView<T>(Project proj, MeshSegmentSemantic semantic, ReferencedData<BufferSegment<T>> x) where T : struct
         {
             if (x.IsLoaded)
                 return x;
@@ -52,14 +52,10 @@ namespace Warp9.Model
             else
                 return x;
 
-            MeshView? view = pcl.GetView(viewKind);
-            if (view is null)
+            if(!pcl.TryGetData(semantic, out BufferSegment<T> buffer))
                 return x;
 
-            if(!view.AsTypedData(out ReadOnlySpan<T> typedView))
-                return x;
-
-            return new ReferencedData<T[]>(typedView.ToArray(), x.Key);
+            return new ReferencedData<BufferSegment<T>>(buffer, x.Key);
         }
 
         public static SpecimenTable? TryGetSpecimenTable(Project proj, long tableKey)

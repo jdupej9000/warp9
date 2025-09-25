@@ -25,12 +25,11 @@ namespace Warp9.Processing
             Vector3 x0 = stat.x0;
             Vector3 sc = Vector3.One / (stat.x1 - stat.x0);
 
-            MeshView? posView = m.GetView(MeshViewKind.Pos3f, false);
-            if (posView is null || !posView.AsTypedData(out ReadOnlySpan<Vector3> pos))
+            if(!m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
                 throw new InvalidOperationException();
 
             MeshBuilder mb = new MeshBuilder();
-            List<Vector3> newPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> newPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             List<FaceIndices> newIdx = mb.GetIndexSegmentForEditing();
 
             int vert = 0;

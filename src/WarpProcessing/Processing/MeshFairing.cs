@@ -14,8 +14,7 @@ namespace Warp9.Processing
     {
         public static MeshBuilder Optimize(Mesh m, float smoothingFactor = 0.5f)
         {
-            MeshView? pos = m.GetView(MeshViewKind.Pos3f);
-            if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
+            if(!m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
             if (!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
@@ -24,7 +23,7 @@ namespace Warp9.Processing
             MeshBuilder mb = m.ToBuilder();
             int nv = m.VertexCount;
 
-            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position);
+            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             CollectionsMarshal.SetCount(posSeg, nv);
 
             Optimize(CollectionsMarshal.AsSpan(posSeg), posData, faces, smoothingFactor);

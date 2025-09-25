@@ -114,13 +114,12 @@ namespace Warp9.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 SampleTriangleBarycentric(ReadOnlySpan<byte> x, FaceIndices fi, int nv, float u, float v)
+        public static Vector3 SampleTriangleBarycentric(ReadOnlySpan<Vector3> x, FaceIndices fi, int nv, float u, float v)
         {
-            ReadOnlySpan<float> f = MemoryMarshal.Cast<byte, float>(x);
-
-            Vector3 a = new Vector3(f[fi.I0], f[fi.I0 + nv], f[fi.I0 + 2 * nv]);
-            Vector3 ba = new Vector3(f[fi.I1], f[fi.I1 + nv], f[fi.I1 + 2 * nv]) - a;
-            Vector3 ca = new Vector3(f[fi.I2], f[fi.I2 + nv], f[fi.I2 + 2 * nv]) - a;
+          
+            Vector3 a = x[fi.I0];
+            Vector3 ba = x[fi.I1] - a;
+            Vector3 ca = x[fi.I2] - a;
 
             return a + u * ba + v * ca;
         }

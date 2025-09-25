@@ -38,8 +38,8 @@ namespace Warp9.Viewer
         Mesh? mesh;
         Lut? lut;
         bool useDynamicArrays = false;
-        float[]? valueBuffer;
-        Array? posUpdateDyn, normalUpdateDyn;
+        BufferSegment<float>? valueBuffer;
+        IBufferSegment? posUpdateDyn, normalUpdateDyn;
         int posUpdateDynElemSize = 0, normalUpdateDynElemSize = 0;
         float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
@@ -147,13 +147,13 @@ namespace Warp9.Viewer
             set { modelMatrix = value; constBuffDirty = true; }
         }
 
-        public void SetValueField(float[] val)
+        public void SetValueField(BufferSegment<float> val)
         {
             valueBuffer = val;
             Commit();
         }
 
-        public void UpdateData<T>(T[] data, MeshSegmentSemantic kind)
+        public void UpdateData<T>(BufferSegment<T> data, MeshSegmentSemantic kind) where T: struct
         {
             switch (kind)
             {
@@ -180,15 +180,13 @@ namespace Warp9.Viewer
             {
                 // TODO: lock this
                 if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                {
-                    ReadOnlySpan<byte> posUpdData = MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize);                        
-                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
+                {              
+                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
                 }
 
                 if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)
                 {
-                    ReadOnlySpan<byte> normalUpdData = MiscUtils.ArrayToBytes(normalUpdateDyn, normalUpdateDynElemSize);
-                    job.TryUpdateDynamicVertexBuffer(ctx, 2, normalUpdData);
+                    job.TryUpdateDynamicVertexBuffer(ctx, 2, normalUpdateDyn.RawData);
                 }
             }
         }
@@ -210,7 +208,7 @@ namespace Warp9.Viewer
                 layout.AddPosition(posFmt, 0);
 
                 if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                    job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), layout, useDynamicArrays);
+                    job.SetVertexBuffer(ctx, 0,posUpdateDyn.RawData, layout, useDynamicArrays);
                 else
                     job.SetVertexBuffer(ctx, 0, posData, layout, useDynamicArrays);
             }
@@ -235,7 +233,7 @@ namespace Warp9.Viewer
             {
                 VertexDataLayout layoutValue = new VertexDataLayout();
                 layoutValue.AddTex(MeshSegmentFormat.Float32, 1, 0);
-                job.SetVertexBuffer(ctx, 1, MemoryMarshal.Cast<float, byte>(valueBuffer.AsSpan()), layoutValue);
+                job.SetVertexBuffer(ctx, 1, valueBuffer.RawData, layoutValue);
             }
 
             DrawCall dcFace, dcWire;

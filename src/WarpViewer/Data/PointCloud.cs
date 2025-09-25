@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Warp9.Data
@@ -69,17 +70,18 @@ namespace Warp9.Data
             return false;
         }
 
-        public bool TryGetRawDataSegment(MeshSegmentSemantic kind, out int offset, out int length)
+        public bool TryGetData<T>(MeshSegmentSemantic kind, out BufferSegment<T> data)
+           where T : struct
         {
-            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg))
+            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg) &&
+                seg is not null &&
+                seg.CanCastTo<T>())
             {
-                offset = seg.Offset;
-                length = seg.Length;
+                data = new BufferSegment<T>(vertexData, seg.Offset, seg.Length);
                 return true;
             }
 
-            offset = 0;
-            length = 0;
+            data = BufferSegment<T>.Empty;
             return false;
         }
 
@@ -95,7 +97,7 @@ namespace Warp9.Data
                     (t) => string.Format("{0}: {1}", t.Key, t.Value.ToString())).ToArray());
         }
 
-        public static PointCloud FromRawSoaPositions(int nv, byte[] vx)
+        public static PointCloud FromRawPositions(int nv, byte[] vx)
         {
             Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> segs = new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>
             {

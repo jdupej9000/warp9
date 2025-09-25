@@ -13,15 +13,17 @@ namespace Warp9.Native
     {
         public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int decim=300, bool negate_mask = false)
         {
-            if (!template.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> templPosSoa) ||
-                !destination.TryGetRawData(MeshSegmentSemantic.Position, -1, out ReadOnlySpan<byte> destPosSoa))
+            if (!template.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> templPos, out MeshSegmentFormat templFmt) ||
+                templFmt != MeshSegmentFormat.Float32x3 ||
+                !destination.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> destPos, out MeshSegmentFormat destFmt) ||
+                destFmt != MeshSegmentFormat.Float32x3)
             {
                 return null;
             }
 
             int nv = template.VertexCount;
             byte[] ret = new byte[nv * 12];
-            destPosSoa.CopyTo(ret.AsSpan());
+            destPos.CopyTo(ret.AsSpan());
 
             PCL_IMPUTE_FLAGS flags = default;
             if (negate_mask) flags |= PCL_IMPUTE_FLAGS.PCL_IMPUTE_NEGATE_MASK;
@@ -39,7 +41,7 @@ namespace Warp9.Native
 
             unsafe
             {
-                fixed (byte* ptempl = &MemoryMarshal.GetReference(templPosSoa))
+                fixed (byte* ptempl = &MemoryMarshal.GetReference(templPos))
                 fixed (byte* pdest = &MemoryMarshal.GetReference(ret.AsSpan()))
                 fixed (int* pallow = &MemoryMarshal.GetReference(allowMask))
                 {
@@ -47,7 +49,7 @@ namespace Warp9.Native
                 }
             }
 
-            return PointCloud.FromRawSoaPositions(nv, ret);
+            return PointCloud.FromRawPositions(nv, ret);
         }
     }
 }
