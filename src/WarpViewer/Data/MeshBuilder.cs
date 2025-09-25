@@ -110,6 +110,15 @@ namespace Warp9.Data
             indexDataEdit = null;
         }
 
+        public void CopyIndicesFrom(Mesh m)
+        {
+            if (m.TryGetIndexData(out ReadOnlySpan<FaceIndices> idx))
+            {
+                indexDataEdit = null;
+                indexData = idx.ToArray();
+            }
+        }
+
         public MeshSegmentBuilder<T> GetSegmentForEditing<T>(MeshSegmentSemantic segmentSemantic, bool tryPreserve)
             where T : struct
         {
