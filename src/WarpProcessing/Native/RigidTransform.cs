@@ -87,8 +87,7 @@ namespace Warp9.Native
         {
             const int d = 3;
             int n = pcls.Count;
-            int specimenDataSize = -1;
-           
+                       
             BufferSegment<Vector3>[] pins = new BufferSegment<Vector3>[n];
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
@@ -96,6 +95,8 @@ namespace Warp9.Native
                 pcls[i].TryGetData(MeshSegmentSemantic.Position, out pins[i]);
                 handles[i] = pins[i].Lock();
             }
+
+            int specimenDataSize = pins[0].Length;
 
             Rigid3[] xforms = new Rigid3[n];
             byte[] mean = new byte[specimenDataSize];

@@ -77,7 +77,7 @@ namespace Warp9.Data
                 seg is not null &&
                 seg.CanCastTo<T>())
             {
-                data = new BufferSegment<T>(vertexData, seg.Offset, seg.Length);
+                data = new BufferSegment<T>(vertexData, seg.Offset, seg.NumItems);
                 return true;
             }
 
