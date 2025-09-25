@@ -47,7 +47,6 @@ namespace warpcore::impl
         int* labels = new int[m+kextra];
         int* centerIdx = labels + m;
         float* tau = new float[m];
-        float ci[3];
 
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -55,7 +54,7 @@ namespace warpcore::impl
         // Cluster points y and find points which are closest to cluster centers -> centerIdx.
         kmeans<3>(y, m, kextra, centers, labels, nullptr);
         for(int i = 0; i < kextra; i++) {
-            get_row<float, 3>(centers, kextra, i, ci);
+            const float* ci = centers + i * 3;
             centerIdx[i] = nearest<3>(y, m, ci);
         }
 
@@ -185,15 +184,20 @@ namespace warpcore::impl
         const float ef = -0.5f / (beta * beta);
         const __m256 ef8 = _mm256_set1_ps(ef);
       
-        const __m256 ycol0 = _mm256_broadcast_ss(y + col);
-        const __m256 ycol1 = _mm256_broadcast_ss(y + m + col);
-        const __m256 ycol2 = _mm256_broadcast_ss(y + 2 * m + col);
+        const __m256 ycol0 = _mm256_broadcast_ss(y + 3 * col);
+        const __m256 ycol1 = _mm256_broadcast_ss(y + 3 * col + 1);
+        const __m256 ycol2 = _mm256_broadcast_ss(y + 3 * col + 2);
 
         const int mch = round_down(m, 8);
         for(int i = 0; i < mch; i += 8) {
-            __m256 d0 = _mm256_sub_ps(_mm256_loadu_ps(y + i), ycol0);
-            __m256 d1 = _mm256_sub_ps(_mm256_loadu_ps(y + m + i), ycol1);
-            __m256 d2 = _mm256_sub_ps(_mm256_loadu_ps(y + 2 * m + i), ycol2);
+            __m256 y0 = _mm256_loadu_ps(y + 3 * i);
+            __m256 y1 = _mm256_loadu_ps(y + 3 * i + 8);
+            __m256 y2 = _mm256_loadu_ps(y + 3 * i + 16);
+            demux(y0, y1, y2);
+
+            __m256 d0 = _mm256_sub_ps(y0, ycol0);
+            __m256 d1 = _mm256_sub_ps(y1, ycol1);
+            __m256 d2 = _mm256_sub_ps(y2, ycol2);
             __m256 d = _mm256_fmadd_ps(d0, d0, _mm256_fmadd_ps(d1, d1, _mm256_mul_ps(d2, d2)));          
             __m256 t = _mm256_exp_ps(_mm256_mul_ps(d, ef8));
             _mm256_storeu_ps(gi + i, t);
@@ -202,7 +206,7 @@ namespace warpcore::impl
         for(int i = mch; i < m; i++) {
             float d = 0;
             for(int j = 0; j < 3; j++) {
-                const float dj = y[j*m+i] - y[j*m+col];
+                const float dj = y[j+i * 3] - y[j+col*3];
                 d += dj * dj;
             }
 
@@ -223,16 +227,20 @@ namespace warpcore::impl
         memset(lambda8, 0, sizeof(__m256) * k);
       
         for (int i = 0; i < m; i++) {
-            const __m256 yi0 = _mm256_broadcast_ss(y + i);
-            const __m256 yi1 = _mm256_broadcast_ss(y + i + m);
-            const __m256 yi2 = _mm256_broadcast_ss(y + i + 2 * m);
+            const __m256 yi0 = _mm256_broadcast_ss(y + 3 * i);
+            const __m256 yi1 = _mm256_broadcast_ss(y + 3 * i + 1);
+            const __m256 yi2 = _mm256_broadcast_ss(y + 3 * i + 2);
 
             for (int j = 0; j < m; j+=8) {
                 const __m256 jmask = _mm256_castsi256_ps(_mm256_cmpgt_epi32(_mm256_set1_epi32(m - j), order));
+                __m256 y0 = _mm256_loadu_ps(y + 3 * j);
+                __m256 y1 = _mm256_loadu_ps(y + 3 * j + 8);
+                __m256 y2 = _mm256_loadu_ps(y + 3 * j + 16);
+                demux(y0, y1, y2);
 
-                const __m256 d0 = _mm256_sub_ps(yi0, _mm256_loadu_ps(y + j));
-                const __m256 d1 = _mm256_sub_ps(yi1, _mm256_loadu_ps(y + j + m));
-                const __m256 d2 = _mm256_sub_ps(yi2, _mm256_loadu_ps(y + j + 2 * m));
+                const __m256 d0 = _mm256_sub_ps(yi0, y0);
+                const __m256 d1 = _mm256_sub_ps(yi1, y1);
+                const __m256 d2 = _mm256_sub_ps(yi2, y2);
 
                 __m256 dist = _mm256_mul_ps(d0, d0);
                 dist = _mm256_fmadd_ps(d1, d1, dist);
