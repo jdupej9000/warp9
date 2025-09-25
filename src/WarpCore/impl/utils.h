@@ -145,7 +145,7 @@ namespace warpcore::impl
     {
         float sum = 0;
         for(int j = 0; j < NDim; j++) {
-            const float d = x[j * n + i0] - x[j * n + i1];
+            const float d = x[j + i0 * NDim] - x[j + i1 * NDim];
             sum += d * d;
         }
 
@@ -165,7 +165,7 @@ namespace warpcore::impl
     template<int NDim>
     int nearest(const float* x, int n, const float* t)
     {
-        const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        /*const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         __m256 bestDist = _mm256_set1_ps(FLT_MAX);
         __m256i bestIdx = _mm256_setzero_si256();
 
@@ -187,12 +187,15 @@ namespace warpcore::impl
 
         float retDist = FLT_MAX;
         int retIdx = 0;
-        reduce_idxmin(bestDist, bestIdx, retDist, retIdx);
+        reduce_idxmin(bestDist, bestIdx, retDist, retIdx);*/
 
+        const int nch = 0;
+        float retDist = FLT_MAX;
+        int retIdx = 0;
         for(int i = nch; i < n; i++) {
             float d = 0;
             for(int k = 0; k < NDim; k++) {
-                const float c = x[k * n + i] - t[k];
+                const float c = x[k + NDim * i] - t[k];
                 d += c * c;
             }
 
