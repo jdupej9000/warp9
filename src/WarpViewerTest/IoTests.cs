@@ -58,15 +58,20 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        public void TeapotW9MeshRoundtripTest()
+        [DataRow(ChunkEncoding.Float32, 1e-6f)]
+        [DataRow(ChunkEncoding.Fixed16, 1.2e-4f)]
+        public void TeapotW9MeshRoundtripTest(ChunkEncoding posEnc, float tol)
         {
             Mesh m0 = TestUtils.LoadObjAsset("teapot.obj", ObjImportMode.PositionsOnly);
             Assert.IsTrue(m0.IsIndexed);
             Assert.AreEqual(6320, m0.FaceCount);
             Assert.AreEqual(3644, m0.VertexCount);
 
+            WarpBinExportSettings wbes = new WarpBinExportSettings();
+            wbes.PositionFormat = posEnc;
+
             using MemoryStream ms1 = new MemoryStream();
-            WarpBinExport.ExportMesh(ms1, m0, null);
+            WarpBinExport.ExportMesh(ms1, m0, wbes);
             ms1.Seek(0, SeekOrigin.Begin);
             Assert.IsTrue(ms1.Length > 0);
 
@@ -85,8 +90,24 @@ namespace Warp9.Test
             Assert.IsTrue(m2.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vx2));
            
             int nv = m2.VertexCount;
+            int numErr = 0;
+            double sumErr = 0, maxErr = 0;
             for (int i = 0; i < nv; i++)
-                Assert.IsTrue(Vector3.Distance(vx0[i], vx2[i]) < 1e-6f);
+            {
+                float dist = Vector3.Distance(vx0[i], vx2[i]);
+                if (dist > tol)
+                    numErr++;
+
+                if(maxErr < dist)
+                    maxErr = dist;
+                
+                sumErr += dist;
+            }
+
+            Console.WriteLine($"mean err = {sumErr / nv}");
+            Console.WriteLine($"max err = {maxErr}");
+
+            Assert.AreEqual(0, numErr);
         }
 
         [TestMethod]
