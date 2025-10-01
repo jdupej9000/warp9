@@ -87,7 +87,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     float* ttemp = tmp + tmp_size;
     float* xt = ttemp + 3 * m;
     float* yt = xt + 3 * n;
-    float* tt = xt + 3 * m;
+    float* tt = yt + 3 * m;
 
     aos_to_soa<float, 3>((const float*)x, n, xt);
     aos_to_soa<float, 3>((const float*)y, m, yt);
@@ -116,7 +116,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     const float* linv = (const float*)init + m;
     const int maxit = cpd->maxit;
 
-    std::memcpy(t, y, sizeof(float) * 3 * m);
+    std::memcpy(tt, yt, sizeof(float) * 3 * m);
 
     int conv = 0;
     float l0 = 0;

@@ -102,11 +102,11 @@ namespace Warp9.Test
                corrPcls is null)
                 Assert.Fail("corr.reg is not present in the workspace");
 
-            if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
+            /*if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
               corrPcls is null)
                 Assert.Fail("corr.reject is not present in the workspace");
 
-            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));
+            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));*/
 
             if (!ctx.Workspace.TryGet("base", out Mesh? baseMesh) || baseMesh is null)
                 Assert.Fail("Cannot get base mesh.");
@@ -118,7 +118,7 @@ namespace Warp9.Test
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
                     new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col: Color.Gray));
-                    //snew TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
+                    //new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,

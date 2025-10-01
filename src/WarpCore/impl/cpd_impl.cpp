@@ -206,7 +206,7 @@ namespace warpcore::impl
         for(int i = mch; i < m; i++) {
             float d = 0;
             for(int j = 0; j < 3; j++) {
-                const float dj = y[j+i * 3] - y[j+col*3];
+                const float dj = y[j + i * 3] - y[j + col * 3];
                 d += dj * dj;
             }
 

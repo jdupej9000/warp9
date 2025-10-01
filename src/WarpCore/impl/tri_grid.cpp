@@ -22,6 +22,7 @@ namespace warpcore::impl
         grid->ncell[0] = k;
         grid->ncell[1] = k;
         grid->ncell[2] = k;
+        grid->nt = nt;
 
         const int num_cells = grid->ncell[0] * grid->ncell[1] * grid->ncell[2];
         grid->cells = new trigrid_cell[num_cells];
@@ -45,7 +46,7 @@ namespace warpcore::impl
         int* idx_range = new int[6 * nt + 6 * 8];
         memset(idx_range, 0, sizeof(int) * (6 * nt + 6 * 8));
         make_cellidx_ranges_aosoa(grid, vert, idx, nv, nt, idx_range);
-
+             
         int* hist = new int[num_cells];
         make_cell_histogram(grid, idx_range, nt, hist);
         const int ng = reduce_add_i32(hist, num_cells);
@@ -170,6 +171,9 @@ namespace warpcore::impl
 
         if (n >= 8) {
             a = _mm256_loadu_si256((const __m256i*)idx);
+
+            if (n == 8)
+                return;
         }
         else {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
@@ -179,6 +183,9 @@ namespace warpcore::impl
 
         if (n >= 16) {
             b = _mm256_loadu_si256((const __m256i*)(idx + 8));
+
+            if (n == 16)
+                return;
         }
         else {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 8), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
@@ -201,7 +208,7 @@ namespace warpcore::impl
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
 
             __m256i idx0, idx1, idx2;
-            load_safe(idx + 3 * i, nt - i, idx0, idx1, idx2);
+            load_safe(idx + 3 * i, 3 * (nt - i), idx0, idx1, idx2);
             demux(idx0, idx1, idx2);
             idx0 = _mm256_mullo_epi32(idx0, three);
             idx1 = _mm256_mullo_epi32(idx1, three);

@@ -86,10 +86,11 @@ namespace warpcore::impl
             __m128 xt = _mm_sub_ps(_mm_loadu_ps(x + 3 * i), center);
 
             __m128 xtr0 = _mm_mul_ps(rot0, _mm_shuffle_ps(xt, xt, 0b00000000));
-            __m128 xtr1 = _mm_mul_ps(rot1, _mm_shuffle_ps(xt, xt, 0b00010101));
-            __m128 xtr2 = _mm_mul_ps(rot2, _mm_shuffle_ps(xt, xt, 0b00101010));
+            __m128 xtr1 = _mm_mul_ps(rot1, _mm_shuffle_ps(xt, xt, 0b01010101));
+            __m128 xtr2 = _mm_mul_ps(rot2, _mm_shuffle_ps(xt, xt, 0b10101010));
+            __m128 xtr = _mm_add_ps(_mm_add_ps(xtr0, xtr1), xtr2);
 
-            yy = _mm_fmadd_ps(scale, _mm_add_ps(_mm_add_ps(xtr0, xtr1), xtr2), yy);
+            yy = _mm_fmadd_ps(scale, xtr, yy);
 
             _mm_storel_pi((__m64*)yi, yy);
             ((int*)yi)[2] = _mm_extract_ps(yy, 2);
