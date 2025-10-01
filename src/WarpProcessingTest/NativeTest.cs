@@ -471,6 +471,12 @@ namespace Warp9.Test
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PclStat3 stat = RigidTransform.MakePclStats(mesh);
 
+            Aabb aabb = new Aabb(stat.x0, stat.x1);
+            mesh.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3>? seg);
+            Assert.IsNotNull(seg);
+            for (int i = 0; i < seg.Count; i++)
+                Assert.IsTrue(aabb.Contains(seg[i]));
+
             Console.WriteLine(string.Format("x0={0}, x1={1}, center={2}, cs={3}",
                 stat.x0.ToString(), stat.x1.ToString(), stat.center.ToString(), stat.size));
         }

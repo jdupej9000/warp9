@@ -30,6 +30,13 @@ namespace Warp9.Data
 
         public static Aabb Invalid => new Aabb();
 
+        public bool Contains(Vector3 pt)
+        {
+            return pt.X >= Min.X && pt.X <= Max.X &&
+                pt.Y >= Min.Y && pt.Y <= Max.Y &&
+                pt.Z >= Min.Z && pt.Z <= Max.Z;
+        }
+
         public override string ToString()
         {
             return $"{Min}-{Max}";
