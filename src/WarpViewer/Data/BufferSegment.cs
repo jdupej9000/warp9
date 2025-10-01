@@ -28,15 +28,16 @@ namespace Warp9.Data
             this.data = null;
         }
 
+        // Initializes a BufferSegment. offset is in Bytes, while length in units of T
         public BufferSegment(byte[] data, int offset, int length)
         {
-            if (data.Length < (offset + length) * Marshal.SizeOf<T>())
+            if (data.Length < (offset + length * Marshal.SizeOf<T>()))
                 throw new ArgumentOutOfRangeException();
 
             typedData = null;
             this.data = data;
             this.offset = offset;
-            this.length = length;
+            this.length = length * Marshal.SizeOf<T>();
         }
 
         T[]? typedData;
@@ -50,17 +51,23 @@ namespace Warp9.Data
         [JsonIgnore]
         public ReadOnlySpan<T> Data => MemoryMarshal.Cast<byte, T>(RawData);
 
+        [JsonPropertyName("data")]
         public T[] DataArray
         {
             get { return Data.ToArray(); }
             set { typedData = value; }
         }
 
+        [JsonIgnore]
         public T this[int i] => Data[i];
 
+        [JsonIgnore]
         public int Count => length / Marshal.SizeOf<T>();
+
+        [JsonIgnore]
         public int Length => length;
 
+        [JsonIgnore]
         public static BufferSegment<T> Empty => new BufferSegment<T>(Array.Empty<byte>(), 0, 0);
 
         public nint Lock()

@@ -83,7 +83,7 @@ namespace Warp9.Test
                 int[] rev = LandmarkUtils.ReverseBilateralLandmarkIndices(pos);
                 string order = string.Join(",", rev.Select((t) => t.ToString()));
 
-                Assert.AreEqual("3,2,1,0,4,5,7,6,8", order);
+                Assert.AreEqual("3,2,1,0,4,5,7,6,8,10,9,13,14,11,12,15,16,17,19,18", order);
             }
         }
     }

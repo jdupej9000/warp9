@@ -57,12 +57,17 @@ namespace Warp9.Test
             Assert.AreEqual(false, m.IsIndexed);
 
             Assert.AreEqual(true, m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> d));
+            Assert.AreEqual(6, d.Length);
             for (int i = 0; i < 6; i++)
             {
                 Assert.AreEqual(i, d[i].X);
                 Assert.AreEqual(10 * i, d[i].Y);
                 Assert.AreEqual(100 * i, d[i].Z);
             }
+
+            Assert.AreEqual(true, m.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> dr, out MeshSegmentFormat fmt));
+            Assert.AreEqual(6 * 12, dr.Length);
+            Assert.AreEqual(MeshSegmentFormat.Float32x3, fmt);
         }
 
         [TestMethod]
