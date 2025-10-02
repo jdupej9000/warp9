@@ -26,6 +26,7 @@ namespace Warp9.Data
         {
             typedData = data;
             this.data = null;
+            this.length = data.Length * Marshal.SizeOf<T>();
         }
 
         // Initializes a BufferSegment. offset is in Bytes, while length in units of T
