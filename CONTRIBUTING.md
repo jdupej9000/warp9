@@ -13,6 +13,14 @@ if(condition) {
 }
 ```
 
+If the body of a conditional expression is a one-liner and there is no `else` or `else if` block,
+it is all right to omit braces.
+
+```cpp
+if(condition)   // OK
+   return;
+```
+
 Pointers have the asterisk attached to the type, not variable name.
 ```cpp
 char* pbuffer;          // OK
@@ -29,6 +37,11 @@ for(int i = 0; i < n; ++i) // NOT OK
 Do not use the alternate function declaration syntax unless unavoidable.
 ```cpp
 auto f(int a, int b) -> int; // NO!
+```
+
+If a function has no arguments, use `void`:
+```cpp
+void action(void); // this is the way
 ```
 
 Feel free to include blank lines whenever it is useful for readability.
@@ -69,6 +82,8 @@ Avoid typeless `new()`.
 List<string> x = new List<string>();    // OK
 List<string> y = new();                 // NO
 ```
+
+Avoid local methods.
 
 Nullable references should be enabled.
 
