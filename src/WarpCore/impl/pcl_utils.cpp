@@ -10,12 +10,9 @@ namespace warpcore::impl
     {
         WCORE_ASSERT(d <= 4);
 
-        const float* xc = x;
-
         __m128 sum = _mm_setzero_ps();
         for (int i = 0; i < m; i++) {
-            sum = _mm_add_ps(sum, _mm_loadu_ps(xc));
-            xc += d;
+            sum = _mm_add_ps(sum, _mm_loadu_ps(x + d * i));
         }
 
         sum = _mm_mul_ps(sum, _mm_set1_ps(1.0f / m));
@@ -34,7 +31,7 @@ namespace warpcore::impl
         __m128 ssq = _mm_setzero_ps();
 
         for (int i = 0; i < m; i++) {
-            __m128 xt = _mm_sub_ps(_mm_loadu_ps(x + 3 * i), center);
+            __m128 xt = _mm_sub_ps(_mm_loadu_ps(x + d * i), center);
             ssq = _mm_fmadd_ps(xt, xt, ssq);
         }
 
