@@ -11,41 +11,35 @@
 
 namespace warpcore::impl
 {
-    float opa_covcomp(const float* x, const float* y, int m, float off, float rcs);
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov);
     float mat3_det(const float* m);
   
-    float opa_covcomp(const float* x, const float* y, int m, float off, float rcs) 
-    {
-        int m8 = round_down(m, 8);
-        const __m256 off8 = _mm256_set1_ps(off);
-        const __m256 rcs8 = _mm256_set1_ps(rcs);
-
-        __m256 accum = _mm256_setzero_ps();
-        for(int i = 0; i < m8; i += 8) {
-            const __m256 xcomp = _mm256_mul_ps(rcs8, _mm256_sub_ps(_mm256_loadu_ps(x + i), off8));
-            accum = _mm256_fmadd_ps(xcomp, _mm256_loadu_ps(y + i), accum);
-        }
-
-        float ret = 0;
-        for(int i = m8; i < m; i++) {
-            float xcomp = rcs * (x[i] - off);
-            ret += xcomp * y[i];
-        }
-
-        return ret + reduce_add(accum);
-    }
 
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov)
     {
-        for(int i = 0; i < d; i++) {
-            const float* xi = x + i * m;
+        __m128 offset = _mm_loadu_ps(xoff);
+        __m128 rcs = _mm_set1_ps(1.0f / xcs);
+        __m128 cov0 = _mm_setzero_ps(), cov1 = _mm_setzero_ps(), cov2 = _mm_setzero_ps();
 
-            for(int j = 0; j < d; j++) {
-                const float* yj = y + j * m;
-                *(cov++) = opa_covcomp(xi, yj, m, xoff[i], 1.0f / xcs);
-            }
+        for (int i = 0; i < m; i++) {
+            __m128 xi = _mm_mul_ps(rcs, _mm_sub_ps(_mm_loadu_ps(x + 3 * i), offset));
+            __m128 yi = _mm_loadu_ps(y + 3 * i);
+
+            cov0 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b00000000), cov0);
+            cov1 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b01010101), cov1);
+            cov2 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b10101010), cov2);
         }
+
+        int* icov = (int*)cov;
+        icov[0] = _mm_extract_ps(cov0, 0);
+        icov[1] = _mm_extract_ps(cov0, 1);
+        icov[2] = _mm_extract_ps(cov0, 2);
+        icov[3] = _mm_extract_ps(cov1, 0);
+        icov[4] = _mm_extract_ps(cov1, 1);
+        icov[5] = _mm_extract_ps(cov1, 2);
+        icov[6] = _mm_extract_ps(cov2, 0);
+        icov[7] = _mm_extract_ps(cov2, 1);
+        icov[8] = _mm_extract_ps(cov2, 2);
     }
 
     int opa_fit(const float* x, const float* y, int d, int m, float* xoffs, float* xcs, float* rot)
@@ -78,7 +72,6 @@ namespace warpcore::impl
         } else {
             memcpy(rot, h, sizeof(float) * d * d);
         }
-
 
         // delete[] cov; NOT NEEDED
 
