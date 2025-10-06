@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.Xml;
 using Warp9.Data;
 using Warp9.IO;
@@ -325,6 +326,13 @@ namespace Warp9.Test
                 faces.Add(new FaceIndices(ib[i], ib[i + 1], ib[i + 2]));
 
             return mb.ToMesh();
+        }
+
+        public static PointCloud MakePcl(params Vector3[] pos)
+        {
+            byte[] vx = new byte[pos.Length * 12];
+            MemoryMarshal.Cast<Vector3, byte>(pos.AsSpan()).CopyTo(vx.AsSpan());
+            return PointCloud.FromRawPositions(pos.Length, vx);
         }
 
         public static PointCloud SelectIndices(PointCloud pcl, Predicate<int> sel)

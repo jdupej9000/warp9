@@ -333,7 +333,26 @@ namespace Warp9.Test
                new TestRenderItem(TriStyle.PointCloud, imputed, wireCol: Color.White));
         }
 
-     
+        [TestMethod]
+        public void TpsTest()
+        {
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+
+            PointCloud pclFrom = TestUtils.MakePcl(
+                new Vector3(-4, -4, -4), new Vector3(-4, -4, 4), new Vector3(-4, 4, -4), new Vector3(-4, 4, 4),
+                new Vector3(4, -4, -4), new Vector3(4, -4, 4), new Vector3(4, 4, -4), new Vector3(4, 4, 4));
+
+            PointCloud pclTo = TestUtils.MakePcl(
+                new Vector3(-4, -4, -4), new Vector3(-4, -4, 4), new Vector3(-4, 4, -4), new Vector3(-4, 4, 4),
+                 new Vector3(6, -6, -6), new Vector3(6, -6, 6), new Vector3(6, 6, -6), new Vector3(6, 6, 6));
+
+            using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
+            Mesh twisted = Mesh.FromPointCloud(tps.TransformPosition(teapot), teapot);
+
+            TestUtils.Render("TpsTest_0.png",
+                new TestRenderItem(TriStyle.MeshFilled, twisted, col: Color.DarkCyan));
+        }
+
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);

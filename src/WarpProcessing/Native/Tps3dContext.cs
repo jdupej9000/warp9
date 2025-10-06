@@ -44,6 +44,14 @@ namespace Warp9.Native
             }
         }
 
+        public PointCloud TransformPosition(PointCloud pointCloud)
+        {
+            int nv = pointCloud.VertexCount;
+            byte[] dest = new byte[nv * 12];
+            pointCloud.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> srcRaw, out _);
+            Transform(MemoryMarshal.Cast<byte, Vector3>(srcRaw), MemoryMarshal.Cast<byte, Vector3>(dest.AsSpan()));
+            return PointCloud.FromRawPositions(nv, dest);
+        }
 
         public static Tps3dContext Fit(PointCloud source, PointCloud target)
         {
