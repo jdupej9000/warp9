@@ -45,19 +45,27 @@ namespace warpcore::impl
 	}
 
 	// If allow[i] != neg, transforms x[i] and saves y[i] for i=0..m. x==y is permitted
-	void tps3d::transform_soa(float* y, const float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
+	void tps3d::transform_aos(float* y, const float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
 	{
-		const int32_t* allow_mask = (const int32_t*)allow;
-		uint32_t toggle = neg ? 0xffffffff : 0x0;
+		if (allow != nullptr) {
+			const int32_t* allow_mask = (const int32_t*)allow;
+			uint32_t toggle = neg ? 0xffffffff : 0x0;
 
-		// TODO: optimize
-		alignas(16) float row[4];
-		for (int i = 0; i < m; i++) {
-			if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
-				get_row<float, 3>(x, m, i, row);
+			// TODO: optimize
+			for (int i = 0; i < m; i++) {
+				if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
+					const float* row = x + 3 * i;
+					p3f transformed = transform(p3f_set(row), noaffine);
+
+					p3f_store(y + 3 * i, transformed);
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < m; i++) {
+				const float* row = x + 3 * i;
 				p3f transformed = transform(p3f_set(row), noaffine);
-				_mm_storeu_ps(row, transformed);
-				put_row<float, 3>(y, m, i, row);
+				p3f_store(y + 3 * i, transformed);				
 			}
 		}
 	}
@@ -86,7 +94,7 @@ namespace warpcore::impl
 		}
 	}*/
 
-	void tps_fit3d_soa(tps3d* tps, const float* src, const float* dest)
+	void tps_fit3d_aos(tps3d* tps, const float* src, const float* dest)
 	{
 		int n = tps->num_pts();
 		int n4 = n + 4;
@@ -97,20 +105,24 @@ namespace warpcore::impl
 		memset(b, 0, sizeof(float) * 3 * n4);
 
 		for (int i = 0; i < n; i++) {
+			const float* srci = src + 3 * i;
+
 			m[i] = 1;
-			m[n4 + i] = src[i];
-			m[2 * n4 + i] = src[n + i];
-			m[3 * n4 + i] = src[2 * n + i];
+			m[n4 + i] = srci[0];
+			m[2 * n4 + i] = srci[1];
+			m[3 * n4 + i] = srci[2];
 
 			m[n + n4 * (4 + i)] = 1;
-			m[n + 1 + n4 * (4 + i)] = src[i];
-			m[n + 2 + n4 * (4 + i)] = src[n + i];
-			m[n + 3 + n4 * (4 + i)] = src[2 * n + i];
+			m[n + 1 + n4 * (4 + i)] = srci[0];
+			m[n + 2 + n4 * (4 + i)] = srci[1];
+			m[n + 3 + n4 * (4 + i)] = srci[2];
 
 			for (int j = i; j < n; j++) {
-				float dx = src[i] - src[j];
-				float dy = src[i + n] - src[j + n];
-				float dz = src[i + 2 * n] - src[j + 2 * n];
+				const float* srcj = src + 3 * j;
+
+				float dx = srci[0] - srcj[0];
+				float dy = srci[1] - srcj[1];
+				float dz = srci[2] - srcj[2];
 				float u = sqrtf(dx * dx + dy * dy + dz * dz);
 				u = u * u * u;
 
@@ -118,9 +130,10 @@ namespace warpcore::impl
 				m[j + n4 * (4 + i)] = u;
 			}
 
-			b[i] = dest[i];
-			b[i + n4] = dest[i + n];
-			b[i + 2 * n4] = dest[i + 2 * n];
+			const float* desti = dest + 3 * i;
+			b[i] = desti[0];
+			b[i + n4] = desti[1];
+			b[i + 2 * n4] = desti[2];
 		}
 
 		int* piv = new int[n4];

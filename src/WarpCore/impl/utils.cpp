@@ -54,7 +54,7 @@ namespace warpcore::impl
 		}
 	}
 
-	void range(const float* x, int n, float& min, float& max)
+	/*void range(const float* x, int n, float& min, float& max)
 	{
 		__m256 r0v = _mm256_set1_ps(FLT_MAX), r1v = _mm256_set1_ps(FLT_MIN);
 
@@ -75,7 +75,7 @@ namespace warpcore::impl
 
 		min = r0;
 		max = r1;
-	}
+	}*/
 
 	size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg)
 	{
@@ -108,11 +108,31 @@ namespace warpcore::impl
 
 	size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg)
 	{
+		constexpr size_t BLK = 32;
+		size_t nb = round_down((int)n, (int)BLK);
+		const int32_t* allow_mask = (const int32_t*)allow;
+		int32_t mask_mod = neg ? 0xffffffff : 0x0;
 		size_t ret = 0;
-		for (int i = 0; i < dim; i++) {
-			ret = compress(xc, x, allow, n, neg);
-			xc += ret;
-			x += n;
+
+		for (size_t ib = 0; ib < nb; ib += BLK) {
+			int32_t m = *(allow_mask++) ^ mask_mod;
+			for (size_t i = 0; i < BLK; i++) {
+				if ((m >> i) & 0x1) {
+					for(int k = 0; k < dim; k++)
+						*(xc++) = x[(ib + i) * dim + k];
+
+					ret++;
+				}
+			}
+		}
+
+		int32_t m = *(allow_mask) ^ mask_mod;
+		for (size_t i = 0; i < std::min(BLK, n - nb); i++) {
+			if ((m >> i) & 0x1) {
+				for (int k = 0; k < dim; k++)
+					*(xc++) = x[(nb + i) * dim + k];
+				ret++;
+			}
 		}
 
 		return ret;

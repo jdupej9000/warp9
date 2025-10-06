@@ -15,6 +15,7 @@ namespace warpcore
     p3i p3i_set(int x) noexcept;
     p3i p3i_set(int x, int y, int z) noexcept;
     p3i p3i_set(const int* x) noexcept;
+    void p3f_store(float* x, p3f pt);
     p3i p3f_to_p3i(const p3f a) noexcept;
     p3f p3i_to_p3f(const p3i a) noexcept;
     void p3f_to_int(const p3f a, int& x, int& y, int& z) noexcept;

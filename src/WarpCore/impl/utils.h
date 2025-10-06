@@ -13,7 +13,7 @@ namespace warpcore::impl
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
     void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
-    void range(const float* x, int n, float& min, float& max);
+    //void range(const float* x, int n, float& min, float& max);
     size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg);
     void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
     size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg);
@@ -57,10 +57,9 @@ namespace warpcore::impl
     template<typename T, int NDim>
     void get_rows(const T* x, int n, const int* idx, int nidx, T* r)
     {
-        for (int j = 0; j < NDim; j++) {
-            // TODO: this can become an avx2 gather if slow
-            for (int i = 0; i < nidx; i++) {
-                r[j * nidx + i] = x[j * n + idx[i]];
+        for (int i = 0; i < nidx; i++) {
+            for (int j = 0; j < NDim; j++) {
+                r[NDim * i + j] = x[NDim * idx[i] + j];
             }
         }
     }
