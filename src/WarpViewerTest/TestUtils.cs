@@ -138,7 +138,7 @@ namespace Warp9.Test
             return m;
         }
 
-        public static PointCloud MakeRegularGridLines(Vector3 p0, Vector3 p1, int numTicks)
+        public static PointCloud MakeRegularGridLines(Vector3 p0, Vector3 p1, int numTicks, int planes=7)
         {
             MeshBuilder mb = new MeshBuilder();
             List<Vector3> seg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
@@ -158,17 +158,26 @@ namespace Warp9.Test
                         Vector3 pk0 = p0 + dp * k;
                         Vector3 pk1 = p0 + dp * (k + 1);
 
-                        // parallel to x-axis
-                        seg.Add(new Vector3(pk0.X, pi.Y, pj.Z));
-                        seg.Add(new Vector3(pk1.X, pi.Y, pj.Z));
+                        if ((planes & 1) == 1)
+                        {
+                            // parallel to x-axis
+                            seg.Add(new Vector3(pk0.X, pi.Y, pj.Z));
+                            seg.Add(new Vector3(pk1.X, pi.Y, pj.Z));
+                        }
 
-                        // parallel to y-axis
-                        seg.Add(new Vector3(pi.X, pk0.Y, pj.Z));
-                        seg.Add(new Vector3(pi.X, pk1.Y, pj.Z));
+                        if ((planes & 2) == 2)
+                        {
+                            // parallel to y-axis
+                            seg.Add(new Vector3(pi.X, pk0.Y, pj.Z));
+                            seg.Add(new Vector3(pi.X, pk1.Y, pj.Z));
+                        }
 
-                        // parallel to z-axis
-                        seg.Add(new Vector3(pi.X, pj.Y, pk0.Z));
-                        seg.Add(new Vector3(pi.X, pj.Y, pk1.Z));
+                        if ((planes & 4) == 4)
+                        {
+                            // parallel to z-axis
+                            seg.Add(new Vector3(pi.X, pj.Y, pk0.Z));
+                            seg.Add(new Vector3(pi.X, pj.Y, pk1.Z));
+                        }
                     }                  
                 }
             }

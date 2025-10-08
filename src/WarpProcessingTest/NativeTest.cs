@@ -336,22 +336,25 @@ namespace Warp9.Test
         [TestMethod]
         public void TpsTest()
         {
-            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-3, -3, -3), new Vector3(3, 3, 3), 8);
+            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-3, -3, -3), new Vector3(3, 3, 3), 8, 6);
 
             PointCloud pclFrom = TestUtils.MakePcl(
                 new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
-                new Vector3(3, -3, -3), new Vector3(3, -3, 3), new Vector3(3, 3, -3), new Vector3(3, 3, 3));
+                new Vector3(3, -3, -3), new Vector3(3, -3, 3), new Vector3(3, 3, -3), new Vector3(3, 3, 3),
+                new Vector3(0, 0, 0));
 
             PointCloud pclTo = TestUtils.MakePcl(
                 new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
-                 new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2));
+                 new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
+                 new Vector3(-3, 0, 0));
+
 
             using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
             PointCloud twisted = tps.TransformPosition(pcl);
 
             TestUtils.Render("TpsTest_0.png",
-                new TestRenderItem(TriStyle.Landmarks, pclFrom, col: Color.Red, lmScale: 0.1f),
-                new TestRenderItem(TriStyle.Landmarks, pclTo, col: Color.Green, lmScale: 0.1f),
+                new TestRenderItem(TriStyle.Landmarks, pclFrom, col: Color.Red, lmScale: 0.04f),
+                new TestRenderItem(TriStyle.Landmarks, pclTo, col: Color.Green, lmScale: 0.04f),
                 new TestRenderItem(TriStyle.LineSegments, twisted, wireCol: Color.FromArgb(32, Color.White), bm: BlendMode.Additive));
         }
 
