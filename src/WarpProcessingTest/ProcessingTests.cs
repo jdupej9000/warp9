@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Model;
 using Warp9.Processing;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9.Test
@@ -85,6 +86,24 @@ namespace Warp9.Test
 
                 Assert.AreEqual("3,2,1,0,4,5,7,6,8,10,9,13,14,11,12,15,16,17,19,18", order);
             }
+        }
+
+        [TestMethod]
+        [DataRow(new bool[4] { true, false, true, false }, 1, new int[1] { 0b1010 })]
+        [DataRow(new bool[4] { true, false, true, false }, 2, new int[1] { 0b11001100 })]
+        [DataRow(new bool[4] { true, false, true, false }, 3, new int[1] { 0b111000111000 })]
+        public void MakeBitMaskTest(bool[] mask, int rep, int[] bin)
+        {
+            int[] binRes = BitMask.MakeBitMask(mask.AsSpan(), rep);
+            Assert.AreEqual(bin.Length, binRes.Length);
+
+            int numErr = 0;
+            for (int i = 0; i < binRes.Length; i++)
+            {
+                if (bin[i] != binRes[i]) numErr++;
+            }
+
+            Assert.AreEqual(0, numErr);
         }
     }
 }
