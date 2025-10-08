@@ -31,7 +31,7 @@ namespace warpcore::impl
 
         for(int c = 1; c < k; c++) {
             for(int j = 0; j < n; j++) {
-                const float dd = distsq<NDim>(x, n, j, ci[c-1]);
+                const float dd = distsq<NDim>(x, j, ci[c-1]);
                 if(dd < d[j])
                     d[j] = dd;
             }

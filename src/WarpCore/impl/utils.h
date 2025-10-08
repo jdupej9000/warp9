@@ -140,7 +140,7 @@ namespace warpcore::impl
     }
 
     template<int NDim>
-    inline float distsq(const float* x, int n, int i0, int i1)
+    float distsq(const float* x, int i0, int i1)
     {
         float sum = 0;
         for(int j = 0; j < NDim; j++) {
@@ -223,7 +223,7 @@ namespace warpcore::impl
         float d = FLT_MAX;
         int c = 0;
         for (int j = 0; j < k; j++) {
-            const float d0 = distsq<NDim>(x, n, i, ci[j]);
+            const float d0 = distsq<NDim>(x, i, ci[j]);
             if (d0 < d) {
                 d = d0;
                 c = j;

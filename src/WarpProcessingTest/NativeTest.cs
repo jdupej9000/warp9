@@ -61,7 +61,7 @@ namespace Warp9.Test
         private static PointCloud TranslateTwistPcl(PointCloud pcl, Vector3 t, float twist)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, true).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -331,7 +331,7 @@ namespace Warp9.Test
             for(int i = 0; i < nv; i++)
                 allow[i] = true;
 
-            for(int i = nv/2; i < nv; i++)
+            for(int i = nv/4; i < nv; i++)
                 allow[i] = false;
 
             PointCloud? imputed = MeshImputation.ImputePositions(teapot, twisted, BitMask.MakeBitMask(allow), 30);
