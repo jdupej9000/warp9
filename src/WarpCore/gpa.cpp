@@ -80,6 +80,9 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
     outer.rot[6] = 0; outer.rot[7] = 0; outer.rot[8] = 1;
     outer.offs[0] *= -1; outer.offs[1] *= -1; outer.offs[2] *= -1;
 
+   /// for (int i = 0; i < d * m; i++)
+    //    std::cout << t[i] << " -> " << temp_mean[i] << std::endl;
+
     // transform floating onto the normalized template
     rigid3 inner;
     warpcore::impl::opa_fit(x, temp_mean, d, m, inner.offs, &inner.cs, inner.rot);

@@ -108,7 +108,7 @@ namespace warpcore::impl
         // returns h(x) = g(f(x))
         ret->cs = f->cs * g->cs;
 
-        float csr = 1.0f / f->cs;
+        float csr = ret->cs;     
         ret->offs[0] = f->offs[0] + csr * (R[0] * g->offs[0] + R[1] * g->offs[1] + R[2] * g->offs[2]);
         ret->offs[1] = f->offs[1] + csr * (R[3] * g->offs[0] + R[4] * g->offs[1] + R[5] * g->offs[2]);
         ret->offs[2] = f->offs[2] + csr * (R[6] * g->offs[0] + R[7] * g->offs[1] + R[8] * g->offs[2]);
