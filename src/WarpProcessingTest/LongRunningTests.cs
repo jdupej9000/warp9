@@ -102,11 +102,11 @@ namespace Warp9.Test
                 rigidPcls is null)
                 Assert.Fail("corr.reg is not present in the workspace");
 
-            /*if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
+            if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
               corrPcls is null)
                 Assert.Fail("corr.reject is not present in the workspace");
 
-            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));*/
+            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));
 
             if (!ctx.Workspace.TryGet("base", out Mesh? baseMesh) || baseMesh is null)
                 Assert.Fail("Cannot get base mesh.");

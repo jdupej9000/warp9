@@ -357,7 +357,6 @@ namespace Warp9.Test
                  new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
                  new Vector3(-3, 0, 0));
 
-
             using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
             PointCloud twisted = tps.TransformPosition(pcl);
 
@@ -365,6 +364,32 @@ namespace Warp9.Test
                 new TestRenderItem(TriStyle.Landmarks, pclFrom, col: Color.Red, lmScale: 0.04f),
                 new TestRenderItem(TriStyle.Landmarks, pclTo, col: Color.Green, lmScale: 0.04f),
                 new TestRenderItem(TriStyle.LineSegments, twisted, wireCol: Color.FromArgb(32, Color.White), bm: BlendMode.Additive));
+        }
+
+        [TestMethod]
+        public void TpsTrivialTest()
+        {
+            PointCloud pclFrom = TestUtils.MakePcl(
+                new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
+                new Vector3(3, -3, -3), new Vector3(3, -3, 3), new Vector3(3, 3, -3), new Vector3(3, 3, 3),
+                new Vector3(0, 0, 0));
+
+            PointCloud pclTo = TestUtils.MakePcl(
+                new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
+                 new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
+                 new Vector3(-3, 0, 0));
+
+            using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
+            PointCloud twisted = tps.TransformPosition(pclFrom);
+
+            Assert.IsTrue(pclFrom.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posFrom));
+            Assert.IsTrue(pclFrom.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posTo));
+
+            for (int i = 0; i < pclFrom.VertexCount; i++)
+            {
+                float d = Vector3.Distance(posFrom[i], posTo[i]);
+                Assert.IsTrue(d < 1e-5f);
+            }
         }
 
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
