@@ -36,7 +36,7 @@ namespace warpcore::impl
 		const float* w = ptr_w();
 		int n = num_pts();
 		for (int i = 0; i < n; i++) {			
-			float d = p3f_dist(p3f_set(p[i], p[i + n], p[i + 2 * n]), x);
+			float d = p3f_dist(p3f_set(p[3 * i], p[3 * i + 1], p[3 * i + 2]), x);
 			float u = d * d * d;
 			ret = p3f_fma(u, p3f_set(w[i], w[i + n], w[i + 2 * n]), ret);
 		}
