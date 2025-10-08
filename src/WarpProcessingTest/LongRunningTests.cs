@@ -123,7 +123,16 @@ namespace Warp9.Test
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
                 new TestRenderItem(TriStyle.MeshFilled, baseMesh, col: Color.Gray));
-                
+
+            if (!ctx.Workspace.TryGet("rigid", out Gpa? gpa) ||
+                gpa is null)
+                Assert.Fail("corr.reg is not present in the workspace");
+            List<TestRenderItem> lmrend = new List<TestRenderItem>();
+            for (int i = 0; i < corrPcls.Count; i++)            
+                lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.0125f));
+            lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.05f));
+            TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
+
         }
     }
 }

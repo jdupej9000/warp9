@@ -336,7 +336,7 @@ namespace Warp9.Test
         [TestMethod]
         public void TpsTest()
         {
-            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-3, -3, -3), new Vector3(3, 3, 3), 4);
+            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-3, -3, -3), new Vector3(3, 3, 3), 8);
 
             PointCloud pclFrom = TestUtils.MakePcl(
                 new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
