@@ -121,7 +121,7 @@ namespace Warp9.Scene
             ri.RenderCull = false;
             ri.FillColor = FlatColor;
             ri.PointWireColor = System.Drawing.Color.Black;
-            ri.RenderBlend = false;
+            ri.RenderBlend = BlendMode.NoBlend;
             ri.RenderDepth = true;
         }
 

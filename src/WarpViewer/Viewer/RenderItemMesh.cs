@@ -47,45 +47,53 @@ namespace Warp9.Viewer
         MeshRenderStyle style;
         bool constBuffDirty = true;
 
-        bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderBlend = false;
+        BlendMode renderBlend = BlendMode.Default;
+        bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderLineSegments = false;
 
         private static VertexDataLayout FakeNormalsLayout = new VertexDataLayout(false)
             .AddNormal(MeshSegmentFormat.Float32x3, 0);
 
+
+        public bool RenderLineSegments
+        {
+            get { return renderLineSegments; }
+            set { renderLineSegments = value; constBuffDirty = true; }
+        }
+
         public bool RenderPoints
         {
             get { return renderPoints; }
-            set { renderPoints = value; constBuffDirty = true; ; }
+            set { renderPoints = value; constBuffDirty = true; }
         }
 
         public bool RenderWireframe
         {
             get { return renderWire; }
-            set { renderWire = value; constBuffDirty = true; ; }
+            set { renderWire = value; constBuffDirty = true; }
         }
 
         public bool RenderFace
         {
             get { return renderFace; }
-            set { renderFace = value; constBuffDirty = true; ; }
+            set { renderFace = value; constBuffDirty = true; }
         }
 
         public bool RenderCull
         {
             get { return renderCull; }
-            set { renderCull = value; constBuffDirty = true; ; }
+            set { renderCull = value; constBuffDirty = true; }
         }
 
         public bool RenderDepth
         {
             get { return renderDepth; }
-            set { renderDepth = value; constBuffDirty = true; ; }
+            set { renderDepth = value; constBuffDirty = true; }
         }
 
-        public bool RenderBlend
+        public BlendMode RenderBlend
         {
-            get { return renderDepth; }
-            set { renderDepth = value; constBuffDirty = true; ; }
+            get { return renderBlend; }
+            set { renderBlend = value; constBuffDirty = true; }
         }
 
         public float ValueMin
@@ -236,6 +244,10 @@ namespace Warp9.Viewer
                 job.SetVertexBuffer(ctx, 1, valueBuffer.RawData, layoutValue);
             }
 
+            SharpDX.Direct3D.PrimitiveTopology topo = renderLineSegments ?
+                SharpDX.Direct3D.PrimitiveTopology.LineList :
+                SharpDX.Direct3D.PrimitiveTopology.TriangleList;
+
             DrawCall dcFace, dcWire;
             if (mesh.IsIndexed)
             { 
@@ -246,17 +258,13 @@ namespace Warp9.Viewer
                 }
 
                 job.SetIndexBuffer(ctx, MemoryMarshal.Cast<FaceIndices, byte>(idxData), SharpDX.DXGI.Format.R32_UInt);
-                dcFace = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.FaceCount * 3);
-                dcWire = job.SetDrawCall(1, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.FaceCount * 3);
+                dcFace = job.SetDrawCall(0, true, topo, 0, mesh.FaceCount * 3);
+                dcWire = job.SetDrawCall(1, true, topo, 0, mesh.FaceCount * 3);
             }
             else
             {
-                dcFace = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.VertexCount);
-                dcWire = job.SetDrawCall(1, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.VertexCount);
+                dcFace = job.SetDrawCall(0, false, topo, 0, mesh.VertexCount);
+                dcWire = job.SetDrawCall(1, false, topo, 0, mesh.VertexCount);
             }
 
             DrawCall dcPoints = job.SetDrawCall(2, false, SharpDX.Direct3D.PrimitiveTopology.PointList,
@@ -321,7 +329,7 @@ namespace Warp9.Viewer
                 if (renderCull) dcFace.RastMode |= RasterizerMode.CullBack;
 
                 dcFace.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcFace.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcFace.BlendMode = renderBlend;
             }
 
             if (job.TryGetDrawCall(1, out DrawCall? dcWire) && dcWire is not null)
@@ -330,14 +338,14 @@ namespace Warp9.Viewer
                 if (renderCull) dcWire.RastMode |= RasterizerMode.CullBack;
 
                 dcWire.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcWire.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcWire.BlendMode = renderBlend;
             }
 
             if (job.TryGetDrawCall(2, out DrawCall? dcPoint) && dcPoint is not null)
             {
                 dcPoint.RastMode = RasterizerMode.Solid;
                 dcPoint.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcPoint.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcPoint.BlendMode = renderBlend;
             }
         }
 

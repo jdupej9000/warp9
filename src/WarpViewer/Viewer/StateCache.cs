@@ -21,7 +21,9 @@ namespace Warp9.Viewer
     {
         Default = 0x0,
 
+        NoBlend = Default,
         AlphaBlend = 0x1,
+        Additive = 0x2,
 
         Invalid = 0x7fffffff
     }
@@ -100,8 +102,16 @@ namespace Warp9.Viewer
         {
             BlendStateDescription desc = new BlendStateDescription();
 
-            if (mode.HasFlag(BlendMode.AlphaBlend))
+            if (mode == BlendMode.NoBlend)
             {
+                desc.IndependentBlendEnable = false;
+                desc.AlphaToCoverageEnable = false;
+                desc.RenderTarget[0].IsBlendEnabled = false;
+            }
+            else if (mode == BlendMode.AlphaBlend)
+            {
+                desc.IndependentBlendEnable = false;
+                desc.AlphaToCoverageEnable = false;
                 desc.RenderTarget[0].IsBlendEnabled = true;
                 desc.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
                 desc.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
@@ -109,6 +119,19 @@ namespace Warp9.Viewer
                 desc.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
                 desc.RenderTarget[0].DestinationAlphaBlend = BlendOption.One;
                 desc.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
+                desc.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+            }
+            else if (mode == BlendMode.Additive)
+            {
+                desc.IndependentBlendEnable = false;
+                desc.AlphaToCoverageEnable = false;
+                desc.RenderTarget[0].IsBlendEnabled = true;
+                desc.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+                desc.RenderTarget[0].DestinationBlend = BlendOption.One;
+                desc.RenderTarget[0].BlendOperation = BlendOperation.Add;
+                desc.RenderTarget[0].SourceAlphaBlend = BlendOption.One;
+                desc.RenderTarget[0].DestinationAlphaBlend = BlendOption.One;
+                desc.RenderTarget[0].AlphaBlendOperation = BlendOperation.Maximum;
                 desc.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
             }
 

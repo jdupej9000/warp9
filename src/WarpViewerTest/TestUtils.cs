@@ -19,18 +19,20 @@ namespace Warp9.Test
         PointCloud,
         MeshFilled,
         MeshWire,
-        Landmarks
+        Landmarks,
+        LineSegments
     }
 
     public class TestRenderItem
     {
-        public TestRenderItem(TriStyle style, object data, Color? col = null, Color? wireCol = null, MeshRenderStyle? mrs = null, float lmScale=0.1f)
+        public TestRenderItem(TriStyle style, object data, Color? col = null, Color? wireCol = null, MeshRenderStyle? mrs = null, float lmScale=0.1f, BlendMode bm=BlendMode.Default)
         {
             Data = data;
             Style = style;
             Color = col ?? Color.Gray;
             WireColor = wireCol ?? Color.White;
             LandmarkScale = lmScale;
+            Blend = bm;
 
             MeshStyle = mrs ?? style switch
             {
@@ -38,6 +40,7 @@ namespace Warp9.Test
                 TriStyle.MeshFilled => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
                 TriStyle.MeshWire => MeshRenderStyle.ColorFlat,
                 TriStyle.Landmarks => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
+                TriStyle.LineSegments => MeshRenderStyle.ColorFlat,
                 _ => throw new ArgumentException()
             };
         }
@@ -47,10 +50,11 @@ namespace Warp9.Test
         TriStyle Style;
         Color Color, WireColor;
         MeshRenderStyle MeshStyle;
+        BlendMode Blend;
 
         public RenderItemBase ToRenderItem()
         {
-            if (Style == TriStyle.PointCloud || Style == TriStyle.MeshFilled || Style == TriStyle.MeshWire)
+            if (Style == TriStyle.PointCloud || Style == TriStyle.MeshFilled || Style == TriStyle.MeshWire || Style == TriStyle.LineSegments)
             {
                 RenderItemMesh ri = new RenderItemMesh();
 
@@ -60,16 +64,17 @@ namespace Warp9.Test
                 }
                 else if (Data is PointCloud pcl)
                 {
-                    if (Style != TriStyle.PointCloud)
+                    if (Style != TriStyle.PointCloud && Style != TriStyle.LineSegments)
                         throw new InvalidOperationException();
 
                     ri.Mesh = Mesh.FromPointCloud(pcl);
                 }
 
+                ri.RenderLineSegments = Style == TriStyle.LineSegments;
                 ri.RenderPoints = Style == TriStyle.PointCloud;
-                ri.RenderWireframe = Style == TriStyle.MeshWire;
+                ri.RenderWireframe = Style == TriStyle.MeshWire || Style == TriStyle.LineSegments;
                 ri.RenderFace = Style == TriStyle.MeshFilled;
-                ri.RenderBlend = true;
+                ri.RenderBlend = Blend;
                 ri.RenderCull = true;
                 ri.RenderDepth = true;
                 ri.Style = MeshStyle;
@@ -132,6 +137,45 @@ namespace Warp9.Test
 
             return m;
         }
+
+        public static PointCloud MakeRegularGridLines(Vector3 p0, Vector3 p1, int numTicks)
+        {
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> seg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+
+            Vector3 dp = (p1 - p0) / numTicks;
+
+            for (int i = 0; i <= numTicks; i++)
+            {
+                Vector3 pi = p0 + dp * i;
+
+                for (int j = 0; j <= numTicks; j++)
+                {
+                    Vector3 pj = p0 + dp * j;
+
+                    for (int k = 0; k < numTicks; k++)
+                    {
+                        Vector3 pk0 = p0 + dp * k;
+                        Vector3 pk1 = p0 + dp * (k + 1);
+
+                        // parallel to x-axis
+                        seg.Add(new Vector3(pk0.X, pi.Y, pj.Z));
+                        seg.Add(new Vector3(pk1.X, pi.Y, pj.Z));
+
+                        // parallel to y-axis
+                        seg.Add(new Vector3(pi.X, pk0.Y, pj.Z));
+                        seg.Add(new Vector3(pi.X, pk1.Y, pj.Z));
+
+                        // parallel to z-axis
+                        seg.Add(new Vector3(pi.X, pj.Y, pk0.Z));
+                        seg.Add(new Vector3(pi.X, pj.Y, pk1.Z));
+                    }                  
+                }
+            }
+
+            return mb.ToPointCloud();
+        }
+
 
         public static Bitmap RenderAsHeatmap(int width, int height, float min, float max, Func<int, int, float> fun, Lut? customLut = null)
         {
@@ -254,7 +298,12 @@ namespace Warp9.Test
 
         public static void Render(string fileName, params TestRenderItem[] items)
         {
-            Render(CreateRenderer(false), fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
+            Render(fileName, Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f), items);
+        }
+
+        public static void Render(string fileName, Matrix4x4 modelMat, params TestRenderItem[] items)
+        {
+            Render(CreateRenderer(false), fileName, modelMat, items);
         }
 
         public static void Render(HeadlessRenderer rend, string fileName, Matrix4x4 modelMat, params TestRenderItem[] items)

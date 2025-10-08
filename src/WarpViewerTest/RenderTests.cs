@@ -2,6 +2,8 @@
 using System;
 using System.Drawing;
 using System.Numerics;
+using System.Security.Cryptography;
+using Warp9.Data;
 using Warp9.Viewer;
 
 namespace Warp9.Test
@@ -317,6 +319,30 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("ColorScaleCubeEstNormalsPhongTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void LineSegmentsAdditiveTest()
+        {
+            (HeadlessRenderer rend, RenderItemCube? cube) = CreateRenderer(false);
+
+            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-1, -1, -1), new Vector3(1, 1, 1), 8);
+
+            RenderItemMesh rim = new RenderItemMesh();
+            rim.RenderLineSegments = true;
+            rim.RenderWireframe = true;
+            rim.PointWireColor = Color.FromArgb(32, Color.Red);
+            rim.RenderBlend = BlendMode.Additive;
+            rim.RenderCull = false;
+            rim.RenderDepth = false;
+            rim.Mesh = Mesh.FromPointCloud(pcl);
+            rend.AddRenderItem(rim);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("LineSegmentsAdditiveTest_0.png", bmp);
         }
     }
 }

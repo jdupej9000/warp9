@@ -173,9 +173,9 @@ namespace Warp9.Viewer
             {
                 dcFace.RastMode = RasterizerMode.Solid;
                 //if (renderCull) dcFace.RastMode |= RasterizerMode.CullBack;
-
+         
                 dcFace.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                //dcFace.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcFace.BlendMode = BlendMode.NoBlend;
             }
         }
 
