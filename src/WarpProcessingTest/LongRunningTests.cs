@@ -99,7 +99,7 @@ namespace Warp9.Test
                 Assert.Fail("corr.reg is not present in the workspace");
 
             if (!ctx.Workspace.TryGet("rigid.reg", out List<Mesh>? rigidPcls) ||
-               corrPcls is null)
+                rigidPcls is null)
                 Assert.Fail("corr.reg is not present in the workspace");
 
             /*if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
@@ -117,8 +117,7 @@ namespace Warp9.Test
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col: Color.Gray));
-                    //new TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
+                    new TestRenderItem(TriStyle.MeshWire, Mesh.FromPointCloud(corrPcls[i], baseMesh), wireCol: Color.Gray));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
