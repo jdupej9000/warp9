@@ -129,8 +129,8 @@ namespace Warp9.Test
                 Assert.Fail("corr.reg is not present in the workspace");
             List<TestRenderItem> lmrend = new List<TestRenderItem>();
             for (int i = 0; i < corrPcls.Count; i++)            
-                lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.0125f));
-            lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.05f));
+                lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.01f));
+            lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.01f));
             TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
 
         }

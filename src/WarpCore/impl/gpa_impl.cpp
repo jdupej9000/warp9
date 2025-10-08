@@ -32,13 +32,13 @@ namespace warpcore::impl
 
         int* icov = (int*)cov;
         icov[0] = _mm_extract_ps(cov0, 0);
-        icov[1] = _mm_extract_ps(cov0, 1);
-        icov[2] = _mm_extract_ps(cov0, 2);
-        icov[3] = _mm_extract_ps(cov1, 0);
+        icov[1] = _mm_extract_ps(cov1, 0);
+        icov[2] = _mm_extract_ps(cov2, 0);
+        icov[3] = _mm_extract_ps(cov0, 1);
         icov[4] = _mm_extract_ps(cov1, 1);
-        icov[5] = _mm_extract_ps(cov1, 2);
-        icov[6] = _mm_extract_ps(cov2, 0);
-        icov[7] = _mm_extract_ps(cov2, 1);
+        icov[5] = _mm_extract_ps(cov2, 1);
+        icov[6] = _mm_extract_ps(cov0, 2);
+        icov[7] = _mm_extract_ps(cov1, 2);
         icov[8] = _mm_extract_ps(cov2, 2);
     }
 
