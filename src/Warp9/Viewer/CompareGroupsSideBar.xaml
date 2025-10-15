@@ -70,9 +70,9 @@
                                                  ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />
                     <StackPanel Orientation="Horizontal">
-                        <TextBox Width="50" Height="24" Text="{Binding Path=ValueMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="50" Height="24" Text="{Binding Path=ValueMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <Label Width="98" />
-                        <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </StackPanel>
 

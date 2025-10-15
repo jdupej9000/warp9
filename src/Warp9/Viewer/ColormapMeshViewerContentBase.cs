@@ -27,7 +27,9 @@ namespace Warp9.Viewer
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
         protected LutSpec? LutSpec { get; private set; }
-        protected float[]? AttributeField { get; set; } 
+        protected float[]? AttributeField { get; set; }
+
+        string valueMinText = string.Empty, valueMaxText = string.Empty;
 
         public bool RenderLut
         {
@@ -80,6 +82,58 @@ namespace Warp9.Viewer
         public float ValueMin
         {
             get { return Scene.Mesh0!.AttributeMin; }
+            set 
+            { 
+                Scene.Mesh0!.AttributeMin = value; 
+                valueMinText = value.ToString(); 
+                UpdateMappedField(false); 
+                OnPropertyChanged("ValueMinText"); 
+            }
+        }
+        
+        public string ValueMinText
+        {
+            get { return valueMinText; }
+            set 
+            { 
+                valueMinText = value; 
+                if(float.TryParse(value, out float valuef)) 
+                { 
+                    Scene.Mesh0!.AttributeMin = valuef; 
+                    UpdateMappedField(false); 
+                } 
+            }
+        }
+
+        public float ValueMax
+        {
+            get { return Scene.Mesh0!.AttributeMax; }
+            set 
+            { 
+                Scene.Mesh0!.AttributeMax = value; 
+                valueMaxText = value.ToString(); 
+                UpdateMappedField(false); 
+                OnPropertyChanged("ValueMaxText"); 
+            }
+        }
+
+        public string ValueMaxText
+        {
+            get { return valueMaxText; }
+            set 
+            { 
+                valueMaxText = value; 
+                if (float.TryParse(value, out float valuef)) 
+                { 
+                    Scene.Mesh0!.AttributeMax = valuef; 
+                    UpdateMappedField(false); 
+                } 
+            }
+        }
+
+        /*public float ValueMin
+        {
+            get { return Scene.Mesh0!.AttributeMin; }
             set { Scene.Mesh0!.AttributeMin = value; UpdateMappedField(false); OnPropertyChanged("ValueMin"); }
         }
 
@@ -87,7 +141,7 @@ namespace Warp9.Viewer
         {
             get { return Scene.Mesh0!.AttributeMax; }
             set { Scene.Mesh0!.AttributeMax = value; UpdateMappedField(false); OnPropertyChanged("ValueMax"); }
-        }
+        }*/
 
         public bool UseLutSteps
         {
