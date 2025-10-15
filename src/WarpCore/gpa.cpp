@@ -70,6 +70,7 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
     const float* x = (const float*)floating;
 
     // make a normalized template (center at 0, cs = 1)
+    // offset and cs are reversed to make an inverse transform (temp_mean -> templ)
     float* temp_mean = new float[d * m];    
     rigid3 outer;
     warpcore::impl::pcl_center(t, d, m, outer.offs);
@@ -83,12 +84,13 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
    /// for (int i = 0; i < d * m; i++)
     //    std::cout << t[i] << " -> " << temp_mean[i] << std::endl;
 
-    // transform floating onto the normalized template
+    // transform floating -> temp_mean
     rigid3 inner;
     warpcore::impl::opa_fit(x, temp_mean, d, m, inner.offs, &inner.cs, inner.rot);
 
     // xform(x) = outer(inner(x))
     warpcore::impl::rigid_combine(xform, &inner, &outer);
+    //memcpy(xform, &inner, sizeof(rigid3));
 
     std::cout << "INNER" << std::endl;
     print_rigid(inner);

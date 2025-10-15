@@ -297,6 +297,15 @@ namespace Warp9.Test
             Rigid3 rigid = RigidTransform.FitOpa(pcl2, pcl1); // rigid transforms pcl1 -> pcl2
             PointCloud? pcl2a = RigidTransform.TransformPosition(pcl1, rigid);
             Assert.IsNotNull(pcl2a);
+            
+            PclStat3 stat1 = RigidTransform.MakePclStats(pcl1);
+            Console.WriteLine(string.Format("Target: x0={0}, x1={1}, center={2}, cs={3}",
+                stat1.x0.ToString(), stat1.x1.ToString(), stat1.center.ToString(), stat1.size));
+            
+            PclStat3 stat2a = RigidTransform.MakePclStats(pcl2a);
+            Console.WriteLine(string.Format("Result: x0={0}, x1={1}, center={2}, cs={3}",
+                stat2a.x0.ToString(), stat2a.x1.ToString(), stat2a.center.ToString(), stat2a.size));
+
 
             ComparePcls(pcl2a, pcl2);
 

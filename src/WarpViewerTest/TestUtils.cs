@@ -99,7 +99,7 @@ namespace Warp9.Test
 
     public static class TestUtils
     {
-        public static readonly string AssetsPath = @"../../test/data/";
+        public static string AssetsPath = @"../../test/data/";
 
         public static int FindAdapter(bool prefeerNvidia = true)
         {
