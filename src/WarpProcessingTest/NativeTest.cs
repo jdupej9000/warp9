@@ -298,7 +298,7 @@ namespace Warp9.Test
             PointCloud? pcl2a = RigidTransform.TransformPosition(pcl1, rigid);
             Assert.IsNotNull(pcl2a);
             
-            PclStat3 stat1 = RigidTransform.MakePclStats(pcl1);
+            PclStat3 stat1 = RigidTransform.MakePclStats(pcl2);
             Console.WriteLine(string.Format("Target: x0={0}, x1={1}, center={2}, cs={3}",
                 stat1.x0.ToString(), stat1.x1.ToString(), stat1.center.ToString(), stat1.size));
             
