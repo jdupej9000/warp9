@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
 using Warp9.Data;
@@ -104,15 +105,7 @@ namespace Warp9.Model
         {
             long index = objectIdGen.Next();
 
-            string fileName = fmt switch
-            {
-                ProjectReferenceFormat.W9Mesh => string.Format("ref-{0:x}.w9mesh", index),
-                ProjectReferenceFormat.W9Pcl => string.Format("ref-{0:x}.w9pcl", index),
-                ProjectReferenceFormat.W9Matrix => string.Format("ref-{0:x}.w9mx", index),
-                ProjectReferenceFormat.JpegImage => string.Format("ref-{0:x}.jpg", index),
-                ProjectReferenceFormat.PngImage => string.Format("ref-{0:x}.png", index),
-                _ => throw new ArgumentException(nameof(fmt))
-            };
+            string fileName = string.Format("ref-{0:x}.{1}", index, GetExtensionByFormat(fmt));
 
             ProjectReference reference = new ProjectReference(index,
                  new ProjectReferenceInfo() { FileName = fileName, Format = fmt, IsInternal = true }, val);
@@ -289,16 +282,7 @@ namespace Warp9.Model
                 case ProjectReferenceFormat.PngImage:
                 case ProjectReferenceFormat.JpegImage:
                     {
-                        string extension = ext.Format switch
-                        {
-                            ProjectReferenceFormat.W9Mesh => "w9mesh",
-                            ProjectReferenceFormat.W9Pcl => "w9pcl",
-                            ProjectReferenceFormat.W9Matrix => "w9mx",
-                            ProjectReferenceFormat.PngImage => "png",
-                            ProjectReferenceFormat.JpegImage => "jpg",
-                            _ => throw new NotImplementedException()
-                        };
-
+                        string extension = GetExtensionByFormat(ext.Format);
                         string internalRefName = string.Format("ref-{0:x}.{1}", key, extension);
                         using Stream destStream = destArchive.CreateFile(internalRefName);
                         sourceFile.CopyTo(destStream);
@@ -314,17 +298,14 @@ namespace Warp9.Model
             return ret;
         }
 
-        public void Save(IProjectArchive destArchive, IProgressProvider? progress=null)
+        public void Save(IProjectArchive destArchive)
         {
-            progress?.StartBatch(1 + references.Count);
-
             Dictionary<long, ProjectReferenceInfo> savedRefs = new Dictionary<long, ProjectReferenceInfo>();
             string workingDir = destArchive.WorkingDirectory;
 
             int refIdx = 0;
             foreach(var kvp in references)
             {
-                progress?.StartTask(refIdx);
                 long refKey = kvp.Key;
                 ProjectReference pr = kvp.Value;
 
@@ -355,19 +336,13 @@ namespace Warp9.Model
                     };
                 }
 
-                progress?.FinishTask(refIdx);
                 refIdx++;
             }
 
             int manifestTask = references.Count;
-            progress?.StartTask(manifestTask);
-            using (Stream streamManifest = destArchive.CreateFile(ManifestFileName))
-            {
-                MakeManifest(streamManifest, savedRefs);
-            }
-            progress?.FinishTask(manifestTask);
 
-            progress?.EndBatch();
+            using Stream streamManifest = destArchive.CreateFile(ManifestFileName);
+            MakeManifest(streamManifest, savedRefs);
         }
 
         private void InitJsonOptions()
@@ -389,6 +364,19 @@ namespace Warp9.Model
             opts.Converters.Add(new ColorJsonConverter());
             opts.Converters.Add(new Matrix4x4JsonConverter());
             opts.Converters.Add(new SizeJsonConverter());
+        }
+
+        public static string GetExtensionByFormat(ProjectReferenceFormat fmt)
+        {
+            return fmt switch
+            {
+                ProjectReferenceFormat.W9Mesh => "w9mesh",
+                ProjectReferenceFormat.W9Pcl => "w9pcl",
+                ProjectReferenceFormat.W9Matrix => "w9mx",
+                ProjectReferenceFormat.JpegImage => "jpg",
+                ProjectReferenceFormat.PngImage => "png",
+                _ => throw new ArgumentException(nameof(fmt))
+            };
         }
 
         public static Project CreateEmpty()
