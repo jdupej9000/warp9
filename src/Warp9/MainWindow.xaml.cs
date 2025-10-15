@@ -118,8 +118,15 @@ namespace Warp9
             DialogResult res = dlg.ShowDialog();
             if (res == System.Windows.Forms.DialogResult.OK)
             {
-                Warp9ProjectArchive archive = new Warp9ProjectArchive(dlg.FileName, false);
-                SetProject(Project.Load(archive));
+                try
+                {
+                    Warp9ProjectArchive archive = new Warp9ProjectArchive(dlg.FileName, false);
+                    SetProject(Project.Load(archive));
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Failed to load project: " + ex.Message, "Warp9 - Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -183,7 +190,17 @@ namespace Warp9
         private void SetProject(Project project)
         {
             model?.Dispose();
-            model = new Warp9Model(project, Options.Instance.NumWorkerThreads);
+
+            try
+            {
+                model = new Warp9Model(project, Options.Instance.NumWorkerThreads);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Failed to set project: " + ex.Message, "Warp9 - Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             model.JobEngine.ProgressChanged += JobEngine_ProgressChanged;
             model.LogMessage += (s, e) => pageLog.AddMessage(e);
             model.ModelEvent += Model_ModelEvent;

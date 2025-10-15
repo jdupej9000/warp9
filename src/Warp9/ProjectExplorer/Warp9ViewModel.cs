@@ -24,7 +24,7 @@ namespace Warp9.ProjectExplorer
             Project = project;
             Model = model;
 
-            if (!HeadlessRenderer.TryCreate(0, out HeadlessRenderer? rend))
+            if (!HeadlessRenderer.TryCreate(0, out HeadlessRenderer? rend) || rend is null)
                 throw new Exception("Could not initialize a headless renderer.");
 
             renderer = rend;
