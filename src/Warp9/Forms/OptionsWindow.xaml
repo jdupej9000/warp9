@@ -26,12 +26,8 @@
                 <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Appearance</TextBlock>
                 <TextBlock Margin="2">Theme</TextBlock>
                 <ComboBox Margin="2" SelectedIndex="{Binding Path=ThemeIndex, Mode=TwoWay}">
-                    <ComboBoxItem>Soft dark</ComboBoxItem>
-                    <ComboBoxItem>Deep dark</ComboBoxItem>
-                    <ComboBoxItem>Dark grey</ComboBoxItem>
-                    <ComboBoxItem>Grey</ComboBoxItem>
+                    <ComboBoxItem>Soft dark</ComboBoxItem>                    
                     <ComboBoxItem>Light</ComboBoxItem>
-                    <ComboBoxItem>Red-black</ComboBoxItem>
                 </ComboBox>
                 <Label Height="4" />
                 <CheckBox Margin="2" IsChecked="{Binding Path=ShowProjectItemIds}">Show project item IDs</CheckBox>
