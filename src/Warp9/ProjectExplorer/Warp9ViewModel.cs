@@ -84,7 +84,16 @@ namespace Warp9.ProjectExplorer
             }
 
             if (destPath != null)
-                Model.Save(destPath);
+            {
+                try
+                {
+                    Model.Save(destPath);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to save the project: " + ex.Message, "Warp9 - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         public void AddSnapshot(ViewerScene scene, string? name = null, string? filter = null, string? comment = null)
