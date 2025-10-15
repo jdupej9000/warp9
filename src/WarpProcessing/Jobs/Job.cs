@@ -107,9 +107,10 @@ namespace Warp9.Jobs
                     LastStartedItem = item;
                     itemStatus = item.Run(this, ctx);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     itemStatus = JobItemStatus.Failed;
+                    ctx.WriteLog(LastStartedItem?.ItemIndex ?? 0, MessageKind.Error, "Job item failed: " + ex.Message);
                 }
                
                 lock (stateLock)
