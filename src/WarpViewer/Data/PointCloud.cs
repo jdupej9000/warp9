@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Warp9.Data
 {
@@ -14,113 +16,78 @@ namespace Warp9.Data
             VertexCount = other.VertexCount;
         }
 
-        internal PointCloud(int nv, byte[] vx, Dictionary<MeshSegmentType, MeshSegment> segs)
+        internal PointCloud(int nv, byte[] vx, Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> segs)
         {
             meshSegments = segs;
             vertexData = vx;
             VertexCount = nv;
         }
 
-        internal readonly Dictionary<MeshSegmentType, MeshSegment> meshSegments = new Dictionary<MeshSegmentType, MeshSegment>();
-        protected readonly Dictionary<MeshViewKind, MeshView?> meshViews = new Dictionary<MeshViewKind, MeshView?>();
+        internal readonly Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> meshSegments = 
+            new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>();
 
-        // Vertex data is formatted as structure of arrays. Say the contents are position of vec3 and 
-        // texcoord0 of vec2. In that case the following are in vertexData back to back:
-        // - all x coords of positions
-        // - all y coords of positions
-        // - all z coords of positions
-        // - all u coords of texcoord0
-        // - all v coords of texcoord1
         protected readonly byte[] vertexData;
 
         public const int AllCoords = -1;
 
-        public static readonly PointCloud Empty = new PointCloud(0, Array.Empty<byte>(), new Dictionary<MeshSegmentType, MeshSegment>());
+        public static readonly PointCloud Empty = new PointCloud(0, Array.Empty<byte>(), new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>());
 
         public int VertexCount { get; private init; }
         public byte[] RawData => vertexData;
 
 
-        public bool HasSegment(MeshSegmentType kind)
+        public bool HasSegment(MeshSegmentSemantic kind)
         {
             return meshSegments.ContainsKey(kind);
         }
 
-        public bool TryGetRawData(MeshSegmentType kind, int coord, out ReadOnlySpan<byte> data)
+        public bool TryGetRawData(MeshSegmentSemantic kind, out ReadOnlySpan<byte> data, out MeshSegmentFormat fmt)
         {
-            if (TryGetRawDataSegment(kind, coord, out int offset, out int length))
+            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg))
             {
-                data = new ReadOnlySpan<byte>(vertexData, offset, length);
+                data = new ReadOnlySpan<byte>(vertexData, seg.Offset, seg.Length);
+                fmt = seg.Format;
+                return true;
+            }
+           
+            data = ReadOnlySpan<byte>.Empty;
+            fmt = MeshSegmentFormat.Unknown;
+            return false;
+        }
+
+        public bool TryGetData<T>(MeshSegmentSemantic kind, out ReadOnlySpan<T> data)
+            where T : struct
+        {
+            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg) &&
+                seg is not null &&
+                seg.CanCastTo<T>())
+            {
+                data = MemoryMarshal.Cast<byte, T>(new ReadOnlySpan<byte>(vertexData, seg.Offset, seg.Length));
                 return true;
             }
 
-            data = new ReadOnlySpan<byte>();
+            data = ReadOnlySpan<T>.Empty;
             return false;
         }
 
-        public bool TryGetRawDataSegment(MeshSegmentType kind, int coord, out int offset, out int length)
+        public bool TryGetData<T>(MeshSegmentSemantic kind, out BufferSegment<T> data)
+           where T : struct
         {
-            if (meshSegments.TryGetValue(kind, out MeshSegment? seg))
+            if (meshSegments.TryGetValue(kind, out ReadOnlyMeshSegment? seg) &&
+                seg is not null &&
+                seg.CanCastTo<T>())
             {
-                if (coord == AllCoords)
-                {
-                    offset = seg.Offset;
-                    length = seg.TotalLength;
-                    return true;
-                }
-                else if (coord >= 0 && coord < seg.StructElemCount)
-                {
-                    offset = seg.Offset + coord * seg.ChannelLength;
-                    length = seg.ChannelLength;                
-                    return true;
-                }
+                data = new BufferSegment<T>(vertexData, seg.Offset, seg.NumItems);
+                return true;
             }
 
-            offset = 0;
-            length = 0;
+            data = BufferSegment<T>.Empty;
             return false;
-        }
-
-        public MeshView? GetView(MeshViewKind kind, bool cache = true)
-        {
-            if (meshViews.TryGetValue(kind, out MeshView? v))
-                return v;
-
-            MeshView? view = kind switch
-            {
-                MeshViewKind.Pos3f => MakeVertexView(MeshSegmentType.Position, kind),
-                MeshViewKind.Normal3f => MakeVertexView(MeshSegmentType.Normal, kind),
-                MeshViewKind.Attrib1f => MakeVertexView(MeshSegmentType.AttribScalar, kind),
-                _ => throw new NotSupportedException()
-            };
-
-            if (cache)
-                meshViews[kind] = view;
-
-            return view;
         }
 
         public virtual MeshBuilder ToBuilder()
         {
-            MeshBuilder ret = new MeshBuilder(vertexData, meshSegments, Array.Empty<FaceIndices>());
-            return ret;
-        }
-
-        private MeshView? MakeVertexView(MeshSegmentType t, MeshViewKind kind)
-        {
-            if (meshSegments.TryGetValue(t, out MeshSegment? seg))
-            {
-                byte[] data = new byte[seg.TotalLength];
-                seg.Copy(data, vertexData);
-                return new MeshView(kind, data, seg.GetElementType());
-            }
-
-            return null;
-        }
-
-        protected virtual MeshView? MakeIndexView()
-        {
-            throw new InvalidOperationException("Point clounds cannot create index views.");
+            return new MeshBuilder(vertexData, meshSegments, null);
         }
 
         public override string ToString()
@@ -130,11 +97,11 @@ namespace Warp9.Data
                     (t) => string.Format("{0}: {1}", t.Key, t.Value.ToString())).ToArray());
         }
 
-        public static PointCloud FromRawSoaPositions(int nv, byte[] vx)
+        public static PointCloud FromRawPositions(int nv, byte[] vx)
         {
-            Dictionary<MeshSegmentType, MeshSegment> segs = new Dictionary<MeshSegmentType, MeshSegment>
+            Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> segs = new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>
             {
-                { MeshSegmentType.Position, new MeshSegment<Vector3>(0, nv) }
+                { MeshSegmentSemantic.Position, ReadOnlyMeshSegment.Create<Vector3>(0, nv) }
             };
             return new PointCloud(nv, vx, segs);
         }

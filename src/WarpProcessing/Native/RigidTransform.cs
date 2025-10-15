@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Warp9.Data;
 
@@ -10,7 +11,7 @@ namespace Warp9.Native
     {
         public static PointCloud? TransformPosition(PointCloud pcl, Rigid3 rigid)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> dataPosSrc))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> dataPosSrc, out _))
                 return pcl;
 
             // TODO: remove copy
@@ -29,7 +30,7 @@ namespace Warp9.Native
 
                     if (ret == WarpCoreStatus.WCORE_OK)
                     {
-                        return PointCloud.FromRawSoaPositions(pcl.VertexCount, dataPosDest);
+                        return PointCloud.FromRawPositions(pcl.VertexCount, dataPosDest);
                     }
                 }
             }
@@ -39,7 +40,7 @@ namespace Warp9.Native
 
         public static PclStat3 MakePclStats(PointCloud pcl)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> data))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> data, out _))
                 throw new InvalidOperationException();
 
             PclStat3 pclStat = new PclStat3();
@@ -58,10 +59,10 @@ namespace Warp9.Native
         // Find rigid transform floating -> templ.
         public static Rigid3 FitOpa(PointCloud templ, PointCloud floating)
         {
-            if (!templ.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> t))
+            if (!templ.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> t, out _))
                 throw new InvalidOperationException();
 
-            if (!floating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!floating.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> x, out _))
                 throw new InvalidOperationException();
 
             Rigid3 ret = new Rigid3();
@@ -86,27 +87,16 @@ namespace Warp9.Native
         {
             const int d = 3;
             int n = pcls.Count;
-            int specimenDataSize = -1;
-            int numOk = 0;
-
-            GCHandle[] pins = new GCHandle[n];
+                       
+            BufferSegment<Vector3>[] pins = new BufferSegment<Vector3>[n];
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
-            { 
-                pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
-                if (specimenDataSize == -1)
-                {
-                    specimenDataSize = length;
-                }
-                else if (specimenDataSize != length)
-                {
-                    break;
-                }
-
-                numOk = i + 1;
-                pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);
-                handles[i] = pins[i].AddrOfPinnedObject() + offset;
+            {
+                pcls[i].TryGetData(MeshSegmentSemantic.Position, out pins[i]);
+                handles[i] = pins[i].Lock();
             }
+
+            int specimenDataSize = pins[0].Length;
 
             Rigid3[] xforms = new Rigid3[n];
             byte[] mean = new byte[specimenDataSize];
@@ -114,30 +104,23 @@ namespace Warp9.Native
             int nv = specimenDataSize / d / 4;
             WarpCoreStatus ret;
 
-            if (numOk == n)
+            unsafe
             {
-                unsafe
+                fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
+                fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
+                fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
                 {
-                    fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
-                    fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
-                    fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
-                    {
-                        ret = (WarpCoreStatus)WarpCore.gpa_fit(
-                            (nint)ppdata, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
-                    }
+                    ret = (WarpCoreStatus)WarpCore.gpa_fit(
+                        (nint)ppdata, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
                 }
             }
-            else
-            {
-                ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
-            }
-
+           
             result = gpaRes;
             transforms = xforms;
-            meanPcl = PointCloud.FromRawSoaPositions(nv, mean);
+            meanPcl = PointCloud.FromRawPositions(nv, mean);
 
-            for (int i = 0; i < numOk; i++)
-                pins[i].Free();
+            for (int i = 0; i < n; i++)
+                pins[i].Unlock();
 
             return ret;
         }

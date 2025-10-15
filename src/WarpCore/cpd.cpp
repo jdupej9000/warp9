@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 
 #include "cpd.h"
+#include "impl/utils.h"
 #include "impl/cpd_impl.h"
 #include <memory>
 #include <cstring>
@@ -77,17 +78,23 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     const int tmp_size = cpd_tmp_size(m, n, num_eigs);
 
     // Do not change the order of these arrays. CUDA part relies on this structure.
-    float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m];
+    float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m + 2 * 3 * m + 3 * n];
     float* psum = pp;
     float* pt1 = psum + n;
     float* p1 = pt1 + n;
     float* px = p1 + m;
     float* tmp = px + 3 * m;
     float* ttemp = tmp + tmp_size;
+    float* xt = ttemp + 3 * m;
+    float* yt = xt + 3 * n;
+    float* tt = yt + 3 * m;
+
+    aos_to_soa<float, 3>((const float*)x, n, xt);
+    aos_to_soa<float, 3>((const float*)y, m, yt);
 
     float* cuda_ctx = nullptr;
     if (use_cuda) {
-        if (!cpd_init_cuda(m, n, x, (void**)&cuda_ctx)) {
+        if (!cpd_init_cuda(m, n, xt, (void**)&cuda_ctx)) {
             delete[] pp;
             return CPD_CONV_INTERNAL_ERROR;
         }
@@ -97,9 +104,9 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
     if (cpd->sigma2init <= 0.0f) {
         if (use_cuda)
-            sigma2 = cpd_estimate_sigma_cuda(cuda_ctx, (const float*)x, (const float*)y, m, n);
+            sigma2 = cpd_estimate_sigma_cuda(cuda_ctx, xt, yt, m, n);
         else
-            sigma2 = cpd_estimate_sigma((const float*)x, (const float*)y, m, n, pp);
+            sigma2 = cpd_estimate_sigma(xt, yt, m, n, pp);
     }
 
     std::memset(pp, 0, sizeof(float) * (2 * n + 4 * m + tmp_size));
@@ -109,7 +116,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     const float* linv = (const float*)init + m;
     const int maxit = cpd->maxit;
 
-    std::memcpy(t, y, sizeof(float) * 3 * m);
+    std::memcpy(tt, yt, sizeof(float) * 3 * m);
 
     int conv = 0;
     float l0 = 0;
@@ -123,15 +130,15 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
         auto te0 = std::chrono::high_resolution_clock::now();
         if (use_cuda) {
-            cpd_estep_cuda(cuda_ctx, (const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, pt1);
+            cpd_estep_cuda(cuda_ctx, xt, tt, m, n, cpd->w, sigma2, denom, pt1);
         } else {
-            cpd_estep((const float*)x, (const float*)t, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
+            cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
         }
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
 
         memset(tmp, 0, tmp_size * sizeof(float));
-        l0 += cpd_mstep((const float*)y, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
+        l0 += cpd_mstep(yt, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
             debug = 1;
@@ -140,7 +147,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         
         tol = abs((l0 - l0_old) / l0);
         const float sigma2_old = sigma2;
-        sigma2 = cpd_update_sigma2((const float*)x, (const float*)ttemp, pt1, p1, px, m, n);
+        sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
             debug = 2;
@@ -150,7 +157,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol, tol_old);
 
         if ((conv & CPD_CONV_NUMERIC_ERROR) == 0)
-            std::memcpy(t, ttemp, sizeof(float) * 3 * m);
+            std::memcpy(tt, ttemp, sizeof(float) * 3 * m);
         else
             debug = 3;
 
@@ -159,6 +166,8 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
+
+    soa_to_aos<float, 3>((float*)t, m, tt);
 
     delete[] pp;
 

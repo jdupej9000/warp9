@@ -38,7 +38,7 @@ namespace Warp9.Native
             return new Aabb();
         }
 
-        public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        /*public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -57,7 +57,7 @@ namespace Warp9.Native
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
-        }
+        }*/
 
         public bool NearestAos(ReadOnlySpan<Vector3> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
@@ -80,7 +80,7 @@ namespace Warp9.Native
             }
         }
 
-        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
+       /* public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -123,14 +123,17 @@ namespace Warp9.Native
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
-        }
+        }*/
 
-        public bool RaycastAos(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<float> hitT)
+        public bool RaycastAos(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
             SearchQueryConfig cfg = new SearchQueryConfig();
+            int kind = invertDir ?
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS | SEARCH_KIND.SEARCH_INVERT_DIRECTION) :
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS);
 
             unsafe
             {
@@ -140,7 +143,7 @@ namespace Warp9.Native
                 fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS), ref cfg,
+                        nativeContext, kind, ref cfg,
                         (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
                 }
             }
@@ -185,7 +188,8 @@ namespace Warp9.Native
             Span<TriGridConfig> cfgSpan = stackalloc TriGridConfig[1];
             cfgSpan[0] = cfg;
 
-            if (!m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> posRaw))
+            if (!m.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> posRaw, out MeshSegmentFormat fmt) ||
+                fmt != MeshSegmentFormat.Float32x3)
                 throw new InvalidOperationException();
 
             bool isIndexed = m.TryGetIndexData(out ReadOnlySpan<FaceIndices> idxRaw);

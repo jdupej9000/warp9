@@ -34,9 +34,9 @@ namespace Warp9.Scene
         }
 
         ReferencedData<Mesh>? mesh = null;
-        ReferencedData<Vector3[]>? positionOverride = null;
-        ReferencedData<Vector3[]>? normalsOverride = null;
-        ReferencedData<float[]>? attributeScalar = null;
+        ReferencedData<BufferSegment<Vector3>>? positionOverride = null;
+        ReferencedData<BufferSegment<Vector3>>? normalsOverride = null;
+        ReferencedData<BufferSegment<float>>? attributeScalar = null;
         LutSpec? lutSpec = null;
         Lut? lut = null;
 
@@ -70,7 +70,7 @@ namespace Warp9.Scene
 
         [JsonPropertyName("mesh-pos-override")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ReferencedData<Vector3[]>? PositionOverride
+        public ReferencedData<BufferSegment<Vector3>>? PositionOverride
         {
             get { return positionOverride; }
             set { positionOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
@@ -78,7 +78,7 @@ namespace Warp9.Scene
 
         [JsonPropertyName("mesh-normal-override")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ReferencedData<Vector3[]>? NormalOverride
+        public ReferencedData<BufferSegment<Vector3>>? NormalOverride
         {
             get { return normalsOverride; }
             set { normalsOverride = value; Version.Commit(RenderItemDelta.Dynamic); }
@@ -86,7 +86,7 @@ namespace Warp9.Scene
 
         [JsonPropertyName("mesh-attrsc-override")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ReferencedData<float[]>? AttributeScalar
+        public ReferencedData<BufferSegment<float>>? AttributeScalar
         {
             get { return attributeScalar; }
             set { attributeScalar = value; Version.Commit(RenderItemDelta.Full); }
@@ -121,7 +121,7 @@ namespace Warp9.Scene
             ri.RenderCull = false;
             ri.FillColor = FlatColor;
             ri.PointWireColor = System.Drawing.Color.Black;
-            ri.RenderBlend = false;
+            ri.RenderBlend = BlendMode.NoBlend;
             ri.RenderDepth = true;
         }
 
@@ -157,22 +157,22 @@ namespace Warp9.Scene
             bool dynamicChanged = false;
             if (positionOverride is not null && !positionOverride.HasReference)
             {
-                List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
-                pos.AddRange(positionOverride.Value!);
+                List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+                pos.AddRange(positionOverride.Value!.Data);
                 dynamicChanged = true;
             }
 
             if (normalsOverride is not null && !normalsOverride.HasReference)
             {
-                List<Vector3> normal = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
-                normal.AddRange(normalsOverride.Value!);
+                List<Vector3> normal = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;
+                normal.AddRange(normalsOverride.Value!.Data);
                 dynamicChanged = true;
             }
 
             if (attributeScalar is not null && !attributeScalar.HasReference)
             {
-                List<float> attr = mb.GetSegmentForEditing<float>(MeshSegmentType.AttribScalar);
-                attr.AddRange(attributeScalar.Value!);
+                List<float> attr = mb.GetSegmentForEditing<float>(MeshSegmentSemantic.AttribScalar, false).Data;
+                attr.AddRange(attributeScalar.Value!.Data);
                 dynamicChanged = true;
             }
 
@@ -221,13 +221,13 @@ namespace Warp9.Scene
 
             if (positionOverride is not null && positionOverride.IsLoaded && positionOverride.Value is not null)
             {
-                ri.UpdateData(positionOverride.Value, MeshSegmentType.Position);
+                ri.UpdateData(positionOverride.Value, MeshSegmentSemantic.Position);
                 changed = true;
             }
 
             if (normalsOverride is not null && normalsOverride.IsLoaded && normalsOverride.Value is not null)
             {
-                ri.UpdateData(normalsOverride.Value, MeshSegmentType.Normal);
+                ri.UpdateData(normalsOverride.Value, MeshSegmentSemantic.Normal);
                 changed = true;
             }
 
@@ -241,13 +241,13 @@ namespace Warp9.Scene
                 mesh = ModelUtils.Resolve(proj, mesh);
 
             if (positionOverride is not null)
-                positionOverride = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Pos3f, positionOverride);
+                positionOverride = ModelUtils.ResolveAsMeshView(proj, MeshSegmentSemantic.Position, positionOverride);
 
             if (normalsOverride is not null)
-                normalsOverride = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Normal3f, normalsOverride);
+                normalsOverride = ModelUtils.ResolveAsMeshView(proj, MeshSegmentSemantic.Normal, normalsOverride);
 
             if (attributeScalar is not null)
-                attributeScalar = ModelUtils.ResolveAsMeshView(proj, MeshViewKind.Attrib1f, attributeScalar);
+                attributeScalar = ModelUtils.ResolveAsMeshView(proj, MeshSegmentSemantic.AttribScalar, attributeScalar);
         }
 
         private static MeshRenderStyle ToStyle(MeshRenderFlags flags)

@@ -1,4 +1,5 @@
 ﻿using SharpDX.Direct3D11;
+using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
@@ -80,27 +82,36 @@ namespace Warp9.Viewer
             job.SetShader(ctx, ShaderType.Vertex, "VsDefaultInstanced");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
 
-            MeshView? posView = mesh.GetView(MeshViewKind.Pos3f);
-            if (posView is null)
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> posData, out MeshSegmentFormat posFmt))                
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddPosition(posFmt, 0);
+                job.SetVertexBuffer(ctx, 0, posData, layout, false);
+            }
+            else
             {
                 SetError("Mesh has no vertex position view.");
                 return true;
             }
-            job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), false);
 
-            MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
-            if (normalView is not null)
-                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), false);
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Normal, out ReadOnlySpan<byte> normData, out MeshSegmentFormat normFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddNormal(posFmt, 0);
+                job.SetVertexBuffer(ctx, 2, posData, layout, false);
+            }
 
-            MeshView? instPosView = instances.GetView(MeshViewKind.Pos3f);
-            if (instPosView is null)
+            if (instances.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> instPosData, out MeshSegmentFormat instPosFmt))
+            {
+                VertexDataLayout layoutInst = new VertexDataLayout(true);
+                layoutInst.AddTex(instPosFmt, 7, 0);
+                job.SetVertexBuffer(ctx, 1, instPosData, layoutInst);
+            }
+            else
             {
                 SetError("Instances has no vertex position view.");
                 return true;
             }
-            VertexDataLayout layoutInst = new VertexDataLayout(true);
-            layoutInst.AddTex(SharpDX.DXGI.Format.R32G32B32_Float, 7, 0);
-            job.SetVertexBuffer(ctx, 1, instPosView.RawData, layoutInst);
 
             DrawCall dcMain;
             int numInst = instances.VertexCount;
@@ -162,9 +173,9 @@ namespace Warp9.Viewer
             {
                 dcFace.RastMode = RasterizerMode.Solid;
                 //if (renderCull) dcFace.RastMode |= RasterizerMode.CullBack;
-
+         
                 dcFace.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                //dcFace.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcFace.BlendMode = BlendMode.NoBlend;
             }
         }
 

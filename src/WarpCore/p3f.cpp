@@ -39,6 +39,14 @@ namespace warpcore
         return _mm_loadu_si128((const __m128i*)x);
     }
 
+    void p3f_store(float* x, p3f pt)
+    {
+        int* xi = (int*)x;
+        xi[0] = _mm_extract_ps(pt, 0);
+        xi[1] = _mm_extract_ps(pt, 1);
+        xi[2] = _mm_extract_ps(pt, 2);
+    }
+
     p3i p3f_to_p3i(const p3f a) noexcept
     {
         return _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC)));

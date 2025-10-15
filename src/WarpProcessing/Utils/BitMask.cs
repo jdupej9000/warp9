@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Warp9.Utils
 {
@@ -26,27 +21,35 @@ namespace Warp9.Utils
 
         public static void MakeBitMask(Span<int> mask, ReadOnlySpan<bool> data, int repeat = 1)
         {
-            int accum = 0, pos = 0, retpos = 0;
-            for (int rep = 0; rep < repeat; rep++)
+            if (repeat < 1 || repeat > 32)
+                throw new ArgumentOutOfRangeException();
+
+            long accum = 0;
+            long one = (1L << repeat) - 1;
+            int n = data.Length;
+            int cached = 0;
+            int ptr = 0;
+
+            for (int i = 0; i < n; i++)
             {
-                for (int i = 0; i < data.Length; i++)
+                accum <<= repeat;
+
+                if(data[i])
+                    accum |= one;
+
+                cached += repeat;
+
+                if (cached >= 32)
                 {
-                    if (data[i])
-                        accum |= 1 << pos;
-
-                    pos++;
-
-                    if (pos == 32)
-                    {
-                        mask[retpos++] = accum;
-                        accum = 0;
-                        pos = 0;
-                    }
+                    mask[ptr] = (int)(accum & 0xffffffff);
+                    accum >>= 32;
+                    cached -= 32;
+                    ptr++;
                 }
             }
 
-            if (pos != 0)
-                mask[retpos] = accum;
+            if(cached != 0)
+                mask[ptr] = (int)(accum & 0xffffffff);
         }
     }
 }

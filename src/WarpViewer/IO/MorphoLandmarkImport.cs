@@ -27,13 +27,13 @@ namespace Warp9.IO
 
             if (commonVectorSize == 3)
             {
-                List<Vector3> vec = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                List<Vector3> vec = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
                 for (int i = 0; i < positionData.Count; i += 3)
                     vec.Add(new Vector3(positionData[i], positionData[i + 1], positionData[i + 2]));
             }
             else if (commonVectorSize == 2)
             {
-                List<Vector2> vec = builder.GetSegmentForEditing<Vector2>(MeshSegmentType.Position);
+                List<Vector2> vec = builder.GetSegmentForEditing<Vector2>(MeshSegmentSemantic.Position, false).Data;
                 for (int i = 0; i < positionData.Count; i += 2)
                     vec.Add(new Vector2(positionData[i], positionData[i + 1]));
             }

@@ -63,8 +63,6 @@ namespace warpcore::impl
         if(convCount < 0)
             convCount = n / 1000;
 
-        float row[NDim];
-        
         bool own_ci = false;
         if (ci == nullptr) {
             ci = new int[k];
@@ -84,19 +82,19 @@ namespace warpcore::impl
                 const int j = label[i];
                 ci[j]++;
                 for(int d = 0; d < NDim; d++)
-                    cent[d * k + j] += x[d * n + i];
+                    cent[d + NDim * j] += x[d + NDim * i];
             }
 
             for(int j = 0; j < k; j++) {
                 if(ci[j] > 0) {
                     for(int d = 0; d < NDim; d++)
-                        cent[d * k + j] /= ci[j];
+                        cent[d + NDim * j] /= ci[j];
                 }
             }
 
             changed = 0;
             for(int i = 0; i < n; i++) {
-                get_row<float, NDim>(x, n, i, row);
+                const float* row = x + NDim * i;
                 const int j = nearest<NDim>(cent, k, row);
                 if(j != label[i]) {
                     label[i] = j;

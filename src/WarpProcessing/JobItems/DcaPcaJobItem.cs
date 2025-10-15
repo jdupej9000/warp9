@@ -105,7 +105,7 @@ namespace Warp9.JobItems
             }
 
             
-            int npcs = 50;
+            int npcs = Math.Min(50, ns - 1);
             ctx.WriteLog(ItemIndex, MessageKind.Information, $"Transforming source data ({dcaCorrPcls.Count} datapoints), keeping {npcs} PCs.");
             
             int npcsall = pca.NumPcs;

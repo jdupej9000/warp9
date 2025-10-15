@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -95,20 +96,18 @@ namespace Warp9.Native
             if (pcl.VertexCount * 3 != Dimension || scores.Length < NumPcs)
                 return false;
 
-            if (!pcl.TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> raw, out _))
                 return false;
-
-            byte[] raw = pcl.RawData;
 
             WarpCoreStatus ret = WarpCoreStatus.WCORE_INVALID_ARGUMENT;
             unsafe
             {
                 fixed (int* pallow = &MemoryMarshal.GetReference(allow.AsSpan()))
                 fixed (float* pmeanpcs = &MemoryMarshal.GetReference(pcsMean.AsSpan()))
-                fixed (byte* pdata = &MemoryMarshal.GetReference(raw.AsSpan()))
+                fixed (byte* pdata = &MemoryMarshal.GetReference(raw))
                 fixed (float* pscores = &MemoryMarshal.GetReference(scores))
                 {
-                    ret = (WarpCoreStatus)WarpCore.pca_data_to_scores(ref info, (nint)pdata + offset, (nint)pmeanpcs, (nint)pallow, (nint)pscores);
+                    ret = (WarpCoreStatus)WarpCore.pca_data_to_scores(ref info, (nint)pdata, (nint)pmeanpcs, (nint)pallow, (nint)pscores);
                 }
             }
 
@@ -185,15 +184,12 @@ namespace Warp9.Native
             int n = pcls.Count;
             int m = 3 * pcls[0].VertexCount;
 
-            GCHandle[] pins = new GCHandle[n];
+            BufferSegment<Vector3>[] pins = new BufferSegment<Vector3>[n];
             nint[] handles = new nint[n];
             for (int i = 0; i < n; i++)
             {
-                pcls[i].TryGetRawDataSegment(MeshSegmentType.Position, -1, out int offset, out int length);
-                // TODO: check length
-
-                pins[i] = GCHandle.Alloc(pcls[i].RawData, GCHandleType.Pinned);
-                handles[i] = pins[i].AddrOfPinnedObject() + offset;
+                pcls[i].TryGetData(MeshSegmentSemantic.Position, out pins[i]);
+                handles[i] = pins[i].Lock();
             }
 
             int[] allowBitField = BitMask.MakeBitMask(vertexAllow, 3);
@@ -214,6 +210,9 @@ namespace Warp9.Native
                     ret = (WarpCoreStatus)WarpCore.pca_fit(ref pcaInfo, (nint)ppdata, (nint)pallow, (nint)pmeanpcs, (nint)pvar);
                 }
             }
+
+            for (int i = 0; i < n; i++)
+                pins[i].Unlock();
 
             if (ret != WarpCoreStatus.WCORE_OK)
                 return null;

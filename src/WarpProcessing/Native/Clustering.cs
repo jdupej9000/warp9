@@ -15,29 +15,23 @@ namespace Warp9.Native
     {
         public static void FitKMeans(PointCloud pcl, int k, out int[] labels, out Vector3[] centers)
         {
-            if (!pcl.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!pcl.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> x, out MeshSegmentFormat fmt) ||
+                fmt != MeshSegmentFormat.Float32x3)
                 throw new InvalidOperationException();
 
             int n = pcl.VertexCount;
             labels = new int[n];
             centers = new Vector3[k];
 
-            float[] ct = ArrayPool<float>.Shared.Rent(3 * k);
-
             unsafe
             {
                 fixed (byte* ptrPcl = &MemoryMarshal.GetReference(x))
                 fixed (int* ptrLabels = &MemoryMarshal.GetReference(labels.AsSpan()))
-                fixed (float* ptrCenters = &MemoryMarshal.GetReference(ct.AsSpan()))
+                fixed (Vector3* ptrCenters = &MemoryMarshal.GetReference(centers.AsSpan()))
                 {
                     WarpCore.clust_kmeans((nint)ptrPcl, 3, n, k, (nint)ptrCenters, (nint)ptrLabels);
                 }
             }
-
-            for(int i = 0; i < k; i++)
-                centers[i] = new Vector3(ct[i], ct[i + k], ct[i + 2*k]);
-
-            ArrayPool<float>.Shared.Return(ct);
         }
     }
 }

@@ -87,10 +87,12 @@ namespace Warp9.Native
             int sizeBytesT = info.d * info.m * Marshal.SizeOf<float>();
             byte[] t = new byte[sizeBytesT];
 
-            if (!pclTarget.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> x))
+            if (!pclTarget.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> x, out MeshSegmentFormat fmtTarget) ||
+                fmtTarget != MeshSegmentFormat.Float32x3)
                 throw new InvalidOperationException();
 
-            if (!pclFloating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> y))
+            if (!pclFloating.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> y, out MeshSegmentFormat fmtFloat) ||
+                fmtFloat != MeshSegmentFormat.Float32x3)
                 throw new InvalidOperationException();
 
             unsafe
@@ -101,7 +103,7 @@ namespace Warp9.Native
                 fixed (byte* ptrY = &MemoryMarshal.GetReference(y))
                 {
                     WarpCoreStatus res = (WarpCoreStatus)WarpCore.cpd_process(ref info, (nint)ptrX, (nint)ptrY, (nint)ptrInit, (nint)ptrT, ref cpdRes);
-                    pclBent = PointCloud.FromRawSoaPositions(info.m, t);
+                    pclBent = PointCloud.FromRawPositions(info.m, t);
                    
                     result = cpdRes;
                     return res;
@@ -121,7 +123,8 @@ namespace Warp9.Native
         {
             CpdInfo info = cfg.ToCpdInfo(pclFloating.VertexCount);
 
-            if (!pclFloating.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pclFloatingData))
+            if (!pclFloating.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> pclFloatingData, out MeshSegmentFormat fmtFloat) ||
+                fmtFloat != MeshSegmentFormat.Float32x3)
                 throw new InvalidOperationException();
 
             unsafe

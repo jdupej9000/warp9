@@ -192,7 +192,7 @@ namespace warpcore::impl
         const int* allowq = (const int*)allow;
         float ret = 0;
         for (int i = 0; i < n; i++) {
-            if ((allowq[i >> 5] >> (i & 0x1f)) & 0x1)
+            if ((allowq[i >> 5] >> (i & 0x1f)) & 0x1) // HOT
                 ret += (x[i] - x0[i]) * y[i];
         }
 

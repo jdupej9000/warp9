@@ -88,14 +88,12 @@ namespace Warp9.Test
             Console.WriteLine();
 
             Assert.IsTrue(proj.TryGetReference(teapotKey, out Mesh? teapot) && teapot is not null);
-            MeshView? posView = teapot.GetView(MeshViewKind.Pos3f);
-            Assert.IsNotNull(posView);
-            posView.AsTypedData(out ReadOnlySpan<Vector3> pos);
+            teapot.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos);
             int n = pos.Length;
             Vector3[] pos2 = new Vector3[n];
             for (int i = 0; i < n; i++)
                 pos2[i] = 1.25f * pos[i];
-            scene.Mesh0.PositionOverride = new ReferencedData<Vector3[]>(pos2);
+            scene.Mesh0.PositionOverride = new ReferencedData<BufferSegment<Vector3>>(new BufferSegment<Vector3>(pos2));
 
             Console.WriteLine("scene: " + scene.ToString());
             Console.WriteLine("rend : " + vsw.ToString());

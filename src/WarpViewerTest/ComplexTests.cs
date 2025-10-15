@@ -79,10 +79,6 @@ namespace Warp9.Test
         public void RenderTeapotDynamicTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            MeshView? viewPos = teapot.GetView(MeshViewKind.Pos3f);
-            if (viewPos == null)
-                Assert.Fail("Cannot get pos array.");
-
             HeadlessRenderer rend = CreateRenderer();
 
             RenderItemMesh renderItemMesh = new RenderItemMesh();
@@ -96,17 +92,17 @@ namespace Warp9.Test
 
             rend.CanvasColor = Color.Black;
             rend.Present(); // this should look like RenderTeapotPhongTest but orange, we're not interested in this result
-
-            if (!viewPos.AsTypedData(out ReadOnlySpan<Vector3> pos))
+            
+            if(!teapot.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
                 Assert.Fail("Cannot get typed pos array.");
 
             int nv = pos.Length;
-            byte[] pos2b = new byte[nv * Marshal.SizeOf<Vector3>()];
-            Span<Vector3> pos2 = MemoryMarshal.Cast<byte, Vector3>(pos2b.AsSpan());
+            Vector3[] pos2 = new Vector3[nv];
+           
             for (int i = 0; i < nv; i++)
                 pos2[i] = pos[i] * 1.25f;
 
-            renderItemMesh.UpdateData(pos2b, MeshSegmentType.Position);
+            renderItemMesh.UpdateData(new BufferSegment<Vector3>(pos2), MeshSegmentSemantic.Position);
             rend.Present(); // now the teapot should appear larger
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
@@ -163,9 +159,8 @@ namespace Warp9.Test
         {
             Mesh m = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             float[] v = new float[m.VertexCount];
-            MeshView? posView = m.GetView(MeshViewKind.Pos3f);
-            Assert.IsNotNull(posView);
-            Assert.IsTrue(posView.AsTypedData(out ReadOnlySpan<Vector3> pos));
+            if (!m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
+                Assert.Fail();
 
             for (int i = 0; i < m.VertexCount; i++)
                 v[i] = MathF.Abs(Vector3.Dot(Vector3.Normalize(pos[i]), Vector3.UnitY));
@@ -179,7 +174,7 @@ namespace Warp9.Test
             renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
             renderItemMesh.LevelValue = 0.65f;
             renderItemMesh.FillColor = Color.Red;
-            renderItemMesh.SetValueField(v);
+            renderItemMesh.SetValueField(new BufferSegment<float>(v));
             rend.AddRenderItem(renderItemMesh);
 
             rend.CanvasColor = Color.Black;

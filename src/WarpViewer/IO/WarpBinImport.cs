@@ -11,8 +11,8 @@ namespace Warp9.IO
     internal struct WarpBinImportChunk
     {
         public WarpBinChunkInfo Chunk;
-        public MeshSegmentType SegmentType;
-        public MeshSegment Segment;
+        public MeshSegmentSemantic SegmentType;
+        public ReadOnlyMeshSegment Segment;
     }
 
     public class WarpBinImport : IDisposable
@@ -76,23 +76,24 @@ namespace Warp9.IO
                 else if (nv != chunk.Rows)
                     return false;
 
-                MeshSegmentType segType = chunk.Semantic switch
+                MeshSegmentSemantic segType = chunk.Semantic switch
                 {
-                    ChunkSemantic.Position => MeshSegmentType.Position,
-                    ChunkSemantic.Normal => MeshSegmentType.Normal,
-                    ChunkSemantic.TexCoord => MeshSegmentType.Tex0,
-                    _ => MeshSegmentType.Invalid
+                    ChunkSemantic.Position => MeshSegmentSemantic.Position,
+                    ChunkSemantic.Normal => MeshSegmentSemantic.Normal,
+                    ChunkSemantic.TexCoord => MeshSegmentSemantic.Tex0,
+                    ChunkSemantic.AttribScalar => MeshSegmentSemantic.AttribScalar,
+                    _ => MeshSegmentSemantic.Invalid
                 };
 
-                if (segType == MeshSegmentType.Invalid)
+                if (segType == MeshSegmentSemantic.Invalid)
                     continue;
 
-                MeshSegment? seg = chunk.Columns switch
+                ReadOnlyMeshSegment? seg = chunk.Columns switch
                 {
-                    1 => new MeshSegment<float>(offset, chunk.Rows),
-                    2 => new MeshSegment<Vector2>(offset, chunk.Rows),
-                    3 => new MeshSegment<Vector3>(offset, chunk.Rows),
-                    4 => new MeshSegment<Vector4>(offset, chunk.Rows),
+                    1 => ReadOnlyMeshSegment.Create<float>(offset, chunk.Rows),
+                    2 => ReadOnlyMeshSegment.Create<Vector2>(offset, chunk.Rows),
+                    3 => ReadOnlyMeshSegment.Create<Vector3>(offset, chunk.Rows),
+                    4 => ReadOnlyMeshSegment.Create<Vector4>(offset, chunk.Rows),
                     _ => null
                 };
 
@@ -106,7 +107,7 @@ namespace Warp9.IO
                     Segment = seg
                 });
 
-                offset += seg.TotalLength;
+                offset += seg.Length;
             }
 
             bufferSize = offset;
@@ -123,11 +124,11 @@ namespace Warp9.IO
                 if (chunk.Semantic == ChunkSemantic.Indices)
                 {
                     bufferSize = chunk.Rows;
-                    MeshSegment seg = new MeshSegment<FaceIndices>(0, chunk.Rows);
+                    ReadOnlyMeshSegment seg = ReadOnlyMeshSegment.Create<FaceIndices>(0, chunk.Rows);
                     parsedIndexChunk = new WarpBinImportChunk()
                     {
                         Chunk = chunk,
-                        SegmentType = MeshSegmentType.Invalid,
+                        SegmentType = MeshSegmentSemantic.Invalid,
                         Segment = seg
                     };
 
@@ -138,15 +139,15 @@ namespace Warp9.IO
             return false;
         }
 
-        private void ReadInt16AsFloat32(Span<byte> buffer, int count, float min, float max)
+        private void ReadNorm16AsFloat32(Span<byte> buffer, int count)
         {
-            float d = (max - min) / 65535.0f;
+            float d = 1.0f / 65535.0f;
             Span<float> dest = MemoryMarshal.Cast<byte, float>(buffer.Slice(0, count * 4));
             
             for (int i = 0; i < count; i++)
             {
                 ushort x = reader.ReadUInt16();
-                dest[i] = min + x * d;
+                dest[i] = x * d;
             }
         }
 
@@ -157,14 +158,22 @@ namespace Warp9.IO
 
             Span<float> limits = stackalloc float[cols * 2];
             reader.Read(MemoryMarshal.Cast<float, byte>(limits));
+            Span<float> min = stackalloc float[cols];
+            Span<float> norm = stackalloc float[cols];
 
             for (int i = 0; i < cols; i++)
-                ReadInt16AsFloat32(buffer.Slice(i * rows * 4), rows, limits[2 * i], limits[2 * i + 1]);
-        }
+            {
+                min[i] = limits[2 * i];
+                norm[i] = (limits[2 * i + 1] - limits[2 * i]) / 65535.0f;
+            }
 
-        private void ReadNormalized16AsFloat32(Span<byte> buffer, int count)
-        {
-            ReadInt16AsFloat32(buffer, count, 0, 1);
+            Span<float> f = MemoryMarshal.Cast<byte, float>(buffer);
+            for (int j = 0; j < rows; j++)
+            {
+                int i0 = j * cols;
+                for (int i = 0; i < cols; i++)
+                    f[i0 + i] = reader.ReadUInt16() * norm[i] + min[i];
+            }
         }
 
         private MatrixCollection ReadMatrix()
@@ -188,14 +197,6 @@ namespace Warp9.IO
                     {
                         case ChunkEncoding.Float32:
                             reader.Read(m.GetRawData());
-                            break;
-
-                        case ChunkEncoding.Fixed16:
-                            ReadFixed16AsFloat32(m.GetRawData(), cols, rows);
-                            break;
-
-                        case ChunkEncoding.Normalized16:
-                            ReadNormalized16AsFloat32(m.GetRawData(), cols * rows);
                             break;
 
                         default:
@@ -236,7 +237,7 @@ namespace Warp9.IO
                 return null;
            
             byte[] vertData = new byte[vertDataSize];
-            Dictionary<MeshSegmentType, MeshSegment> vertSegments = new Dictionary<MeshSegmentType, MeshSegment>();
+            Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment> vertSegments = new Dictionary<MeshSegmentSemantic, ReadOnlyMeshSegment>();
 
             TryParseMeshIndexChunks(out WarpBinImportChunk? parsedIndexChunk, out int idxDataSize);
             FaceIndices[] idxData = new FaceIndices[idxDataSize];
@@ -256,16 +257,16 @@ namespace Warp9.IO
                 {
                     case ChunkEncoding.Float32:
                     case ChunkEncoding.Int32:
-                        reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.TotalLength);
+                        reader.Read(vertData, chunk.Segment.Offset, chunk.Segment.Length);
                         break;
 
                     case ChunkEncoding.Fixed16:
-                        ReadFixed16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                        ReadFixed16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
                            chunk.Chunk.Columns, chunk.Chunk.Rows);
                         break;
 
                     case ChunkEncoding.Normalized16:
-                        ReadNormalized16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.TotalLength),
+                        ReadNorm16AsFloat32(vertData.AsSpan(chunk.Segment.Offset, chunk.Segment.Length),
                            chunk.Chunk.Columns * chunk.Chunk.Rows);
                         break;
 

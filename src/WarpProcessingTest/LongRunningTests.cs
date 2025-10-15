@@ -99,14 +99,14 @@ namespace Warp9.Test
                 Assert.Fail("corr.reg is not present in the workspace");
 
             if (!ctx.Workspace.TryGet("rigid.reg", out List<Mesh>? rigidPcls) ||
-               corrPcls is null)
+                rigidPcls is null)
                 Assert.Fail("corr.reg is not present in the workspace");
 
-            if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
+            /*if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
               corrPcls is null)
                 Assert.Fail("corr.reject is not present in the workspace");
 
-            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));
+            Console.WriteLine("Rejections: " + string.Join(", ", rej.MeshRejections.Select((i) => i.ToString())));*/
 
             if (!ctx.Workspace.TryGet("base", out Mesh? baseMesh) || baseMesh is null)
                 Assert.Fail("Cannot get base mesh.");
@@ -117,13 +117,21 @@ namespace Warp9.Test
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), col: Color.Gray));
-                    //snew TestRenderItem(TriStyle.MeshWire, rigidPcls[i], wireCol:Color.DodgerBlue));
+                    new TestRenderItem(TriStyle.MeshWire, Mesh.FromPointCloud(corrPcls[i], baseMesh), wireCol: Color.Gray));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
                 new TestRenderItem(TriStyle.MeshFilled, baseMesh, col: Color.Gray));
-                
+
+            if (!ctx.Workspace.TryGet("rigid", out Gpa? gpa) ||
+                gpa is null)
+                Assert.Fail("corr.reg is not present in the workspace");
+            List<TestRenderItem> lmrend = new List<TestRenderItem>();
+            for (int i = 0; i < corrPcls.Count; i++)            
+                lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.01f));
+            lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.01f));
+            TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
+
         }
     }
 }

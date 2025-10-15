@@ -66,9 +66,8 @@ namespace Warp9.Processing
             int[] allMasks = new int[floating.Count * nmask];
             List<int> numRejectionsPerMesh = new List<int>();
             float[] work = new float[nv];
-
-            MeshView? baseVertView = baseMesh.GetView(MeshViewKind.Pos3f);
-            if (baseVertView is null || !baseVertView.AsTypedData(out ReadOnlySpan<Vector3> vertBase))
+            
+            if(!baseMesh.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vertBase))
                 throw new InvalidOperationException("Cannot make vertex view in the base mesh.");
 
             if (!baseMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
@@ -77,8 +76,7 @@ namespace Warp9.Processing
             int idx = 0;
             foreach (PointCloud pcl in floating)
             {
-                MeshView? floatVertView = pcl.GetView(MeshViewKind.Pos3f);
-                if (floatVertView is null || !floatVertView.AsTypedData(out ReadOnlySpan<Vector3> vertFloat))
+                if(!pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vertFloat))
                     throw new InvalidOperationException("Cannot make vertex view in a floating mesh.");
 
                 Array.Fill(currentRejection, false);

@@ -23,6 +23,7 @@ namespace warpcore::impl
 
     int is_corrupted(__m256 v);
 
+    void WCORE_VECCALL demux(__m256& a, __m256& b, __m256& c);
     void WCORE_VECCALL demux(__m256i& a, __m256i& b, __m256i& c);
 
     void WCORE_VECCALL cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept;

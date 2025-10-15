@@ -65,7 +65,6 @@ namespace Warp9.Viewer
 
             pcaObject = pcaObj;
             meanMesh = baseMesh;
-            tempSoa = new float[pcaObj.Dimension];
             posAos = new Vector3[pcaObj.Dimension / 3];
             normAos = new Vector3[pcaObj.Dimension / 3];
 
@@ -83,7 +82,7 @@ namespace Warp9.Viewer
         Mesh meanMesh;
         int mappedFieldIndex = 0;
         int indexPcScatterX = 0, indexPcScatterY = 1;
-        float[] tempSoa;
+        //float[] tempSoa;
         Vector3[] posAos, normAos;
         string description = "PCA synthesis";
 
@@ -128,8 +127,11 @@ namespace Warp9.Viewer
 
         public void ScatterPlotPosChanged(ScatterPlotPosInfo sppi)
         {
-            pcaObject.Synthesize(tempSoa.AsSpan(), (indexPcScatterX, sppi.Pos.X), (indexPcScatterY, sppi.Pos.Y));
-            OverrideVertices(tempSoa);
+            pcaObject.Synthesize(MemoryMarshal.Cast<Vector3, float>(posAos.AsSpan()),
+                (indexPcScatterX, sppi.Pos.X), 
+                (indexPcScatterY, sppi.Pos.Y));
+
+            OverrideVertices();
             UpdateViewer();
 
             description = string.Format("PCA synthesis PC{0}={1}, PC{2}={3}",
@@ -183,20 +185,19 @@ namespace Warp9.Viewer
             Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meanMesh, pcaEntry.Payload.PcaExtra.TemplateKey);
 
             // Override positions with the mean PCA model. Override normals, too.
-            pcaObject.Synthesize(tempSoa.AsSpan());
-            OverrideVertices(tempSoa);           
+            pcaObject.Synthesize(MemoryMarshal.Cast<Vector3, float>(posAos.AsSpan()));
+            OverrideVertices();           
         }
 
-        private void OverrideVertices(float[] synthSoa)
+        private void OverrideVertices()
         {
-            MeshUtils.CopySoaToAos(posAos.AsSpan(), MemoryMarshal.Cast<float, byte>(synthSoa.AsSpan()));
-            Scene.Mesh0!.PositionOverride = new ReferencedData<Vector3[]>(posAos);
+            Scene.Mesh0!.PositionOverride = new ReferencedData<BufferSegment<Vector3>>(new BufferSegment<Vector3>(posAos));
 
             // Recalculate normals and override them, too.
             if (meanMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices))
             {
                 MeshNormals.MakeNormalsFast(normAos.AsSpan(), posAos.AsSpan(), indices);
-                Scene.Mesh0!.NormalOverride = new ReferencedData<Vector3[]>(normAos);
+                Scene.Mesh0!.NormalOverride = new ReferencedData<BufferSegment<Vector3>>(new BufferSegment<Vector3>(normAos));
             }
         }
 

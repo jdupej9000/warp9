@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,20 +15,22 @@ namespace Warp9.Processing
 
         public static PointCloud FlipPosCoord(PointCloud pcl, bool flipX, bool flipY, bool flipZ)
         {
-            if(!pcl.TryGetRawData(MeshSegmentType.Position, 0, out ReadOnlySpan<byte> dataRaw))
+            if(!pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> dataRaw))
                 throw new ArgumentException(nameof(pcl));
 
             int nv = pcl.VertexCount;
-            ReadOnlySpan<float> dataFloat = MemoryMarshal.Cast<byte, float>(dataRaw);
+          
+            Vector3 flip = new Vector3(flipX ? -1 : 1, flipY ? -1 : 1, flipZ ? -1 : 1);
 
-            byte[] retPosRaw = new byte[nv * 3 * 4];
-            Span<float> outFloat = MemoryMarshal.Cast<byte, float>(retPosRaw);
+            MeshBuilder mb = pcl.ToBuilder();
+            List<Vector3> outPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
-            Scale(outFloat.Slice(0, nv), dataFloat.Slice(0, nv), flipX ? -1 : 1);
-            Scale(outFloat.Slice(nv, nv), dataFloat.Slice(nv, nv), flipY ? -1 : 1);
-            Scale(outFloat.Slice(2 * nv, nv), dataFloat.Slice(2 * nv, nv), flipZ ? -1 : 1);
+            for (int i = 0; i < nv; i++)
+            {
+                outPos[i] = flip * dataRaw[i];
+            }
 
-            return PointCloud.FromRawSoaPositions(nv, retPosRaw);
+            return mb.ToPointCloud();
         }
 
         public static PointCloud MakeSymmetricRigid(PointCloud pcl, PointCloud lms)
@@ -38,15 +41,5 @@ namespace Warp9.Processing
             throw new NotImplementedException();
         }
 
-        private static void Scale(Span<float> to, ReadOnlySpan<float> from, float f)
-        {
-            int n = to.Length;
-
-            if (n != from.Length)
-                throw new ArgumentException();
-
-            for (int i = 0; i < n; i++)
-                to[i] = from[i] * f;
-        }
     }
 }

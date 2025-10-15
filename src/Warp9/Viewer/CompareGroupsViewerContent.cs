@@ -146,6 +146,10 @@ namespace Warp9.Viewer
 
         public void SwapGroups()
         {
+            SpecimenTableSelection selT = selectionA;
+            selectionA = selectionB;
+            selectionB = selT;
+            UpdateGroups(true, true);
         }
                
 

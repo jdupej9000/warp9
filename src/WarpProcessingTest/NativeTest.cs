@@ -46,7 +46,7 @@ namespace Warp9.Test
         private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, true).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -61,7 +61,7 @@ namespace Warp9.Test
         private static PointCloud TranslateTwistPcl(PointCloud pcl, Vector3 t, float twist)
         {
             MeshBuilder mb = pcl.ToBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             Random rand = new Random(74656);
             for (int i = 0; i < pos.Count; i++)
@@ -85,15 +85,9 @@ namespace Warp9.Test
 
         private static void ComparePcls(PointCloud pcl1, PointCloud pcl2)
         {
-            MeshView? view1 = pcl1.GetView(MeshViewKind.Pos3f);
-            MeshView? view2 = pcl2.GetView(MeshViewKind.Pos3f);
-
-            if (view1 is null || view2 is null)
-                throw new InvalidOperationException();
-
-            view1.AsTypedData(out ReadOnlySpan<Vector3> v1);
-            view2.AsTypedData(out ReadOnlySpan<Vector3> v2);
-
+            Assert.IsTrue(pcl1.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> v1));
+            Assert.IsTrue(pcl2.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> v2));
+           
             float dmin = float.MaxValue;
             float dmax = float.MinValue;
             float dsum = 0;
@@ -182,7 +176,7 @@ namespace Warp9.Test
                 for (int i = 0; i < neigs; i++)
                 {
                     d.Slice(i * nv, nv).CopyTo(attr.AsSpan());
-                    rim.SetValueField(attr);
+                    rim.SetValueField(new BufferSegment<float>(attr));
 
                     rend.Present();
                     Span<byte> s = new Span<byte>((void*)(bmp.Scan0 + i * numBytesFrame), numBytesFrame);
@@ -273,7 +267,7 @@ namespace Warp9.Test
 
         [TestMethod]
         public void GpaTeapotsTest()
-        {
+        {   
             Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pcl2 = DistortPcl(pcl1, new Vector3(0.5f, 0.2f, -0.1f), 0.80f, 0.25f);
             PointCloud pcl3 = DistortPcl(pcl1, Vector3.Zero, 1.10f, 0.1f);
@@ -296,11 +290,12 @@ namespace Warp9.Test
         [TestMethod]
         public void OpaTeapotsTest()
         {
-            Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);          
-            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(1.0f, 0.0f, 0.0f), 0.60f, 0.0f);
+            //Mesh pcl1 = TestUtils.MakeCubeIndexed(1);
+            Mesh pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            PointCloud pcl2 = DistortPcl(pcl1, new Vector3(1.0f, 0.0f, 0.0f), 1.1f, 0.0f);
 
-            Rigid3 rigid = RigidTransform.FitOpa(pcl1, pcl2);
-            PointCloud? pcl2a = RigidTransform.TransformPosition(pcl2, rigid);
+            Rigid3 rigid = RigidTransform.FitOpa(pcl2, pcl1); // rigid transforms pcl1 -> pcl2
+            PointCloud? pcl2a = RigidTransform.TransformPosition(pcl1, rigid);
             Assert.IsNotNull(pcl2a);
             
             PclStat3 stat1 = RigidTransform.MakePclStats(pcl1);
@@ -312,12 +307,14 @@ namespace Warp9.Test
                 stat2a.x0.ToString(), stat2a.x1.ToString(), stat2a.center.ToString(), stat2a.size));
 
 
+            ComparePcls(pcl2a, pcl2);
+
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(512, 512);
-            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.5f, 0f, -0.5f);
+            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-2.5f, -2.5f, -2.5f);
             TestUtils.Render(rend, "OpaTeapotsTest_0.png", modelMat,
-               new TestRenderItem(TriStyle.PointCloud, pcl1, wireCol: Color.White),
-               new TestRenderItem(TriStyle.PointCloud, pcl2, wireCol: Color.FromArgb(80,80,80)),
+               new TestRenderItem(TriStyle.PointCloud, pcl1, wireCol: Color.FromArgb(40, 40, 40)),
+               new TestRenderItem(TriStyle.PointCloud, pcl2, wireCol: Color.LightGreen),
                new TestRenderItem(TriStyle.PointCloud, pcl2a, wireCol: Color.Red));
         }
 
@@ -345,7 +342,31 @@ namespace Warp9.Test
                new TestRenderItem(TriStyle.PointCloud, imputed, wireCol: Color.White));
         }
 
-     
+        [TestMethod]
+        public void TpsTest()
+        {
+            PointCloud pcl = TestUtils.MakeRegularGridLines(new Vector3(-3, -3, -3), new Vector3(3, 3, 3), 8, 6);
+
+            PointCloud pclFrom = TestUtils.MakePcl(
+                new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
+                new Vector3(3, -3, -3), new Vector3(3, -3, 3), new Vector3(3, 3, -3), new Vector3(3, 3, 3),
+                new Vector3(0, 0, 0));
+
+            PointCloud pclTo = TestUtils.MakePcl(
+                new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
+                 new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
+                 new Vector3(-3, 0, 0));
+
+
+            using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
+            PointCloud twisted = tps.TransformPosition(pcl);
+
+            TestUtils.Render("TpsTest_0.png",
+                new TestRenderItem(TriStyle.Landmarks, pclFrom, col: Color.Red, lmScale: 0.04f),
+                new TestRenderItem(TriStyle.Landmarks, pclTo, col: Color.Green, lmScale: 0.04f),
+                new TestRenderItem(TriStyle.LineSegments, twisted, wireCol: Color.FromArgb(32, Color.White), bm: BlendMode.Additive));
+        }
+
         static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
@@ -394,7 +415,7 @@ namespace Warp9.Test
         public void TrigridNnBarycentricTest()
         {
             (int[] hit, ResultInfoDPtBary[] res, Mesh m) = TrigridNnTestCase(string.Empty, 1, 32, false);
-            m.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> pos);
+            m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos);
             m.TryGetIndexData(out ReadOnlySpan<FaceIndices> indices);
 
             int nv = m.VertexCount;
@@ -411,9 +432,9 @@ namespace Warp9.Test
                 if (d > 1e-6f)
                 {
                     Console.WriteLine($"idx = {i}, hit = {hit[i]}, nt = {numTested}");
-                    Console.WriteLine("a = " + MiscUtils.FromSoa(pos, fi.I0, nv).ToString());
-                    Console.WriteLine("b = " + MiscUtils.FromSoa(pos, fi.I1, nv).ToString());
-                    Console.WriteLine("c = " + MiscUtils.FromSoa(pos, fi.I2, nv).ToString());
+                    Console.WriteLine("a = " + pos[fi.I0].ToString());
+                    Console.WriteLine("b = " + pos[fi.I1].ToString());
+                    Console.WriteLine("c = " + pos[fi.I2].ToString());
                     Console.WriteLine($"u = {res[i].u}, v={res[i].v}");
                     Console.WriteLine($"d = {res[i].d}");
                     Console.WriteLine("want: " + posStraight.ToString());
@@ -486,6 +507,12 @@ namespace Warp9.Test
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PclStat3 stat = RigidTransform.MakePclStats(mesh);
 
+            Aabb aabb = new Aabb(stat.x0, stat.x1);
+            mesh.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3>? seg);
+            Assert.IsNotNull(seg);
+            for (int i = 0; i < seg.Count; i++)
+                Assert.IsTrue(aabb.Contains(seg[i]));
+
             Console.WriteLine(string.Format("x0={0}, x1={1}, center={2}, cs={3}",
                 stat.x0.ToString(), stat.x1.ToString(), stat.center.ToString(), stat.size));
         }
@@ -515,7 +542,7 @@ namespace Warp9.Test
                 Assert.IsTrue(labels[i] >= 0 && labels[i] < n);
 
             MeshBuilder builder = new MeshBuilder();
-            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             verts.AddRange(centers);
             PointCloud pclK = builder.ToPointCloud();
 

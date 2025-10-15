@@ -212,17 +212,17 @@ void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
             if (isTriangleSoup)
             {
                 VertexDataLayout layout = new VertexDataLayout();
-                layout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0)
-                    .AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 12);
+                layout.AddPosition(MeshSegmentFormat.Float32x3, 0)
+                    .AddNormal(MeshSegmentFormat.Float32x3, 12);
                 job.SetVertexBuffer(ctx, 0, RenderUtils.ToByteArray<float>(VertexBufferTriSoup), layout);
             }
             else
             {
                 VertexDataLayout layout = new VertexDataLayout();
-                layout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0)
-                    .AddColor(SharpDX.DXGI.Format.R32G32B32A32_Float, 0, 12)
-                    .AddTex(SharpDX.DXGI.Format.R32G32_Float, 0, 28)
-                    .AddTex(SharpDX.DXGI.Format.R32_Float, 1, 36);
+                layout.AddPosition(MeshSegmentFormat.Float32x3, 0)
+                    .AddColor(MeshSegmentFormat.Float32x4, 0, 12)
+                    .AddTex(MeshSegmentFormat.Float32x2, 0, 28)
+                    .AddTex(MeshSegmentFormat.Float32, 1, 36);
                 job.SetVertexBuffer(ctx, 0, RenderUtils.ToByteArray<float>(VertexBuffer), layout);
                 job.SetIndexBuffer(ctx, RenderUtils.ToByteArray<int>(IndexBuffer), SharpDX.DXGI.Format.R32_UInt);
             }
@@ -230,7 +230,7 @@ void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
             if (instances)
             {
                 VertexDataLayout layoutInst = new VertexDataLayout(true);
-                layoutInst.AddTex(SharpDX.DXGI.Format.R32G32B32_Float, 7, 0);
+                layoutInst.AddTex(MeshSegmentFormat.Float32x3, 7, 0);
                 job.SetVertexBuffer(ctx, 1, RenderUtils.ToByteArray<float>(InstanceBuffer), layoutInst);
             }
 

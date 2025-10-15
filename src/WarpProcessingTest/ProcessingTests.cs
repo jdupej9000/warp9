@@ -21,10 +21,10 @@ namespace Warp9.Test
         public void WithNormalsTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh teapotNorm = MeshNormals.MakeNormals(teapot);
-            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentType.Normal));
+            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentSemantic.Normal));
 
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "WithNormalsTest_0.png", TeapotModelMatrix,
@@ -35,14 +35,14 @@ namespace Warp9.Test
         public void VertexSharingTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh teapotShared = MeshVertexSharing.ShareVerticesByPosition(teapot);
             Assert.AreEqual(3241, teapotShared.VertexCount);
             Assert.AreEqual(teapot.FaceCount, teapotShared.FaceCount);
 
             Mesh teapotNorm = MeshNormals.MakeNormals(teapotShared);
-            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentType.Normal));
+            Assert.IsTrue(teapotNorm.HasSegment(MeshSegmentSemantic.Normal));
 
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "VertexSharingTest_0.png", TeapotModelMatrix,
@@ -53,7 +53,7 @@ namespace Warp9.Test
         public void MeshFairingTest()
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
-            Assert.IsFalse(teapot.HasSegment(MeshSegmentType.Normal));
+            Assert.IsFalse(teapot.HasSegment(MeshSegmentSemantic.Normal));
 
             Mesh faired = MeshFairing.Optimize(teapot, 0.5f).ToMesh();
 
@@ -74,8 +74,7 @@ namespace Warp9.Test
             for (int row = 0; row < 10; row++)
             {
                 PointCloud pcl = LongRunningTests.GetPointCloudFromProject(project, 21, "Landmarks", row);
-                MeshView? view = pcl.GetView(MeshViewKind.Pos3f);
-                if (view is null || !view.AsTypedData(out ReadOnlySpan<Vector3> pos))
+                if (!(pcl.TryGetData( MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos)))
                 {
                     Assert.Fail("Cannot get pcl view.");
                     return; // To make the compiler happy.
@@ -84,7 +83,7 @@ namespace Warp9.Test
                 int[] rev = LandmarkUtils.ReverseBilateralLandmarkIndices(pos);
                 string order = string.Join(",", rev.Select((t) => t.ToString()));
 
-                Assert.AreEqual("3,2,1,0,4,5,7,6,8", order);
+                Assert.AreEqual("3,2,1,0,4,5,7,6,8,10,9,13,14,11,12,15,16,17,19,18", order);
             }
         }
     }

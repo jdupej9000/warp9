@@ -35,11 +35,10 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		int* ci = new int[num_tps_points];
 		int* labels = new int[num_valid];
 		float* cx = new float[num_valid * 3];
-		float row[3];
 
 		kmeans<3>(data_valid, num_valid, num_tps_points, cx, labels, ci);	
 		for (int i = 0; i < num_tps_points; i++) {
-			get_row<float, 3>(cx, num_tps_points, i, row);
+			const float* row = cx + 3 * i;
 			ci[i] = nearest<3>(data_valid, num_valid, row);
 		}
 		delete[] labels;
@@ -62,8 +61,8 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		delete[] ci;
 
 		tps3d tps{ num_tps_points };
-		tps_fit3d_soa(&tps, tps_src, tps_dest);
-		tps.transform_soa((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
+		tps_fit3d_aos(&tps, tps_src, tps_dest);
+		tps.transform_aos((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
 
 		ret = WCORE_OK;
 	}
@@ -71,4 +70,28 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 	delete[] data_valid;
 
 	return ret;
+}
+
+extern "C" WCEXPORT int tps_fit(int d, int m, const float* src, const float* dest, void** ctx)
+{
+	tps3d* tps = new tps3d{ m };
+	*ctx = tps;
+
+
+	tps_fit3d_aos(tps, src, dest);
+	return WCORE_OK;
+}
+
+extern "C" WCEXPORT int tps_transform(void* ctx, int m, const float* x, float* y)
+{
+	tps3d* tps = (tps3d*)ctx;
+	tps->transform_aos(y, x, m, nullptr);
+	return WCORE_OK;
+}
+
+extern "C" WCEXPORT int tps_free(void* ctx)
+{
+	tps3d* tps = (tps3d*)ctx;
+	delete tps;
+	return WCORE_OK;
 }

@@ -40,9 +40,12 @@ namespace Warp9.Jobs
 
     public class JobEngine : IDisposable
     {
-        public JobEngine()
+        public JobEngine(int numWorkers = -1)
         {
-            workerCount = 1;// Environment.ProcessorCount;
+            if (numWorkers <= 0)
+                workerCount = 1;
+            else
+                workerCount = numWorkers;// Environment.ProcessorCount;
 
             workers = new Thread[workerCount];
             contexts = new BackgroundWorkerContext[workerCount];

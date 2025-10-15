@@ -17,6 +17,7 @@ namespace warpcore::impl
 
     struct trigrid {
         int __magic;
+        int nt;
         
         float x0[4];
         float x1[4];

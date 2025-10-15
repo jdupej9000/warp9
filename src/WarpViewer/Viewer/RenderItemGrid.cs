@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -135,8 +136,8 @@ namespace Warp9.Viewer
             vertices.CopyTo(verticesOut);
 
             vbLayout = new VertexDataLayout();
-            vbLayout.AddPosition(SharpDX.DXGI.Format.R32G32B32_Float, 0);
-            vbLayout.AddColor(SharpDX.DXGI.Format.R32G32B32A32_Float, 0, 12);
+            vbLayout.AddPosition(MeshSegmentFormat.Float32x3, 0);
+            vbLayout.AddColor(MeshSegmentFormat.Float32x4, 0, 12);
 
             return num;
         }

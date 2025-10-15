@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -276,5 +277,14 @@ namespace Warp9.Native
 
         [DllImport("WarpCore.dll")]
         public static extern int pcl_impute(ref ImputeInfo info, nint data, nint templ, nint valid_mask);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int tps_fit(int d, int m, nint src, nint dst, ref nint ctx);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int tps_transform(nint ctx, int m, nint x, nint y);
+
+        [DllImport("WarpCore.dll")]
+        public static extern int tps_free(nint ctx);
     }
 }

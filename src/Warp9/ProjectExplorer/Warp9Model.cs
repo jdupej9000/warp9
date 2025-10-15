@@ -15,8 +15,9 @@ namespace Warp9.ProjectExplorer
 
     public class Warp9Model : IWarp9Model, IDisposable
     {
-        public Warp9Model(Project project)
+        public Warp9Model(Project project, int numWorkerThreads=-1)
         {
+            JobEngine = new JobEngine(numWorkerThreads);
             Project = project;
             ViewModel = new Warp9ViewModel(project, this);
             ViewModel.Update();
@@ -26,7 +27,7 @@ namespace Warp9.ProjectExplorer
         public Warp9ViewModel ViewModel { get; init; }
         public bool IsDirty { get; private set; } = false;
         public string? FileName => Project.Archive?.FileName;
-        public JobEngine JobEngine { get; } = new JobEngine();
+        public JobEngine JobEngine { get; init; }
 
         public event EventHandler<string> LogMessage;
         public event EventHandler<ModelEventInfo> ModelEvent;

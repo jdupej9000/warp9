@@ -13,14 +13,13 @@ namespace Warp9.Processing
     {
         public static MeshBuilder ScalePosition(PointCloud pcl, float factor)
         {
-            MeshView? pos = pcl.GetView(MeshViewKind.Pos3f);
-            if (pos is null || !pos.AsTypedData(out ReadOnlySpan<Vector3> posData))
+            if(!pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
             MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
 
-            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+            List<Vector3> posSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
             CollectionsMarshal.SetCount(posSeg, nv);
 
             for (int i = 0; i < nv; i++)

@@ -70,7 +70,10 @@ namespace Warp9.Processing
         {
             WarpCoreStatus s = RigidTransform.FitGpa(data, 
                 out PointCloud mean, out Rigid3[] xforms, out GpaResult res);
-            
+
+            if (s != WarpCoreStatus.WCORE_OK)
+                throw new InvalidOperationException();
+
             return new Gpa(data, xforms, mean, res);
         }
     }

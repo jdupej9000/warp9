@@ -5,6 +5,8 @@
 #include <cstring>
 #include <memory>
 
+#include <iostream>
+
 extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res)
 {
     constexpr int MAX_IT = 150;
@@ -49,6 +51,16 @@ extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, v
     return (it < MAX_IT) ? WCORE_OK : WCORE_NONCONVERGENCE;
 }
 
+void print_rigid(const rigid3& r)
+{
+    std::cout << "cs=" << r.cs << std::endl;
+    std::cout << "offs=" << r.offs[0] << ", " << r.offs[1] << ", " << r.offs[2] << std::endl;
+    std::cout << "rot=" << 
+        "[" << r.rot[0] << ", " << r.rot[1] << ", " << r.rot[2] << "]" <<
+        "[" << r.rot[3] << ", " << r.rot[4] << ", " << r.rot[5] << "]" <<
+        "[" << r.rot[6] << ", " << r.rot[7] << ", " << r.rot[8] << "]" << std::endl;
+}
+
 extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, rigid3* xform)
 {
     if (templ == nullptr || floating == nullptr || d != 3 || m < 4 || xform == NULL)
@@ -64,11 +76,13 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
     warpcore::impl::pcl_center(t, d, m, outer.offs);
     outer.cs = 1.0f / warpcore::impl::pcl_cs(t, d, m, outer.offs);
     warpcore::impl::pcl_transform(t, d, m, false, outer.cs, outer.offs, temp_mean);
-    outer.offs[0] *= -1; outer.offs[1] *= -1; outer.offs[2] *= -1;
-
     outer.rot[0] = 1; outer.rot[1] = 0; outer.rot[2] = 0;
     outer.rot[3] = 0; outer.rot[4] = 1; outer.rot[5] = 0;
     outer.rot[6] = 0; outer.rot[7] = 0; outer.rot[8] = 1;
+    outer.offs[0] *= -1; outer.offs[1] *= -1; outer.offs[2] *= -1;
+
+   /// for (int i = 0; i < d * m; i++)
+    //    std::cout << t[i] << " -> " << temp_mean[i] << std::endl;
 
     // transform floating -> temp_mean
     rigid3 inner;
@@ -77,6 +91,16 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
     // xform(x) = outer(inner(x))
     warpcore::impl::rigid_combine(xform, &inner, &outer);
     //memcpy(xform, &inner, sizeof(rigid3));
+
+    std::cout << "INNER" << std::endl;
+    print_rigid(inner);
+
+    std::cout << "OUTER" << std::endl;
+    print_rigid(outer);
+
+    std::cout << "XFORM" << std::endl;
+    print_rigid(*xform);
+
 
     delete[] temp_mean;
 

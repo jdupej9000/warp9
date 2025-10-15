@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.IO;
 using Warp9.Utils;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Warp9.Viewer
 {
@@ -37,8 +38,8 @@ namespace Warp9.Viewer
         Mesh? mesh;
         Lut? lut;
         bool useDynamicArrays = false;
-        float[]? valueBuffer;
-        Array? posUpdateDyn, normalUpdateDyn;
+        BufferSegment<float>? valueBuffer;
+        IBufferSegment? posUpdateDyn, normalUpdateDyn;
         int posUpdateDynElemSize = 0, normalUpdateDynElemSize = 0;
         float levelValue, valueMin = 0, valueMax = 1;
         Color fillColor, pointWireColor;
@@ -46,45 +47,53 @@ namespace Warp9.Viewer
         MeshRenderStyle style;
         bool constBuffDirty = true;
 
-        bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderBlend = false;
+        BlendMode renderBlend = BlendMode.Default;
+        bool renderPoints = false, renderWire = false, renderFace = true, renderCull = false, renderDepth = true, renderLineSegments = false;
 
         private static VertexDataLayout FakeNormalsLayout = new VertexDataLayout(false)
-            .AddNormal(SharpDX.DXGI.Format.R32G32B32_Float, 0);
+            .AddNormal(MeshSegmentFormat.Float32x3, 0);
+
+
+        public bool RenderLineSegments
+        {
+            get { return renderLineSegments; }
+            set { renderLineSegments = value; constBuffDirty = true; }
+        }
 
         public bool RenderPoints
         {
             get { return renderPoints; }
-            set { renderPoints = value; constBuffDirty = true; ; }
+            set { renderPoints = value; constBuffDirty = true; }
         }
 
         public bool RenderWireframe
         {
             get { return renderWire; }
-            set { renderWire = value; constBuffDirty = true; ; }
+            set { renderWire = value; constBuffDirty = true; }
         }
 
         public bool RenderFace
         {
             get { return renderFace; }
-            set { renderFace = value; constBuffDirty = true; ; }
+            set { renderFace = value; constBuffDirty = true; }
         }
 
         public bool RenderCull
         {
             get { return renderCull; }
-            set { renderCull = value; constBuffDirty = true; ; }
+            set { renderCull = value; constBuffDirty = true; }
         }
 
         public bool RenderDepth
         {
             get { return renderDepth; }
-            set { renderDepth = value; constBuffDirty = true; ; }
+            set { renderDepth = value; constBuffDirty = true; }
         }
 
-        public bool RenderBlend
+        public BlendMode RenderBlend
         {
-            get { return renderDepth; }
-            set { renderDepth = value; constBuffDirty = true; ; }
+            get { return renderBlend; }
+            set { renderBlend = value; constBuffDirty = true; }
         }
 
         public float ValueMin
@@ -146,22 +155,22 @@ namespace Warp9.Viewer
             set { modelMatrix = value; constBuffDirty = true; }
         }
 
-        public void SetValueField(float[] val)
+        public void SetValueField(BufferSegment<float> val)
         {
             valueBuffer = val;
             Commit();
         }
 
-        public void UpdateData<T>(T[] data, MeshSegmentType kind)
+        public void UpdateData<T>(BufferSegment<T> data, MeshSegmentSemantic kind) where T: struct
         {
             switch (kind)
             {
-                case MeshSegmentType.Position:
+                case MeshSegmentSemantic.Position:
                     posUpdateDyn = data;
                     posUpdateDynElemSize = Marshal.SizeOf<T>();
                     break;
 
-                case MeshSegmentType.Normal:
+                case MeshSegmentSemantic.Normal:
                     normalUpdateDyn = data;
                     normalUpdateDynElemSize = Marshal.SizeOf<T>();
                     break;
@@ -179,15 +188,13 @@ namespace Warp9.Viewer
             {
                 // TODO: lock this
                 if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                {
-                    ReadOnlySpan<byte> posUpdData = MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize);                        
-                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
+                {              
+                    job.TryUpdateDynamicVertexBuffer(ctx, 0, posUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
                 }
 
                 if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)
                 {
-                    ReadOnlySpan<byte> normalUpdData = MiscUtils.ArrayToBytes(normalUpdateDyn, normalUpdateDynElemSize);
-                    job.TryUpdateDynamicVertexBuffer(ctx, 2, normalUpdData);
+                    job.TryUpdateDynamicVertexBuffer(ctx, 2, normalUpdateDyn.RawData);
                 }
             }
         }
@@ -202,32 +209,44 @@ namespace Warp9.Viewer
 
             job.SetShader(ctx, ShaderType.Vertex, "VsDefault");
             job.SetShader(ctx, ShaderType.Pixel, "PsDefault");
-                       
-            MeshView? posView = mesh.GetView(MeshViewKind.Pos3f);
-            if (posView is null)
+
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> posData, out MeshSegmentFormat posFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddPosition(posFmt, 0);
+
+                if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
+                    job.SetVertexBuffer(ctx, 0,posUpdateDyn.RawData, layout, useDynamicArrays);
+                else
+                    job.SetVertexBuffer(ctx, 0, posData, layout, useDynamicArrays);
+            }
+            else
             {
                 SetError("Mesh has no vertex position view.");
                 return true;
             }
 
-            if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                job.SetVertexBuffer(ctx, 0, MiscUtils.ArrayToBytes(posUpdateDyn, posUpdateDynElemSize), posView.GetLayout(), useDynamicArrays);
-            else
-                job.SetVertexBuffer(ctx, 0, posView.RawData, posView.GetLayout(), useDynamicArrays);
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Normal, out ReadOnlySpan<byte> normData, out MeshSegmentFormat normFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddNormal(posFmt, 0);
 
-
-            MeshView? normalView = mesh.GetView(MeshViewKind.Normal3f);
-            if (normalView is not null)
-                job.SetVertexBuffer(ctx, 2, normalView.RawData, normalView.GetLayout(), useDynamicArrays);
-            else if(useDynamicArrays)
-                job.SetVertexBuffer(ctx, 2, Array.Empty<byte>(), FakeNormalsLayout, useDynamicArrays, posView.RawData.Length);
+                if (useDynamicArrays)
+                    job.SetVertexBuffer(ctx, 2, Array.Empty<byte>(), FakeNormalsLayout, useDynamicArrays, posData.Length);
+                else
+                    job.SetVertexBuffer(ctx, 2, normData, layout, useDynamicArrays);
+            }
 
             if (valueBuffer is not null)
             {
                 VertexDataLayout layoutValue = new VertexDataLayout();
-                layoutValue.AddTex(SharpDX.DXGI.Format.R32_Float, 1, 0);
-                job.SetVertexBuffer(ctx, 1, MemoryMarshal.Cast<float, byte>(valueBuffer.AsSpan()), layoutValue);
+                layoutValue.AddTex(MeshSegmentFormat.Float32, 1, 0);
+                job.SetVertexBuffer(ctx, 1, valueBuffer.RawData, layoutValue);
             }
+
+            SharpDX.Direct3D.PrimitiveTopology topo = renderLineSegments ?
+                SharpDX.Direct3D.PrimitiveTopology.LineList :
+                SharpDX.Direct3D.PrimitiveTopology.TriangleList;
 
             DrawCall dcFace, dcWire;
             if (mesh.IsIndexed)
@@ -239,17 +258,13 @@ namespace Warp9.Viewer
                 }
 
                 job.SetIndexBuffer(ctx, MemoryMarshal.Cast<FaceIndices, byte>(idxData), SharpDX.DXGI.Format.R32_UInt);
-                dcFace = job.SetDrawCall(0, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.FaceCount * 3);
-                dcWire = job.SetDrawCall(1, true, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.FaceCount * 3);
+                dcFace = job.SetDrawCall(0, true, topo, 0, mesh.FaceCount * 3);
+                dcWire = job.SetDrawCall(1, true, topo, 0, mesh.FaceCount * 3);
             }
             else
             {
-                dcFace = job.SetDrawCall(0, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.VertexCount);
-                dcWire = job.SetDrawCall(1, false, SharpDX.Direct3D.PrimitiveTopology.TriangleList,
-                    0, mesh.VertexCount);
+                dcFace = job.SetDrawCall(0, false, topo, 0, mesh.VertexCount);
+                dcWire = job.SetDrawCall(1, false, topo, 0, mesh.VertexCount);
             }
 
             DrawCall dcPoints = job.SetDrawCall(2, false, SharpDX.Direct3D.PrimitiveTopology.PointList,
@@ -314,7 +329,7 @@ namespace Warp9.Viewer
                 if (renderCull) dcFace.RastMode |= RasterizerMode.CullBack;
 
                 dcFace.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcFace.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcFace.BlendMode = renderBlend;
             }
 
             if (job.TryGetDrawCall(1, out DrawCall? dcWire) && dcWire is not null)
@@ -323,14 +338,14 @@ namespace Warp9.Viewer
                 if (renderCull) dcWire.RastMode |= RasterizerMode.CullBack;
 
                 dcWire.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcWire.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcWire.BlendMode = renderBlend;
             }
 
             if (job.TryGetDrawCall(2, out DrawCall? dcPoint) && dcPoint is not null)
             {
                 dcPoint.RastMode = RasterizerMode.Solid;
                 dcPoint.DepthMode = renderDepth ? DepthMode.UseDepth : DepthMode.NoDepth;
-                dcPoint.BlendMode = renderBlend ? BlendMode.AlphaBlend : BlendMode.Default;
+                dcPoint.BlendMode = renderBlend;
             }
         }
 

@@ -44,7 +44,7 @@ namespace Warp9.Test
             using Stream srcStream = other.OpenFile(name);
 
             byte[] data = new byte[srcStream.Length];
-            srcStream.Read(data.AsSpan());
+            srcStream.ReadExactly(data.AsSpan());
             files[name] = data;
         }
 

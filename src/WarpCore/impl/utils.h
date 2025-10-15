@@ -13,7 +13,7 @@ namespace warpcore::impl
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
     void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
-    void range(const float* x, int n, float& min, float& max);
+    //void range(const float* x, int n, float& min, float& max);
     size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg);
     void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
     size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg);
@@ -57,10 +57,9 @@ namespace warpcore::impl
     template<typename T, int NDim>
     void get_rows(const T* x, int n, const int* idx, int nidx, T* r)
     {
-        for (int j = 0; j < NDim; j++) {
-            // TODO: this can become an avx2 gather if slow
-            for (int i = 0; i < nidx; i++) {
-                r[j * nidx + i] = x[j * n + idx[i]];
+        for (int i = 0; i < nidx; i++) {
+            for (int j = 0; j < NDim; j++) {
+                r[NDim * i + j] = x[NDim * idx[i] + j];
             }
         }
     }
@@ -145,7 +144,7 @@ namespace warpcore::impl
     {
         float sum = 0;
         for(int j = 0; j < NDim; j++) {
-            const float d = x[j * n + i0] - x[j * n + i1];
+            const float d = x[j + i0 * NDim] - x[j + i1 * NDim];
             sum += d * d;
         }
 
@@ -162,10 +161,20 @@ namespace warpcore::impl
         }
     }    
 
+    template<typename T, int NDim, int NStride = 1>
+    void soa_to_aos(T* x, int n, const T* y)
+    {
+        for (int d = 0; d < NDim; d++) {
+            for (int i = 0; i < n; i++) {
+                x[(i * NDim + d) * NStride] = *(y++);
+            }
+        }
+    }
+
     template<int NDim>
     int nearest(const float* x, int n, const float* t)
     {
-        const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        /*const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         __m256 bestDist = _mm256_set1_ps(FLT_MAX);
         __m256i bestIdx = _mm256_setzero_si256();
 
@@ -187,12 +196,15 @@ namespace warpcore::impl
 
         float retDist = FLT_MAX;
         int retIdx = 0;
-        reduce_idxmin(bestDist, bestIdx, retDist, retIdx);
+        reduce_idxmin(bestDist, bestIdx, retDist, retIdx);*/
 
+        const int nch = 0;
+        float retDist = FLT_MAX;
+        int retIdx = 0;
         for(int i = nch; i < n; i++) {
             float d = 0;
             for(int k = 0; k < NDim; k++) {
-                const float c = x[k * n + i] - t[k];
+                const float c = x[k + NDim * i] - t[k];
                 d += c * c;
             }
 

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Warp9.Utils;
+using Warp9.Viewer;
 
 namespace Warp9.Data
 {
-    public enum MeshSegmentType
+    public enum MeshSegmentSemantic
     {
         Position,
         Normal,
@@ -15,7 +17,70 @@ namespace Warp9.Data
         Invalid
     }
 
-    internal abstract class MeshSegment
+    public enum MeshSegmentFormat
+    {
+        Float32,
+        Float32x2,
+        Float32x3,
+        Float32x4,
+        Float32x16,
+
+        Unknown
+    }
+
+    public interface IMeshSegment
+    {
+       public int NumItems { get; }
+       public int NumStructElems { get; }
+       public int StructElemSize { get; }
+       public int Length { get; }
+       public MeshSegmentFormat Format { get; }
+    }
+
+    public class ReadOnlyMeshSegment : IMeshSegment
+    {
+        public int NumItems { get; protected init; }
+        public int NumStructElems => MiscUtils.GetNumStructElems(Format);
+        public int StructElemSize => MiscUtils.GetStructElemSize(Format);
+        public int Offset { get; protected init; }
+        public MeshSegmentFormat Format { get; protected init; }
+        public int Length => NumItems * NumStructElems * StructElemSize;
+
+        public bool CanCastTo<T>() where T : struct
+        {
+            return Marshal.SizeOf<T>() == NumStructElems * StructElemSize;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}x {1}x{2}b", NumItems, NumStructElems, StructElemSize * 8);
+        }
+
+        public static ReadOnlyMeshSegment CloneWithOffset(IMeshSegment seg, int offset)
+        {
+            return new ReadOnlyMeshSegment { 
+                NumItems = seg.NumItems,
+                Format = seg.Format,
+                Offset = offset
+            };
+        }
+        public static ReadOnlyMeshSegment Create<T>(int offs, int numItems)
+            where T : struct
+        {
+            return new ReadOnlyMeshSegment
+            {
+                Offset = offs,
+                NumItems = numItems,
+                Format = MiscUtils.TypeComposition<T>()
+            };
+        }
+       
+    }
+
+   
+
+
+   /* internal abstract class MeshSegment
     {
         protected int numItems;
         protected int structSize;
@@ -156,5 +221,5 @@ namespace Warp9.Data
         {
             return string.Format("{0}x {1}", numItems, typeof(T).Name);
         }
-    }
+    }*/
 }

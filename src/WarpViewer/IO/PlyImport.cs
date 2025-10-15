@@ -222,10 +222,10 @@ namespace Warp9.IO
             List<FaceIndices>? idx = null;
 
             if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.PosX)))
-                pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Position);
+                pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.NormX)))
-                norm = mb.GetSegmentForEditing<Vector3>(MeshSegmentType.Normal);
+                norm = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;
 
             if (elements.Exists((t) => t.HasPropertyWithSemantic(PlyPropertySemantic.FaceIndices)))
                 idx = mb.GetIndexSegmentForEditing();

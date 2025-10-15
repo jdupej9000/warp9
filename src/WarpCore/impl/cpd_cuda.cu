@@ -86,7 +86,7 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
 {
     asm volatile (".pragma \"enable_smem_spilling\";");
 
-    __shared__ float t012[3 * BLOCK_SIZE];
+    volatile __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
     int i = thread + blockIdx.x * BLOCK_SIZE;
@@ -150,7 +150,7 @@ __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float 
 {
     asm volatile (".pragma \"enable_smem_spilling\";");
 
-    __shared__ float x012sum[4 * BLOCK_SIZE];
+    volatile __shared__ float x012sum[4 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
     int j = thread + blockIdx.x * BLOCK_SIZE;
@@ -220,7 +220,7 @@ __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx)
 {
     asm volatile (".pragma \"enable_smem_spilling\";");
 
-    __shared__ float t012[3 * BLOCK_SIZE];
+    volatile __shared__ float t012[3 * BLOCK_SIZE];
 
     int thread = threadIdx.x;
     int i = thread + blockIdx.x * BLOCK_SIZE;

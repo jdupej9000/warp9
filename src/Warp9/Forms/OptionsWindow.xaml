@@ -34,9 +34,7 @@
                     <ComboBoxItem>Red-black</ComboBoxItem>
                 </ComboBox>
                 <Label Height="8" />
-
-                <Label Height="8" />
-
+          
                 <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Viewer</TextBlock>
                 <TextBlock Margin="2">Camera control</TextBlock>
                 <ComboBox Margin="2" SelectedIndex="{Binding Path=CameraControlIndex, Mode=TwoWay}">
@@ -44,6 +42,16 @@
                     <ComboBoxItem>Arcball</ComboBoxItem>
                     <ComboBoxItem>Plane control</ComboBoxItem>
                 </ComboBox>
+                <Label Height="8" />
+                
+                <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Application</TextBlock>
+                <TextBlock Margin="2">Number of worker threads</TextBlock>
+                <TextBox Margin="2" Height="24" Text="{Binding Path=NumWorkerThreads, Mode=TwoWay}"/>
+                <TextBlock Margin="2" Style="{DynamicResource TextBlockDimmed}">* Takes effect next time a project is loaded.</TextBlock>
+                
+                <Label Height="4" />
+                
+                <CheckBox Margin="2" IsChecked="{Binding Path=PreventSleepWhenBusy}">Prevent the computer from sleeping when a job is in progress</CheckBox>
 
             </StackPanel>
         </ScrollViewer>

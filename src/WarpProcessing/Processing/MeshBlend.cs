@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Warp9.Processing
 {
     public static class MeshBlend
     {
-        public static void Add(Span<float> dest, ReadOnlySpan<float> src, float factor = 1)
+        public static void Add(Span<Vector3> dest, ReadOnlySpan<Vector3> src, float factor = 1)
         {
             if(dest.Length != src.Length)
                 throw new InvalidOperationException();
@@ -20,7 +21,7 @@ namespace Warp9.Processing
                 dest[i] += factor * src[i];
         }
 
-        public static void Scale(Span<float> dest, float factor = 1)
+        public static void Scale(Span<Vector3> dest, float factor = 1)
         {
             for(int i = 0; i < dest.Length; i++)
                 dest[i] *= factor;
@@ -45,8 +46,8 @@ namespace Warp9.Processing
                 else if (3 * 4 * pcl.Item1.VertexCount != meanPos.Length)
                     throw new InvalidOperationException();
 
-                pcl.Item1.TryGetRawData(MeshSegmentType.Position, -1, out ReadOnlySpan<byte> byteData);
-                Add(MemoryMarshal.Cast<byte, float>(meanPos.AsSpan()), MemoryMarshal.Cast<byte, float>(byteData), pcl.Item2);
+                pcl.Item1.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> d);
+                Add(MemoryMarshal.Cast<byte, Vector3>(meanPos.AsSpan()), d, pcl.Item2);
 
                 n++;
             }
@@ -54,9 +55,9 @@ namespace Warp9.Processing
             if (n == 0)
                 return null;
 
-            Scale(MemoryMarshal.Cast<byte, float>(meanPos.AsSpan()), 1.0f / n);
+            Scale(MemoryMarshal.Cast<byte, Vector3>(meanPos.AsSpan()), 1.0f / n);
 
-            return PointCloud.FromRawSoaPositions(meanPos.Length / 12, meanPos); 
+            return PointCloud.FromRawPositions(meanPos.Length / 12, meanPos); 
         }
     }
 }
