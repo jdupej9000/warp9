@@ -33,6 +33,8 @@
                     <ComboBoxItem>Light</ComboBoxItem>
                     <ComboBoxItem>Red-black</ComboBoxItem>
                 </ComboBox>
+                <Label Height="4" />
+                <CheckBox Margin="2" IsChecked="{Binding Path=ShowProjectItemIds}">Show project item IDs</CheckBox>
                 <Label Height="8" />
           
                 <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Viewer</TextBlock>

@@ -62,6 +62,9 @@ namespace Warp9
         [JsonPropertyName("appearance.theme-index")]
         public int ThemeIndex { get; set; } = 0;
 
+        [JsonPropertyName("appearance.show-project-item-id")]
+        public bool ShowProjectItemIds { get; set; } = true;
+
         [JsonPropertyName("viewer.camera-control-index")]
         public int CameraControlIndex { get; set; } = 0;
 
@@ -69,6 +72,6 @@ namespace Warp9
         public int NumWorkerThreads { get; set; } = Environment.ProcessorCount;
 
         [JsonPropertyName("app.prevent-sleep-when-busy")]
-        public bool PreventSleepWhenBusy { get; set; } = true;
+        public bool PreventSleepWhenBusy { get; set; } = true;        
     }
 }

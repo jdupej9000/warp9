@@ -33,12 +33,26 @@ namespace Warp9.ProjectExplorer
         }
 
         public string Name { get; set; } = string.Empty;
+        public string DisplayName 
+        { 
+            get 
+            {
+                string? adv = GetAdvancedNamePart();
+                if (adv is null || !Options.Instance.ShowProjectItemIds) return Name;
+                else return string.Format("{0} ({1})", Name, adv);
+            } 
+        }
         public ProjectItemKind Kind => GetKind();
         public ObservableCollection<ProjectItem> Children { get; set; } = new ObservableCollection<ProjectItem>();
         public Warp9ViewModel ParentViewModel { get; init; }
         public Type? PagePresenterType { get; init; }
         public bool IsNodeExpanded => true;
         public virtual void ConfigurePresenter(IWarp9View pres) { }
+
+        protected virtual string? GetAdvancedNamePart()
+        {
+            return null;
+        }
 
         public virtual void Update()
         {
@@ -131,6 +145,11 @@ namespace Warp9.ProjectExplorer
         public long Key { get; init; }
         public string? ExplicitName { get; init; }
 
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
+
         public override void ConfigurePresenter(IWarp9View pres)
         {
             if (pres is not SpecimenTablePage page)
@@ -195,6 +214,11 @@ namespace Warp9.ProjectExplorer
 
         public long Key { get; init; }
 
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
+
         public override void Update()
         {
             if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
@@ -257,6 +281,11 @@ namespace Warp9.ProjectExplorer
         }
 
         public long Key { get; init; }
+
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
 
         public override void Update()
         {

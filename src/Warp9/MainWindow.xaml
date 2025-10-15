@@ -86,7 +86,7 @@
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Background="{Binding Kind, Converter={StaticResource ProjItemTypeCvt}}" Width="16" Height="16" Margin="0,0,6,0" />
-                                    <TextBlock Text="{Binding Name}"/>
+                                    <TextBlock Text="{Binding DisplayName}"/>
                                 </StackPanel>                                
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
