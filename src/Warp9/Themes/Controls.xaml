@@ -4223,8 +4223,8 @@
         </Setter>
     </Style>
     <ControlTemplate x:Key="TopLevelMenuItemControlTemplate" TargetType="{x:Type MenuItem}">
-        <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-            <Grid x:Name="Grid" VerticalAlignment="Center">
+        <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="3" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+            <Grid x:Name="Grid" VerticalAlignment="Center" Margin="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
