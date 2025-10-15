@@ -52,7 +52,7 @@ namespace Warp9.JobItems
             WarpCoreStatus initStat = CpdContext.TryInitNonrigidCpd(out CpdContext? cpdCtx, baseMesh, cpdCfg);
             if (initStat != WarpCoreStatus.WCORE_OK || cpdCtx is null)
             {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "CPD-LR initialization failed.");
+                ctx.WriteLog(ItemIndex, MessageKind.Error, string.Format("CPD-LR initialization failed ({0}).", initStat));
                 return false;
             }
 

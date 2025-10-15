@@ -64,5 +64,8 @@ namespace Warp9
 
         [JsonPropertyName("viewer.camera-control-index")]
         public int CameraControlIndex { get; set; } = 0;
+
+        [JsonPropertyName("app.num-worker-threads")]
+        public int NumWorkerThreads { get; set; } = Environment.ProcessorCount;
     }
 }

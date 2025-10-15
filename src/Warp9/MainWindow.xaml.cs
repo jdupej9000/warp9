@@ -182,7 +182,7 @@ namespace Warp9
         private void SetProject(Project project)
         {
             model?.Dispose();
-            model = new Warp9Model(project);
+            model = new Warp9Model(project, Options.Instance.NumWorkerThreads);
             model.JobEngine.ProgressChanged += JobEngine_ProgressChanged;
             model.LogMessage += (s, e) => pageLog.AddMessage(e);
             model.ModelEvent += Model_ModelEvent;
