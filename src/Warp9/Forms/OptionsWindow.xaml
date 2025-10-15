@@ -47,8 +47,11 @@
                 <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Application</TextBlock>
                 <TextBlock Margin="2">Number of worker threads</TextBlock>
                 <TextBox Margin="2" Height="24" Text="{Binding Path=NumWorkerThreads, Mode=TwoWay}"/>
-                <TextBlock Margin="2" Style="{DynamicResource TextBlockDimmed}">Takes effect next time a project is loaded.</TextBlock>
+                <TextBlock Margin="2" Style="{DynamicResource TextBlockDimmed}">* Takes effect next time a project is loaded.</TextBlock>
                 
+                <Label Height="4" />
+                
+                <CheckBox Margin="2" IsChecked="{Binding Path=PreventSleepWhenBusy}">Prevent the computer from sleeping when a job is in progress</CheckBox>
 
             </StackPanel>
         </ScrollViewer>

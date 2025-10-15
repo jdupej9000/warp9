@@ -92,6 +92,7 @@ namespace Warp9
                 {
                     lblStatusMain.Text = "Ready.";
                     prbStatusProgress.Visibility = Visibility.Hidden;
+                    WindowsSleepPrevention.AllowSleep();
 
                     UpdateProjectExplorer();
                 }
@@ -201,6 +202,9 @@ namespace Warp9
                 {
                     case ModelEventKind.JobStarting:
                         frameMain.NavigationService.Navigate(pageLog);
+                        if (Options.Instance.PreventSleepWhenBusy)
+                            WindowsSleepPrevention.PreventSleep();
+
                         break;
 
                     case ModelEventKind.ProjectSaved:
