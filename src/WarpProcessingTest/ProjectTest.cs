@@ -128,5 +128,19 @@ namespace Warp9.Test
             Assert.IsNotNull(loaded);
             // TODO: assert project equality
         }
+
+        [TestMethod]
+        public void DoubleZipLoadReadOnlyTest()
+        {
+            using Warp9ProjectArchive arch = new Warp9ProjectArchive(
+                Path.Combine(TestUtils.AssetsPath, "project1.w9"), false);
+
+            using Stream s1 = arch.OpenFile("bitmap.png");
+            using Stream s2 = arch.OpenFile("bitmap.png");
+
+            Assert.AreEqual(s1.ReadByte(), s2.ReadByte());
+            Assert.AreEqual(s1.ReadByte(), s2.ReadByte());
+            Assert.AreEqual(s1.ReadByte(), s2.ReadByte());
+        }
     }
 }
