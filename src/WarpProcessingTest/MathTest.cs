@@ -107,6 +107,8 @@ namespace Warp9.Test
                 Rigid3.Scale(0.4f) *
                 Rigid3.RotateAboutZ(0.1f);
 
+            Console.WriteLine(rigid.ToString());
+
             PointCloud pcl1 = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pcl2 = RigidTransform.TransformPosition(pcl1, rigid)!;
 

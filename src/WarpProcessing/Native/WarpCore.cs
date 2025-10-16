@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Warp9.Utils;
@@ -177,11 +178,13 @@ namespace Warp9.Native
             return new Vector3(Vector3.Dot(rot0, v), Vector3.Dot(rot1, v), Vector3.Dot(rot2, v));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Vector3 Rotate(Vector3 v)
         {
             return rot0 * v.X + rot1 * v.Y + rot2 * v.Z;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Vector3 Transform(Vector3 v)
         {
             return Rotate(v - offset) / cs;
@@ -237,6 +240,7 @@ namespace Warp9.Native
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator* (Rigid3 left, Vector3 right)
         {
             return left.Transform(right);
