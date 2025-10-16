@@ -145,13 +145,118 @@ namespace Warp9.Native
         public float cs;
         public Vector3 rot0, rot1, rot2;
 
-        public Matrix4x4 ToMatrix()
+        public readonly Matrix4x4 ToMatrix()
         {
             float csr = 1.0f / cs;
             return new Matrix4x4(csr * rot0.X, csr * rot0.Y, csr * rot0.Z, 0,
                csr * rot1.X, csr * rot1.Y, csr * rot1.Z, 0,
                csr * rot2.X, csr * rot2.Y, csr * rot2.Z, 0,
                0, 0, 0, 1) * Matrix4x4.CreateTranslation(-offset);
+        }
+        
+        public readonly Rigid3 Invert()
+        {
+            Rigid3 ret = new Rigid3
+            {
+                cs = 1.0f / cs,
+                rot0 = new Vector3(rot0.X, rot1.X, rot2.X),
+                rot1 = new Vector3(rot0.Y, rot1.Y, rot2.Y),
+                rot2 = new Vector3(rot0.Z, rot1.Z, rot2.Z)
+            };
+
+            ret.offset = new Vector3(
+                -Vector3.Dot(ret.rot0, offset),
+                -Vector3.Dot(ret.rot1, offset),
+                -Vector3.Dot(ret.rot2, offset));
+
+            return ret;
+        }
+
+        public readonly Vector3 Unrotate(Vector3 v)
+        {
+            return new Vector3(Vector3.Dot(rot0, v), Vector3.Dot(rot1, v), Vector3.Dot(rot2, v));
+        }
+
+        public readonly Vector3 Rotate(Vector3 v)
+        {
+            return rot0 * v.X + rot1 * v.Y + rot2 * v.Z;
+        }
+
+        public readonly Vector3 Transform(Vector3 v)
+        {
+            return Rotate(v - offset) / cs;
+        }
+
+        public static Rigid3 operator* (float left, Rigid3 right)
+        {
+            return new Rigid3
+            {
+                offset = right.offset,
+                cs = right.cs / left,
+                rot0 = right.rot0,
+                rot1 = right.rot1,
+                rot2 = right.rot2
+            };
+        }
+
+        public static Rigid3 Translation(Vector3 negOffs)
+        {
+            return new Rigid3
+            {
+                cs = 1,
+                offset = negOffs,
+                rot0 = Vector3.UnitX,
+                rot1 = Vector3.UnitY,
+                rot2 = Vector3.UnitZ
+            };
+        }
+
+        public static Rigid3 Scale(float scale)
+        {
+            return new Rigid3
+            {
+                cs = 1 / scale,
+                offset = Vector3.Zero,
+                rot0 = Vector3.UnitX,
+                rot1 = Vector3.UnitY,
+                rot2 = Vector3.UnitZ
+            };
+        }
+
+        public static Rigid3 RotateAboutZ(float angleRad)
+        {
+            (float s, float c) = MathF.SinCos(angleRad);
+
+            return new Rigid3
+            {
+                cs = 1,
+                offset = Vector3.Zero,
+                rot0 = new Vector3(c, -s, 0),
+                rot1 = new Vector3(s, c, 0),
+                rot2 = Vector3.UnitZ
+            };
+        }
+
+        public static Vector3 operator* (Rigid3 left, Vector3 right)
+        {
+            return left.Transform(right);
+        }
+
+        public static Rigid3 operator* (Rigid3 left, Rigid3 right)
+        {
+            // ret(x) = left(right(x))
+            // see rigid_combine in gpa_impl.cpp
+            // H,g = left
+            // R,f = right
+            float csr = left.cs * right.cs;
+            return new Rigid3
+            {
+                offset = right.offset + csr * right.Unrotate(left.offset),
+                cs = csr,
+                rot0 = left.Rotate(right.rot0),
+                rot1 = left.Rotate(right.rot1),
+                rot2 = left.Rotate(right.rot2)
+            };
         }
 
         public override readonly string ToString()
@@ -223,7 +328,6 @@ namespace Warp9.Native
 
     public static class WarpCore
     {
-
         [DllImport("WarpCore.dll")]
         public static extern int set_optpath(int path);
 

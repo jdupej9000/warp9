@@ -63,7 +63,24 @@ namespace Warp9.Data
                 dest[i] = new Vector3(x[i], y[i], z[i]);
         }
 
-        public static void CopySoaToAos(Span<Vector4> dest, ReadOnlySpan<byte> src)
+        public static PointCloud PermuteSegment<T>(PointCloud pcl, MeshSegmentSemantic sem, ReadOnlySpan<int> indices)
+            where T : struct
+        {
+            MeshBuilder mb = new MeshBuilder();
+
+            if (!pcl.TryGetData(sem, out BufferSegment<T> data))
+                throw new InvalidOperationException();
+
+            MeshSegmentBuilder<T> outSeg = mb.GetSegmentForEditing<T>(sem, false);
+
+            int n = indices.Length;
+            for (int i = 0; i < n; i++)
+                outSeg.Data.Add(data.Data[indices[i]]);
+
+            return mb.ToPointCloud();
+        }
+
+       /* public static void CopySoaToAos(Span<Vector4> dest, ReadOnlySpan<byte> src)
         {
             int n = src.Length / 16;
             if (dest.Length < n)
@@ -84,7 +101,7 @@ namespace Warp9.Data
             T[] ret = new T[n];
             CopySoaToAos<T>(MemoryMarshal.Cast<T, byte>(ret.AsSpan()), src);
             return ret;
-        }
+        }*/
 
         public static void CopySoaToAos<T>(Span<byte> dest, ReadOnlySpan<byte> src) where T:struct
         {

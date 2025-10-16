@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
+using Warp9.Native;
 
 namespace Warp9.Processing
 {
@@ -33,12 +34,31 @@ namespace Warp9.Processing
             return mb.ToPointCloud();
         }
 
-        public static PointCloud MakeSymmetricRigid(PointCloud pcl, PointCloud lms)
+        public static PointCloud MakeBilateralFlippedLandmarks(PointCloud lms)
         {
+            if (!lms.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> lmsPos))
+                throw new InvalidOperationException();
+
+            int[] lmsRevOrder = LandmarkUtils.ReverseBilateralLandmarkIndices(lmsPos.Data);
+            return MeshUtils.PermuteSegment<Vector3>(lms, MeshSegmentSemantic.Position, lmsRevOrder.AsSpan());
+        }
+
+        public static PointCloud MakeSymmetricRigid(Mesh pcl, PointCloud lms)
+        {           
             PointCloud pclMirror = FlipPosCoord(pcl, true, false, false);
-            PointCloud lmsMirror = FlipPosCoord(lms, true, false, false);
-            
-            throw new NotImplementedException();
+            PointCloud lmsRevMirror = FlipPosCoord(MakeBilateralFlippedLandmarks(lms), true, false, false);
+
+            Gpa gpa = Gpa.Fit(new PointCloud[2] { lms, lmsRevMirror });
+            PointCloud pclReg = RigidTransform.TransformPosition(pcl, gpa.GetTransform(0)) ??
+                throw new InvalidOperationException();
+            PointCloud pclMirrorReg = RigidTransform.TransformPosition(pclMirror, gpa.GetTransform(1)) ??
+                throw new InvalidOperationException();
+
+            PointCloud symmSnap = MeshSnap.SymmetricSnap(pclReg, pclMirrorReg, pcl) ?? 
+                throw new InvalidOperationException();
+
+            return RigidTransform.TransformPosition(symmSnap, gpa.GetTransform(0).Invert()) ??
+                throw new InvalidOperationException();
         }
 
     }
