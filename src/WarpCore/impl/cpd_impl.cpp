@@ -91,13 +91,10 @@ namespace warpcore::impl
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        if (get_optpath() >= WCORE_OPTPATH::AVX512)
-        {
+        if (get_optpath() >= WCORE_OPTPATH::AVX512) {
             cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
             cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
-        }
-        else
-        {
+        } else {
             cpd_psumpt1_avx2(m, n, thresh, factor, denom, x, t, psum, pt1);
             cpd_p1px_avx2(m, n, thresh, factor, denom, x, t, psum, p1, px);
         }
@@ -333,8 +330,7 @@ namespace warpcore::impl
                 const float rcp = 1.0f / sumCorr;
                 psum[i] = rcp;
                 pt1[i] = sumAccum * rcp;
-            }
-            else {
+            } else {
                 psum[i] = PT1_CUTOFF;
                 pt1[i] = 0;
             }

@@ -59,8 +59,7 @@ namespace warpcore::impl
         if (!fun(p3i_clamp(cur, _mm_setzero_si128(), dimm1), ctx))
             return true;
 
-        for (;;)
-        {
+        for (;;) {
             p3f min_mask = p3f_min_mask_full(tmax);
             if (p3i_is_zero(_mm_castps_si128(min_mask)))
                 break;

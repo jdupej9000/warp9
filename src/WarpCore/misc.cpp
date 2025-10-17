@@ -77,8 +77,7 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
     case WCINFO_CUDA_DRIVER_VERSION:
         if (cudaDriverGetVersion(&version) == cudaSuccess && version != 0) {
             ss << version / 1000 << "." << (version / 10) % 100;;
-        }
-        else {
+        } else {
             ss << "Cannot get version.";
         }
         break;

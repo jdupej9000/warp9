@@ -105,8 +105,7 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
                     if (qi.invert_dir) {
                         alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
                         qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, dd, ((float*)qi.info) + i);
-                    }
-                    else {
+                    } else {
                         qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
                     }
                 });
@@ -118,8 +117,7 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
                     float dd[3]{ -dir[3 * i], -dir[3 * i + 1], -dir[3 * i + 2] };
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dd, ((float*)qi.info) + i);
                 }
-            }
-            else {
+            } else {
                 for (int i = 0; i < n; i++)
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
             }
@@ -131,8 +129,7 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
                     if (qi.invert_dir) {
                         alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
                         qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, dd, ((float*)qi.info) + 4 * i);
-                    }
-                    else {
+                    } else {
                         qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
                     }                      
                 });           
