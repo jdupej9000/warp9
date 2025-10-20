@@ -409,7 +409,7 @@ namespace Warp9.Test
                 p0[i] += 1.5f * camera;
 
             DateTime t0 = DateTime.Now;
-            ctx.RaycastAos(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
+            ctx.Raycast(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
             DateTime t1 = DateTime.Now;
             double seconds = (t1 - t0).TotalSeconds;
 
@@ -491,7 +491,7 @@ namespace Warp9.Test
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ctx.NearestAos(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
+            ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
            // Parallel.For(0, bitmapSize, (i) =>
            // {
             //    ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, 1.0f, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));

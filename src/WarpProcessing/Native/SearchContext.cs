@@ -38,28 +38,7 @@ namespace Warp9.Native
             return new Aabb();
         }
 
-        /*public bool NearestSoa(ReadOnlySpan<byte> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
-        {
-            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
-                return false;
-
-            SearchQueryConfig cfg = new SearchQueryConfig();
-            cfg.max_dist = maxDist;
-
-            unsafe
-            {
-                fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
-                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
-                fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
-                {
-                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, ref cfg, 
-                        (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
-                }
-            }
-        }*/
-
-        public bool NearestAos(ReadOnlySpan<Vector3> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        public bool Nearest(ReadOnlySpan<Vector3> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -74,66 +53,21 @@ namespace Warp9.Native
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY | (int)SEARCH_KIND.SEARCH_SOURCE_IS_AOS, ref cfg,
+                        nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, ref cfg,
                         (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
         }
 
-       /* public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
-        {
-            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
-                return false;
-
-            SearchQueryConfig cfg = new SearchQueryConfig();
-            int kind = invertDir ? 
-                (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_INVERT_DIRECTION) : 
-                (int)SEARCH_KIND.SEARCH_RAYCAST_T;
-
-            unsafe
-            {
-                fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
-                fixed (byte* srcDirSoaPtr = &MemoryMarshal.GetReference(srcDirSoa))
-                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
-                fixed (float* hitTPtr = &MemoryMarshal.GetReference(hitT))
-                {
-                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, kind, ref cfg,
-                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
-                }
-            }
-        }
-
-        public bool RaycastSoa(ReadOnlySpan<byte> srcSoa, ReadOnlySpan<byte> srcDirSoa, int n, Span<int> hitIndex, Span<ResultInfoTBary> hitT)
-        {
-            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
-                return false;
-
-            SearchQueryConfig cfg = new SearchQueryConfig();
-
-            unsafe
-            {
-                fixed (byte* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
-                fixed (byte* srcDirSoaPtr = &MemoryMarshal.GetReference(srcDirSoa))
-                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
-                fixed (ResultInfoTBary* hitTPtr = &MemoryMarshal.GetReference(hitT))
-                {
-                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
-                        nativeContext, (int)SEARCH_KIND.SEARCH_RAYCAST_TBARY, ref cfg,
-                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
-                }
-            }
-        }*/
-
-        public bool RaycastAos(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
+        public bool Raycast(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<float> hitT, bool invertDir = false)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
 
             SearchQueryConfig cfg = new SearchQueryConfig();
             int kind = invertDir ?
-               (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS | SEARCH_KIND.SEARCH_INVERT_DIRECTION) :
-               (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_SOURCE_IS_AOS);
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_T | SEARCH_KIND.SEARCH_INVERT_DIRECTION) :
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_T);
 
             unsafe
             {
