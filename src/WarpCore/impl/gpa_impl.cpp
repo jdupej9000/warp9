@@ -67,11 +67,11 @@ namespace warpcore::impl
         memset(h, 0, sizeof(float) * d * d);
         cblas_sgemm(CblasColMajor, CblasTrans, CblasTrans, d, d, d, 1.0f, vt, d, u, d, 0.0f, h, d);
  
-        if (mat3_det(h) <= 0) {
-            throw std::exception{ "Got a reflection." };
-        } else {
+       // if (mat3_det(h) <= 0) {
+        //    throw std::exception{ "Got a reflection." };
+        //} else {
             memcpy(rot, h, sizeof(float) * d * d);
-        }
+        //}
 
         // delete[] cov; NOT NEEDED
 
