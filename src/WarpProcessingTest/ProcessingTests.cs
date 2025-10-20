@@ -67,14 +67,14 @@ namespace Warp9.Test
         [TestMethod]
         public void ReverseBilateralLandmarkIndicesTest()
         {
-            string facesFile = LongRunningTests.GetExternalDependency("faces.w9");
+            string facesFile = ProcessingTestUtils.GetExternalDependency("faces.w9");
 
             using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
             using Project project = Project.Load(archive);
 
             for (int row = 0; row < 10; row++)
             {
-                PointCloud pcl = LongRunningTests.GetPointCloudFromProject(project, 21, "Landmarks", row);
+                PointCloud pcl = ProcessingTestUtils.GetPointCloudFromProject(project, 21, "Landmarks", row);
                 if (!(pcl.TryGetData( MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos)))
                 {
                     Assert.Fail("Cannot get pcl view.");
@@ -86,6 +86,24 @@ namespace Warp9.Test
 
                 Assert.AreEqual("3,2,1,0,4,5,7,6,8,10,9,13,14,11,12,15,16,17,19,18", order);
             }
+        }
+
+        [TestMethod]
+        public void SymmetrizeMeshRigidTest()
+        {
+            string facesFile = ProcessingTestUtils.GetExternalDependency("faces.w9");
+
+            using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
+            using Project project = Project.Load(archive);
+            Mesh m = ProcessingTestUtils.GetMeshFromProject(project, 21, "Model", 0);
+            PointCloud l = ProcessingTestUtils.GetPointCloudFromProject(project, 21, "Landmarks", 0);
+
+            PointCloud symm = MeshSymmetrize.MakeSymmetricRigid(m, l);
+
+            HeadlessRenderer rend = TestUtils.CreateRenderer(false);
+            TestUtils.Render(rend, "SymmetrizeMeshRigidTest_0.png", Matrix4x4.CreateScale(0.025f),
+                new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(symm, m), col: Color.Gray, mrs: MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals),
+                new TestRenderItem(TriStyle.MeshWire, m, mrs: MeshRenderStyle.ColorFlat, wireCol: Color.Blue));
         }
 
         [TestMethod]

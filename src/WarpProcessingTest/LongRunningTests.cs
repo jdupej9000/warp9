@@ -12,55 +12,11 @@ namespace Warp9.Test
     [TestClass]
     public class LongRunningTests
     {
-        public static string GetExternalDependency(string fileName)
-        {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string ret = Path.Combine(path, fileName);
-
-            if (!File.Exists(ret))
-                Assert.Inconclusive("External dependency could not be found.");
-
-            return ret;
-        }
-
-        public static Mesh GetMeshFromProject(Project proj, long specTableKey, string columnName, int index)
-        {
-            SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
-               proj, specTableKey, columnName);
-
-            if (column is null)
-                Assert.Fail("Column is missing in project.");
-
-            if (column.ColumnType != SpecimenTableColumnType.Mesh)
-                Assert.Fail("Column does not contain meshes.");
-
-            Mesh? ret = ModelUtils.LoadSpecimenTableRef<Mesh>(proj, column, index);
-            Assert.IsNotNull(ret);
-
-            return ret;
-        }
-
-        public static PointCloud GetPointCloudFromProject(Project proj, long specTableKey, string columnName, int index)
-        {
-            SpecimenTableColumn<ProjectReferenceLink>? column = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
-               proj, specTableKey, columnName);
-
-            if (column is null)
-                Assert.Fail("Column is missing in project.");
-
-            if (column.ColumnType != SpecimenTableColumnType.PointCloud)
-                Assert.Fail("Column does not contain point clouds.");
-
-            PointCloud? ret = ModelUtils.LoadSpecimenTableRef<PointCloud>(proj, column, index);
-            Assert.IsNotNull(ret);
-
-            return ret;
-        }
-
+       
         [TestMethod]
         public void FacesCpdDcaTest()
         {
-            string facesFile = GetExternalDependency("faces.w9");
+            string facesFile = ProcessingTestUtils.GetExternalDependency("faces.w9");
 
             using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
             using Project project = Project.Load(archive);
