@@ -60,8 +60,7 @@ namespace warpcore::impl
 					p3f_store(y + 3 * i, transformed);
 				}
 			}
-		}
-		else {
+		} else {
 			for (int i = 0; i < m; i++) {
 				const float* row = x + 3 * i;
 				p3f transformed = transform(p3f_set(row), noaffine);

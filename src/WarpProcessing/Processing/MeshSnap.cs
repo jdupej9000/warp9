@@ -28,7 +28,7 @@ namespace Warp9.Processing
             int[] hitIndex = ArrayPool<int>.Shared.Rent(nv);
 
             if (src.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclNrData) &&
-               searchCtx.NearestAos(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
+               searchCtx.Nearest(pclNrData, nv, 1e3f, hitIndex.AsSpan(), proj.AsSpan()))
             {
                 MeshBuilder mb = new MeshBuilder();
                 List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
@@ -71,9 +71,9 @@ namespace Warp9.Processing
             if (src.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclNrPos) &&
                 src.TryGetData(MeshSegmentSemantic.Normal, out ReadOnlySpan<Vector3> pclNrNormal))
             {
-                if (!searchCtx.NearestAos(pclNrPos, nv, 1e3f, hitIndexNN.AsSpan(), projNN.AsSpan()) ||
-                    !searchCtx.RaycastAos(pclNrPos, pclNrNormal, nv, hitIndexRay0.AsSpan(), projRay0.AsSpan(), false) ||
-                    !searchCtx.RaycastAos(pclNrPos, pclNrNormal, nv, hitIndexRay1.AsSpan(), projRay1.AsSpan(), true))
+                if (!searchCtx.Nearest(pclNrPos, nv, 1e3f, hitIndexNN.AsSpan(), projNN.AsSpan()) ||
+                    !searchCtx.Raycast(pclNrPos, pclNrNormal, nv, hitIndexRay0.AsSpan(), projRay0.AsSpan(), false) ||
+                    !searchCtx.Raycast(pclNrPos, pclNrNormal, nv, hitIndexRay1.AsSpan(), projRay1.AsSpan(), true))
                     return null;
 
                 MeshBuilder mb = new MeshBuilder();
@@ -140,11 +140,11 @@ namespace Warp9.Processing
 
                 int[] projIdxOrig = ArrayPool<int>.Shared.Rent(nv);
                 ResultInfoDPtBary[] projOrig = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
-                searchMirror.NearestAos(rawOriginal, nv, 1000, projIdxOrig, projOrig);
+                searchMirror.Nearest(rawOriginal, nv, 1000, projIdxOrig, projOrig);
 
                 int[] projIdxMirror = ArrayPool<int>.Shared.Rent(nv);
                 ResultInfoDPtBary[] projMirror = ArrayPool<ResultInfoDPtBary>.Shared.Rent(nv);
-                searchOriginal.NearestAos(rawMirror, nv, 1000, projIdxMirror, projMirror);
+                searchOriginal.Nearest(rawMirror, nv, 1000, projIdxMirror, projMirror);
 
 
                 for (int i = 0; i < nv; i++)

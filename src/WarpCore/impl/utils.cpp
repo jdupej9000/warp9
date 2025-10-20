@@ -152,8 +152,7 @@ namespace warpcore::impl
 				if ((m >> i) & 0x1) {
 					x[ib + i] = *(xc++);
 					ret++;
-				}
-				else if (zero) {
+				} else if (zero) {
 					x[ib + i] = 0;
 				}
 			}
@@ -164,8 +163,7 @@ namespace warpcore::impl
 			if ((m >> i) & 0x1) {
 				x[nb + i] = *(xc++);
 				ret++;
-			}
-			else if (zero) {
+			} else if (zero) {
 				x[nb + i] = 0;
 			}
 		}

@@ -87,55 +87,34 @@ extern "C" int search_query(const void* ctx, int kind, search_query_config* cfg,
 
         switch(kind & ~SEARCH_INVERT_DIRECTION) {
         case SEARCH_NN_DPTBARY:
-            foreach_row<float, 3, query_info&>(orig, n, qi,
-                [](const float* o, int i, query_info& qi) {
-                    qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, o, qi.cfg->max_dist, (float*)qi.info + PtTri_DPtBary::ResultSize * i);
-                });
-            return WCORE_OK;
-
-        case SEARCH_NN_DPTBARY | SEARCH_SOURCE_IS_AOS:
             for (int i = 0; i < n; i++) {
                 qi.hit[i] = trigrid_nn<PtTri_DPtBary>(qi.g, orig + 3 * i, cfg->max_dist, (float*)qi.info + PtTri_DPtBary::ResultSize * i);
             }
             return WCORE_OK;
 
-        case SEARCH_RAYCAST_T:            
-            foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                [](const float* o, const float* d, int i, query_info& qi) {
-                    if (qi.invert_dir) {
-                        alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
-                        qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, dd, ((float*)qi.info) + i);
-                    }
-                    else {
-                        qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, o, d, ((float*)qi.info) + i);
-                    }
-                });
-            return WCORE_OK;
-
-        case SEARCH_RAYCAST_T | SEARCH_SOURCE_IS_AOS:
+        case SEARCH_RAYCAST_T:
             if (qi.invert_dir) {
                 for (int i = 0; i < n; i++) {
                     float dd[3]{ -dir[3 * i], -dir[3 * i + 1], -dir[3 * i + 2] };
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dd, ((float*)qi.info) + i);
                 }
-            }
-            else {
+            } else {
                 for (int i = 0; i < n; i++)
                     qi.hit[i] = trigrid_raycast<RayTri_T>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + i);
             }
             return WCORE_OK;
 
-        case SEARCH_RAYCAST_TBARY:           
-            foreach_row2<float, 3, query_info&>(orig, dir, n, qi,
-                [](const float* o, const float* d, int i, query_info& qi) {
-                    if (qi.invert_dir) {
-                        alignas(16) float dd[3]{ -d[0], -d[1], -d[2] };
-                        qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, dd, ((float*)qi.info) + 4 * i);
-                    }
-                    else {
-                        qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, o, d, ((float*)qi.info) + 4 * i);
-                    }                      
-                });           
+        case SEARCH_RAYCAST_TBARY:
+            if (qi.invert_dir) {
+                for (int i = 0; i < n; i++) {
+                    float dd[3]{ -dir[3 * i], -dir[3 * i + 1], -dir[3 * i + 2] };
+                    qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, orig + 3 * i, dd, ((float*)qi.info) + 4 * i);
+                }
+            }
+            else {
+                for (int i = 0; i < n; i++)
+                    qi.hit[i] = trigrid_raycast<RayTri_TBary>(qi.g, orig + 3 * i, dir + 3 * i, ((float*)qi.info) + 4 * i);
+            }
             return WCORE_OK;
 
         default:

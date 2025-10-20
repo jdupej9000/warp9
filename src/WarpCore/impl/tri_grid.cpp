@@ -174,8 +174,7 @@ namespace warpcore::impl
 
             if (n == 8)
                 return;
-        }
-        else {
+        } else {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
             a = _mm256_maskload_epi32(idx, mask);
             return;
@@ -186,8 +185,7 @@ namespace warpcore::impl
 
             if (n == 16)
                 return;
-        }
-        else {
+        } else {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 8), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
             b = _mm256_maskload_epi32(idx + 8, mask);
             return;
