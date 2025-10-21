@@ -338,17 +338,17 @@ namespace warpcore::impl
         const int n8 = round_down(n, 8);
 
          for(int i = 0; i < m; i++) {
-           // for(int j = 0; j < n8; j+=8) {
-             //   const __m256 t = _mm256_div_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
-               // _mm256_storeu_ps(y + i * n + j, t);
-            //}
+            for(int j = 0; j < n8; j+=8) {
+                __m256 t = _mm256_div_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
+                _mm256_storeu_ps(y + i * n + j, t);
+            }
 
-             for (int j = 0; j < n; j++) {
-                 if (fabs(v[j]) > 1e-4f)
-                     y[i * n + j] = x[i * n + j] / v[j];
-                 else
-                     y[i * n + j] = 0;
-             }
+            for (int j = n8; j < n; j++) {
+                if (fabs(v[j]) > 1e-4f)
+                    y[i * n + j] = x[i * n + j] / v[j];
+                else
+                    y[i * n + j] = 0;
+            }
         }
     }
 
