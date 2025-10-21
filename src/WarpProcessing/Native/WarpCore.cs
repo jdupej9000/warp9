@@ -21,6 +21,7 @@ namespace Warp9.Native
         COMPILER = 1,
         OPT_PATH = 2,
         CPU_NAME = 3,
+        BUILD_DATE = 4,
         OPENBLAS_VERSION = 1000,
         OPENBLAS_CONFIG = 1001,
         CUDA_DEVICE = 2000,

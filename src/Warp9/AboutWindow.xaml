@@ -61,7 +61,7 @@
             </TabItem>
 
             <TabItem Header="WarpCore Debug Info">
-                <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10">
+                <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="11">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Width="120" Header="ID" DisplayMemberBinding="{Binding Id}"/>

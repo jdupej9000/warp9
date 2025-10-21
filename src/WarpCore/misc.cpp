@@ -48,6 +48,10 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << get_cpuname();
         break;
 
+    case WCINFO_BUILD_DATE:
+        ss << __DATE__ << " " << __TIME__;
+        break;
+
     case WCINFO_OPENBLAS_VERSION:
         ss << OPENBLAS_VERSION;
         break;
