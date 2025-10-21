@@ -99,6 +99,17 @@ namespace Warp9.Jobs
             TerminateAll();
         }
 
+        public bool WaitForWorkerTermination(TimeSpan waitTime)
+        {
+            
+            foreach (Thread t in workers)
+            {
+                if (!t.Join(waitTime))
+                    return false;
+            }
+
+            return true;
+        }
 
 
         private void TerminateAll()
@@ -131,11 +142,18 @@ namespace Warp9.Jobs
 
         private void JobItemDone()
         {
-            IJob? job = CurrentJob;
-            if (job is not null)
+            lock (contextLock)
             {
-                if (job.IsCompleted)
-                    jobs.Dequeue();
+                IJob? job = CurrentJob;
+                if (job is not null)
+                {
+                    if (job.IsCompleted)
+                        jobs.Dequeue();
+                }
+                else
+                {
+                    return;
+                }
             }
 
             UpdateProgress();
@@ -161,11 +179,11 @@ namespace Warp9.Jobs
             if (p is not BackgroundWorkerContext ctx)
                 throw new ArgumentException(nameof(p));
 
-            IJob? currentJob;
+            Thread.CurrentThread.Priority = ThreadPriority.Lowest;
 
             while (true)
             {
-                currentJob = ctx.Engine.CurrentJob;
+                IJob? currentJob = ctx.Engine.CurrentJob;
                 if (ctx.MustTerminate)
                     return;
 

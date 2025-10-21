@@ -164,10 +164,11 @@ namespace Warp9.Native
                 rot2 = new Vector3(rot0.Z, rot1.Z, rot2.Z)
             };
 
+            float c = 1/ cs;
             ret.offset = new Vector3(
-                -Vector3.Dot(ret.rot0, offset),
-                -Vector3.Dot(ret.rot1, offset),
-                -Vector3.Dot(ret.rot2, offset));
+                -cs * Vector3.Dot(ret.rot0, offset),
+                -cs * Vector3.Dot(ret.rot1, offset),
+                -cs * Vector3.Dot(ret.rot2, offset));
 
             return ret;
         }

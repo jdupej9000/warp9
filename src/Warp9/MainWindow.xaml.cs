@@ -120,7 +120,7 @@ namespace Warp9
             {
                 try
                 {
-                    Warp9ProjectArchive archive = new Warp9ProjectArchive(dlg.FileName, false);
+                    Warp9ProjectArchive archive = new Warp9ProjectArchive(dlg.FileName, false, Options.Instance.NumWorkerThreads > 1);
                     SetProject(Project.Load(archive));
                 }
                 catch (Exception ex)

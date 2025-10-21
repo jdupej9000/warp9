@@ -48,7 +48,7 @@ namespace Warp9.ProjectExplorer
                 File.Move(fileName, oldArchiveFileName, true);
 
                 File.Move(tempArchiveFileName, fileName);
-                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false);
+                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false, Options.Instance.NumWorkerThreads > 1);
                 Project.SwitchToSavedArchive(archSaved);
 
                 File.Delete(oldArchiveFileName);
@@ -59,7 +59,7 @@ namespace Warp9.ProjectExplorer
                 Project.Save(arch);
                 arch.Dispose();
 
-                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false);
+                Warp9ProjectArchive archSaved = new Warp9ProjectArchive(fileName, false, Options.Instance.NumWorkerThreads > 1);
                 IProjectArchive? oldArch = Project.SwitchToSavedArchive(archSaved);
                 oldArch?.Dispose();
             }

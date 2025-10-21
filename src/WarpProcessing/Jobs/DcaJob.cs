@@ -86,6 +86,8 @@ namespace Warp9.Jobs
                     throw new NotImplementedException();
             }
 
+            yield return new BarrierJobItem(index++);
+
             switch (cfg.SurfaceProjection)
             {
                 case DcaSurfaceProjectionKind.None:

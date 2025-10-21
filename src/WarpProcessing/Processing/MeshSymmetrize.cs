@@ -28,7 +28,7 @@ namespace Warp9.Processing
 
             for (int i = 0; i < nv; i++)
             {
-                outPos[i] = flip * dataRaw[i];
+                outPos.Add(flip * dataRaw[i]);
             }
 
             return mb.ToPointCloud();
@@ -58,6 +58,7 @@ namespace Warp9.Processing
                 throw new InvalidOperationException();
 
             return RigidTransform.TransformPosition(symmSnap, gpa.GetTransform(0).Invert()) ??
+            //return symmSnap ??
                 throw new InvalidOperationException();
         }
 

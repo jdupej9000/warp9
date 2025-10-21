@@ -2,15 +2,41 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using Warp9.Utils;
 
 namespace Warp9.Model
 {
-    public class Warp9ProjectArchive : IProjectArchive
+    class W9ArchiveOpenFile
     {
-        public Warp9ProjectArchive(string fileName, bool canWrite)
+        public W9ArchiveOpenFile(byte[] data)
+        {
+            Data = data;
+            OpenCount = 1;
+        }
+
+        public byte[] Data { get; init; }
+        public int OpenCount { get; set; }
+
+        public byte[] AddRef()
+        {
+            OpenCount++;
+            return Data;
+        }
+
+        public bool RemoveRef()
+        {
+            OpenCount--;
+            return OpenCount == 0;
+        }
+    }
+
+    public class Warp9ProjectArchive : IProjectArchive, IMemoryStreamNotificationSink
+    {
+        public Warp9ProjectArchive(string fileName, bool canWrite, bool fixMultithread=true)
         {
             this.canWrite = canWrite;
             this.fileName = fileName;
+            multithreadingWorkaround = fixMultithread;
             workingDir = Path.GetDirectoryName(fileName) ?? throw new InvalidOperationException();
 
             if (canWrite)
@@ -24,11 +50,13 @@ namespace Warp9.Model
             }
         }
 
+        bool multithreadingWorkaround;
         bool canWrite;
         string fileName;
         string workingDir;
         ZipArchive? archive;
         readonly Dictionary<string, int> archiveIndex = new Dictionary<string, int>();
+        readonly Dictionary<string, W9ArchiveOpenFile> openFiles = new Dictionary<string, W9ArchiveOpenFile>();
 
         public bool IsOpen => archive is not null;
         public string WorkingDirectory => workingDir;
@@ -78,10 +106,18 @@ namespace Warp9.Model
             if (archive is null)
                 throw new InvalidOperationException("The archive is not open.");
 
-            if (!archiveIndex.TryGetValue(name, out int zipEntryIndex))
-                throw new InvalidOperationException("The archive does not contain this entry.");
 
-            return archive.Entries[zipEntryIndex].Open();
+            if (multithreadingWorkaround)
+            {
+                return OpenInternal(name);
+            }
+            else
+            {       
+                if (!archiveIndex.TryGetValue(name, out int zipEntryIndex))
+                    throw new InvalidOperationException("The archive does not contain this entry.");
+
+                return archive.Entries[zipEntryIndex].Open();
+            }
         }
 
         private void InventoryContents()
@@ -97,6 +133,41 @@ namespace Warp9.Model
         public void Dispose()
         {
             Close();
+        }
+
+        public void OnStreamDisposing(string key)
+        {
+            lock (openFiles)
+            {
+                if (openFiles.TryGetValue(key, out W9ArchiveOpenFile? entry) &&
+                    entry != null &&
+                    entry.RemoveRef())
+                {
+                    openFiles.Remove(key);
+                }
+            }
+        }
+
+        private NotifyingMemoryStream OpenInternal(string name)
+        {
+            lock (openFiles)
+            {
+                if (openFiles.TryGetValue(name, out W9ArchiveOpenFile? wof) && wof is not null)
+                    return new NotifyingMemoryStream(name, wof.AddRef(), this);
+
+                if (!archiveIndex.TryGetValue(name, out int zipEntryIndex))
+                    throw new InvalidOperationException("The archive does not contain this entry.");
+
+                long length = archive.Entries[zipEntryIndex].Length;
+                using Stream s = archive.Entries[zipEntryIndex].Open();
+                byte[] uncompressed = new byte[length];
+                s.ReadExactly(uncompressed, 0, (int)length);
+
+                W9ArchiveOpenFile wofnew = new W9ArchiveOpenFile(uncompressed);
+                openFiles.Add(name,wofnew);
+
+                return new NotifyingMemoryStream(name, wofnew.Data, this);
+            }
         }
     }
 }

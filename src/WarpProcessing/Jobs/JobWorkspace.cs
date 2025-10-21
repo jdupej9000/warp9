@@ -14,10 +14,13 @@ namespace Warp9.Jobs
 
         public bool TryCopy(string src, string dest)
         {
-            if (repository.TryGetValue(src, out object? x) && x is not null)
+            lock (repository)
             {
-                repository[dest] = x;
-                return true;
+                if (repository.TryGetValue(src, out object? x) && x is not null)
+                {
+                    repository[dest] = x;
+                    return true;
+                }
             }
 
             return false;
@@ -25,73 +28,88 @@ namespace Warp9.Jobs
 
         public void Add<T>(string key, T value)
         {
-            if (repository.TryGetValue(key, out var val) && val is List<T> list)
+            lock (repository)
             {
-                list.Add(value);
-            }
-            else
-            {
-                list = new List<T>
+                if (repository.TryGetValue(key, out var val) && val is List<T> list)
                 {
-                    value
-                };
-                repository[key] = list;
+                    list.Add(value);
+                }
+                else
+                {
+                    list = new List<T> { value };
+                    repository[key] = list;
+                }
             }
         }
 
 
         public void Set<T>(string key, int index, T value)
         {
-            if (repository.TryGetValue(key, out var val) && val is List<T> list)
+            lock (repository)
             {
+                if (repository.TryGetValue(key, out var val) && val is List<T> list)
+                {
+                }
+                else
+                {
+                    list = new List<T>();
+                    repository[key] = list;
+                }
+
+                GrowUnsafe(list, index + 1);
+                list[index] = value;
             }
-            else
-            {
-                list = new List<T>();
-                repository[key] = list;
-            }
-            
-            Grow(list, index + 1);
-            list[index] = value;
         }
 
         public void Set<T>(string key, T value)
         {
-            repository[key] = value;
+            lock (repository)
+            {
+                repository[key] = value;
+            }
         }
 
         public void Remove(string key)
         {
-            repository.Remove(key);
+            lock (repository)
+            {
+                repository.Remove(key);
+            }
         }
 
         public bool TryGet<T>(string key, [MaybeNullWhen(false)] out T value)
         {
-            if (repository.TryGetValue(key, out var val) && val is T tval)
+            lock (repository)
             {
-                value = tval;
-                return true;
-            }
+                if (repository.TryGetValue(key, out var val) && val is T tval)
+                {
+                    value = tval;
+                    return true;
+                }
 
-            value = default;
-            return false;
+                value = default;
+                return false;
+            }
         }
 
         public bool TryGet<T>(string key, int index, [MaybeNullWhen(false)] out T value)
         {
-            if (repository.TryGetValue(key, out var val) && 
+            lock (repository)
+            {
+                if (repository.TryGetValue(key, out var val) &&
                 val is List<T> list &&
                 list.Count > index)
-            {
-                value = list[index];
-                return true;
-            }
+                {
+                    value = list[index];
+                    return true;
+                }
 
-            value = default;
-            return false;
+                value = default;
+                return false;
+            }
         }
 
-        static void Grow<T>(List<T> list, int size, T element = default)
+        static void GrowUnsafe<T>(List<T> list, int size, T element = default)
         {
             int count = list.Count;
 
