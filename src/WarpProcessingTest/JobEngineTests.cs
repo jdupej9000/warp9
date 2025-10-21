@@ -30,26 +30,17 @@ namespace Warp9.Test
         }
     }
 
-    class ParallelJobItem : TestJobItem
-    {
-        public ParallelJobItem(int index, List<int> dest) :
-            base(index, "parallel", dest, JobItemFlags.None)
-        { }     
-    }
+    class ParallelJobItem(int index, List<int> dest) : 
+        TestJobItem(index, "parallel", dest, JobItemFlags.None)
+    { }
 
-    class SerialJobItem : TestJobItem
-    {
-        public SerialJobItem(int index, List<int> dest) :
-            base(index, "serial", dest, JobItemFlags.RunsAlone)
-        { }
-    }
+    class SerialJobItem(int index, List<int> dest) : 
+        TestJobItem(index, "serial", dest, JobItemFlags.RunsAlone)
+    { }
 
-    class BarrierJobItem : TestJobItem
-    {
-        public BarrierJobItem(int index, List<int> dest) :
-            base(index, "barrier", dest, JobItemFlags.RunsAlone | JobItemFlags.WaitsForAllPrevious)
-        { }
-    }
+    class BarrierJobItem(int index, List<int> dest) : 
+        TestJobItem(index, "barrier", dest, JobItemFlags.RunsAlone | JobItemFlags.WaitsForAllPrevious)
+    { }
 
 
     [TestClass]
@@ -62,9 +53,11 @@ namespace Warp9.Test
             JobEngine je = new JobEngine(numThreads);
             ProjectJobContext ctx = new ProjectJobContext(proj);
 
+            bool progressProcFired = false;
             Job job = Job.Create(items, ctx, "");
             je.ProgressChanged += (sender, args) =>
             {
+                progressProcFired = true;
                 if (args.NumItems == args.NumItemsFailed + args.NumItemsDone)
                 {
                     Console.WriteLine("All done, disposing...");
@@ -74,6 +67,7 @@ namespace Warp9.Test
 
             je.Run(job);
             Assert.IsTrue(je.WaitForWorkerTermination(new TimeSpan(0, 0, 1)));
+            Assert.IsTrue(progressProcFired);
         }
 
         static void AssertList(List<int> list, params int[][] permutables)

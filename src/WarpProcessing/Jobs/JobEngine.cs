@@ -179,11 +179,11 @@ namespace Warp9.Jobs
             if (p is not BackgroundWorkerContext ctx)
                 throw new ArgumentException(nameof(p));
 
-            IJob? currentJob;
+            Thread.CurrentThread.Priority = ThreadPriority.Lowest;
 
             while (true)
             {
-                currentJob = ctx.Engine.CurrentJob;
+                IJob? currentJob = ctx.Engine.CurrentJob;
                 if (ctx.MustTerminate)
                     return;
 
