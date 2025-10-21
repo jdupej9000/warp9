@@ -80,7 +80,7 @@
             </Grid.ColumnDefinitions>
 
                 <DockPanel Background="{DynamicResource Brush.BackgroundDark}" >
-                    <TextBlock Text="Project Explorer" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}" Padding="8"/>
+                    <TextBlock Text="PROJECT EXPLORER" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}" Padding="8"/>
                     <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
                         <TreeView.ItemTemplate>                           
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
