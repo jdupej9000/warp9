@@ -9,7 +9,8 @@ namespace Warp9.HitTesting
 {
     public interface IHitTestItem
     {
-        HitResult TestCoarse(Vector3 origin, Vector3 direction);
+
+        RayIntersection TestCoarse(Vector3 origin, Vector3 direction);
         HitResult Test(Vector3 origin, Vector3 direction, float maxDistance);
     }
 }

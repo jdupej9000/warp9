@@ -38,4 +38,20 @@ namespace Warp9.HitTesting
                 .CompareTo(Vector3.DistanceSquared(origin, b.Position));
         }
     }
+
+    public readonly ref struct RayIntersection
+    {
+        public RayIntersection(float t0, float t1)
+        {
+            Entry = t0;
+            Exit = t1;
+        }
+
+        public float Entry { get; init; }
+        public float Exit { get; init; }
+
+        public readonly bool IsHit => Exit >= 0;
+
+        public static RayIntersection Miss => new RayIntersection { Entry = -1, Exit = -1 };
+    }
 }

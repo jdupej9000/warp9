@@ -14,7 +14,32 @@ namespace Warp9.HitTesting
 
         public HitResult TestAll(Vector3 origin, Vector3 direction)
         {
-            return HitResult.Miss;
+            float normalize = 1.0f / direction.Length();
+            HitResult hbest = HitResult.Miss;
+            float tbest = float.MaxValue;
+            int ibest = int.MinValue;
+
+            foreach (var kvp in items)
+            {
+                RayIntersection coarse = kvp.Value.TestCoarse(origin, direction);
+
+                if (!coarse.IsHit || coarse.Entry >= tbest)
+                    continue;
+
+                HitResult exact = kvp.Value.Test(origin, direction, tbest);
+                if (!exact.IsMiss)
+                {
+                    float t = (exact.Position - origin).Length() * normalize;
+                    if (t < tbest)
+                    {
+                        tbest = t;
+                        ibest = kvp.Key;
+                        hbest = exact;
+                    }
+                }
+            }
+
+            return hbest;
         }
 
         public HitResult TestAll(Vector2 screenOrigin, Vector2 screenSize, Matrix4x4 view, Matrix4x4 proj)
