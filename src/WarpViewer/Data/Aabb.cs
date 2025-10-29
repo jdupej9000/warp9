@@ -60,11 +60,14 @@ namespace Warp9.Data
             float tmin = 0, tmax = 1e30f;
             for (int i = 0; i < 3; i++)
             {
-                float k0i = k0[i];
-                float k1i = k1[i];
+                if ((mask >> i) != 0)
+                {
+                    float k0i = k0[i];
+                    float k1i = k1[i];
 
-                tmin = MathF.Max(tmin, MathF.Min(k0i, k1i));
-                tmax = MathF.Min(tmin, MathF.Max(k0i, k1i));
+                    tmin = MathF.Max(tmin, MathF.Min(k0i, k1i));
+                    tmax = MathF.Min(tmin, MathF.Max(k0i, k1i));
+                }
             }
 
             if (tmax > 0 && tmin < tmax)

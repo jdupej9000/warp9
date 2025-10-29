@@ -17,7 +17,6 @@ namespace Warp9.HitTesting
             float normalize = 1.0f / direction.Length();
             HitResult hbest = HitResult.Miss;
             float tbest = float.MaxValue;
-            int ibest = int.MinValue;
 
             foreach (var kvp in items)
             {
@@ -33,7 +32,6 @@ namespace Warp9.HitTesting
                     if (t < tbest)
                     {
                         tbest = t;
-                        ibest = kvp.Key;
                         hbest = exact;
                     }
                 }
