@@ -155,7 +155,7 @@ namespace warpcore::impl
             //u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m3); // these lanes are already zero
 
             // const float vc = d1 * d4 - d3 * d2;
-            __m256 vc = _mm256_fmsub_ps(d1, d4, _mm256_mul_ps(d3, d2));
+            __m256 vc = _mm256_sub_ps(_mm256_mul_ps(d1, d4), _mm256_mul_ps(d3, d2));
 
             // if (vc <= 0.f && d1 >= 0.f && d3 <= 0.f) {...
             __m256 m4 = _mm256_and_ps(  _mm256_cmp_ps(vc, _mm256_setzero_ps(), _CMP_LE_OQ),
@@ -168,7 +168,7 @@ namespace warpcore::impl
             }
 
             // const float vb = d5 * d2 - d1 * d6;
-            __m256 vb = _mm256_fmsub_ps(d5, d2, _mm256_mul_ps(d1, d6));
+            __m256 vb = _mm256_sub_ps(_mm256_mul_ps(d5, d2), _mm256_mul_ps(d1, d6));
 
             // if (vb <= 0.f && d2 >= 0.f && d6 <= 0.f) { ...
             __m256 m5 = _mm256_and_ps(  _mm256_cmp_ps(vb, _mm256_setzero_ps(), _CMP_LE_OQ),
@@ -181,15 +181,15 @@ namespace warpcore::impl
             }
 
             // const float va = d3 * d6 - d5 * d4;
-            __m256 va = _mm256_fmsub_ps(d3, d6, _mm256_mul_ps(d5, d4));
+            __m256 va = _mm256_sub_ps(_mm256_mul_ps(d3, d6), _mm256_mul_ps(d5, d4));
             
             //if (va <= 0.f && (d4 - d3) >= 0.f && (d5 - d6) >= 0.f) { ...
             __m256 m6 = _mm256_and_ps(  _mm256_cmp_ps(va, _mm256_setzero_ps(), _CMP_LE_OQ),
                         _mm256_and_ps(  _mm256_cmp_ps(d4, d3, _CMP_GE_OQ),
                                         _mm256_cmp_ps(d5, d6, _CMP_GE_OQ)));
             if (!_mm256_testz_ps(m6, mask)) {
-                __m256 t = _mm256_div_ps(_mm256_sub_ps(d4, d3),
-                    _mm256_add_ps(_mm256_sub_ps(d4, d3), _mm256_sub_ps(d5, d6)));
+                __m256 d4d3 = _mm256_sub_ps(d4, d3);
+                __m256 t = _mm256_div_ps(d4d3, _mm256_add_ps(d4d3, _mm256_sub_ps(d5, d6)));
                 u = blend_in(u, _mm256_sub_ps(_mm256_set1_ps(1.0f), t), m6);
                 v = blend_in(v, t, m6);
             }
@@ -217,7 +217,8 @@ namespace warpcore::impl
             __m256 prx = _mm256_sub_ps(rx, _mm256_broadcast_ss(orig));
             __m256 pry = _mm256_sub_ps(ry, _mm256_broadcast_ss(orig + 1));
             __m256 prz = _mm256_sub_ps(rz, _mm256_broadcast_ss(orig + 2));
-            __m256 dist2 = _mm256_fmadd_ps(prx, prx, _mm256_fmadd_ps(pry, pry, _mm256_mul_ps(prz, prz)));
+            __m256 dist2 = _mm256_fmadd_ps(prx, prx, 
+                _mm256_add_ps(_mm256_mul_ps(pry, pry), _mm256_mul_ps(prz, prz)));
 
             // update uv, index on triangles that are closer in their lane
             __m256 mm = _mm256_and_ps(mask, _mm256_cmp_ps(dist2, dist_best, _CMP_LT_OQ));
