@@ -48,7 +48,7 @@ namespace warpcore::impl
 
     void pca_covmat(const float** data, const float* mean, const void* allow, int n, int m, float* cov)
     {
-        if (get_optpath() >= WCORE_OPTPATH::AVX512)
+        if (has_feature(WCORE_OPTPATH::AVX512))
             pca_covmat_avx512(data, mean, allow, n, m, cov);
         else
             pca_covmat_base(data, mean, allow, n, m, cov);

@@ -8,10 +8,12 @@ using Warp9.Utils;
 
 namespace Warp9.Native
 {
+    [Flags]
     public enum WarpCoreOptimizationPath : int
     {
-        Avx2 = 0,
-        Avx512 = 1,
+        Avx2 = 0x1,
+        Avx512 = 0x2,
+        Hybrid = 0x10000000,
         Maximum = 0x7fffffff
     }
 

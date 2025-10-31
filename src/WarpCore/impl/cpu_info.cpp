@@ -14,13 +14,21 @@ namespace warpcore::impl
 
 	void init_cpuinfo(void)
 	{
-		int regs[4];
+		int features = 0;
 
-		// Check support for AVX512
+		int regs[4];
 		__cpuidex(regs, 7, 0);
-		bool has_avx512 = is_bit(regs[1], 16); // TODO: check more than avx512.f
-		g_platform_optpath = g_optpath = 
-			has_avx512 ? WCORE_OPTPATH::AVX512 : WCORE_OPTPATH::AVX2;
+		if (is_bit(regs[1], 5))
+			features |= (int)WCORE_OPTPATH::AVX2;
+
+		if (is_bit(regs[1], 16)) // TODO: check more than avx512.f
+			features |= (int)WCORE_OPTPATH::AVX512;
+
+		if (is_bit(regs[3], 15)) // TODO: check more than avx512.f
+			features |= (int)WCORE_OPTPATH::HYBRID;
+
+		g_platform_optpath = (WCORE_OPTPATH)features;
+		g_optpath = (WCORE_OPTPATH)features;
 
 		// Extract brand string
 		__cpuid(regs, 0x80000002);
@@ -36,12 +44,14 @@ namespace warpcore::impl
 		return g_optpath;
 	}
 
+	bool has_feature(WCORE_OPTPATH f)
+	{
+		return ((int)g_optpath & (int)f) == (int)f;
+	}
+
 	WCORE_OPTPATH restrict_optpath(WCORE_OPTPATH path)
 	{
-		if (path > g_platform_optpath)
-			g_optpath = g_platform_optpath;
-		else
-			g_optpath = path;
+		g_optpath = (WCORE_OPTPATH)((int)path & (int)g_platform_optpath);
 
 		return g_optpath;
 	}

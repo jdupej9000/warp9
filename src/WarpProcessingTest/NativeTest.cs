@@ -22,7 +22,7 @@ namespace Warp9.Test
         {
             int ret = WarpCore.set_optpath((int)p);
 
-            if (p != WarpCoreOptimizationPath.Maximum && ret != (int)p)
+            if (p != WarpCoreOptimizationPath.Maximum && ((ret & (int)p) != (int)p))
                 Assert.Inconclusive("This platform is incapable of executing the optimization path " + p.ToString());
         }
 

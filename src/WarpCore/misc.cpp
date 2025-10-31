@@ -37,11 +37,9 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         break;
 
     case WCINFO_OPT_PATH:
-        switch (get_optpath()) {
-            case WCORE_OPTPATH::AVX2:       ss << "avx2"; break;
-            case WCORE_OPTPATH::AVX512:     ss << "avx512"; break;
-            default:                        ss << "unknown"; break;
-        }
+        if (has_feature(WCORE_OPTPATH::AVX2)) ss << "avx2 ";        
+        if (has_feature(WCORE_OPTPATH::AVX512)) ss << "avx512 ";
+        if (has_feature(WCORE_OPTPATH::HYBRID)) ss << "hybrid ";     
         break;
 
     case WCINFO_CPU_NAME: 

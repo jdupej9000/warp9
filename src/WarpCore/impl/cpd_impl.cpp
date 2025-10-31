@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <immintrin.h>
 #include "cpu_info.h"
+#include <omp.h>
 
 
 namespace warpcore::impl
@@ -91,7 +92,7 @@ namespace warpcore::impl
         const float factor = -1.0f / (2.0f * sigma2);
         const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
-        if (get_optpath() >= WCORE_OPTPATH::AVX512) {
+        if(has_feature(WCORE_OPTPATH::AVX512)) {
             cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
             cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
         } else {
@@ -347,7 +348,13 @@ namespace warpcore::impl
 
         // Intel hybrid architectures would usually be the ones where we fall back to avx2 code. Dynamic
         // scheduling results in beter utilization there.
-        #pragma omp parallel for schedule(dynamic, 8)
+
+        if (has_feature(WCORE_OPTPATH::HYBRID))
+            omp_set_schedule(omp_sched_dynamic, 8);
+        else
+            omp_set_schedule(omp_sched_static, 8);
+
+        #pragma omp parallel for schedule(runtime)
         for(int i = 0; i < nb; i += BlockSize) {	
             __m256 accum = _mm256_setzero_ps(), accumb = _mm256_setzero_ps();
             const __m256 x0 = _mm256_loadu_ps(x + i);
@@ -398,7 +405,12 @@ namespace warpcore::impl
         const __m512 denomAddb = _mm512_set1_ps(denomAdd);
         const int nb = round_down(n, BlockSize);
 
-        #pragma omp parallel for schedule(dynamic, 8)
+        if (has_feature(WCORE_OPTPATH::HYBRID))
+            omp_set_schedule(omp_sched_dynamic, 8);
+        else
+            omp_set_schedule(omp_sched_static, 8);
+
+        #pragma omp parallel for schedule(runtime)
         for (int i = 0; i < nb; i += BlockSize) {
             __m512 accum = _mm512_setzero_ps(), accumb = _mm512_setzero_ps();
             const __m512 x0 = _mm512_loadu_ps(x + i);

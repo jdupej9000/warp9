@@ -4,9 +4,9 @@
 
 enum class WCORE_OPTPATH : int
 {
-    AVX2 = 0,
-    AVX512 = 1,
-
+    AVX2 = 0x1,
+    AVX512 = 0x2,
+    HYBRID = 0x10000000,
     Best = 0x7fffffff
 };
 

@@ -354,7 +354,7 @@ namespace warpcore::impl
 
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
-        if (get_optpath() >= WCORE_OPTPATH::AVX512)
+        if (has_feature(WCORE_OPTPATH::AVX512))
             atdba_avx512(a, n, m, b, alpha, y);
         else
             atdba_avx2(a, n, m, b, alpha, y);
