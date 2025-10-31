@@ -14,7 +14,7 @@ extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float*
 int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
 
 constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
-constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-6f;
+constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-7f;
 constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-5f;
 constexpr float CPD_REL_ERROR_CONV_THRESH = 1e-3f;
 

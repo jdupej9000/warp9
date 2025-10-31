@@ -240,8 +240,7 @@ namespace warpcore::impl
                 const __m256 d1 = _mm256_sub_ps(yi1, y1);
                 const __m256 d2 = _mm256_sub_ps(yi2, y2);
 
-                __m256 dist = _mm256_mul_ps(d0, d0);
-                dist = _mm256_fmadd_ps(d1, d1, dist);
+                __m256 dist = _mm256_add_ps(_mm256_mul_ps(d0, d0), _mm256_mul_ps(d1, d1));
                 dist = _mm256_fmadd_ps(d2, d2, dist);
 
                 __m256 g = expf_fast(_mm256_mul_ps(dist, ef8));
@@ -265,7 +264,12 @@ namespace warpcore::impl
     {
         const int n8 = n >> 3;
 
-        #pragma omp parallel for schedule(dynamic, 8)
+        if (has_feature(WCORE_OPTPATH::HYBRID))
+            omp_set_schedule(omp_sched_dynamic, 8);
+        else
+            omp_set_schedule(omp_sched_static, 8);
+
+        #pragma omp parallel for schedule(runtime)
         for(int i8 = 0; i8 < n8; i8++) {
             int i = 8 * i8;
             __m256 accum = _mm256_setzero_ps();
@@ -279,7 +283,7 @@ namespace warpcore::impl
                 const __m256 d1 = _mm256_sub_ps(x1, _mm256_broadcast_ss(t + j + m));
                 const __m256 d2 = _mm256_sub_ps(x2, _mm256_broadcast_ss(t + j + 2*m));
 
-                __m256 a = _mm256_fmadd_ps(d1, d1, _mm256_mul_ps(d0, d0));
+                __m256 a = _mm256_add_ps(_mm256_mul_ps(d0, d0), _mm256_mul_ps(d1, d1));
                 a = _mm256_fmadd_ps(d2, d2, a);
                 accumb = _mm256_add_ps(accumb, a);
 
@@ -365,8 +369,8 @@ namespace warpcore::impl
                 const __m256 d0 = _mm256_sub_ps(_mm256_broadcast_ss(t + j), x0);
                 const __m256 d1 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + m), x1);
                 const __m256 d2 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + 2*m), x2);
-                __m256 dist = _mm256_mul_ps(d0, d0);
-                dist = _mm256_fmadd_ps(d1, d1, dist);
+
+                __m256 dist = _mm256_add_ps(_mm256_mul_ps(d0, d0), _mm256_mul_ps(d1, d1));
                 dist = _mm256_fmadd_ps(d2, d2, dist);
 
                 const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
@@ -405,12 +409,7 @@ namespace warpcore::impl
         const __m512 denomAddb = _mm512_set1_ps(denomAdd);
         const int nb = round_down(n, BlockSize);
 
-        if (has_feature(WCORE_OPTPATH::HYBRID))
-            omp_set_schedule(omp_sched_dynamic, 8);
-        else
-            omp_set_schedule(omp_sched_static, 8);
-
-        #pragma omp parallel for schedule(runtime)
+        #pragma omp parallel for schedule(static, 8)
         for (int i = 0; i < nb; i += BlockSize) {
             __m512 accum = _mm512_setzero_ps(), accumb = _mm512_setzero_ps();
             const __m512 x0 = _mm512_loadu_ps(x + i);
@@ -490,7 +489,12 @@ namespace warpcore::impl
         const __m256 thresh8 = _mm256_broadcast_ss(&thresh);	
         const int mb = round_down(m, BlockSize);
 
-        #pragma omp parallel for schedule(dynamic, 8)
+        if (has_feature(WCORE_OPTPATH::HYBRID))
+            omp_set_schedule(omp_sched_dynamic, 8);
+        else
+            omp_set_schedule(omp_sched_static, 8);
+
+        #pragma omp parallel for schedule(runtime)
         for(int j = 0; j < mb; j += BlockSize) {	
             const __m256 t0 = _mm256_loadu_ps(t + j);
             const __m256 t1 = _mm256_loadu_ps(t + j + m);
@@ -509,8 +513,7 @@ namespace warpcore::impl
                 const __m256 dd2 = _mm256_sub_ps(x1, t1);
                 const __m256 dd3 = _mm256_sub_ps(x2, t2);
 
-                __m256 dist = _mm256_mul_ps(dd1, dd1);
-                dist = _mm256_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
+                __m256 dist = _mm256_add_ps(_mm256_mul_ps(dd1, dd1), _mm256_mul_ps(dd2, dd2));                
                 dist = _mm256_fmadd_ps(dd3, dd3, dist);
 
                 const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);

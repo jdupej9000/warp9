@@ -244,9 +244,9 @@ namespace warpcore::impl
 
     void WCORE_VECCALL cross(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz, __m256& cx, __m256& cy, __m256& cz) noexcept
     {
-        cx = _mm256_sub_ps(_mm256_mul_ps(ay, bz), _mm256_mul_ps(az, by));
-        cy = _mm256_sub_ps(_mm256_mul_ps(az, bx), _mm256_mul_ps(ax, bz));
-        cz = _mm256_sub_ps(_mm256_mul_ps(ax, by), _mm256_mul_ps(ay, bx));
+        cx = _mm256_fmsub_ps(ay, bz, _mm256_mul_ps(az, by));
+        cy = _mm256_fmsub_ps(az, bx, _mm256_mul_ps(ax, bz));
+        cz = _mm256_fmsub_ps(ax, by, _mm256_mul_ps(ay, bx));
     }
 
     __m256 WCORE_VECCALL dot(__m256 ax, __m256 ay, __m256 az, __m256 bx, __m256 by, __m256 bz) noexcept
@@ -319,15 +319,18 @@ namespace warpcore::impl
         // diag(V) * X
         //   X is n x m (col. major)
         //   V is n
-        const int n8 = round_down(n, 8);
+        const int n16 = round_down(n, 16);
 
         for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n8; j+=8) {
-                const __m256 t = _mm256_mul_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
-                _mm256_storeu_ps(y + i * n + j, t);
+            for(int j = 0; j < n16; j+=16) {
+                int xyoffs = i * n + j;
+                __m256 t0 = _mm256_mul_ps(_mm256_loadu_ps(x + xyoffs), _mm256_loadu_ps(v + j));
+                __m256 t1 = _mm256_mul_ps(_mm256_loadu_ps(x + xyoffs + 8), _mm256_loadu_ps(v + j + 8));
+                _mm256_storeu_ps(y + xyoffs, t0);
+                _mm256_storeu_ps(y + xyoffs + 8, t1);
             }
 
-            for(int j = n8; j < n; j++)
+            for(int j = n16; j < n; j++)
                 y[i * n + j] = x[i * n + j] * v[j];
         }
     }
@@ -335,15 +338,18 @@ namespace warpcore::impl
     void dxinva(const float* x, const float* v, int n, int m, float* y)
     {
         // diag(V)^-1 * X
-        const int n8 = round_down(n, 8);
+        const int n16 = round_down(n, 16);
 
          for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n8; j+=8) {
-                __m256 t = _mm256_div_ps(_mm256_loadu_ps(x + i * n + j), _mm256_loadu_ps(v + j));
-                _mm256_storeu_ps(y + i * n + j, t);
+            for(int j = 0; j < n16; j+=16) {
+                int xyoffs = i * n + j;
+                __m256 t0 = _mm256_div_ps(_mm256_loadu_ps(x + xyoffs), _mm256_loadu_ps(v + j));
+                __m256 t1 = _mm256_div_ps(_mm256_loadu_ps(x + xyoffs + 8), _mm256_loadu_ps(v + j + 8));
+                _mm256_storeu_ps(y + xyoffs, t0);
+                _mm256_storeu_ps(y + xyoffs + 8, t1);
             }
 
-            for (int j = n8; j < n; j++) {
+            for (int j = n16; j < n; j++) {
                 if (fabs(v[j]) > 1e-4f)
                     y[i * n + j] = x[i * n + j] / v[j];
                 else
