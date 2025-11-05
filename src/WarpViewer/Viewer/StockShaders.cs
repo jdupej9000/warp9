@@ -313,7 +313,7 @@ float4 main(VsOutput input) : SV_TARGET
     step(tex0.Sample(sam0, input.tex - dx + dy).a, 0.5) + step(tex0.Sample(sam0, input.tex + dy).a, 0.5) + step(tex0.Sample(sam0, input.tex + dx + dy).a, 0.5);
 
    float4 ret = input.color.bgra;
-   ret.a = smoothstep(0.1, 0.9, 1 - d / 9);
+   ret.a = 1 - d/9;
     
    return ret;
 }
