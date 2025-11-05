@@ -30,7 +30,7 @@ namespace Warp9.Viewer
             return ret;
         }
 
-        public virtual void UpdateConstantBuffers(RenderJob job)
+        public virtual void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
         {
         }
 

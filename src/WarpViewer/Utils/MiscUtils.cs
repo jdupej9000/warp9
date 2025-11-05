@@ -137,8 +137,10 @@ namespace Warp9.Utils
                 return MeshSegmentFormat.Float32x4;
             else if (typeof(T) == typeof(Matrix4x4))
                 return MeshSegmentFormat.Float32x16;
+            else if (typeof(T) == typeof(uint))
+                return MeshSegmentFormat.Int8x4;
 
-            return MeshSegmentFormat.Unknown;
+                return MeshSegmentFormat.Unknown;
         }
 
         public static int GetNumStructElems(MeshSegmentFormat fmt)
@@ -150,6 +152,7 @@ namespace Warp9.Utils
                 MeshSegmentFormat.Float32x3 => 3,
                 MeshSegmentFormat.Float32x4 => 4,
                 MeshSegmentFormat.Float32x16 => 16,
+                MeshSegmentFormat.Int8x4 => 4,
                 _ => 0
             };
         }
@@ -163,6 +166,7 @@ namespace Warp9.Utils
                 MeshSegmentFormat.Float32x3 => 4,
                 MeshSegmentFormat.Float32x4 => 4,
                 MeshSegmentFormat.Float32x16 => 4,
+                MeshSegmentFormat.Int8x4 => 1,
                 _ => 0
             };
         }
@@ -175,6 +179,7 @@ namespace Warp9.Utils
                 MeshSegmentFormat.Float32x2 => SharpDX.DXGI.Format.R32G32_Float,
                 MeshSegmentFormat.Float32x3 => SharpDX.DXGI.Format.R32G32B32_Float,
                 MeshSegmentFormat.Float32x4 => SharpDX.DXGI.Format.R32G32B32A32_Float,
+                MeshSegmentFormat.Int8x4 => SharpDX.DXGI.Format.R8G8B8A8_UNorm,
                 _ => SharpDX.DXGI.Format.Unknown
             };
         }

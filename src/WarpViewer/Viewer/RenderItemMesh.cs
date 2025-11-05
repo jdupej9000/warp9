@@ -280,9 +280,9 @@ namespace Warp9.Viewer
             return true;
         }
 
-        public override void UpdateConstantBuffers(RenderJob job)
+        public override void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
         {
-            base.UpdateConstantBuffers(job);
+            base.UpdateConstantBuffers(job, vport);
 
             if (constBuffDirty)
             {

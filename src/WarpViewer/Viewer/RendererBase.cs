@@ -10,7 +10,14 @@ namespace Warp9.Viewer
 {
     public record PresentingInfo(Size ViewportSize, long FrameIdx);
 
-    public abstract class RendererBase
+    public interface IRendererViewport
+    {
+        public Color CanvasColor { get; }
+        public Size ViewportSize { get; }
+        public long FrameIdx { get; }
+    };
+
+    public abstract class RendererBase : IRendererViewport
     {
         public RendererBase()
         {
@@ -30,6 +37,8 @@ namespace Warp9.Viewer
         public ShaderRegistry Shaders => shaders;
         public string DeviceName => deviceDesc.Description;
         public Color CanvasColor { get; set; }
+        public Size ViewportSize => GetViewportSize();
+        public long FrameIdx => frameIdx;
 
         public event EventHandler<PresentingInfo>? Presenting;
 
@@ -104,7 +113,7 @@ namespace Warp9.Viewer
                     if (kvp.Value is not null)
                     {
                         // Update individual or per-drawcall vertex buffers.
-                        kvp.Key.UpdateConstantBuffers(kvp.Value);
+                        kvp.Key.UpdateConstantBuffers(kvp.Value, this);
                         RenderJobExecuteStatus renderStatus = kvp.Value.Render(ctx, stateCache);
 
                         if (renderStatus != RenderJobExecuteStatus.Ok)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -22,16 +23,24 @@ namespace Warp9.Data
 
     public class FontDefinition
     {
+        private FontDefinition()
+        {
+            bitmap = new Lazy<Bitmap>(LoadBitmap);
+        }
+
         private Dictionary<char, FontSymbol> symbols = new Dictionary<char, FontSymbol>();
         private Dictionary<int, float> kerning = new Dictionary<int, float>();
+        private Lazy<Bitmap> bitmap;
 
         public string FaceName { get; private set; } = string.Empty;
         public float FontSize { get; private set; } = -1;
         public float LineHeight { get; private set; } = -1;
         public float BaseY { get; private set; } = -1;
         public string BitmapFileName { get; private set; } = string.Empty;
+        public string? DependenciesRoot { get; private set; } = null;
         public int BitmapWidth { get; private set; } = -1;
         public int BitmapHeight { get; private set; } = -1;
+        public Bitmap Bitmap => bitmap.Value;
 
         public FontSymbol GetSymbol(char ch)
         {
@@ -55,7 +64,7 @@ namespace Warp9.Data
             return (int)a | ((int)b << 16);
         }
 
-        public static FontDefinition FromStream(Stream s)
+        public static FontDefinition FromStream(Stream s, string? path = null)
         {
             using StreamReader sr = new StreamReader(s);
 
@@ -86,7 +95,17 @@ namespace Warp9.Data
                     throw new InvalidOperationException("Error parsing line: " + line);
             }
 
+            ret.DependenciesRoot = path;
+
             return ret;
+        }
+
+        private Bitmap LoadBitmap()
+        {
+            if (DependenciesRoot is not null)
+                return new Bitmap(Image.FromFile(Path.Combine(DependenciesRoot, BitmapFileName)));
+
+            return new Bitmap(Image.FromFile(BitmapFileName));
         }
 
         private static bool ParseInfo(FontDefinition def, KeyValueLineParser parser)
@@ -141,6 +160,9 @@ namespace Warp9.Data
                         return false;
                 }
             }
+
+            def.LineHeight /= def.FontSize;
+
             return true;
         }
 

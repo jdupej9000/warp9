@@ -301,9 +301,9 @@ void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
             return true;
         }
 
-        public override void UpdateConstantBuffers(RenderJob job)
+        public override void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
         {
-            base.UpdateConstantBuffers(job);
+            base.UpdateConstantBuffers(job, vport);
 
             if (buffDirty)
             {

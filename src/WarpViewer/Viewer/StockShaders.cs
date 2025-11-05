@@ -110,18 +110,62 @@ VsOutput main(VsInput input)
 }
 ");
 
-        public readonly static ShaderSpec VsDefaultInstanced = ShaderSpec.Create(
-            "VsDefaultInstanced",
+        public readonly static ShaderSpec VsText = ShaderSpec.Create(
+            "VsText",
             ShaderType.Vertex,
-            [   new (0, Name_ModelConst),
-                new (1, Name_ViewProjConst)
+            [   new (1, Name_ViewProjConst)
             ],
             [   new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+                new ("COLOR", 0, SharpDX.DXGI.Format.R8G8B8A8_UNorm),                
+                new ("TEXCOORD", 6, SharpDX.DXGI.Format.R32G32B32A32_Float),
+                new ("TEXCOORD", 7, SharpDX.DXGI.Format.R32G32B32A32_Float)
+            ], @"
+struct VsInput
+{
+   float2 char_rect : POSITION;
+   float4 color: COLOR0;
+   float4 screen_rect : TEXCOORD6;
+   float4 tex_rect : TEXCOORD7;
+};
+
+struct VsOutput
+{
+   float4 pos : SV_POSITION;
+   float3 posw : POSITION1;
+   float4 color : COLOR0;
+   float2 tex0 : TEXCOORD0;
+};
+
+cbuffer ViewProjConst : register(b1)
+{
+   matrix viewProj;
+   float4 camera;
+}
+
+VsOutput main(VsInput input)
+{
+   VsOutput ret;
+   float4 posw = float4(input.screen_rect.xy + input.char_rect * input.screen_rect.zw, 0, 1);
+   ret.posw = posw.xyz;
+   ret.pos = mul(posw, viewProj);
+   ret.color = input.color;
+   ret.tex0 = input.tex_rect.xy + input.char_rect * input.tex_rect.zw;
+   return ret;
+}
+");
+
+        public readonly static ShaderSpec VsDefaultInstanced = ShaderSpec.Create(
+     "VsDefaultInstanced",
+     ShaderType.Vertex,
+     [   new (0, Name_ModelConst),
+         new (1, Name_ViewProjConst)
+     ],
+     [   new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
                 new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
                 new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
                 new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
                 new ("TEXCOORD", 7, SharpDX.DXGI.Format.R32G32B32_Float)
-            ], @"
+     ], @"
 struct VsInput
 {
    float3 pos : POSITION;
@@ -237,6 +281,40 @@ float4 main(VsOutput input) : SV_TARGET
       ret = lerp(color, ret, level);
    }
    //ret.a = color.a;
+   return ret;
+}
+");
+    
+
+      public readonly static ShaderSpec PsText = ShaderSpec.Create(
+            "PsText",
+            ShaderType.Pixel,
+            [  
+            ], @"
+struct VsOutput
+{
+   float4 pos : SV_POSITION;
+   float3 posw : POSITION1;
+   float4 color : COLOR0;
+   float2 tex : TEXCOORD0;
+};
+
+Texture2D tex0 : register(t0);
+SamplerState sam0 : register(s0);
+
+float4 main(VsOutput input) : SV_TARGET
+{
+   float2 dx = 0.33 * ddx(input.tex);
+   float2 dy = 0.33 * ddy(input.tex);
+
+   float d =
+    step(tex0.Sample(sam0, input.tex - dx - dy).a, 0.5) + step(tex0.Sample(sam0, input.tex - dy).a, 0.5) + step(tex0.Sample(sam0, input.tex + dx - dy).a, 0.5) +
+    step(tex0.Sample(sam0, input.tex - dx).a, 0.5) + step(tex0.Sample(sam0, input.tex).a, 0.5) + step(tex0.Sample(sam0, input.tex + dx).a, 0.5) +
+    step(tex0.Sample(sam0, input.tex - dx + dy).a, 0.5) + step(tex0.Sample(sam0, input.tex + dy).a, 0.5) + step(tex0.Sample(sam0, input.tex + dx + dy).a, 0.5);
+
+   float4 ret = input.color.bgra;
+   ret.a = smoothstep(0.1, 0.9, 1 - d / 9);
+    
    return ret;
 }
 ");

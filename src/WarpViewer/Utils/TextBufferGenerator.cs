@@ -12,7 +12,7 @@ namespace Warp9.Utils
     public ref struct CharacterRenderInfo
     {
         public Vector2 Pos, Size, TexPos, TexSize;
-        public int Index, LineIndex;
+        public int Index, LineIndex, VisibleIndex;
         public char Character;
     };
 
@@ -26,11 +26,11 @@ namespace Warp9.Utils
 
     public static class TextBufferGenerator
     {
-        public static void Generate(FontDefinition font, float size, string text, RectangleF rect, TextRenderFlags flags, Action<CharacterRenderInfo> fun)
+        public static int Generate(FontDefinition font, float size, string text, RectangleF rect, TextRenderFlags flags, Action<CharacterRenderInfo> fun)
         {
             bool mustMeasure = flags.HasFlag(TextRenderFlags.AlignRight) || flags.HasFlag(TextRenderFlags.AlignCenter);
 
-            int lineIndex = 0;
+            int lineIndex = 0, visibleIndex = 0;
             float y = rect.Top;
             float lineHeight = font.LineHeight * size;
 
@@ -56,21 +56,30 @@ namespace Warp9.Utils
                         TexPos = new Vector2(ch.X, ch.Y),
                         TexSize = new Vector2(ch.Width, ch.Height),
                         Index = i,
+                        VisibleIndex = visibleIndex,
                         LineIndex = lineIndex,
                         Character = c
                     };
 
-                    fun(cri);
 
-                    x0 += ch.XAdvance;
+                    if (!char.IsWhiteSpace(c))
+                    {
+                        fun(cri);
+                        visibleIndex++;                     
+                    }
+
+                    x0 += size * ch.XAdvance;
 
                     if (i != line.Length - 1)
                         x0 += size * font.Kern(c, line[i + 1]);
+
                 }
 
                 lineIndex++;
                 y += lineHeight;
             }
+
+            return visibleIndex;
         }
 
         public static float MeasureLineWidth(FontDefinition font, float size, ReadOnlySpan<char> line)

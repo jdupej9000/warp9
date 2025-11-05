@@ -57,9 +57,9 @@ namespace Warp9.Viewer
             job.TryEnableDrawCall(0, visible);
         }
 
-        public override void UpdateConstantBuffers(RenderJob job)
+        public override void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
         {
-            base.UpdateConstantBuffers(job);
+            base.UpdateConstantBuffers(job, vport);
 
             ModelConst mc = new ModelConst();
             mc.model = Matrix4x4.Identity;

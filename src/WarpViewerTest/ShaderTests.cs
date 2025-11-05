@@ -13,6 +13,8 @@ namespace Warp9.Test
             shr.AddShader(StockShaders.VsDefault);
             shr.AddShader(StockShaders.VsDefaultInstanced);
             shr.AddShader(StockShaders.PsDefault);
+            shr.AddShader(StockShaders.VsText);
+            shr.AddShader(StockShaders.PsText);
         }
     }
 }
