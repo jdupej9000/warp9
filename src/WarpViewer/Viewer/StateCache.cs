@@ -79,9 +79,9 @@ namespace Warp9.Viewer
         public void ResetLastState()
         {
             rasterizerStateCache.LastState = RasterizerMode.Invalid;
-            blendStateCache.LastState = BlendMode.Invalid;
+            /*blendStateCache.LastState = BlendMode.Invalid;
             depthStateCache.LastState = DepthMode.Invalid;
-            samplerStateCache.LastState = SamplerMode.Invalid;
+            samplerStateCache.LastState = SamplerMode.Invalid;*/
         }
 
         public static RasterizerState CreateRasterizerState(Device device, RasterizerMode mode)
