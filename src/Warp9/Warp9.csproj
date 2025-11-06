@@ -12,10 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\segoe-ui-minimal.fnt" />
+    <None Remove="Assets\segoe-ui-minimal.png" />
     <None Remove="Assets\warp9-logo-softdark.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\segoe-ui-minimal.fnt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\segoe-ui-minimal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\warp9-logo-softdark.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

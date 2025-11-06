@@ -30,6 +30,10 @@ namespace Warp9.Navigation
             InitializeComponent();
             this.owner = owner;
 
+            using FileStream fontStream = new FileStream(Path.Combine("Assets", "segoe-ui-minimal.fnt"), FileMode.Open, FileAccess.Read);
+            font = FontDefinition.FromStream(fontStream, "Assets");
+            hud = new RenderItemHud(font);
+
             ICameraControl ctl = Options.Instance.CameraControlIndex switch
             {
                 0 => new EulerCameraControl(),
@@ -51,6 +55,9 @@ namespace Warp9.Navigation
         CameraLightConst clp = new CameraLightConst();
         TimeSpan lastRender = TimeSpan.Zero;
         Vector2 viewportSize = Vector2.One;
+        FontDefinition font;
+        RenderItemHud hud;
+        
         bool mustMakeTarget = false;
         int viewDirty = 1;
 
@@ -125,6 +132,8 @@ namespace Warp9.Navigation
                 renderer.Shaders.AddShader(StockShaders.VsDefault);
                 renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
                 renderer.Shaders.AddShader(StockShaders.PsDefault);
+                renderer.Shaders.AddShader(StockShaders.VsText);
+                renderer.Shaders.AddShader(StockShaders.PsText);
 
                 ModelConst mc = new ModelConst();
                 mc.model = Matrix4x4.Identity;
@@ -277,6 +286,11 @@ namespace Warp9.Navigation
 
             renderer.ClearRenderItems();
             content.AttachRenderer(renderer);
+            /*renderer.AddRenderItem(hud);
+
+            hud.SetSubText(0, "HUD", 12, System.Drawing.Color.White,
+                new System.Drawing.RectangleF(0, 0, 500, 100),
+                false, Utils.TextRenderFlags.AlignLeft);*/
 
             Page? sidebar = content.GetSidebar();
             if (sidebar is not null)
