@@ -174,6 +174,13 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         it++;
     }
 
+    if (conv & CPD_CONV_NUMERIC_ERROR) {
+        debug_matrix("pt1", it, pt1, n, 1);
+        debug_matrix("psum", it, psum, n, 1);
+        debug_matrix("p1", it, p1, m, 1);
+        debug_matrix("px", it, px, m, 3);
+    }
+
     auto t1 = std::chrono::high_resolution_clock::now();
 
     soa_to_aos<float, 3>((float*)t, m, tt);
