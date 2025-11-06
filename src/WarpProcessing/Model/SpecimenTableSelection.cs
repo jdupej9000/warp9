@@ -39,7 +39,7 @@ namespace Warp9.Model
 
     public class SpecimenTableSelectionEnumerator : IEnumerator, IEnumerator<SpecimenTableSelectionRow>
     {
-        public SpecimenTableSelectionEnumerator(SpecimenTableSelection sts, int idx = 0)
+        public SpecimenTableSelectionEnumerator(SpecimenTableSelection sts, int idx = -1)
         {
             parent = sts;
             index = idx;
