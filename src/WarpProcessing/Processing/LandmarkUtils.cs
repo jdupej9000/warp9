@@ -17,19 +17,39 @@ namespace Warp9.Processing
 
             float[] ret = new float[nv];
             mean.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> meanPos);
-          
+
             int numMesh = 0;
             foreach (PointCloud pcl in pcls)
             {
-                pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclPos);               
-                for (int i = 0; i < nv; i++)                
+                pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pclPos);
+                for (int i = 0; i < nv; i++)
                     ret[i] += Vector3.DistanceSquared(pclPos[i], meanPos[i]);
-                
+
                 numMesh++;
             }
 
             for (int i = 0; i < nv; i++)
                 ret[i] = MathF.Sqrt(ret[i] / numMesh);
+
+            return ret;
+        }
+
+        public static float[] CalculateLandmarkOffsets(PointCloud lms, Mesh surface)
+        {
+            PointCloud? projected = MeshSnap.ProjectToNearest(lms, surface);
+
+            if (projected == null)
+                return Array.Empty<float>();
+
+            int k = lms.VertexCount;
+            float[] ret = new float[k];
+
+            if (lms.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos0) &&
+                projected.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos1))
+            {
+                for (int i = 0; i < k; i++)
+                    ret[i] = Vector3.Distance(pos0[i], pos1[i]);
+            }
 
             return ret;
         }

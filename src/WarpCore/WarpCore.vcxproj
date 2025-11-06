@@ -130,6 +130,7 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>libomp.lib;libopenblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX64</TargetMachine>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
