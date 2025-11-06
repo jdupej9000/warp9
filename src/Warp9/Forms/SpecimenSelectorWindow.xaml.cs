@@ -32,6 +32,7 @@ namespace Warp9.Forms
             table = sts;
             InitSearchableColumns(sts);
             InitializeComponent();
+            DataContext = this;
         }
 
         SpecimenTableSelection table;
@@ -186,11 +187,11 @@ namespace Warp9.Forms
         {
             IEnumerable<SpecimenTableSelectionRow> rows = table;
 
-            if ((chkTest0.IsChecked ?? true) == true)
-                rows = Select(rows, cmbCol0.Text, cmbOperator0.SelectedIndex, txtValue0.Text);
+            if ((chkTest0.IsChecked ?? true) == true && cmbCol0.SelectedValue is SpecimenTableColumnTextInfo col0)
+                rows = Select(rows, col0.Name, cmbOperator0.SelectedIndex, txtValue0.Text);
 
-            if ((chkTest1.IsChecked ?? true) == true)
-                rows = Select(rows, cmbCol1.Text, cmbOperator1.SelectedIndex, txtValue1.Text);
+            if ((chkTest1.IsChecked ?? true) == true && cmbCol1.SelectedValue is SpecimenTableColumnTextInfo col1)
+                rows = Select(rows, col1.Name, cmbOperator1.SelectedIndex, txtValue1.Text);
 
             return rows;
         }
@@ -199,24 +200,36 @@ namespace Warp9.Forms
         {
             for (int i = 0; i < table.Selected.Length; i++)
                 table.Selected[i] = false;
+
+            dataMain.ItemsSource = null;
+            dataMain.ItemsSource = table;
         }
 
         private void Select_Click(object sender, RoutedEventArgs e)
         {
             foreach (SpecimenTableSelectionRow row in GetFiltered())
                 row.IsSelected = true;
+
+            dataMain.ItemsSource = null;
+            dataMain.ItemsSource = table;
         }
 
         private void Unselect_Click(object sender, RoutedEventArgs e)
         {
             foreach (SpecimenTableSelectionRow row in GetFiltered())
                 row.IsSelected = false;
+
+            dataMain.ItemsSource = null;
+            dataMain.ItemsSource = table;
         }
 
         private void Invert_Click(object sender, RoutedEventArgs e)
         {
             foreach (SpecimenTableSelectionRow row in GetFiltered())
                 row.IsSelected ^= true;
+
+            dataMain.ItemsSource = null;
+            dataMain.ItemsSource = table;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)

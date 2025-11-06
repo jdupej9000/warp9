@@ -24,9 +24,9 @@
             <StackPanel Orientation="Vertical" Margin="4">
                 <StackPanel Orientation="Horizontal">
                     <CheckBox x:Name="chkTest0"  Width="50" Content="If" IsChecked="True" />
-                    <ComboBox x:Name="cmbCol0" Width="200" ItemsSource="{Binding SearchableColumns}"/>
+                    <ComboBox x:Name="cmbCol0" Width="200" ItemsSource="{Binding SearchableColumns, UpdateSourceTrigger=PropertyChanged}"/>
                     <Label Width="4" />
-                    <ComboBox x:Name="cmbOperator0" Width="200" ItemsSource="{Binding Operators}"/>
+                    <ComboBox x:Name="cmbOperator0" Width="200" ItemsSource="{Binding Operators, UpdateSourceTrigger=PropertyChanged}"/>
                     <Label Width="4" />
                     <TextBox x:Name="txtValue0" Width="200" />
                 </StackPanel>
@@ -35,9 +35,9 @@
 
                 <StackPanel Orientation="Horizontal">
                     <CheckBox x:Name="chkTest1" Width="50" Content="And" />
-                    <ComboBox x:Name="cmbCol1" Width="200" ItemsSource="{Binding SearchableColumns}" />
+                    <ComboBox x:Name="cmbCol1" Width="200" ItemsSource="{Binding SearchableColumns, UpdateSourceTrigger=PropertyChanged}" />
                     <Label Width="4" />
-                    <ComboBox x:Name="cmbOperator1" Width="200" ItemsSource="{Binding Operators}"/>
+                    <ComboBox x:Name="cmbOperator1" Width="200" ItemsSource="{Binding Operators, UpdateSourceTrigger=PropertyChanged}"/>
                     <Label Width="4" />
                     <TextBox x:Name="txtValue1" Width="200" />
                 </StackPanel>
