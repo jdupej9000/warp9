@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Warp9.Model
 {
@@ -52,6 +53,69 @@ namespace Warp9.Model
 
                 parent.Columns[column].SetAt(rowIndex, ParseValue(col, value));
             }
+        }
+
+        public bool IsInSet(string column, params string[] set)
+        {
+            object value = GetSafeTypedValue(column);
+
+            if (value is long i)
+            {
+                foreach (string s in set)
+                {
+                    if (long.TryParse(s, out long si64) && si64 == i)
+                        return true;
+                }
+            }
+            else if (value is double f)
+            {
+                foreach (string s in set)
+                {
+                    if (double.TryParse(s, out double sf64) && Math.Abs(sf64 - f) < 1e-6)
+                        return true;
+                }
+            }
+            else if (value is string t)
+            {
+                if (set.Contains(t))
+                    return true;
+            }
+            else if (value is bool b)
+            {
+                foreach (string s in set)
+                {
+                    bool expected = (s.Length > 0 && (s[0] == 'T' || s[0] == 't'));
+                    if (b == expected)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public int CompareTo(string column, string s)
+        {
+            object value = GetSafeTypedValue(column);
+
+            if (value is long i && long.TryParse(s, out long si64))
+            {
+                return i.CompareTo(si64);                
+            }
+            else if (value is double f && double.TryParse(s, out double sf64))
+            {
+                return f.CompareTo(sf64);
+            }
+            else if (value is string t)
+            {
+                return t.CompareTo(s);
+            }
+            else if (value is bool b)
+            {               
+                bool expected = (s.Length > 0 && (s[0] == 'T' || s[0] == 't'));
+                return b.CompareTo(expected);                
+            }
+
+            return -1;
         }
 
         public object GetSafeTypedValue(string column)

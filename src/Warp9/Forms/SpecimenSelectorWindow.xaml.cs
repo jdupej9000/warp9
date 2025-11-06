@@ -128,10 +128,95 @@ namespace Warp9.Forms
             }
         }
 
+        private static bool TestPredicate(SpecimenTableRow row, string column, int op, string value, string[] values)
+        {
+            /*
+             * "Equals", "Not equal to", 
+            "Greater than", "Greater than or equal to",
+            "Less than", "Less than or equal to",
+            "In", "Not in" */
+            int opres = 0;
+            switch (op)
+            {
+                case 0: 
+                    return row.IsInSet(column, value);
+
+                case 1: 
+                    return !row.IsInSet(column, value);
+
+                case 2:
+                    opres = row.CompareTo(column, value);
+                    return opres == 1;
+
+                case 3:
+                    opres = row.CompareTo(column, value);
+                    return opres == 1 || opres == 0;
+
+                case 4:
+                    opres = row.CompareTo(column, value);
+                    return opres == -1;
+
+                case 5:
+                    opres = row.CompareTo(column, value);
+                    return opres == -1 || opres == 0;
+
+                case 6:
+                    return row.IsInSet(column, values);
+
+                case 7:
+                    return !row.IsInSet(column, values);
+
+                default:
+                    return false;
+            }
+        }
+
+        private IEnumerable<SpecimenTableSelectionRow> Select(IEnumerable<SpecimenTableSelectionRow> rows, string column, int op, string value)
+        {
+            string[] valueParts = value.Split(',');
+
+            foreach (SpecimenTableSelectionRow row in rows)
+            {
+                if (TestPredicate(row.ParentRow, column, op, value, valueParts))
+                    yield return row;
+            }
+        }
+
+        private IEnumerable<SpecimenTableSelectionRow> GetFiltered()
+        {
+            IEnumerable<SpecimenTableSelectionRow> rows = table;
+
+            if ((chkTest0.IsChecked ?? true) == true)
+                rows = Select(rows, cmbCol0.Text, cmbOperator0.SelectedIndex, txtValue0.Text);
+
+            if ((chkTest1.IsChecked ?? true) == true)
+                rows = Select(rows, cmbCol1.Text, cmbOperator1.SelectedIndex, txtValue1.Text);
+
+            return rows;
+        }
+
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
             for (int i = 0; i < table.Selected.Length; i++)
                 table.Selected[i] = false;
+        }
+
+        private void Select_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (SpecimenTableSelectionRow row in GetFiltered())
+                row.IsSelected = true;
+        }
+
+        private void Unselect_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (SpecimenTableSelectionRow row in GetFiltered())
+                row.IsSelected = false;
+        }
+
+        private void Invert_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (SpecimenTableSelectionRow row in GetFiltered())
+                row.IsSelected ^= true;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)

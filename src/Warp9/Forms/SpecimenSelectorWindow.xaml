@@ -23,32 +23,32 @@
         <GroupBox DockPanel.Dock="Bottom" Height="120" Header="Select with filters" >
             <StackPanel Orientation="Vertical" Margin="4">
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Width="50" Content="If" IsChecked="True" />
-                    <ComboBox Width="200" ItemsSource="{Binding SearchableColumns}"/>
+                    <CheckBox x:Name="chkTest0"  Width="50" Content="If" IsChecked="True" />
+                    <ComboBox x:Name="cmbCol0" Width="200" ItemsSource="{Binding SearchableColumns}"/>
                     <Label Width="4" />
-                    <ComboBox Width="200" ItemsSource="{Binding Operators}"/>
+                    <ComboBox x:Name="cmbOperator0" Width="200" ItemsSource="{Binding Operators}"/>
                     <Label Width="4" />
-                    <TextBox Width="200" />
+                    <TextBox x:Name="txtValue0" Width="200" />
                 </StackPanel>
 
                 <Label Height="4" />
 
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Width="50" Content="And" />
-                    <ComboBox Width="200" ItemsSource="{Binding SearchableColumns}" />
+                    <CheckBox x:Name="chkTest1" Width="50" Content="And" />
+                    <ComboBox x:Name="cmbCol1" Width="200" ItemsSource="{Binding SearchableColumns}" />
                     <Label Width="4" />
-                    <ComboBox Width="200" ItemsSource="{Binding Operators}"/>
+                    <ComboBox x:Name="cmbOperator1" Width="200" ItemsSource="{Binding Operators}"/>
                     <Label Width="4" />
-                    <TextBox Width="200" />
+                    <TextBox x:Name="txtValue1" Width="200" />
                 </StackPanel>
 
                 <Label Height="4" />
 
                 <StackPanel Orientation="Horizontal">
                     <Label Width="50" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Select" Width="88" Margin="0,0,1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Unselect" Width="88" Margin="0,0,1,0" />
-                    <Button Style="{DynamicResource ControlButton}" Content="Invert" Width="88" Margin="0,0,1,0" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Select" Width="88" Margin="0,0,1,0" Click="Select_Click" />
+                    <Button Style="{DynamicResource ControlButton}" Content="Unselect" Width="88" Margin="0,0,1,0" Click="Unselect_Click"/>
+                    <Button Style="{DynamicResource ControlButton}" Content="Invert" Width="88" Margin="0,0,1,0" Click="Invert_Click"/>
                     <Label Width="8" />
                     <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="88" Click="Clear_Click" />
                 </StackPanel>
