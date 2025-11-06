@@ -145,5 +145,33 @@ Rode the six hundred.";
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("MultiLineHudTest_0.png", bmp);
         }
+
+        [TestMethod]
+        public void MultiLineHudCombinedTest()
+        {
+            (HeadlessRenderer rend, RenderItemHud hud) = CreateRendererHud();
+
+            RenderItemCube cube = new RenderItemCube();
+            cube.Style = CubeRenderStyle.FlatColorPhongEstNormals;
+            cube.Color = Color.DarkOliveGreen;
+            rend.AddRenderItem(cube);
+
+            string text = @"Cannon to right of them,
+Cannon to left of them,
+Cannon in front of them
+Volleyed and thundered;
+Stormed at with shot and shell,
+Boldly they rode and well,
+Into the jaws of Death,
+Into the mouth of hell
+Rode the six hundred.";
+
+            hud.SetSubText(0, text, 12, Color.Green, new RectangleF(4, 4, 128, 128));
+
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("MultiLineHudCombinedTest_0.png", bmp);
+        }
     }
 }

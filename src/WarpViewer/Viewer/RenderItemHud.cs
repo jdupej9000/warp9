@@ -120,15 +120,6 @@ namespace Warp9.Viewer
                  });
             }
 
-            /*instanceData.Add(new HudCharacterInstanceData()
-            {
-                Color = 0xffffffffu,
-                ScreenPos = new Vector2(16, 16),
-                ScreenSize = new Vector2(16, 16),
-                TexPos = new Vector2(0, 0),
-                TexSize = new Vector2(1, 1)
-            });*/
-
             ReadOnlySpan<byte> instanceRaw = MemoryMarshal.Cast<HudCharacterInstanceData, byte>(CollectionsMarshal.AsSpan(instanceData));
             job.SetVertexBuffer(ctx, 1, instanceRaw, instanceLayout, true);
 

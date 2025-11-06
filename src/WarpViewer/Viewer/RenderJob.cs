@@ -99,7 +99,7 @@ namespace Warp9.Viewer
            
             if (indexBuffer is not null)
                 ctx.InputAssembler.SetIndexBuffer(indexBuffer.NativeBuffer, indexBuffer.Format, 0);
-
+          
             ctx.VertexShader.Set(shaderVert);
             ctx.PixelShader.Set(shaderPix);
             if (shaderGeom is not null)
@@ -110,7 +110,7 @@ namespace Warp9.Viewer
             ApplyConstBuffPayloads(ctx, constantBuffers);
 
             foreach (var tex in textures)
-            {
+            {                
                 ctx.PixelShader.SetShaderResources(tex.Key, tex.Value.ResourceView);
                 ctx.PixelShader.SetSampler(tex.Key, stateCache.SamplerStateCache.Get(SamplerMode.Linear));
             }

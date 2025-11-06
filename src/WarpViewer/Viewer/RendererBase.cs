@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Warp9.Viewer
@@ -102,8 +103,7 @@ namespace Warp9.Viewer
                     renderItems[update.Item1] = update.Item2;
 
                 // Restore constant buffer baselines for all render items.
-                foreach (var kvp in constantBuffers)
-                    constantBufferManager.Set(ctx, kvp.Key, kvp.Value);
+              
 
                 // force setting the rasterizer state at least once
                 stateCache.ResetLastState();
@@ -112,6 +112,10 @@ namespace Warp9.Viewer
                 {
                     if (kvp.Value is not null)
                     {
+                        // Restore global constant buffers.
+                        foreach (var cb in constantBuffers)
+                            constantBufferManager.Set(ctx, cb.Key, cb.Value);
+
                         // Update individual or per-drawcall vertex buffers.
                         kvp.Key.UpdateConstantBuffers(kvp.Value, this);
                         RenderJobExecuteStatus renderStatus = kvp.Value.Render(ctx, stateCache);
@@ -123,7 +127,7 @@ namespace Warp9.Viewer
     if(renderStatus != RenderJobExecuteStatus.Ok)
         throw new InvalidOperationException($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
 #else
-                            Console.Error.WriteLine($"Render job of {kvp.Key.ToString()} failed with {renderStatus}.");
+                            Console.Error.WriteLine($"Render job of {kvp.Key} failed with {renderStatus}.");
 #endif
                         }
                     }
