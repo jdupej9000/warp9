@@ -149,7 +149,7 @@
       <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
-      <FastMath>true</FastMath>
+      <FastMath>false</FastMath>
       <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
       <CudaRuntime>Shared</CudaRuntime>
       <NvccCompilation>compile</NvccCompilation>

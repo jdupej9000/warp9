@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+//#define DEBUG_CPD
 
 #include "cpd.h"
 #include "impl/utils.h"
@@ -14,7 +15,7 @@ extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float*
 int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
 
 constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
-constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-7f;
+constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-6f;
 constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-5f;
 constexpr float CPD_REL_ERROR_CONV_THRESH = 1e-3f;
 
@@ -134,6 +135,14 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
         } else {
             cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
         }
+
+#if defined(DEBUG_CPD)
+        debug_matrix("pt1", it, pt1, n, 1);
+        debug_matrix("psum", it, psum, n, 1);
+        debug_matrix("p1", it, p1, m, 1);
+        debug_matrix("px", it, px, m, 3);
+#endif
+        
         auto te1 = std::chrono::high_resolution_clock::now();
         etime += std::chrono::duration_cast<std::chrono::microseconds>(te1-te0).count();
 

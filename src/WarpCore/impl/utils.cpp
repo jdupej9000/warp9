@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <immintrin.h>
+#include <stdio.h>
 
 namespace warpcore::impl
 {
@@ -230,5 +231,31 @@ namespace warpcore::impl
 		// mark unmatched indices
 		for (; j < num_idx; j++)
 			idx[j] = -1;
+	}
+
+	void debug_matrix(const char* prefix, int index, const float* data, int rows, int cols)
+	{
+		constexpr size_t BUFF_SIZE = 512;
+		char path[BUFF_SIZE];
+		sprintf_s(path, BUFF_SIZE, "%s-%i.csv", prefix, index);
+
+		FILE* f;
+		fopen_s(&f, path, "w");
+
+		if (f == nullptr)
+			return;
+
+		for (int j = 0; j < rows; j++) {
+			for (int i = 0; i < cols; i++) {
+				fprintf_s(f, "%f", data[j + i * rows]);
+
+				if (i == cols - 1)
+					fprintf_s(f, "\n");
+				else
+					fprintf_s(f, ",");
+			}
+		}
+
+		fclose(f);
 	}
 }
