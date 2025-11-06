@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using Warp9.Model;
 
@@ -63,13 +64,20 @@ namespace Warp9.Forms
             dataMain.Columns.Clear();
             dataMain.ItemsSource = table;
 
-            DataGridCheckBoxColumn colSel = new DataGridCheckBoxColumn
+            FrameworkElementFactory checkboxFactory = new FrameworkElementFactory(typeof(CheckBox));
+            checkboxFactory.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            checkboxFactory.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
+            checkboxFactory.SetBinding(ToggleButton.IsCheckedProperty, new Binding("IsSelected") 
+            { 
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged 
+            });
+
+            DataGridTemplateColumn colSel = new DataGridTemplateColumn
             {
                 Header = new SpecimenTableColumnTextInfo("Selected", ""),
                 CanUserReorder = false,
                 IsReadOnly = false,
-                IsThreeState = false,
-                Binding = new Binding("IsSelected")
+                CellTemplate = new DataTemplate { VisualTree = checkboxFactory },
             };
 
             dataMain.Columns.Add(colSel);
