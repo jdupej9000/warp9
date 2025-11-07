@@ -34,6 +34,27 @@ namespace Warp9.Processing
             return ret;
         }
 
+        public static float MaxHomoLandmarkDistance(PointCloud lms1, PointCloud lms2)
+        {
+            if (!lms1.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos1))
+                return float.MaxValue;
+
+            if (!lms2.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos2))
+                return float.MaxValue;
+
+            if (lms1.VertexCount != lms2.VertexCount)
+                return float.MaxValue;
+
+            float ret = 0;
+            for (int i = 0; i < lms1.VertexCount; i++)
+            {
+                float d = Vector3.Distance(pos1[i], pos2[i]);
+                if(d > ret) ret = d;
+            }
+
+            return ret;
+        }
+
         public static float[] CalculateLandmarkOffsets(PointCloud lms, Mesh surface)
         {
             PointCloud? projected = MeshSnap.ProjectToNearest(lms, surface);
