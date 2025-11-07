@@ -16,11 +16,15 @@ bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream
     // Layout:
     size_t devMemorySize = sizeof(float) * (3 * n + 3 * m + n + m + 3 * m);
 
-    cudaStreamCreate((cudaStream_t*)ppStream);
+    if (cudaStreamCreate((cudaStream_t*)ppStream) != cudaSuccess)
+        return false;
+
     cudaStream_t stream = (cudaStream_t)*ppStream;
 
-    if (cudaMallocAsync(ppDevCtx, devMemorySize, stream) != cudaSuccess)
+    if (cudaMallocAsync(ppDevCtx, devMemorySize, stream) != cudaSuccess) {
+        cudaStreamDestroy(stream);
         return false;
+    }
     
     float* dx = (float*)*ppDevCtx;
     cudaMemcpyAsync(dx, x, sizeof(float) * 3 * n, cudaMemcpyHostToDevice, stream);
