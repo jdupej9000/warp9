@@ -49,4 +49,4 @@ extern "C" WCEXPORT int cpd_init(cpdinfo* cpd, int method, const void* y, void* 
 // Result (if not NULL) will contain the registration statistics. Function returns
 // 0 if the registration is successful, otherwise a negative value is returned, one
 // of CPDS_STATUS.
-extern "C" WCEXPORT int cpd_process(cpdinfo* cpd, const void* x, const void* y, const void* init, void* t, cpdresult* result);
+extern "C" WCEXPORT int cpd_process(const cpdinfo* cpd, const void* x, const void* y, const void* init, void* t, cpdresult* result);

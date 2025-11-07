@@ -11,41 +11,50 @@ __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx);
 
 #define BLOCK_SIZE (512)
 
-bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx)
+bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream)
 {
     // Layout:
     size_t devMemorySize = sizeof(float) * (3 * n + 3 * m + n + m + 3 * m);
 
-    if (cudaMalloc(ppDevCtx, devMemorySize) != cudaSuccess)
-        return false;
+    cudaStreamCreate((cudaStream_t*)ppStream);
+    cudaStream_t stream = (cudaStream_t)*ppStream;
 
+    if (cudaMallocAsync(ppDevCtx, devMemorySize, stream) != cudaSuccess)
+        return false;
+    
     float* dx = (float*)*ppDevCtx;
-    cudaMemcpy(dx, x, sizeof(float) * 3 * n, cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(dx, x, sizeof(float) * 3 * n, cudaMemcpyHostToDevice, stream);
+    cudaStreamSynchronize(stream);
 
     return true;
 }
 
-void cpd_deinit_cuda(void* pDevCtx)
+void cpd_deinit_cuda(void* pDevCtx, void* pStream)
 {
-    cudaFree(pDevCtx);
+    cudaStream_t stream = (cudaStream_t)pStream;
+    cudaFreeAsync(pDevCtx, stream);
+    cudaStreamSynchronize(stream);
+    cudaStreamDestroy((cudaStream_t)pStream);
 }
 
-float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int m, int n)
+float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n)
 {
+    cudaStream_t stream = (cudaStream_t)pStream;
     float* dx = (float*)pDevCtx;
     float* dt = dx + 3 * n;
     float* dtemp = dt + 3 * m;
 
-    cudaMemcpy(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice);
-    cudaMemset(dtemp, 0, sizeof(float) * n);
+    cudaMemcpyAsync(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice, stream);
+    cudaMemsetAsync(dtemp, 0, sizeof(float) * n, stream);
 
     const int threadsPerBlock = BLOCK_SIZE;
 
     int blocksPerGrid = (n + threadsPerBlock - 1) / threadsPerBlock;
-    cpd_sigmaest_cuda<<<blocksPerGrid, threadsPerBlock>>> (m, n, dx);
+    cpd_sigmaest_cuda<<<blocksPerGrid, threadsPerBlock, 0, stream>>> (m, n, dx);
 
     float* sumpart = new float[n];
-    cudaMemcpy(sumpart, dtemp, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    cudaMemcpyAsync(sumpart, dtemp, sizeof(float) * n, cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
 
     float sum = 0;
     for (int i = 0; i < n; i++)
@@ -56,8 +65,9 @@ float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int
     return sum / (3 * m * n);
 }
 
-void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
+void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
 {
+    cudaStream_t stream = (cudaStream_t)pStream;
     const float factor = -1.0f / (2.0f * sigma2);
     const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
 
@@ -67,19 +77,20 @@ void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n,
     float* dp1 = dpt1 + n;
     float* dpx = dp1 + m;  
     //float* dpsum = dpx + 3 * m;
-    cudaMemcpy(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice);
-    cudaMemset(dpx, 0, sizeof(float) * (3 * m + m + n + n));
+    cudaMemcpyAsync(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice, stream);
+    cudaMemsetAsync(dpx, 0, sizeof(float) * (3 * m + m + n + n), stream);
 
     const int threadsPerBlock = BLOCK_SIZE;
 
     int blocksPerGrid = (n + threadsPerBlock - 1) / threadsPerBlock;
-    cpd_psumpt1_cuda<<<blocksPerGrid, threadsPerBlock>>>(m, n, thresh, factor, denom, dx);
+    cpd_psumpt1_cuda<<<blocksPerGrid, threadsPerBlock, 0, stream>>>(m, n, thresh, factor, denom, dx);
 
     blocksPerGrid = (m + threadsPerBlock - 1) / threadsPerBlock;
-    cpd_p1px_cuda<<<blocksPerGrid, threadsPerBlock>>>(m, n, thresh, factor, dx);
+    cpd_p1px_cuda<<<blocksPerGrid, threadsPerBlock, 0, stream>>>(m, n, thresh, factor, dx);
    
     // TODO: check errors
-    cudaMemcpy(pt1p1px, dpt1, sizeof(float) * (n + m + 3 * m), cudaMemcpyDeviceToHost);
+    cudaMemcpyAsync(pt1p1px, dpt1, sizeof(float) * (n + m + 3 * m), cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
 }
 
 __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx)

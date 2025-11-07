@@ -8,10 +8,10 @@
 #include <cstring>
 #include <chrono>
 
-extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx);
-extern void cpd_deinit_cuda(void* pDevCtx);
-extern void cpd_estep_cuda(void* pDevCtx, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
-extern float cpd_estimate_sigma_cuda(void* pDevCtx, const float* x, const float* t, int m, int n);
+extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream);
+extern void cpd_deinit_cuda(void* pDevCtx, void* pStream);
+extern void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
+extern float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n);
 int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
 
 constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
@@ -62,7 +62,7 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
     return WCORE_OK;
 }
 
-extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const void* init, void* t, cpdresult* result)
+extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, const void* init, void* t, cpdresult* result)
 {
     if(cpd == NULL || y == NULL || x == NULL || t == NULL || init == NULL)
         return WCORE_INVALID_ARGUMENT;
@@ -94,8 +94,9 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     aos_to_soa<float, 3>((const float*)y, m, yt);
 
     float* cuda_ctx = nullptr;
+    void* cuda_stream = nullptr;
     if (use_cuda) {
-        if (!cpd_init_cuda(m, n, xt, (void**)&cuda_ctx)) {
+        if (!cpd_init_cuda(m, n, xt, (void**)&cuda_ctx, &cuda_stream)) {
             delete[] pp;
             return CPD_CONV_INTERNAL_ERROR;
         }
@@ -105,7 +106,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
     if (cpd->sigma2init <= 0.0f) {
         if (use_cuda)
-            sigma2 = cpd_estimate_sigma_cuda(cuda_ctx, xt, yt, m, n);
+            sigma2 = cpd_estimate_sigma_cuda(cuda_ctx, cuda_stream, xt, yt, m, n);
         else
             sigma2 = cpd_estimate_sigma(xt, yt, m, n, pp);
     }
@@ -131,7 +132,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
 
         auto te0 = std::chrono::high_resolution_clock::now();
         if (use_cuda) {
-            cpd_estep_cuda(cuda_ctx, xt, tt, m, n, cpd->w, sigma2, denom, pt1);
+            cpd_estep_cuda(cuda_ctx, cuda_stream, xt, tt, m, n, cpd->w, sigma2, denom, pt1);
         } else {
             cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
         }
@@ -188,7 +189,7 @@ extern "C" int cpd_process(cpdinfo* cpd, const void* x, const void* y, const voi
     delete[] pp;
 
     if (use_cuda)
-        cpd_deinit_cuda(cuda_ctx);
+        cpd_deinit_cuda(cuda_ctx, cuda_stream);
 
     if (result) {
         result->iter = it;
