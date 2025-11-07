@@ -281,6 +281,11 @@ namespace Warp9
             model?.ViewModel?.ComputeDcaPca();
         }
 
+        private void mnuProjectComputeLmDiag_Click(object sender, RoutedEventArgs e)
+        {
+            model?.ViewModel?.ComputeLandmarkDiag();
+        }
+
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             UnsetProject();

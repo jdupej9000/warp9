@@ -19,7 +19,7 @@ namespace Warp9.ProjectExplorer
 {
     public class Warp9ViewModel : INotifyPropertyChanged, IDisposable
     {
-        public Warp9ViewModel(Project project, IWarp9Model model) 
+        public Warp9ViewModel(Project project, IWarp9Model model)
         {
             Project = project;
             Model = model;
@@ -188,6 +188,20 @@ namespace Warp9.ProjectExplorer
                 return;
 
             Model.StartJob(PcaJob.CreateDcaPca(config, Project), "High dimensional PCA");
+        }
+
+        public void ComputeLandmarkDiag()
+        {
+            LandmarkDiagConfiguration config = new LandmarkDiagConfiguration();
+
+            LandmarkDiagConfigWindow cfgWnd = new LandmarkDiagConfigWindow();
+            cfgWnd.Attach(Project, config);
+            cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            Model.StartJob(LandmarkDiagJob.Create(config, Project), "Landmark diagnostics");
         }
     }
 }

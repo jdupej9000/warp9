@@ -19,6 +19,9 @@
     <Compile Update="Forms\ImportCsvWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\LandmarkDiagConfigWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\OptionsWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

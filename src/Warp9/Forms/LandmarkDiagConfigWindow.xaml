@@ -1,0 +1,63 @@
+﻿<Window x:Class="Warp9.Forms.LandmarkDiagConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Warp9.Forms"
+        xmlns:controls="clr-namespace:Warp9.Themes"
+        Style="{StaticResource CustomWindowStyle}"
+        mc:Ignorable="d"
+        Title="LandmarkDiagConfigWindow" Height="550" Width="550">
+    <Window.Resources>
+        <local:PcaRejectionModeRadioConverter x:Key="convertColumnRejection" />
+        <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
+    </Window.Resources>
+    
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Margin="4">
+            <MenuItem Header="Apply preset">
+            </MenuItem>
+        </Menu>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
+            <Button x:Name="btnOK" Style="{DynamicResource ControlButton}" Content="OK" Width="100" Click="btnOK_Click" />
+            <Label Width="4" />
+            <Button x:Name="btnCancel" Style="{DynamicResource ControlButton}" Content="Cancel" Width="100" Click="btnCancel_Click"/>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
+            <StackPanel Orientation="Vertical" Width="500">
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Data</TextBlock>
+                    <Label Height="4" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="28"/>
+                            <RowDefinition Height="28"/>
+                            <RowDefinition Height="28"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">Source entry</TextBlock>
+                        <ComboBox Grid.Row="0" Grid.Column="2" x:Name="cmbSpecTable" SelectionChanged="cmbSpecTable_SelectionChanged" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">Landmarks</TextBlock>
+                        <ComboBox x:Name="cmbLandmarkColumn" Grid.Row="1" Grid.Column="2"  VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">Meshes</TextBlock>
+                        <ComboBox x:Name="cmbMeshColumn" Grid.Row="2" Grid.Column="2"  VerticalAlignment="Center"/>
+
+                    </Grid>
+
+                    <Label Height="4" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

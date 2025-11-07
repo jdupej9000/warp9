@@ -17,6 +17,22 @@ namespace Warp9.Data
             { typeof(FaceIndices), SharpDX.DXGI.Format.R32G32B32_UInt }
         };
 
+        public static Aabb? FindBoundingBox(PointCloud pcl, MeshSegmentSemantic seg)
+        {
+            if (!pcl.TryGetData(seg, out BufferSegment<Vector3> data) || data.Count == 0)
+                return null;
+
+            Vector3 boxMin, boxMax;
+            boxMin = boxMax = data.Data[0];
+
+            for (int i = 1; i < data.Count; i++)
+            {
+                boxMin = Vector3.Min(boxMin, data[i]);
+                boxMax = Vector3.Max(boxMax, data[i]);
+            }
+
+            return new Aabb(boxMin, boxMax);
+        }
 
         public static ReadOnlySpan<FaceIndices> EnumerateFaceIndices(IFaceCollection faces)
         {
