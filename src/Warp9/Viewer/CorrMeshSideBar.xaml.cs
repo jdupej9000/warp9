@@ -12,13 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
     /// <summary>
     /// Interaction logic for CorrMeshSideBar.xaml
     /// </summary>
-    public partial class CorrMeshSideBar : Page
+    public partial class CorrMeshSideBar : Page, IViewerPage
     {
         public CorrMeshSideBar(CorrMeshViewerContent content)
         {
@@ -39,6 +40,26 @@ namespace Warp9.Viewer
         {
             if (int.TryParse(txtSpecimen.Text, out int specimen))
                 txtSpecimen.Text = (specimen - 1).ToString();
+        }
+
+        public void SetHist(float[] values, Lut lut, float x0, float x1)
+        {
+            histField.SetAll(values, lut, x0, x1);
+        }
+
+        public void SetRange(float x0, float x1)
+        {
+            histField.SetRange(x0, x1);
+        }
+
+        public void SetLut(Lut lut)
+        {
+            histField.Lut = lut;
+        }
+
+        private void histField_ScaleHover(object sender, float? e)
+        {
+            ViewContent.MeshScaleHover(e);
         }
     }
 }

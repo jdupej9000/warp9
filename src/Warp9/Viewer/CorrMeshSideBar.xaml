@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Warp9.Viewer"
+      xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="216"
       Title="CorrMeshSideBar">
@@ -29,6 +30,38 @@
                                           ToolTip="Use vertex normals. If disabled, face normals are used."/>
                         </StackPanel>
                 </StackPanel>
+
+            <Label Height="8" />
+
+            <StackPanel Orientation="Vertical" Margin="4">
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
+                <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+                <Label Height="4" />
+                <ComboBox Height="24" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{Binding Image}"/>
+                                <Label Width="4" />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Label Height="4" />
+                <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
+                                      PlotBackground="{DynamicResource Brush.Background}"
+                                      PlotBorder="{DynamicResource Brush.BorderDark}"
+                                      PlotForeground="{DynamicResource Brush.Foreground}"
+                                      ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
+                <Label Height="4" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="50" Height="24" Text="{Binding Path=ValueMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Width="98" />
+                    <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </StackPanel>
 
             <Label Height="8" />
 

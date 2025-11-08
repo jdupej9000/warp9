@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -10,12 +11,13 @@ using System.Windows.Controls;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Model;
+using Warp9.Native;
 using Warp9.Processing;
 using Warp9.Scene;
 
 namespace Warp9.Viewer
 {
-    public class CorrMeshViewerContent : SceneViewerContentBase
+    public class CorrMeshViewerContent : ColormapMeshViewerContentBase
     {
         public CorrMeshViewerContent(Project proj, long dcaEntityKey, string name) :
             base(proj, name)
@@ -36,9 +38,24 @@ namespace Warp9.Viewer
         ProjectEntry dcaEntry;
         Page sidebar;
         long entityKey;
+        float[]? field = null;
+        int meshIndex = 0, mappedFieldIndex = 0;
+        Mesh? activeMesh = null;
+        Mesh? baseMesh = null;
 
-        int meshIndex = 0;
+        static readonly List<string> mappedFieldsList = new List<string>
+        {
+            "Nothing",
+            "Distance from base"
+        };
 
+        public int MappedFieldIndex
+        {
+            get { return mappedFieldIndex; }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
+        }
+
+        public List<string> MappedFieldsList => mappedFieldsList;
 
         public int MeshIndex
         {
@@ -80,6 +97,36 @@ namespace Warp9.Viewer
             return sidebar;
         }
 
+        protected override void UpdateMappedField(bool recalcField)
+        {
+            if (baseMesh is null || activeMesh is null)
+            {
+                AttributeField = null;
+            }
+            else
+            {
+                int nv = baseMesh.VertexCount;
+                if (field is null) 
+                    field = new float[nv];
+
+                switch (mappedFieldIndex)
+                {
+                    case 0:
+                        AttributeField = null;
+                        base.UpdateMappedField(recalcField);
+                        return;
+
+                    case 1: // vertex distance
+                        HomoMeshDiff.VertexDistance(field.AsSpan(), baseMesh, activeMesh);
+                        break;
+
+                }
+
+                AttributeField = field;
+            }
+
+            base.UpdateMappedField(recalcField);
+        }
 
         private void ShowMesh(int index)
         {
@@ -102,7 +149,11 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException("Vertex count");
 
             Mesh corrMesh = MeshNormals.MakeNormals(Mesh.FromPointCloud(corrPcl, baseMesh));
+            activeMesh = corrMesh;
+            this.baseMesh = baseMesh;
             Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(corrMesh);
+
+            UpdateMappedField(true);
         }
     }
 }
