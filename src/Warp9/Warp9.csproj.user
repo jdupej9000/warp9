@@ -52,6 +52,9 @@
     <Compile Update="Navigation\ProjectSettingsPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Navigation\SpecimenEditorPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Navigation\SummaryPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
