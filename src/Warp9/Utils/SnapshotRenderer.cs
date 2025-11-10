@@ -20,10 +20,8 @@ namespace Warp9.Utils
 
             renderer = rend;
             renderer.CanvasColor = settings.BackgroundColor;
-            renderer.Shaders.AddShader(StockShaders.VsDefault);
-            renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            renderer.Shaders.AddShader(StockShaders.PsDefault);
-            
+            renderer.Shaders.AddShaders(StockShaders.AllShaders);
+
             sceneRenderer = new ViewerSceneRenderer(proj);
             sceneRenderer.AttachToRenderer(renderer);
         }

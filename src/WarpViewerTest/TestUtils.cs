@@ -265,10 +265,7 @@ namespace Warp9.Test
             Assert.IsNotNull(r);
 
             r.CanvasColor = Color.Black;
-
-            r.Shaders.AddShader(StockShaders.VsDefault);
-            r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            r.Shaders.AddShader(StockShaders.PsDefault);
+            r.Shaders.AddShaders(StockShaders.AllShaders);
 
             ModelConst mc = new ModelConst();
             mc.model = Matrix4x4.Identity;

@@ -129,11 +129,7 @@ namespace Warp9.Navigation
                 //    renderer.CanvasColor = System.Drawing.Color.Black;
 
                 renderer.Fussy = false;
-                renderer.Shaders.AddShader(StockShaders.VsDefault);
-                renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-                renderer.Shaders.AddShader(StockShaders.PsDefault);
-                renderer.Shaders.AddShader(StockShaders.VsText);
-                renderer.Shaders.AddShader(StockShaders.PsText);
+                renderer.Shaders.AddShaders(StockShaders.AllShaders);
 
                 ModelConst mc = new ModelConst();
                 mc.model = Matrix4x4.Identity;

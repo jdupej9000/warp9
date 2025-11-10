@@ -34,9 +34,7 @@ namespace Warp9.Test
             Assert.IsNotNull(r);
 
             r.CanvasColor = Color.Black;
-            r.Shaders.AddShader(StockShaders.VsDefault);
-            r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            r.Shaders.AddShader(StockShaders.PsDefault);            
+            r.Shaders.AddShaders(StockShaders.AllShaders);
             r.RasterFormat = new RasterInfo(128, 128);
 
             Console.WriteLine("Using " + r.DeviceName);

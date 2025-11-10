@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Warp9.Viewer
@@ -38,6 +39,10 @@ namespace Warp9.Viewer
 
     public static class StockShaders
     {
+        public readonly static List<ShaderSpec> AllShaders = [
+            VsDefault, VsDefaultInstanced, VsText, PsDefault, PsText
+            ];
+
         public const int Name_ModelConst = 0;
         public const int Name_ViewProjConst = 1;
         public const int Name_CameraLightConst = 2;

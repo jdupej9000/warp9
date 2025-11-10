@@ -38,6 +38,13 @@ namespace Warp9.Viewer
     {
         readonly Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
 
+        public void AddShaders(params IEnumerable<ShaderSpec> specs)
+        {
+            foreach (ShaderSpec spec in specs)
+            {
+                AddShader(spec);
+            }
+        }
 
         public void AddShader(ShaderSpec spec)
         {

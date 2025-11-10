@@ -32,12 +32,7 @@ namespace Warp9.Test
             Assert.IsNotNull(r);
 
             r.CanvasColor = Color.Black;
-
-            r.Shaders.AddShader(StockShaders.VsDefault);
-            r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            r.Shaders.AddShader(StockShaders.PsDefault);
-            r.Shaders.AddShader(StockShaders.VsText);
-            r.Shaders.AddShader(StockShaders.PsText);
+            r.Shaders.AddShaders(StockShaders.AllShaders);
 
             FontDefinition fnt = LoadMinimalFont();
             RenderItemHud hud = new RenderItemHud(fnt);

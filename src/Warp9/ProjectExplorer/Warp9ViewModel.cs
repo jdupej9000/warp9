@@ -29,9 +29,7 @@ namespace Warp9.ProjectExplorer
 
             renderer = rend;
             renderer.CanvasColor = Color.Transparent;
-            renderer.Shaders.AddShader(StockShaders.VsDefault);
-            renderer.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            renderer.Shaders.AddShader(StockShaders.PsDefault);
+            renderer.Shaders.AddShaders(StockShaders.AllShaders);
             renderer.RasterFormat = new RasterInfo(256, 256);
             sceneRenderer = new ViewerSceneRenderer(project);
             sceneRenderer.AttachToRenderer(renderer);

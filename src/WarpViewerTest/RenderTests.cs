@@ -20,9 +20,7 @@ namespace Warp9.Test
          
             r.CanvasColor = Color.Black;
 
-            r.Shaders.AddShader(StockShaders.VsDefault);
-            r.Shaders.AddShader(StockShaders.VsDefaultInstanced);
-            r.Shaders.AddShader(StockShaders.PsDefault);
+            r.Shaders.AddShaders(StockShaders.AllShaders);
             r.Shaders.AddShader(RenderItemCube.GsExplode);
 
             RenderItemCube? cube = null;
