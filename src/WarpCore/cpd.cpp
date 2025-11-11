@@ -121,13 +121,13 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
     std::memcpy(tt, yt, sizeof(float) * 3 * m);
 
     int conv = 0;
-    float l0 = 0;
+    double l0 = 0;
     float tol = FLT_MAX, tol_old = FLT_MAX;
     int it = 0;
     int64_t etime = 0;
 
     while (!conv) {
-        float l0_old = l0;
+        double l0_old = l0;
         float denom = cpd->w / (1.0f - cpd->w) * powf(2.0f * (float)M_PI * sigma2, 1.5f) * (float)m / (float)n;
 
         auto te0 = std::chrono::high_resolution_clock::now();

@@ -15,6 +15,12 @@ namespace warpcore::impl
         return _mm256_andnot_ps(_mm256_set1_ps(-0.0f), x);
     }
 
+    __m256 replace_nan_inf(__m256 x, __m256 replacement)
+    {
+        __m256 t = _mm256_sub_ps(x, x); // turns +/- Inf into NaN
+        return _mm256_blendv_ps(replacement, x, _mm256_cmp_ps(t, t, _CMP_EQ_OQ)); // NaN != NaN
+    }
+
     float WCORE_VECCALL expf_fast(float xx)
     {
         //return expf(xx);
@@ -475,6 +481,9 @@ namespace warpcore::impl
 
     float tratdba(const float* a, int n, int m, const float* b)
     {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         // trace(A' * diag(B) * A)
 
         float ret = 0;
