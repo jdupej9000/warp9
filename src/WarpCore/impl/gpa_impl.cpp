@@ -13,6 +13,7 @@ namespace warpcore::impl
 {
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov);
     float mat3_det(const float* m);
+    void mat3_transpose(float* m);
   
 
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov)
@@ -50,6 +51,7 @@ namespace warpcore::impl
         float cs = pcl_cs(x, d, m, xoffs);
         *xcs = cs;
 
+        // Kabsch algorithm follows
         //float* cov = STACK_ALLOC(float, d * d * 3 + 2 * d);
         float cov[33 + 10];
         memset(cov, 0x0, sizeof(float) * 43);
@@ -65,15 +67,17 @@ namespace warpcore::impl
 
         float h[9];
         memset(h, 0, sizeof(float) * d * d);
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasTrans, d, d, d, 1.0f, vt, d, u, d, 0.0f, h, d);
- 
-       // if (mat3_det(h) <= 0) {
-        //    throw std::exception{ "Got a reflection." };
-        //} else {
-            memcpy(rot, h, sizeof(float) * d * d);
-        //}
 
-        // delete[] cov; NOT NEEDED
+        // u = u * diag(1,1,det(u) * det(vt))
+        float detuv = mat3_det(u) * mat3_det(vt);
+        u[6] *= detuv;
+        u[7] *= detuv;
+        u[8] *= detuv;
+
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, d, d, d, 1.0f, u, d, vt, d, 0.0f, h, d); 
+        mat3_transpose(h);
+
+        memcpy(rot, h, sizeof(float) * d * d);       
 
         return 0;
     }
@@ -131,5 +135,15 @@ namespace warpcore::impl
         float x = m[0] * m[4] * m[8] + m[3] * m[7] * m[2] + m[6] * m[1] * m[5];
         float y = m[6] * m[4] * m[2] + m[0] * m[7] * m[5] + m[3] * m[1] * m[8];
         return x - y;
+    }
+
+    void mat3_transpose(float* m)
+    {
+        float t = 0;
+        #define SWAP(i,j) { t = m[i]; m[i] = m[j]; m[j] = t;}
+        
+        SWAP(1, 3);
+        SWAP(2, 6);
+        SWAP(5, 7);
     }
 };
