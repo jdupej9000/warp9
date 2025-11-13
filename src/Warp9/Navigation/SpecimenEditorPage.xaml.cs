@@ -98,7 +98,19 @@ namespace Warp9.Navigation
 
             entryIndex = idx;
             SpecimenTable table = Table;
-            dataMain.ItemsSource = table;
+
+            PopulateColumnsTable();
+            PopulateSpecimenTable();
+        }
+
+        private void PopulateColumnsTable()
+        {
+            dataCols.ItemsSource = Table.Columns;
+        }
+
+        private void PopulateSpecimenTable()
+        {
+            dataMain.ItemsSource = Table;
 
             DataGridTextColumn colId = new DataGridTextColumn
             {
@@ -109,7 +121,7 @@ namespace Warp9.Navigation
             };
             dataMain.Columns.Add(colId);
 
-            foreach (var kvp in table.Columns)
+            foreach (var kvp in Table.Columns)
             {
                 switch (kvp.Value.ColumnType)
                 {
@@ -167,7 +179,6 @@ namespace Warp9.Navigation
                 }
             }
         }
-
 
         private void btnSpecAdd_Click(object sender, RoutedEventArgs e)
         {

@@ -28,7 +28,12 @@
                     </StackPanel>
                     <Label Height="8" DockPanel.Dock="Top" />
 
-                    <DataGrid x:Name="dataCols" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">                       
+                    <DataGrid x:Name="dataCols" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Key}" />
+                            <!--<DataGridComboBoxColumn Header="Type" Binding="{Binding Path=Value.ColumnType}" />-->
+                            <DataGridTextColumn Header="Levels" Binding="{Binding Path=Value.Names}" />
+                        </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
             </TabItem>
