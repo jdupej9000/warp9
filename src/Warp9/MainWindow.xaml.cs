@@ -26,10 +26,12 @@ namespace Warp9
         {
             InitializeComponent();
             pageViewer = new ViewerPage(this);
+            pageSpecimenEditor = new SpecimenEditorPage(this);
 
             views.Add(typeof(ViewerPage), pageViewer);
             views.Add(typeof(TextEditorPage), pageTextEditor);
             views.Add(typeof(SpecimenTablePage), pageSpecimenTable);
+            views.Add(typeof(SpecimenEditorPage), pageSpecimenEditor);
             views.Add(typeof(ProjectSettingsPage), pageProjectSettings);
             views.Add(typeof(LogPage), pageLog);
             views.Add(typeof(MatrixViewPage), pageMatrixView);
@@ -43,6 +45,7 @@ namespace Warp9
         readonly SummaryPage pageSummary = new SummaryPage();
         readonly TextEditorPage pageTextEditor = new TextEditorPage();
         readonly SpecimenTablePage pageSpecimenTable = new SpecimenTablePage();
+        readonly SpecimenEditorPage pageSpecimenEditor;
         readonly ProjectSettingsPage pageProjectSettings = new ProjectSettingsPage();
         readonly MatrixViewPage pageMatrixView = new MatrixViewPage();
         readonly GalleryPage pageGallery = new GalleryPage();

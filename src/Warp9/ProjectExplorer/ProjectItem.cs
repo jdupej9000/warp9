@@ -125,7 +125,7 @@ namespace Warp9.ProjectExplorer
             // TODO: do not remove items that were not changed
             Children.Clear();
             foreach (SpecimenTableInfo sti in tables)
-                Children.Add(new SpecimenTableProjectItem(ParentViewModel, sti.SpecTableId));
+                Children.Add(new SpecimenEditorProjectItem(ParentViewModel, sti.SpecTableId));
 
             base.Update();
         }
@@ -153,6 +153,42 @@ namespace Warp9.ProjectExplorer
         public override void ConfigurePresenter(IWarp9View pres)
         {
             if (pres is not SpecimenTablePage page)
+                throw new ArgumentException();
+
+            page.ShowEntry(Key);
+        }
+
+        public override void Update()
+        {
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                Name = ExplicitName ?? entry.Name;
+            else
+                Name = "(error)";
+        }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
+    }
+
+    public class SpecimenEditorProjectItem : ProjectItem
+    {
+        public SpecimenEditorProjectItem(Warp9ViewModel vm, long key, string? explicitName = null) :
+            base(vm, typeof(SpecimenEditorPage))
+        {
+            Key = key;
+            ExplicitName = explicitName;
+        }
+
+        public long Key { get; init; }
+        public string? ExplicitName { get; init; }
+
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            if (pres is not SpecimenEditorPage page)
                 throw new ArgumentException();
 
             page.ShowEntry(Key);

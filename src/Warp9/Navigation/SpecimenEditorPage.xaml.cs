@@ -92,6 +92,83 @@ namespace Warp9.Navigation
             viewModel = null;
         }
 
+        public void ShowEntry(long idx)
+        {
+            dataMain.Columns.Clear();
+
+            entryIndex = idx;
+            SpecimenTable table = Table;
+            dataMain.ItemsSource = table;
+
+            DataGridTextColumn colId = new DataGridTextColumn
+            {
+                Header = new SpecimenTableColumnInfo("ID", ""),
+                Binding = new Binding("[!index]"),
+                CanUserReorder = false,
+                IsReadOnly = true
+            };
+            dataMain.Columns.Add(colId);
+
+            foreach (var kvp in table.Columns)
+            {
+                switch (kvp.Value.ColumnType)
+                {
+                    case SpecimenTableColumnType.Integer:
+                    case SpecimenTableColumnType.Real:
+                    case SpecimenTableColumnType.String:
+                        {
+                            DataGridTextColumn col = new DataGridTextColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]")
+                            };
+                            dataMain.Columns.Add(col);
+                        }
+                        break;
+
+                    case SpecimenTableColumnType.Factor:
+                        {
+                            DataGridComboBoxColumn col = new DataGridComboBoxColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                SelectedItemBinding = new Binding("[" + kvp.Key + "]"),
+                                ItemsSource = kvp.Value.Names
+                            };
+                            dataMain.Columns.Add(col);
+                        }
+                        break;
+
+                    case SpecimenTableColumnType.Boolean:
+                        {
+                            DataGridCheckBoxColumn col = new DataGridCheckBoxColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]")
+                            };
+                            dataMain.Columns.Add(col);
+                        }
+                        break;
+                    case SpecimenTableColumnType.Image:
+                    case SpecimenTableColumnType.Mesh:
+                    case SpecimenTableColumnType.PointCloud:
+                    case SpecimenTableColumnType.Matrix:
+                        {
+                            DataGridTextColumn col = new DataGridTextColumn
+                            {
+                                Header = new SpecimenTableColumnInfo(kvp.Key, kvp.Value.ColumnType.ToString()),
+                                Binding = new Binding("[" + kvp.Key + "]"),
+                                IsReadOnly = true
+                            };
+                            dataMain.Columns.Add(col);
+                        }
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+        }
+
+
         private void btnSpecAdd_Click(object sender, RoutedEventArgs e)
         {
             SpecimenTable table = Table;
