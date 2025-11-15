@@ -1,0 +1,47 @@
+﻿<Window x:Class="Warp9.Forms.ColumnEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Warp9.Forms"
+        xmlns:controls="clr-namespace:Warp9.Themes"
+        Style="{StaticResource CustomWindowStyleMain}"
+        mc:Ignorable="d"
+        Title="Edit Column" Height="250" Width="450">
+    <Window.Resources>
+        <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
+    </Window.Resources>
+    
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="28" Margin="4" HorizontalAlignment="Right">
+            <Button x:Name="btnOK" Style="{DynamicResource ControlButton}" Content="OK" Width="100" Click="btnOK_Click" />
+            <Label Width="4" />
+            <Button x:Name="btnCancel" Style="{DynamicResource ControlButton}" Content="Cancel" Width="100" Click="btnCancel_Click"/>
+        </StackPanel>
+
+        <Grid DockPanel.Dock="Top" Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="28"/>
+                <RowDefinition Height="70"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Name</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center"  VerticalContentAlignment="Center" Height="24" Text="{Binding Path=ColumnName, Mode=TwoWay}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Type</TextBlock>
+            <ComboBox Grid.Row="1" Grid.Column="1" x:Name="cmbType" VerticalContentAlignment="Center" VerticalAlignment="Center" SelectedItem="{Binding Path=ColumnType, Mode=TwoWay}" />
+            
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Levels</TextBlock>
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtLevels" VerticalAlignment="Center" VerticalContentAlignment="Center" Height="24" Text="{Binding Path=ColumnLevelsString, Mode=TwoWay}" />
+
+            <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="WrapWithOverflow" Style="{DynamicResource TextBlockDimmed}">For Factors, this field is mandatory and specifies the values that the factor can attain. The list is comma separated; e.g. M,F. For PointCloud, this field is optional and specifies the names of landmarks.</TextBlock>
+        </Grid>
+        
+    </DockPanel>
+</Window>

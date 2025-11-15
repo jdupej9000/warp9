@@ -27,14 +27,15 @@
                         <Button x:Name="btnColDelete" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,8,0" Content="Remove column" Click="btnColDelete_Click" />
                     </StackPanel>
                     <Label Height="8" DockPanel.Dock="Top" />
-
-                    <DataGrid x:Name="dataCols" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" AutoGenerateColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Key}" />
-                            <!--<DataGridComboBoxColumn Header="Type" Binding="{Binding Path=Value.ColumnType}" />-->
-                            <DataGridTextColumn Header="Levels" Binding="{Binding Path=Value.Names}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    
+                    <ListView x:Name="lvCols" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" MouseDoubleClick="lvCols_MouseDoubleClick">
+                        <ListView.View>
+                        <GridView>
+                                <GridViewColumn Header="Name" Width="160" DisplayMemberBinding="{Binding Key}" />
+                                <GridViewColumn Header="Type" Width="480" DisplayMemberBinding="{Binding Path=Value.TypeString}" />
+                        </GridView>
+                        </ListView.View>
+                    </ListView>
                 </DockPanel>
             </TabItem>
 

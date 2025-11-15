@@ -13,6 +13,9 @@
     <Compile Update="Controls\ScatterPlotControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\ColumnEditWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\DcaConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

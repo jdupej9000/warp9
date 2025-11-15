@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Warp9.Controls;
+using Warp9.Forms;
 using Warp9.Model;
 using Warp9.ProjectExplorer;
 using Warp9.Viewer;
@@ -105,7 +106,7 @@ namespace Warp9.Navigation
 
         private void PopulateColumnsTable()
         {
-            dataCols.ItemsSource = Table.Columns;
+            lvCols.ItemsSource = Table.Columns;
         }
 
         private void PopulateSpecimenTable()
@@ -363,6 +364,24 @@ namespace Warp9.Navigation
         private void InteropImage_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             cameraControl?.Scroll(e.Delta);
+        }
+
+        private void lvCols_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!(lvCols.SelectedItem is KeyValuePair<string, SpecimenTableColumn> kvp))
+                return;
+
+            ColumnEditWindow dlg = new ColumnEditWindow();
+            dlg.ColumnName = kvp.Key;
+            dlg.ColumnType = kvp.Value.ColumnType;
+            dlg.ColumnLevels = kvp.Value.Names ?? Array.Empty<string>();
+
+            dlg.Show();
+
+            if (dlg.DialogResult ?? false != true)
+                return;
+
+            
         }
     }
 }

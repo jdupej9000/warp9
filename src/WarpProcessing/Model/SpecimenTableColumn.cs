@@ -32,6 +32,9 @@ namespace Warp9.Model
         [JsonIgnore]
         public string[]? Names { get; set; } = null;
 
+        [JsonIgnore]
+        public string TypeString => (Names is null) ? ColumnType.ToString() : $"{ColumnType} {{{string.Join(",", Names)}}}";
+
         public abstract IReadOnlyList<T> GetData<T>();
         public abstract void Clear();
 
