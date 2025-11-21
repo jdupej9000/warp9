@@ -608,4 +608,12 @@ namespace warpcore::impl
             throw std::exception{};
         }
     }
+
+    void replace_nan(float* x, size_t len, float repl)
+    {
+        for (size_t i = 0; i < len; i++) {
+            if (!std::_Is_finite(x[i]))
+                x[i] = repl;
+        }
+    }
 };

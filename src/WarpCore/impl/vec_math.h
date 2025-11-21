@@ -63,6 +63,7 @@ namespace warpcore::impl
     void normalize_columns(float* mat, int rows, int cols);
 
     void check_finite(const float* x, size_t len);
+    void replace_nan(float* x, size_t len, float repl);
 
     #define ASSERT_NORMAL(x) { if(is_corrupted(x)) __debugbreak(); }
 };

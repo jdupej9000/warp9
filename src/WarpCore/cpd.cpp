@@ -151,7 +151,12 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         l0 += cpd_mstep(yt, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
-            debug = 1;
+
+            if (isnan(l0))
+                debug = 1;
+            else
+                debug = 2;
+
             break;
         }
         
@@ -160,7 +165,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
-            debug = 2;
+            debug = 3;
             break;
         }
 
@@ -169,7 +174,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         if ((conv & CPD_CONV_NUMERIC_ERROR) == 0)
             std::memcpy(tt, ttemp, sizeof(float) * 3 * m);
         else
-            debug = 3;
+            debug = 4;
 
         tol_old = tol;
         it++;

@@ -133,14 +133,21 @@ namespace warpcore::impl
         // _p2 (m,3): tf * diag(p1) * right [w]
         // _p3 (m,3): diag(p1) * right
 
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, tf*tf, q, m, _p3, m, 0.0f, _p0, k);
-        // _p0 (k,3): tf^2 * q^T * diag(p1) * right
+        replace_nan(_p0, m * 3, 0);
+        replace_nan(_p3, m * 3, 0);
+       
+        // TODOL mul by tf^2
+        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k);
+        // _p0 (k,3): q^T * diag(p1) * right
 
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, 3, k, 1.0f, _p1, k, _p0, k, 0.0f, _p3, k);
-        // _p3 (k,3): [inner] * tf^2 * q^T * diag(p1) * right
+        // _p3 (k,3): [inner] * q^T * diag(p1) * right
 
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 0.0f, _p0, m);
-        // _p0 (m,3): q * [inner] * tf^2 * q^T * diag(p1) * right
+        // _p0 (m,3): q * [inner] * q^T * diag(p1) * right
+
+        cblas_sscal(m * 3, tf * tf, _p0, 1);
+        // _p0 (m,3): tf^2 * q * [inner] * q^T * diag(p1) * right
 
         dxa(_p0, p1, m, 3, _p3);
         // _p3 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
@@ -153,6 +160,8 @@ namespace warpcore::impl
 
         cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k); 
         // _p3 (k,3): q^T * w
+
+        replace_nan(_p3, k * 3, 0);
 
         float ret = lambda / 2 * tratdba(_p3, k, 3, l);
 
