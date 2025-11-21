@@ -90,7 +90,9 @@ namespace warpcore::impl
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         const float factor = -1.0f / (2.0f * sigma2);
-        const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
+        //const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
+        constexpr float AffinityThresh = 1e-5f;
+        const float thresh = logf(AffinityThresh) / factor;
 
         if(has_feature(WCORE_OPTPATH::AVX512)) {
             cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
