@@ -611,8 +611,19 @@ namespace warpcore::impl
 
     void replace_nan(float* x, size_t len, float repl)
     {
-        for (size_t i = 0; i < len; i++) {
-            if (!std::_Is_finite(x[i]))
+        __m256 repl8 = _mm256_set1_ps(repl);
+        const int nb = round_down(len, 8);
+
+        for (int i = 0; i < nb; i++) {
+            __m256 xi = _mm256_loadu_ps(x + i);
+            __m256 t = _mm256_sub_ps(xi, xi);
+            __m256 mask = _mm256_cmp_ps(t, t, _CMP_EQ_OQ);
+            xi = _mm256_blendv_ps(repl8, xi, mask);
+            _mm256_storeu_ps(x + i, xi);
+        }
+    
+        for (size_t i = nb; i < len; i++) {
+            if (!std::_Is_finite(x[i]) || isnan(x[i]))
                 x[i] = repl;
         }
     }
