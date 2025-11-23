@@ -86,11 +86,19 @@ namespace Warp9.Navigation
         public void AttachViewModel(Warp9ViewModel vm)
         {
             viewModel = vm;
+            Themes.ThemesController.ThemeChanged += ThemesController_ThemeChanged;
         }
 
         public void DetachViewModel()
-        {
+        { 
             viewModel = null;
+            Themes.ThemesController.ThemeChanged -= ThemesController_ThemeChanged;
+        }
+
+        private void ThemesController_ThemeChanged(object? sender, EventArgs e)
+        {
+            if(renderer is not null)
+                renderer.CanvasColor = Themes.ThemesController.GetColor("Brush.Background");
         }
 
         public void ShowEntry(long idx)
@@ -274,7 +282,7 @@ namespace Warp9.Navigation
                 if (!WpfInteropRenderer.TryCreate(0, out renderer) || renderer is null)
                     throw new InvalidOperationException();
 
-                renderer.CanvasColor = System.Drawing.Color.FromArgb(31, 31, 31);
+                renderer.CanvasColor = Themes.ThemesController.GetColor("Brush.Background");
                 //if (FindResource("ThemeColors.Window.Background") is Color clr)
                 //    renderer.CanvasColor = System.Drawing.Color.FromArgb(clr.R, clr.G, clr.B);
                 //else

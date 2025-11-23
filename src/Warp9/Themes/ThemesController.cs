@@ -8,6 +8,8 @@ namespace Warp9.Themes
     {
         public static ThemeType CurrentTheme { get; set; }
 
+        public static event EventHandler ThemeChanged;
+
         private static ResourceDictionary ThemeDictionary
         {
             get => Application.Current.Resources.MergedDictionaries[0];
@@ -52,6 +54,8 @@ namespace Warp9.Themes
             ThemeDictionary = new ResourceDictionary() { Source = new Uri($"Themes/ColourDictionaries/{themeName}.xaml", UriKind.Relative) };
             ControlColours = new ResourceDictionary() { Source = new Uri("Themes/ControlColours.xaml", UriKind.Relative) };
             RefreshControls();
+
+            ThemeChanged?.Invoke(null, EventArgs.Empty);
         }
 
         public static object? GetResource(object key)
@@ -72,6 +76,23 @@ namespace Warp9.Themes
                 return b;
 
             return new SolidColorBrush(Colors.White);
+        }
+
+        public static System.Drawing.Color GetColor(string name)
+        {
+            object? r = GetResource(name);
+
+            if (r is null)
+                r = ControlColours[name];
+
+            if (r is System.Drawing.Color c)
+                return c;
+            else if (r is Color mc)
+                return System.Drawing.Color.FromArgb(mc.A, mc.R, mc.G, mc.B);
+            else if (r is SolidColorBrush b)
+                return System.Drawing.Color.FromArgb(b.Color.A, b.Color.R, b.Color.G, b.Color.B);
+
+            return System.Drawing.Color.White;
         }
     }
 }
