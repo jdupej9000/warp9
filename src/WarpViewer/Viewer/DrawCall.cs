@@ -17,7 +17,7 @@ namespace Warp9.Viewer
         public bool IsInstanced { get; set; } = false;
         public PrimitiveTopology Topology { get; set; }
         public RasterizerMode RastMode { get; set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
-        public BlendMode BlendMode { get; set; } = BlendMode.Default;
+        public BlendMode BlendMode { get; set; } = BlendMode.NoBlend;
         public DepthMode DepthMode { get; set; } = DepthMode.UseDepth;
         public int FirstElem { get; set; }
         public int NumElems { get; set; }
@@ -36,7 +36,7 @@ namespace Warp9.Viewer
                 ctx.Rasterizer.State = stateCache.RasterizerStateCache.Get(RastMode);
 
             if (stateCache.BlendStateCache.LastState != BlendMode)
-                ctx.OutputMerger.BlendState = stateCache.BlendStateCache.Get(BlendMode);
+                ctx.OutputMerger.SetBlendState(stateCache.BlendStateCache.Get(BlendMode));
 
             if (stateCache.DepthStateCache.LastState != DepthMode)
                 ctx.OutputMerger.DepthStencilState = stateCache.DepthStateCache.Get(DepthMode);

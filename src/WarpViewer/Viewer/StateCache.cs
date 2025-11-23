@@ -79,15 +79,15 @@ namespace Warp9.Viewer
         public void ResetLastState()
         {
             rasterizerStateCache.LastState = RasterizerMode.Invalid;
-            /*blendStateCache.LastState = BlendMode.Invalid;
+            blendStateCache.LastState = BlendMode.Invalid;
             depthStateCache.LastState = DepthMode.Invalid;
-            samplerStateCache.LastState = SamplerMode.Invalid;*/
+            //samplerStateCache.LastState = SamplerMode.Invalid;
         }
 
         public static RasterizerState CreateRasterizerState(Device device, RasterizerMode mode)
         {
             RasterizerStateDescription desc = new RasterizerStateDescription();
-            
+           
             if (mode.HasFlag(RasterizerMode.Wireframe))
                 desc.FillMode = FillMode.Wireframe;
             else
@@ -106,36 +106,55 @@ namespace Warp9.Viewer
             BlendStateDescription desc = new BlendStateDescription();
 
             if (mode == BlendMode.NoBlend)
-            {
+            {  
                 desc.IndependentBlendEnable = false;
                 desc.AlphaToCoverageEnable = false;
-                desc.RenderTarget[0].IsBlendEnabled = false;
+
+                for (int i = 0; i < desc.RenderTarget.Length; i++)
+                { 
+                    desc.RenderTarget[i].IsBlendEnabled = false;
+                    desc.RenderTarget[i].SourceBlend = BlendOption.One;
+                    desc.RenderTarget[i].DestinationBlend = BlendOption.Zero;
+                    desc.RenderTarget[i].BlendOperation = BlendOperation.Add;
+                    desc.RenderTarget[i].SourceAlphaBlend = BlendOption.One;
+                    desc.RenderTarget[i].DestinationAlphaBlend = BlendOption.Zero;
+                    desc.RenderTarget[i].AlphaBlendOperation = BlendOperation.Add;
+                    desc.RenderTarget[i].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+                }
             }
             else if (mode == BlendMode.AlphaBlend)
             {
                 desc.IndependentBlendEnable = false;
                 desc.AlphaToCoverageEnable = false;
-                desc.RenderTarget[0].IsBlendEnabled = true;
-                desc.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
-                desc.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
-                desc.RenderTarget[0].BlendOperation = BlendOperation.Add;
-                desc.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
-                desc.RenderTarget[0].DestinationAlphaBlend = BlendOption.One;
-                desc.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
-                desc.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+                for (int i = 0; i < desc.RenderTarget.Length; i++)
+                {
+                    desc.RenderTarget[i].IsBlendEnabled = true;
+                    desc.RenderTarget[i].SourceBlend = BlendOption.SourceAlpha;
+                    desc.RenderTarget[i].DestinationBlend = BlendOption.InverseSourceAlpha;
+                    desc.RenderTarget[i].BlendOperation = BlendOperation.Add;
+                    desc.RenderTarget[i].SourceAlphaBlend = BlendOption.Zero;
+                    desc.RenderTarget[i].DestinationAlphaBlend = BlendOption.One;
+                    desc.RenderTarget[i].AlphaBlendOperation = BlendOperation.Add;
+                    desc.RenderTarget[i].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+                }
             }
             else if (mode == BlendMode.Additive)
             {
                 desc.IndependentBlendEnable = false;
                 desc.AlphaToCoverageEnable = false;
-                desc.RenderTarget[0].IsBlendEnabled = true;
-                desc.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
-                desc.RenderTarget[0].DestinationBlend = BlendOption.One;
-                desc.RenderTarget[0].BlendOperation = BlendOperation.Add;
-                desc.RenderTarget[0].SourceAlphaBlend = BlendOption.One;
-                desc.RenderTarget[0].DestinationAlphaBlend = BlendOption.One;
-                desc.RenderTarget[0].AlphaBlendOperation = BlendOperation.Maximum;
-                desc.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+                for (int i = 0; i < desc.RenderTarget.Length; i++)
+                {
+                    desc.RenderTarget[i].IsBlendEnabled = true;
+                    desc.RenderTarget[i].SourceBlend = BlendOption.SourceAlpha;
+                    desc.RenderTarget[i].DestinationBlend = BlendOption.One;
+                    desc.RenderTarget[i].BlendOperation = BlendOperation.Add;
+                    desc.RenderTarget[i].SourceAlphaBlend = BlendOption.One;
+                    desc.RenderTarget[i].DestinationAlphaBlend = BlendOption.One;
+                    desc.RenderTarget[i].AlphaBlendOperation = BlendOperation.Maximum;
+                    desc.RenderTarget[i].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+                }
             }
 
             return new BlendState(device, desc);
@@ -147,10 +166,16 @@ namespace Warp9.Viewer
             desc.DepthComparison = Comparison.LessEqual;
 
             if (mode.HasFlag(DepthMode.NoDepth))
+            {
                 desc.IsDepthEnabled = false;
+                desc.DepthWriteMask = DepthWriteMask.All;
+            }
             else
+            {
                 desc.IsDepthEnabled = true;
-
+                desc.DepthWriteMask = DepthWriteMask.All;
+            }
+            
             return new DepthStencilState(device, desc);
         }
 

@@ -6,6 +6,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Warp9.Viewer
 {
@@ -101,10 +102,7 @@ namespace Warp9.Viewer
 
                 foreach (var update in updates)
                     renderItems[update.Item1] = update.Item2;
-
-                // Restore constant buffer baselines for all render items.
-              
-
+                                
                 // force setting the rasterizer state at least once
                 stateCache.ResetLastState();
 
@@ -112,6 +110,8 @@ namespace Warp9.Viewer
                 {
                     if (kvp.Value is not null)
                     {
+                        ResetState();
+
                         // Restore global constant buffers.
                         foreach (var cb in constantBuffers)
                             constantBufferManager.Set(ctx, cb.Key, cb.Value);
@@ -119,7 +119,7 @@ namespace Warp9.Viewer
                         // Update individual or per-drawcall vertex buffers.
                         kvp.Key.UpdateConstantBuffers(kvp.Value, this);
                         RenderJobExecuteStatus renderStatus = kvp.Value.Render(ctx, stateCache);
-
+                       
                         if (renderStatus != RenderJobExecuteStatus.Ok)
                         {
 
@@ -135,6 +135,10 @@ namespace Warp9.Viewer
 
                 frameIdx++;
             }
+        }
+
+        protected void ResetState()
+        {           
         }
 
         protected abstract Size GetViewportSize();

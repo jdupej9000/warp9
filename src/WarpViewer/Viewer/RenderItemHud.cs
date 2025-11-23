@@ -86,8 +86,7 @@ namespace Warp9.Viewer
         }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
-        {
-            // TODO: replace with text rendering shaders
+        { 
             job.SetShader(ctx, ShaderType.Vertex, "VsText");
             job.SetShader(ctx, ShaderType.Pixel, "PsText");
 
@@ -142,7 +141,7 @@ namespace Warp9.Viewer
             vpc.camera = Vector4.UnitW;
             vpc.viewProj = Matrix4x4.Transpose(Matrix4x4.CreateOrthographicOffCenterLeftHanded(
                 0, vport.ViewportSize.Width, vport.ViewportSize.Height, 0, 0.01f, 100.0f));
-            job.TrySetConstBuffer(0, 1, vpc);
+            job.TrySetConstBuffer(-1, StockShaders.Name_ViewProjConst, vpc);
         }
     }
 }
