@@ -11,6 +11,7 @@ namespace Warp9.Viewer
 
         public RenderItemVersion Version { get; } = new RenderItemVersion(1);
         public bool AutoCommit { get; set; } = true;
+        public int Order { get; set; } = 0;
 
         public RenderItemDelta UpdateRenderJob(ref RenderJob? job, DeviceContext ctx, ShaderRegistry shaders, ConstantBufferManager constBuffers)
         {

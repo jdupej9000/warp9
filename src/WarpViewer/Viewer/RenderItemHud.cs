@@ -35,6 +35,7 @@ namespace Warp9.Viewer
         public RenderItemHud(FontDefinition font)
         {
             Font = font;
+            Order = 1000;
 
             instanceLayout = new VertexDataLayout(true);
             instanceLayout.AddTex(MeshSegmentFormat.Float32x4, 6, 0);

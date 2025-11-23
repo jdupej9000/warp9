@@ -106,7 +106,11 @@ namespace Warp9.Viewer
                 // force setting the rasterizer state at least once
                 stateCache.ResetLastState();
 
-                foreach (var kvp in renderItems)
+                List<KeyValuePair<RenderItemBase, RenderJob?>> sorted = new List<KeyValuePair<RenderItemBase, RenderJob?>>();
+                sorted.AddRange(renderItems);
+                sorted.Sort((a,b) => a.Key.Order.CompareTo(b.Key.Order));
+
+                foreach (var kvp in sorted)
                 {
                     if (kvp.Value is not null)
                     {
