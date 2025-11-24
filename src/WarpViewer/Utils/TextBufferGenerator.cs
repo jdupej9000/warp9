@@ -26,6 +26,8 @@ namespace Warp9.Utils
 
     public static class TextBufferGenerator
     {
+        public readonly static float XAdvanceScale = 0.8f;
+
         public static int Generate(FontDefinition font, float size, string text, RectangleF rect, TextRenderFlags flags, Action<CharacterRenderInfo> fun)
         {
             bool mustMeasure = flags.HasFlag(TextRenderFlags.AlignRight) || flags.HasFlag(TextRenderFlags.AlignCenter);
@@ -68,7 +70,7 @@ namespace Warp9.Utils
                         visibleIndex++;                     
                     }
 
-                    x0 += size * ch.XAdvance;
+                    x0 += size * ch.XAdvance * XAdvanceScale;
 
                     if (i != line.Length - 1)
                         x0 += size * font.Kern(c, line[i + 1]);
