@@ -94,7 +94,7 @@ namespace Warp9.Utils
                 char thisChar = line[i];
 
                 FontSymbol thisCharDef = font.GetSymbol(thisChar);
-                x += thisCharDef.XAdvance;
+                x += thisCharDef.XAdvance * XAdvanceScale;
 
                 x += font.Kern(lastChar, thisChar);
                 lastChar = thisChar;                
