@@ -19,8 +19,10 @@ namespace Warp9.Controls
         DepthStencilView? depthStencilView;
         Texture2D? texFboDepth;
         Size depthStencilLastSize = Size.Empty;
+        TimeSpan lastFrameTime = TimeSpan.Zero;
 
         public bool Fussy { get; set; } = true;
+        public TimeSpan LastFrameTime => lastFrameTime;
 
         public void Present()
         {
@@ -35,6 +37,7 @@ namespace Warp9.Controls
                 return;
             }
 
+            DateTime t0 = DateTime.Now;
             ctx.ClearDepthStencilView(depthStencilView,
                 DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 255);
             ctx.ClearRenderTargetView(renderTargetView, RenderUtils.ToDxColor(CanvasColor));
@@ -42,6 +45,8 @@ namespace Warp9.Controls
             Render();
 
             ctx.Flush();
+            DateTime t1 = DateTime.Now;
+            lastFrameTime = t1 - t0;
         }
 
         public void EnsureSharedBackBuffer(IntPtr resourcePtr, System.Windows.Size size)

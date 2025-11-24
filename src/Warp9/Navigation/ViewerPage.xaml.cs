@@ -57,6 +57,7 @@ namespace Warp9.Navigation
         Vector2 viewportSize = Vector2.One;
         FontDefinition font;
         RenderItemHud hud;
+        DateTime lastHudUpdate = DateTime.MinValue;
         
         bool mustMakeTarget = false;
         int viewDirty = 1;
@@ -131,11 +132,6 @@ namespace Warp9.Navigation
                     throw new InvalidOperationException();
 
                 renderer.CanvasColor = Themes.ThemesController.GetColor("Brush.Background");
-                //if (FindResource("ThemeColors.Window.Background") is Color clr)
-                //    renderer.CanvasColor = System.Drawing.Color.FromArgb(clr.R, clr.G, clr.B);
-                //else
-                //    renderer.CanvasColor = System.Drawing.Color.Black;
-
                 renderer.Fussy = false;
                 renderer.Shaders.AddShaders(StockShaders.AllShaders);
 
@@ -211,6 +207,18 @@ namespace Warp9.Navigation
             }
 
             renderer.Present();
+
+            DateTime now = DateTime.Now;
+            if((now - lastHudUpdate).TotalSeconds > 1)
+            {
+
+                hud.SetSubText(0, string.Format("{0:F1} fps {1:F1} ms", 1.0f / renderer.LastFrameTime.TotalSeconds, renderer.LastFrameTime.TotalMilliseconds), 
+                    12, System.Drawing.Color.White,
+                    new System.Drawing.RectangleF(0, 0, 500, 100),
+                    false, Utils.TextRenderFlags.AlignLeft);
+
+                lastHudUpdate = now;
+            }
         }
 
         private void InteropImage_IsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -292,7 +300,7 @@ namespace Warp9.Navigation
             content.AttachRenderer(renderer);
             renderer.AddRenderItem(hud);
 
-            hud.SetSubText(0, "HUD", 12, System.Drawing.Color.White,
+            hud.SetSubText(0, "0.0 fps (0.0 ms)", 12, System.Drawing.Color.White,
                 new System.Drawing.RectangleF(0, 0, 500, 100),
                 false, Utils.TextRenderFlags.AlignLeft);
 
