@@ -48,6 +48,7 @@ namespace Warp9.Viewer
         {
             lock (renderItems)
             {
+                renderItem.Version.Commit(RenderItemDelta.Full);
                 renderItems.Add(renderItem, null);
                 jobsDirty = true;
             }

@@ -91,7 +91,7 @@ namespace Warp9.Viewer
             job.SetShader(ctx, ShaderType.Vertex, "VsText");
             job.SetShader(ctx, ShaderType.Pixel, "PsText");
 
-            if (!inited)
+            if (!job.HasVertexBuffer(0) || !job.HasTexture(0))
             {
                 VertexDataLayout layout = new VertexDataLayout();
                 layout.AddPosition(MeshSegmentFormat.Float32x2, 0);

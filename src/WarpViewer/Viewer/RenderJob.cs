@@ -236,6 +236,11 @@ namespace Warp9.Viewer
             return false;
         }
 
+        public bool HasVertexBuffer(int slot)
+        {
+            return vertBuffBindings.ContainsKey(slot);
+        }
+
         public void SetVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, VertexDataLayout layout, bool isDynamic = false, int fakeSize=0)
         {
             if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
@@ -266,6 +271,11 @@ namespace Warp9.Viewer
                 BindFlags.IndexBuffer,
                 format,
                 data.Length / elemSize, elemSize, false);
+        }
+
+        public bool HasTexture(int slot)
+        {
+            return textures.ContainsKey(slot);
         }
 
         public void SetTexture(DeviceContext ctx, int slot, Bitmap bmp, bool isDynamic = false)
