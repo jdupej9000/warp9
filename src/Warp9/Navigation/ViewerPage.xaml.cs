@@ -58,6 +58,9 @@ namespace Warp9.Navigation
         FontDefinition font;
         RenderItemHud hud;
         DateTime lastHudUpdate = DateTime.MinValue;
+        long lastFrameCount = 0;
+
+        System.Drawing.Color hudColor = System.Drawing.Color.SlateGray;
         
         bool mustMakeTarget = false;
         int viewDirty = 1;
@@ -211,13 +214,19 @@ namespace Warp9.Navigation
             DateTime now = DateTime.Now;
             if((now - lastHudUpdate).TotalSeconds > 1)
             {
-
-                hud.SetSubText(0, string.Format("{0:F1} fps {1:F1} ms", 1.0f / renderer.LastFrameTime.TotalSeconds, renderer.LastFrameTime.TotalMilliseconds), 
-                    12, System.Drawing.Color.White,
+                long curFrameCount = renderer.FrameIdx;
+                double fps = (curFrameCount - lastFrameCount) / (now - lastHudUpdate).TotalSeconds;
+                
+                hud.SetSubText(0, string.Format("{0}\n{1:F1}fps ({2:F1}ms frame)", 
+                        renderer.DeviceName,
+                        fps, 
+                        renderer.LastFrameTime.TotalMilliseconds), 
+                    12, hudColor,
                     new System.Drawing.RectangleF(0, 0, 500, 100),
                     false, Utils.TextRenderFlags.AlignLeft);
 
                 lastHudUpdate = now;
+                lastFrameCount = curFrameCount;
             }
         }
 
@@ -300,7 +309,7 @@ namespace Warp9.Navigation
             content.AttachRenderer(renderer);
             renderer.AddRenderItem(hud);
 
-            hud.SetSubText(0, "0.0 fps (0.0 ms)", 12, System.Drawing.Color.White,
+            hud.SetSubText(0, "\n0.0fps (0.0ms frame)", 12, hudColor,
                 new System.Drawing.RectangleF(0, 0, 500, 100),
                 false, Utils.TextRenderFlags.AlignLeft);
 
