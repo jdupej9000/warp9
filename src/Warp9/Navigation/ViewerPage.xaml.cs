@@ -290,11 +290,11 @@ namespace Warp9.Navigation
 
             renderer.ClearRenderItems();
             content.AttachRenderer(renderer);
-            /*renderer.AddRenderItem(hud);
+            renderer.AddRenderItem(hud);
 
             hud.SetSubText(0, "HUD", 12, System.Drawing.Color.White,
                 new System.Drawing.RectangleF(0, 0, 500, 100),
-                false, Utils.TextRenderFlags.AlignLeft);*/
+                false, Utils.TextRenderFlags.AlignLeft);
 
             Page? sidebar = content.GetSidebar();
             if (sidebar is not null)
