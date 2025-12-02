@@ -136,7 +136,7 @@ namespace warpcore::impl
 		}
 
 		int* piv = new int[n4];
-		std::memset(piv, 0, n4 * sizeof(int));
+		memset(piv, 0, n4 * sizeof(int));
 		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
 		delete[] piv;
 
