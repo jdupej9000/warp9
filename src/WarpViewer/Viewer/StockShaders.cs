@@ -221,7 +221,7 @@ struct VsOutput
 {
    float4 pos : SV_POSITION;
    float3 posw : POSITION1;
-   float4 color : COLOR0;
+   nointerpolation float4 color : COLOR0;
    float2 tex0 : TEXCOORD0;
    float3 normal : NORMAL;
    float value : TEXCOORD1;
