@@ -29,7 +29,11 @@ namespace Warp9.Test
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
-            cfg.RejectImputation = DcaImputationKind.None;
+            cfg.RejectImputation = DcaImputationKind.Tps;
+            cfg.RejectExpandedHighThreshold = 10.0f;
+            cfg.RejectExpandedLowThreshold = 0.1f;
+            cfg.RejectDistant = true;
+            cfg.RejectExpanded = false;
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = true;
             cfg.CpdConfig.UseGpu = true;
@@ -73,7 +77,7 @@ namespace Warp9.Test
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshWire, Mesh.FromPointCloud(corrPcls[i], baseMesh), wireCol: Color.Gray));
+                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), wireCol: Color.Gray));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
