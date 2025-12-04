@@ -31,9 +31,7 @@ namespace Warp9.Test
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.RejectImputation = DcaImputationKind.Tps;
             cfg.RejectExpandedHighThreshold = 10.0f;
-            cfg.RejectExpandedLowThreshold = 0.1f;
-            cfg.RejectDistant = true;
-            cfg.RejectExpanded = false;
+            cfg.RejectExpandedLowThreshold = 0.1f;           
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = true;
             cfg.CpdConfig.UseGpu = true;

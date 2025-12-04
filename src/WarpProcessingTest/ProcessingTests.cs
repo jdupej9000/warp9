@@ -107,9 +107,9 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        [DataRow(new bool[4] { true, false, true, false }, 1, new int[1] { 0b1010 })]
-        [DataRow(new bool[4] { true, false, true, false }, 2, new int[1] { 0b11001100 })]
-        [DataRow(new bool[4] { true, false, true, false }, 3, new int[1] { 0b111000111000 })]
+        [DataRow(new bool[4] { true, false, true, false }, 1, new int[1] { 0b0101 })]
+        [DataRow(new bool[4] { true, false, true, false }, 2, new int[1] { 0b00110011 })]
+        [DataRow(new bool[4] { true, false, true, false }, 3, new int[1] { 0b000111000111 })]
         public void MakeBitMaskTest(bool[] mask, int rep, int[] bin)
         {
             int[] binRes = BitMask.MakeBitMask(mask.AsSpan(), rep);

@@ -32,10 +32,8 @@ namespace Warp9.Utils
 
             for (int i = 0; i < n; i++)
             {
-                accum <<= repeat;
-
                 if(data[i])
-                    accum |= one;
+                    accum |= one << cached;
 
                 cached += repeat;
 

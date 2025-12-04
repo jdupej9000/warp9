@@ -24,6 +24,8 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 	bool negate_mask = !!(info->flags & PCL_IMPUTE_NEGATE_MASK);
 
 	if (info->method == PCL_IMPUTE_METHOD::TPS_DECIMATED) {
+		// Maybe remove this method.
+
 		int max_valid = info->d * info->n;
 		float* data_valid = new float[max_valid];
 		int num_valid = compress(info->d, data_valid, (const float*)data, valid_mask, info->n, !negate_mask);
