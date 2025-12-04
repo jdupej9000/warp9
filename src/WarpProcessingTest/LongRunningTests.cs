@@ -32,7 +32,8 @@ namespace Warp9.Test
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.RejectImputation = DcaImputationKind.Tps;
             cfg.RejectExpandedHighThreshold = 10.0f;
-            cfg.RejectExpandedLowThreshold = 0.1f;           
+            cfg.RejectExpandedLowThreshold = 0.1f;
+            cfg.RejectDistant = false;
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = true;
             cfg.CpdConfig.UseGpu = true;
@@ -83,7 +84,7 @@ namespace Warp9.Test
                 colorSeg.Data.AddRange(colors);
 
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshFilled, mb.ToMesh()));
+                    new TestRenderItem(TriStyle.MeshFilledVertexColor, mb.ToMesh()));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,

@@ -79,7 +79,7 @@ namespace Warp9.Test
                 ri.RenderLineSegments = Style == TriStyle.LineSegments;
                 ri.RenderPoints = Style == TriStyle.PointCloud;
                 ri.RenderWireframe = Style == TriStyle.MeshWire || Style == TriStyle.LineSegments;
-                ri.RenderFace = Style == TriStyle.MeshFilled;
+                ri.RenderFace = Style == TriStyle.MeshFilled || Style == TriStyle.MeshFilledVertexColor;
                 ri.RenderBlend = Blend;
                 ri.RenderCull = true;
                 ri.RenderDepth = true;
