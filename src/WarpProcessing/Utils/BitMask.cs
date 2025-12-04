@@ -19,6 +19,21 @@ namespace Warp9.Utils
             return ret;
         }
 
+        public static T[] Expand<T>(ReadOnlySpan<int> packedData, int numBits, T zeroValue, T oneValue) where T : struct
+        {
+            T[] ret = new T[numBits];
+
+            for (int i = 0; i < numBits; i++)
+            {
+                if (((packedData[i >> 5] >> (i & 0x1f)) & 0x1) == 1)
+                    ret[i] = oneValue;
+                else
+                    ret[i] = zeroValue;
+            }
+
+            return ret;
+        }
+
         public static void MakeBitMask(Span<int> mask, ReadOnlySpan<bool> data, int repeat = 1)
         {
             if (repeat < 1 || repeat > 32)

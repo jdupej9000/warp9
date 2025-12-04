@@ -237,6 +237,13 @@ namespace Warp9.Viewer
                     job.SetVertexBuffer(ctx, 2, normData, layout, useDynamicArrays);
             }
 
+            if (mesh.TryGetRawData(MeshSegmentSemantic.Color, out ReadOnlySpan<byte> colorData, out MeshSegmentFormat colorFmt))
+            {
+                VertexDataLayout layout = new VertexDataLayout();
+                layout.AddColor(colorFmt, 0, 0);
+                job.SetVertexBuffer(ctx, 3, colorData, layout, false);
+            }
+            
             if (valueBuffer is not null)
             {
                 VertexDataLayout layoutValue = new VertexDataLayout();

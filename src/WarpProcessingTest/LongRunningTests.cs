@@ -5,6 +5,7 @@ using Warp9.JobItems;
 using Warp9.Jobs;
 using Warp9.Model;
 using Warp9.Processing;
+using Warp9.Utils;
 using Warp9.Viewer;
 
 namespace Warp9.Test
@@ -74,8 +75,15 @@ namespace Warp9.Test
             Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);
             for (int i = 0; i < corrPcls.Count; i++)
             {
+                MeshBuilder mb = Mesh.FromPointCloud(corrPcls[i], baseMesh).ToBuilder();
+                MeshSegmentBuilder<uint> colorSeg = mb.GetSegmentForEditing<uint>(MeshSegmentSemantic.Color, false);
+                uint[] colors = BitMask.Expand(rej.ModelRejectionMask(i), baseMesh.VertexCount,
+                    0xff808080, 0xff0000ff);
+                colorSeg.Data.Clear();
+                colorSeg.Data.AddRange(colors);
+
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(corrPcls[i], baseMesh), wireCol: Color.Gray));
+                    new TestRenderItem(TriStyle.MeshFilled, mb.ToMesh()));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,

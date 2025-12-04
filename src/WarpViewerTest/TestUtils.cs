@@ -18,6 +18,7 @@ namespace Warp9.Test
     {
         PointCloud,
         MeshFilled,
+        MeshFilledVertexColor,
         MeshWire,
         Landmarks,
         LineSegments
@@ -38,6 +39,7 @@ namespace Warp9.Test
             {
                 TriStyle.PointCloud => MeshRenderStyle.ColorFlat,
                 TriStyle.MeshFilled => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
+                TriStyle.MeshFilledVertexColor => MeshRenderStyle.ColorArray | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
                 TriStyle.MeshWire => MeshRenderStyle.ColorFlat,
                 TriStyle.Landmarks => MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals,
                 TriStyle.LineSegments => MeshRenderStyle.ColorFlat,
@@ -54,7 +56,11 @@ namespace Warp9.Test
 
         public RenderItemBase ToRenderItem()
         {
-            if (Style == TriStyle.PointCloud || Style == TriStyle.MeshFilled || Style == TriStyle.MeshWire || Style == TriStyle.LineSegments)
+            if (Style == TriStyle.PointCloud || 
+                Style == TriStyle.MeshFilled || 
+                Style == TriStyle.MeshFilledVertexColor || 
+                Style == TriStyle.MeshWire || 
+                Style == TriStyle.LineSegments)
             {
                 RenderItemMesh ri = new RenderItemMesh();
 

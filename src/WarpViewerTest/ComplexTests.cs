@@ -1,5 +1,7 @@
+using Microsoft.VisualBasic.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -71,6 +73,72 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderTeapotPhongTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderTeapotColorArrayF32Test()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            int nv = teapot.VertexCount;
+            MeshBuilder mb = teapot.ToBuilder();
+
+            List<Vector4> color = mb.GetSegmentForEditing<Vector4>(MeshSegmentSemantic.Color, false).Data;
+            for (int i = 0; i < nv; i++)
+            {
+                float p = (float)i / nv;
+                color.Add(new Vector4(MathF.Sin(p * 10) * 0.5f + 0.5f, p, MathF.Cos(p * 34) * 0.5f + 0.5f, 1));
+            }
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = mb.ToMesh();
+            renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorArray;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotColorArrayF32Test_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderTeapotColorArrayI8Test()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+
+            Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            int nv = teapot.VertexCount;
+            MeshBuilder mb = teapot.ToBuilder();
+
+            List<uint> color = mb.GetSegmentForEditing<uint>(MeshSegmentSemantic.Color, false).Data;
+            for (int i = 0; i < nv; i++)
+            {
+                if (i > 3000)
+                    color.Add(0xff0000ffu);
+                else if (i > 2000)
+                    color.Add(0xff00ff00u);
+                else if (i > 1000)
+                    color.Add(0xffff0000u);
+                else
+                    color.Add(0xff808080u);
+            }
+
+            RenderItemMesh renderItemMesh = new RenderItemMesh();
+            renderItemMesh.Mesh = mb.ToMesh();
+            renderItemMesh.Lut = Lut.Create(256, Lut.ViridisColors);
+            renderItemMesh.Style = MeshRenderStyle.ColorArray;
+            renderItemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-1.5f, -3.0f, -3.0f);
+            rend.AddRenderItem(renderItemMesh);
+
+            rend.CanvasColor = Color.Black;
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderTeapotColorArrayI8Test_0.png", bmp);
         }
 
         [TestMethod]

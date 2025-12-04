@@ -13,6 +13,7 @@ namespace Warp9.Data
         Normal,
         Tex0,
         AttribScalar,
+        Color,
 
         Invalid
     }
