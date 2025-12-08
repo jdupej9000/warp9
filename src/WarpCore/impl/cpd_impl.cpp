@@ -239,6 +239,7 @@ namespace warpcore::impl
             const __m256 yi0 = _mm256_broadcast_ss(y + 3 * i);
             const __m256 yi1 = _mm256_broadcast_ss(y + 3 * i + 1);
             const __m256 yi2 = _mm256_broadcast_ss(y + 3 * i + 2);
+            const float* qi = q + i;
 
             for (int j = 0; j < m; j+=8) {
                 const __m256 jmask = _mm256_castsi256_ps(_mm256_cmpgt_epi32(_mm256_set1_epi32(m - j), order));
@@ -257,9 +258,23 @@ namespace warpcore::impl
                 __m256 g = expf_fast(_mm256_mul_ps(dist, ef8));
                 g = _mm256_and_ps(g, jmask); // g[m..] := 0
 
-                for (int l = 0; l < k; l++) {
-                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(q + j + l * m)), 
-                        _mm256_broadcast_ss(q + i + l * m), 
+                const float* qj = q + j;
+
+                for (int l = 0; l < k; l+=2) {
+                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)), 
+                        _mm256_broadcast_ss(qi + l * m), 
+                        lambda8[l]);
+
+                    int l1 = l + 1;
+                    lambda8[l1] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l1 * m)),
+                        _mm256_broadcast_ss(qi + l1 * m),
+                        lambda8[l+1]);
+                }
+
+                if ((k & 1) != 0) {
+                    int l = k - 1;
+                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)),
+                        _mm256_broadcast_ss(qi + l * m),
                         lambda8[l]);
                 }
             }
