@@ -49,18 +49,20 @@ namespace warpcore::impl
              
         int* hist = new int[num_cells];
         make_cell_histogram(grid, idx_range, nt, hist);
-        const int ng = reduce_add_i32(hist, num_cells);
+        const int ng = round_down(reduce_add_i32(hist, num_cells), 8) + 8 * k * k * k;
 
-        grid->buff_vert.resize(ng * 9 + 96); // pad to avoid access violations when searching
-        grid->buff_idx.resize(ng + 96);
+        grid->buff_vert.resize(ng * 9); // pad to avoid access violations when searching
+        grid->buff_idx.resize(ng);
         float* vert_base = grid->buff_vert.data();
         int* idx_base = grid->buff_idx.data();
         int offs = 0;
         for(int i = 0; i < num_cells; i++) {
+            int na = round_down(hist[i], 8) + 8;
             grid->cells[i].n = hist[i];
+            grid->cells[i].nalign = na;
             grid->cells[i].vert = vert_base + 9 * offs;
             grid->cells[i].idx = idx_base + offs;
-            offs += hist[i];
+            offs += na;
         }
 
         memset(hist, 0, sizeof(int) * num_cells);
@@ -140,23 +142,29 @@ namespace warpcore::impl
 
     void populate_grid_cell(float* dest, const float* vert, const int* idx, const int* face, int nvcell, int nv, int nt)
     {
+        constexpr int VectorSize = 8;
+
         for(int i = 0; i < nvcell; i++) {
             const int fidx = 3 * face[i];
 
-            const int idx0 = idx[fidx] * 3;
-            dest[i + 0 * nvcell] = vert[idx0 + 0];
-            dest[i + 1 * nvcell] = vert[idx0 + 1];
-            dest[i + 2 * nvcell] = vert[idx0 + 2];
+            int i8 = i / VectorSize;
+            int ii = i & (VectorSize - 1);
+            float* dest_blk = dest + i8 * 9 * VectorSize;
+
+            const int idx0 = idx[fidx] * 3;            
+            dest_blk[ii + 0 * VectorSize] = vert[idx0 + 0];
+            dest_blk[ii + 1 * VectorSize] = vert[idx0 + 1];
+            dest_blk[ii + 2 * VectorSize] = vert[idx0 + 2];
 
             const int idx1 = idx[fidx + 1] * 3;
-            dest[i + 3 * nvcell] = vert[idx1 + 0];
-            dest[i + 4 * nvcell] = vert[idx1 + 1];
-            dest[i + 5 * nvcell] = vert[idx1 + 2];
+            dest_blk[ii + 3 * VectorSize] = vert[idx1 + 0];
+            dest_blk[ii + 4 * VectorSize] = vert[idx1 + 1];
+            dest_blk[ii + 5 * VectorSize] = vert[idx1 + 2];
 
             const int idx2 = idx[fidx + 2] * 3;
-            dest[i + 6 * nvcell] = vert[idx2 + 0];
-            dest[i + 7 * nvcell] = vert[idx2 + 1];
-            dest[i + 8 * nvcell] = vert[idx2 + 2];
+            dest_blk[ii + 6 * VectorSize] = vert[idx2 + 0];
+            dest_blk[ii + 7 * VectorSize] = vert[idx2 + 1];
+            dest_blk[ii + 8 * VectorSize] = vert[idx2 + 2];
         }
     }
 

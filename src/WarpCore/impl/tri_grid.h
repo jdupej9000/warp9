@@ -10,7 +10,7 @@
 namespace warpcore::impl
 {
     struct trigrid_cell {
-        int n;
+        int n, nalign;
         float* vert;
         int* idx; 
     };
