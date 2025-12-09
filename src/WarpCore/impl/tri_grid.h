@@ -122,6 +122,8 @@ namespace warpcore::impl
                 if(ne == 0) 
                     return true; // continue along the ray, this cell is just empty
 
+                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
+
                 alignas(16) float orig[4], dir[4];
                 _mm_store_ps(orig, ctx.o);
                 _mm_store_ps(dir, ctx.d);
@@ -201,6 +203,8 @@ namespace warpcore::impl
                 const trigrid_cell* cell = ctx.grid->cells + idx;
 
                 if (cell->n > 0) {
+                    _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
+
                     float d2 = FLT_MAX;
                     alignas(32) float cellResult[TPtTriTraits::ResultSize];
                     const int hitIdx = pttri<TPtTriTraits>(ctx.pt, cell->vert, cell->n, cell->n, cellResult, &d2);

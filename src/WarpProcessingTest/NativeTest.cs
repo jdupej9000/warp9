@@ -410,7 +410,7 @@ namespace Warp9.Test
             }
         }
 
-        static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
+        public static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
