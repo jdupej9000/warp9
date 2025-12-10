@@ -260,21 +260,9 @@ namespace warpcore::impl
 
                 const float* qj = q + j;
 
-                for (int l = 0; l < k; l+=2) {
+                for (int l = 0; l < k; l++) {
                     lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)), 
                         _mm256_broadcast_ss(qi + l * m), 
-                        lambda8[l]);
-
-                    int l1 = l + 1;
-                    lambda8[l1] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l1 * m)),
-                        _mm256_broadcast_ss(qi + l1 * m),
-                        lambda8[l+1]);
-                }
-
-                if ((k & 1) != 0) {
-                    int l = k - 1;
-                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)),
-                        _mm256_broadcast_ss(qi + l * m),
                         lambda8[l]);
                 }
             }
