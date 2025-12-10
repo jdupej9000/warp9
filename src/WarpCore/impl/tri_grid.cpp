@@ -153,22 +153,24 @@ namespace warpcore::impl
 
             int i8 = i / VectorSize;
             int ii = i & (VectorSize - 1);
-            float* dest_blk = dest + i8 * 9 * VectorSize;
 
-            const int idx0 = idx[fidx] * 3;            
-            dest_blk[ii + 0 * VectorSize] = vert[idx0 + 0];
-            dest_blk[ii + 1 * VectorSize] = vert[idx0 + 1];
-            dest_blk[ii + 2 * VectorSize] = vert[idx0 + 2];
+            // We are loading and storing as ints of equal size.
+            int* dest_blk = (int*)(dest + i8 * 9 * VectorSize + ii);
 
-            const int idx1 = idx[fidx + 1] * 3;
-            dest_blk[ii + 3 * VectorSize] = vert[idx1 + 0];
-            dest_blk[ii + 4 * VectorSize] = vert[idx1 + 1];
-            dest_blk[ii + 5 * VectorSize] = vert[idx1 + 2];
+            const int* vidx0 = (const int*)(vert + idx[fidx] * 3);
+            dest_blk[0 * VectorSize] = vidx0[0];
+            dest_blk[1 * VectorSize] = vidx0[1];
+            dest_blk[2 * VectorSize] = vidx0[2];
 
-            const int idx2 = idx[fidx + 2] * 3;
-            dest_blk[ii + 6 * VectorSize] = vert[idx2 + 0];
-            dest_blk[ii + 7 * VectorSize] = vert[idx2 + 1];
-            dest_blk[ii + 8 * VectorSize] = vert[idx2 + 2];
+            const int* vidx1 = (const int*)(vert + idx[fidx + 1] * 3);
+            dest_blk[3 * VectorSize] = vidx1[0];
+            dest_blk[4 * VectorSize] = vidx1[1];
+            dest_blk[5 * VectorSize] = vidx1[2];
+
+            const int* vidx2 = (const int*)(vert + idx[fidx + 2] * 3);
+            dest_blk[6 * VectorSize] = vidx2[0];
+            dest_blk[7 * VectorSize] = vidx2[1];
+            dest_blk[8 * VectorSize] = vidx2[2];
         }
     }
 
