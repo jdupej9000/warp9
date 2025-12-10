@@ -261,7 +261,8 @@ namespace warpcore::impl
                 const float* qj = q + j;
 
                 for (int l = 0; l < k; l++) {
-                    lambda8[l] = _mm256_fmadd_ps(_mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)), 
+                    lambda8[l] = _mm256_fmadd_ps(
+                        _mm256_mul_ps(g, _mm256_loadu_ps(qj + l * m)), // TODO: fix split loads
                         _mm256_broadcast_ss(qi + l * m), 
                         lambda8[l]);
                 }
