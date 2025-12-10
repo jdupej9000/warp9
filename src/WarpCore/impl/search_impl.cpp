@@ -48,7 +48,7 @@ namespace warpcore::impl
                 _mm256_cmp_ps(det, _mm256_set1_ps(EPS), _CMP_GT_OQ),
                 _mm256_cmp_ps(det, _mm256_set1_ps(-EPS), _CMP_LT_OQ)));
 
-            if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
+            if(_mm256_movemask_ps(mask) == 0)
                 continue;
 
             //__m256 inv_det = _mm256_rcp_ps(det);
@@ -62,7 +62,7 @@ namespace warpcore::impl
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_setzero_ps(), _CMP_GE_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(1), _CMP_LE_OQ));
 
-            if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
+            if(_mm256_movemask_ps(mask) == 0)
                 continue;
 
             __m256 qx, qy, qz;
@@ -74,7 +74,7 @@ namespace warpcore::impl
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(v, _mm256_setzero_ps(), _CMP_GE_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(_mm256_add_ps(u, v), _mm256_set1_ps(1), _CMP_LE_OQ));
 
-            if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
+            if(_mm256_movemask_ps(mask) == 0)
                 continue;
 
             __m256 tt = dot(e2x, e2y, e2z, qx, qy, qz);
