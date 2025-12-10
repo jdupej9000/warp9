@@ -41,10 +41,10 @@ namespace warpcore::impl
     };
    
 
-    void _raytri(const float* orig, const float* dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept;
+    void _raytri(p3f orig, p3f dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept;
 
     template<typename TTraits>
-    int raytri(const float* orig, const float* dir, const float* vert, int n, int stride, float* result) noexcept
+    int raytri(p3f orig, p3f dir, const float* vert, int n, int stride, float* result) noexcept
     {
         __m256 bestt = _mm256_set1_ps(1e30f);
         __m256i besti = _mm256_set1_epi32(-1);
@@ -74,10 +74,10 @@ namespace warpcore::impl
     };
   
 
-    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
+    int _pttri(p3f orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
 
     template<typename TTraits>
-    int pttri(const float* orig, const float* vert, int n, int stride, float* result, float* pdist) noexcept
+    int pttri(p3f orig, const float* vert, int n, int stride, float* result, float* pdist) noexcept
     {
         float dist = FLT_MAX;
         p3f bary = p3f_zero();
@@ -87,5 +87,21 @@ namespace warpcore::impl
         TTraits::store(pt, bary, dist, result);
         *pdist = dist;
         return ret;
+    }
+
+    template<int NRegSize>
+    void extract_aosoa_triangle(const float* vert, int idx, p3f& a, p3f& b, p3f& c)
+    {
+        static_assert((NRegSize & (NRegSize - 1)) == 0);
+
+        int jbase = (idx & ~(NRegSize - 1)) * 9;
+        int joffs = idx & (NRegSize - 1);
+
+        const __m128i tidx = _mm_setr_epi32(jbase + joffs, jbase + joffs + 8,
+            jbase + joffs + 16, jbase + joffs);
+
+        a = _mm_i32gather_ps(vert, tidx, 4);
+        b = _mm_i32gather_ps(vert + 3 * NRegSize, tidx, 4);
+        c = _mm_i32gather_ps(vert + 6 * NRegSize, tidx, 4);
     }
 };

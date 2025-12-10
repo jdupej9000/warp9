@@ -5,13 +5,21 @@
 
 namespace warpcore::impl
 {
-    void _raytri(const float* orig, const float* dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept
+    // Vert is assumed to be in an AoSoA order {x0,y0,z0,x1,y1,z1,x2,y2,z2}, where each element contains
+    // one register worth of coordinates. A register is currently 8 floats. The last such block may be
+    // partially filled, where each of the x0..z2 elements only has valid data in its lower k lanes. The
+    // content of the other lanes does not matter. It is advisable though to fill that with valid data
+    // (e.g. repeated lower lanes) so that the arithmetic does not generate expensive NaNs.
+    void _raytri(p3f orig, p3f dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept
     {
         constexpr int VectorSize = 8;
 
         // Moller-Trumbore intersection algorithm, vectorized
         constexpr float EPS = 1e-16f;
         const __m256i rng = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+
+        __m256 o = _mm256_set_m128(orig, orig);
+        __m256 d = _mm256_set_m128(dir, dir);
 
         for(int i = 0; i < n; i += VectorSize) {
             __m256 mask = _mm256_castsi256_ps(_mm256_cmpgt_epi32(_mm256_set1_epi32(n - i), rng));
@@ -31,7 +39,7 @@ namespace warpcore::impl
             const __m256 e2z = _mm256_sub_ps(_mm256_loadu_ps(vert_base + 8 * VectorSize), az);
 
             __m256 px, py, pz;
-            cross(_mm256_broadcast_ss(dir), _mm256_broadcast_ss(dir+1), _mm256_broadcast_ss(dir+2), 
+            cross(_mm256_permute_ps(d, 0b00000000), _mm256_permute_ps(d, 0b01010101), _mm256_permute_ps(d, 0b10101010),
                 e2x, e2y, e2z, px, py, pz);
 
             __m256 det = dot(e1x, e1y, e1z, px, py, pz);
@@ -45,13 +53,13 @@ namespace warpcore::impl
 
             //__m256 inv_det = _mm256_rcp_ps(det);
             __m256 inv_det = _mm256_rcp_ps(_mm256_blendv_ps(_mm256_set1_ps(1), det, mask)); // prevent NaNs
-            __m256 sx = _mm256_sub_ps(_mm256_broadcast_ss(orig), ax);
-            __m256 sy = _mm256_sub_ps(_mm256_broadcast_ss(orig + 1), ay);
-            __m256 sz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), az);
+            __m256 sx = _mm256_sub_ps(_mm256_permute_ps(o, 0b00000000), ax);
+            __m256 sy = _mm256_sub_ps(_mm256_permute_ps(o, 0b01010101), ay);
+            __m256 sz = _mm256_sub_ps(_mm256_permute_ps(o, 0b10101010), az);
 
             u = _mm256_mul_ps(dot(sx, sy, sz, px, py, pz), inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(0), _CMP_GE_OQ));
+            mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_setzero_ps(), _CMP_GE_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(1), _CMP_LE_OQ));
 
             if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
@@ -60,10 +68,10 @@ namespace warpcore::impl
             __m256 qx, qy, qz;
             cross(sx, sy, sz, e1x, e1y, e1z, qx, qy, qz);
 
-            v = dot(_mm256_broadcast_ss(dir), _mm256_broadcast_ss(dir + 1), _mm256_broadcast_ss(dir + 2), qx, qy, qz);
+            v = dot(_mm256_permute_ps(d, 0b00000000), _mm256_permute_ps(d, 0b01010101), _mm256_permute_ps(d, 0b10101010), qx, qy, qz);
             v = _mm256_mul_ps(v, inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(v, _mm256_set1_ps(0), _CMP_GE_OQ));
+            mask = _mm256_and_ps(mask, _mm256_cmp_ps(v, _mm256_setzero_ps(), _CMP_GE_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(_mm256_add_ps(u, v), _mm256_set1_ps(1), _CMP_LE_OQ));
 
             if(_mm256_movemask_epi8(_mm256_castps_si256(mask)) == 0)
@@ -72,7 +80,7 @@ namespace warpcore::impl
             __m256 tt = dot(e2x, e2y, e2z, qx, qy, qz);
             tt = _mm256_mul_ps(tt, inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, _mm256_set1_ps(0), _CMP_GT_OQ));
+            mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, _mm256_setzero_ps(), _CMP_GT_OQ));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, bestt, _CMP_LT_OQ));
 
             bestt = _mm256_blendv_ps(bestt, tt, mask);
@@ -82,7 +90,8 @@ namespace warpcore::impl
         }
     }
 
-    int _pttri(const float* orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
+    // For the layout of vert, see _raytri.
+    int _pttri(p3f orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
     {
         constexpr int VectorSize = 8;
 
@@ -92,6 +101,7 @@ namespace warpcore::impl
         __m256 dist_best = _mm256_set1_ps(1e20f);
         __m256 u_best = _mm256_setzero_ps(), v_best = _mm256_setzero_ps();
         __m256i i_best = _mm256_setzero_si256();
+        __m256 o = _mm256_set_m128(orig, orig);
 
         // This loop is a vectorized form of what's in Embree: 
         // https://github.com/RenderKit/embree/blob/master/tutorials/common/math/closest_point.h
@@ -118,9 +128,9 @@ namespace warpcore::impl
             const __m256 acz = _mm256_sub_ps(_mm256_loadu_ps(vert_base + 8 * VectorSize), az);
 
             // ap = p - a
-            const __m256 apx = _mm256_sub_ps(_mm256_broadcast_ss(orig), ax);
-            const __m256 apy = _mm256_sub_ps(_mm256_broadcast_ss(orig + 1), ay);
-            const __m256 apz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), az);
+            const __m256 apx = _mm256_sub_ps(_mm256_permute_ps(o, 0b00000000), ax);
+            const __m256 apy = _mm256_sub_ps(_mm256_permute_ps(o, 0b01010101), ay);
+            const __m256 apz = _mm256_sub_ps(_mm256_permute_ps(o, 0b10101010), az);
 
             // d1 = dot(ab, ap); d2 = dot(ac, ap);
             __m256 d1 = dot(abx, aby, abz, apx, apy, apz);
@@ -133,9 +143,9 @@ namespace warpcore::impl
             //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m1);
 
             // bp = p - b
-            const __m256 bpx = _mm256_sub_ps(_mm256_broadcast_ss(orig), _mm256_loadu_ps(vert_base + 3 * VectorSize));
-            const __m256 bpy = _mm256_sub_ps(_mm256_broadcast_ss(orig + 1), _mm256_loadu_ps(vert_base + 4 * VectorSize));
-            const __m256 bpz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), _mm256_loadu_ps(vert_base + 5 * VectorSize));
+            const __m256 bpx = _mm256_sub_ps(_mm256_permute_ps(o, 0b00000000), _mm256_loadu_ps(vert_base + 3 * VectorSize));
+            const __m256 bpy = _mm256_sub_ps(_mm256_permute_ps(o, 0b01010101), _mm256_loadu_ps(vert_base + 4 * VectorSize));
+            const __m256 bpz = _mm256_sub_ps(_mm256_permute_ps(o, 0b10101010), _mm256_loadu_ps(vert_base + 5 * VectorSize));
             
             // d3 = dot(ab, bp); d4 = dot(ac, bp);
             __m256 d3 = dot(abx, aby, abz, bpx, bpy, bpz);
@@ -148,9 +158,9 @@ namespace warpcore::impl
             //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m2); // these lanes are already zero
 
             // cp = p - c
-            const __m256 cpx = _mm256_sub_ps(_mm256_broadcast_ss(orig), _mm256_loadu_ps(vert_base + 6 * VectorSize));
-            const __m256 cpy = _mm256_sub_ps(_mm256_broadcast_ss(orig + 1), _mm256_loadu_ps(vert_base + 7 * VectorSize));
-            const __m256 cpz = _mm256_sub_ps(_mm256_broadcast_ss(orig + 2), _mm256_loadu_ps(vert_base + 8 * VectorSize));
+            const __m256 cpx = _mm256_sub_ps(_mm256_permute_ps(o, 0b00000000), _mm256_loadu_ps(vert_base + 6 * VectorSize));
+            const __m256 cpy = _mm256_sub_ps(_mm256_permute_ps(o, 0b01010101), _mm256_loadu_ps(vert_base + 7 * VectorSize));
+            const __m256 cpz = _mm256_sub_ps(_mm256_permute_ps(o, 0b10101010), _mm256_loadu_ps(vert_base + 8 * VectorSize));
 
             // d5 = dot(ab, cp); d6 = dot(ac, cp);
             __m256 d5 = dot(abx, aby, abz, cpx, cpy, cpz);
@@ -222,9 +232,9 @@ namespace warpcore::impl
             __m256 rz = _mm256_fmadd_ps(u, abz, _mm256_fmadd_ps(v, acz, az));
 
             // calculate distance squared from p
-            __m256 prx = _mm256_sub_ps(rx, _mm256_broadcast_ss(orig));
-            __m256 pry = _mm256_sub_ps(ry, _mm256_broadcast_ss(orig + 1));
-            __m256 prz = _mm256_sub_ps(rz, _mm256_broadcast_ss(orig + 2));
+            __m256 prx = _mm256_sub_ps(rx, _mm256_permute_ps(o, 0b00000000));
+            __m256 pry = _mm256_sub_ps(ry, _mm256_permute_ps(o, 0b01010101));
+            __m256 prz = _mm256_sub_ps(rz, _mm256_permute_ps(o, 0b10101010));
             __m256 dist2 = _mm256_fmadd_ps(prx, prx, 
                 _mm256_add_ps(_mm256_mul_ps(pry, pry), _mm256_mul_ps(prz, prz)));
 
@@ -242,14 +252,8 @@ namespace warpcore::impl
         retDist = extract(dist_best, i);
         retBary = p3f_set(extract(u_best, i), extract(v_best, i), 0);
         
-        int jbase = (j / VectorSize) * VectorSize * 9;
-        int joffs = j & (VectorSize - 1);
-        const __m128i tidx = _mm_setr_epi32(jbase + joffs, jbase + joffs + 8, 
-            jbase + joffs + 16, jbase + joffs);
-
-        p3f a = _mm_i32gather_ps(vert, tidx, 4);
-        p3f b = _mm_i32gather_ps(vert + 3 * VectorSize, tidx, 4);
-        p3f c = _mm_i32gather_ps(vert + 6 * VectorSize, tidx, 4);
+        p3f a, b, c;
+        extract_aosoa_triangle<VectorSize>(vert, j, a, b, c);
 
         retPt = p3f_add(a, p3f_add(
                 p3f_mul(p3f_broadcast<0>(retBary), p3f_sub(b, a)),
