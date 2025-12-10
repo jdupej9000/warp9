@@ -25,9 +25,9 @@ namespace warpcore::impl
         int ncell[4];
 
         trigrid_cell* cells;
-            
-        std::vector<float> buff_vert;
-        std::vector<int> buff_idx;
+
+        float* buff_vert;
+        int* buff_idx;
     };
 
 
