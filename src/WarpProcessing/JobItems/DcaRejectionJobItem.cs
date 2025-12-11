@@ -64,7 +64,8 @@ namespace Warp9.JobItems
 
                 for (int i = 0; i < corrPcls.Count; i++)
                 {
-                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i), 100, true);
+                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i), 
+                        8, true, PCL_IMPUTE_METHOD.TPS_GRIDSEL);
                     if (imputed is not null)
                         corrPcls[i] = imputed;
                 }

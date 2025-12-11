@@ -75,6 +75,11 @@ namespace warpcore
         return xi[i];
     }
 
+    int p3i_sum(p3i x) noexcept
+    {
+        return _mm_extract_epi32(x, 0) + _mm_extract_epi32(x, 1) + _mm_extract_epi32(x, 2);
+    }
+
     bool p3i_equal(p3i x, p3i y) noexcept
     {
         // TODO: optimize
@@ -199,9 +204,14 @@ namespace warpcore
         return _mm_mul_ps(a, b);
     }
 
-     p3f p3f_mul(float a, p3f b) noexcept
+    p3f p3f_mul(float a, p3f b) noexcept
     {
         return _mm_mul_ps(b, _mm_set1_ps(a));
+    }
+
+    p3i p3i_mul(p3i a, p3i b) noexcept
+    {
+        return _mm_mullo_epi32(a, b);
     }
 
     p3f p3f_div(p3f a, p3f b) noexcept

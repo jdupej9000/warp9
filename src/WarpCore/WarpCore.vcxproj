@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableASAN>false</EnableASAN>
@@ -147,11 +147,11 @@
       <RuntimeChecks>Default</RuntimeChecks>
       <TypeInfo>false</TypeInfo>
       <Warning>InheritFromHost</Warning>
-      <Defines>__NV_NO_HOST_COMPILER_CHECK=0</Defines>
+      <Defines>__NV_NO_HOST_COMPILER_CHECK=1</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
       <FastMath>false</FastMath>
-      <AdditionalOptions>-ftz=true %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-ftz=true -allow-unsupported-compiler %(AdditionalOptions)</AdditionalOptions>
       <CudaRuntime>Shared</CudaRuntime>
       <NvccCompilation>compile</NvccCompilation>
       <CodeGeneration>compute_75,sm_75</CodeGeneration>
@@ -203,24 +203,7 @@
     <ClCompile Include="search.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="impl\cpd_cuda.cu">
-      <BasicRuntimeChecks>
-      </BasicRuntimeChecks>
-      <Optimization>O2</Optimization>
-      <Runtime>MT</Runtime>
-      <RuntimeChecks>Default</RuntimeChecks>
-      <TypeInfo>false</TypeInfo>
-      <Warning>W3</Warning>
-      <Runtime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MTd</Runtime>
-      <Runtime Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MD</Runtime>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-ftz=true %(AdditionalOptions)</AdditionalOptions>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_75,sm_75</CodeGeneration>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_75,sm_75</CodeGeneration>
-      <GPUDebugInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</GPUDebugInfo>
-      <GPUDebugInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</GPUDebugInfo>
-      <GenerateLineInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateLineInfo>
-      <GenerateLineInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateLineInfo>
-    </CudaCompile>
+    <CudaCompile Include="impl\cpd_cuda.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

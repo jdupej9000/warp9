@@ -12,6 +12,8 @@ using namespace warpcore;
 
 namespace warpcore::impl
 {
+    constexpr int VectorSize = 8;
+
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range);
     void make_cell_histogram(const trigrid* grid, const int* idx_range, int nt, int* hist);
     void populate_index_arrays(trigrid* grid, const int* idx_range, int nt, int* counter);
@@ -43,24 +45,27 @@ namespace warpcore::impl
 
         grid->x0[3] = grid->x1[3] = grid->dx[3] = 0;
 
-        int* idx_range = new int[6 * nt + 6 * 8];
-        memset(idx_range, 0, sizeof(int) * (6 * nt + 6 * 8));
+        int* idx_range = new int[6 * nt + 6 * VectorSize];
+        memset(idx_range, 0, sizeof(int) * (6 * nt + 6 * VectorSize));
         make_cellidx_ranges_aosoa(grid, vert, idx, nv, nt, idx_range);
              
         int* hist = new int[num_cells];
         make_cell_histogram(grid, idx_range, nt, hist);
-        const int ng = reduce_add_i32(hist, num_cells);
+        const int ng = round_down(reduce_add_i32(hist, num_cells), VectorSize) + VectorSize * k * k * k;
 
-        grid->buff_vert.resize(ng * 9 + 96); // pad to avoid access violations when searching
-        grid->buff_idx.resize(ng + 96);
-        float* vert_base = grid->buff_vert.data();
-        int* idx_base = grid->buff_idx.data();
+        grid->buff_vert = (float*)_aligned_malloc(ng * 9 * sizeof(float), VectorSize * sizeof(float));
+        grid->buff_idx = (int*)_aligned_malloc(ng * sizeof(int), VectorSize * sizeof(float));
+ 
+        float* vert_base = grid->buff_vert;
+        int* idx_base = grid->buff_idx;
         int offs = 0;
         for(int i = 0; i < num_cells; i++) {
+            int na = round_down(hist[i], VectorSize) + VectorSize;
             grid->cells[i].n = hist[i];
+            grid->cells[i].nalign = na;
             grid->cells[i].vert = vert_base + 9 * offs;
             grid->cells[i].idx = idx_base + offs;
-            offs += hist[i];
+            offs += na;
         }
 
         memset(hist, 0, sizeof(int) * num_cells);
@@ -80,8 +85,11 @@ namespace warpcore::impl
             grid->cells = nullptr;
         }
 
-       grid->buff_vert.clear();
-       grid->buff_idx.clear();
+        _aligned_free(grid->buff_vert);
+        _aligned_free(grid->buff_idx);
+
+        grid->buff_vert = nullptr;
+        grid->buff_idx = nullptr;
     }
 
     void populate_index_arrays(trigrid* grid, const int* idx_range, int nt, int* counter)
@@ -89,17 +97,17 @@ namespace warpcore::impl
         // This weird loop is to accomodate the AoSoA structure of idx_range. That is organized
         // in chunks with: 8 minX, 8 minY, .. 8 maxZ
 
-        for(int i = 0; i < nt; i+=8) {
+        for(int i = 0; i < nt; i += VectorSize) {
             const int* idx_range_chunk = idx_range + 6 * i;
 
-            int j8 = std::min(8, nt - i);
+            int j8 = std::min(VectorSize, nt - i);
             for(int j = 0; j < j8; j++) {
-                int x0 = idx_range_chunk[0 * 8 + j];
-                int x1 = idx_range_chunk[1 * 8 + j];
-                int y0 = idx_range_chunk[2 * 8 + j];
-                int y1 = idx_range_chunk[3 * 8 + j];
-                int z0 = idx_range_chunk[4 * 8 + j];
-                int z1 = idx_range_chunk[5 * 8 + j];
+                int x0 = idx_range_chunk[0 * VectorSize + j];
+                int x1 = idx_range_chunk[1 * VectorSize + j];
+                int y0 = idx_range_chunk[2 * VectorSize + j];
+                int y1 = idx_range_chunk[3 * VectorSize + j];
+                int z0 = idx_range_chunk[4 * VectorSize + j];
+                int z1 = idx_range_chunk[5 * VectorSize + j];
     
                 for (int z = z0; z <= z1; z++)
                 for (int y = y0; y <= y1; y++)
@@ -119,14 +127,14 @@ namespace warpcore::impl
         for(int i = 0; i < nt; i+=8) {
             const int* idx_range_chunk = idx_range + 6 * i;
 
-            int j8 = std::min(8, nt - i);
+            int j8 = std::min(VectorSize, nt - i);
             for(int j = 0; j < j8; j++) {
-                int x0 = idx_range_chunk[0 * 8 + j];
-                int x1 = idx_range_chunk[1 * 8 + j];
-                int y0 = idx_range_chunk[2 * 8 + j];
-                int y1 = idx_range_chunk[3 * 8 + j];
-                int z0 = idx_range_chunk[4 * 8 + j];
-                int z1 = idx_range_chunk[5 * 8 + j];
+                int x0 = idx_range_chunk[0 * VectorSize + j];
+                int x1 = idx_range_chunk[1 * VectorSize + j];
+                int y0 = idx_range_chunk[2 * VectorSize + j];
+                int y1 = idx_range_chunk[3 * VectorSize + j];
+                int z0 = idx_range_chunk[4 * VectorSize + j];
+                int z1 = idx_range_chunk[5 * VectorSize + j];
 
                 for (int z = z0; z <= z1; z++)
                 for (int y = y0; y <= y1; y++)
@@ -143,36 +151,42 @@ namespace warpcore::impl
         for(int i = 0; i < nvcell; i++) {
             const int fidx = 3 * face[i];
 
-            const int idx0 = idx[fidx] * 3;
-            dest[i + 0 * nvcell] = vert[idx0 + 0];
-            dest[i + 1 * nvcell] = vert[idx0 + 1];
-            dest[i + 2 * nvcell] = vert[idx0 + 2];
+            int i8 = i / VectorSize;
+            int ii = i & (VectorSize - 1);
 
-            const int idx1 = idx[fidx + 1] * 3;
-            dest[i + 3 * nvcell] = vert[idx1 + 0];
-            dest[i + 4 * nvcell] = vert[idx1 + 1];
-            dest[i + 5 * nvcell] = vert[idx1 + 2];
+            // We are loading and storing as ints of equal size.
+            int* dest_blk = (int*)(dest + i8 * 9 * VectorSize + ii);
 
-            const int idx2 = idx[fidx + 2] * 3;
-            dest[i + 6 * nvcell] = vert[idx2 + 0];
-            dest[i + 7 * nvcell] = vert[idx2 + 1];
-            dest[i + 8 * nvcell] = vert[idx2 + 2];
+            const int* vidx0 = (const int*)(vert + idx[fidx] * 3);
+            dest_blk[0 * VectorSize] = vidx0[0];
+            dest_blk[1 * VectorSize] = vidx0[1];
+            dest_blk[2 * VectorSize] = vidx0[2];
+
+            const int* vidx1 = (const int*)(vert + idx[fidx + 1] * 3);
+            dest_blk[3 * VectorSize] = vidx1[0];
+            dest_blk[4 * VectorSize] = vidx1[1];
+            dest_blk[5 * VectorSize] = vidx1[2];
+
+            const int* vidx2 = (const int*)(vert + idx[fidx + 2] * 3);
+            dest_blk[6 * VectorSize] = vidx2[0];
+            dest_blk[7 * VectorSize] = vidx2[1];
+            dest_blk[8 * VectorSize] = vidx2[2];
         }
     }
 
     inline static void load_safe(const int* idx, int n, __m256i& a, __m256i& b, __m256i& c)
     {
-        if (n >= 24) {
+        if (n >= 3 * VectorSize) {
             a = _mm256_loadu_si256((const __m256i*)idx);
-            b = _mm256_loadu_si256((const __m256i*)(idx + 8));
-            c = _mm256_loadu_si256((const __m256i*)(idx + 16));
+            b = _mm256_loadu_si256((const __m256i*)(idx + VectorSize));
+            c = _mm256_loadu_si256((const __m256i*)(idx + 2 * VectorSize));
             return;
         }
 
-        if (n >= 8) {
+        if (n >= VectorSize) {
             a = _mm256_loadu_si256((const __m256i*)idx);
 
-            if (n == 8)
+            if (n == VectorSize)
                 return;
         } else {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
@@ -180,19 +194,19 @@ namespace warpcore::impl
             return;
         }
 
-        if (n >= 16) {
-            b = _mm256_loadu_si256((const __m256i*)(idx + 8));
+        if (n >= 2 * VectorSize) {
+            b = _mm256_loadu_si256((const __m256i*)(idx + VectorSize));
 
-            if (n == 16)
+            if (n == 2 * VectorSize)
                 return;
         } else {
-            const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 8), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
-            b = _mm256_maskload_epi32(idx + 8, mask);
+            const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - VectorSize), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
+            b = _mm256_maskload_epi32(idx + VectorSize, mask);
             return;
         }
 
-        const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 16), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
-        c = _mm256_maskload_epi32(idx + 16, mask);           
+        const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(n - 2 * VectorSize), _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7));
+        c = _mm256_maskload_epi32(idx + 2 * VectorSize, mask);
     }
     
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
@@ -202,7 +216,7 @@ namespace warpcore::impl
         const __m256i seq = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         const __m256i three = _mm256_set1_epi32(3);
 
-        for(int i = 0; i < nt; i+=8) {
+        for(int i = 0; i < nt; i += VectorSize) {
             const __m256i mask = _mm256_cmpgt_epi32(_mm256_set1_epi32(nt - i), seq);
 
             __m256i idx0, idx1, idx2;

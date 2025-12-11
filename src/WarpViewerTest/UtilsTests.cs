@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using Warp9.Data;
 using Warp9.IO;
 using Warp9.Utils;
 
@@ -75,6 +76,22 @@ namespace Warp9.Test
 
             for(int i = 0; i < numItems; i++)
                 Assert.AreEqual(want[i], got[i]);
+        }
+
+        [TestMethod]
+        [DataRow(0f, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+        [DataRow(0.5f, 0, 0, 0, 1, 0, 0, 0, 1, 0)]
+        [DataRow(0.5f, 0, 0, 0, 1, 0, 0, 0, 0, 1)]
+        [DataRow(0.5f, 0, 0, 0, 0, 1, 0, 0, 0, 1)]
+        [DataRow(2f, 0, 0, 0, 2, 0, 0, 0, 2, 0)]
+        public void TriangleAreaTest(float expected, float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            float area = MeshUtils.TriangleArea(new Vector3(x0, y0, z0), new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
+            if (MathF.Abs(area - expected) > 1e-6f)
+            {
+                Console.WriteLine($"Wanted {expected}, got {area}.");
+                Assert.Fail();
+            }
         }
     }
 }

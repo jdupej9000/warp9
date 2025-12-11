@@ -4,7 +4,8 @@
 #include "config.h"
 
 enum class PCL_IMPUTE_METHOD : int32_t {
-	TPS_DECIMATED = 0
+	TPS_DECIMATED = 0,
+	TPS_GRIDSEL = 1
 };
 
 enum PCL_IMPUTE_FLAGS {

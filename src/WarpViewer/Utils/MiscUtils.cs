@@ -13,27 +13,6 @@ namespace Warp9.Utils
 {
     public static class MiscUtils
     {
-        public static void Permute<T>(Span<T> dest, ReadOnlySpan<T> src, ReadOnlySpan<int> index)
-           where T : struct
-        {
-            int n = index.Length;
-
-            if (dest.Length < n || src.Length < n)
-                throw new ArgumentException();
-
-            for (int i = 0; i < n; i++)
-                dest[i] = src[index[i]];
-        }
-
-        public static ReadOnlySpan<byte> ArrayToBytes(Array arr, int elemSize = -1)
-        {
-            ReadOnlySpan<byte> ret = MemoryMarshal.CreateReadOnlySpan(
-                ref MemoryMarshal.GetArrayDataReference(arr),
-                elemSize * arr.Length);
-
-            return ret;
-        }
-
         public static void Decompose(this Quaternion q, out Vector3 axis, out float angleDegrees)
         {
             Vector3 a = new Vector3(q.X, q.Y, q.Z);
@@ -105,13 +84,7 @@ namespace Warp9.Utils
 
             return new Vector2(min, max);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 FromSoa(ReadOnlySpan<byte> x, int idx, int nv)
-        {
-            ReadOnlySpan<float> f = MemoryMarshal.Cast<byte, float>(x);
-            return new Vector3(f[idx], f[idx + nv], f[idx + 2 * nv]);       
-        }
+           
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 SampleTriangleBarycentric(ReadOnlySpan<Vector3> x, FaceIndices fi, int nv, float u, float v)

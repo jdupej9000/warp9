@@ -10,7 +10,7 @@
 namespace warpcore::impl
 {
     struct trigrid_cell {
-        int n;
+        int n, nalign;
         float* vert;
         int* idx; 
     };
@@ -25,9 +25,9 @@ namespace warpcore::impl
         int ncell[4];
 
         trigrid_cell* cells;
-            
-        std::vector<float> buff_vert;
-        std::vector<int> buff_idx;
+
+        float* buff_vert;
+        int* buff_idx;
     };
 
 
@@ -122,13 +122,11 @@ namespace warpcore::impl
                 if(ne == 0) 
                     return true; // continue along the ray, this cell is just empty
 
-                alignas(16) float orig[4], dir[4];
-                _mm_store_ps(orig, ctx.o);
-                _mm_store_ps(dir, ctx.d);
+                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
 
                 ctx.ntested += ne;
 
-                int collision = raytri<TRayTriTraits>(orig, dir, cell->vert, ne, ne, ctx.t);
+                int collision = raytri<TRayTriTraits>(ctx.o, ctx.d, cell->vert, ne, ne, ctx.t);
                 if(collision >= 0) {
                     ctx.idx = cell->idx[collision];
                     ctx.t[0] += ctx.toffs;
@@ -148,8 +146,8 @@ namespace warpcore::impl
             const trigrid* grid;
             float* best;
             int* bestIdx;
-            const float* pt;
             float* proj;
+            p3f pt;
             int* coarseRadius;
             int cx, cy, cz;
         };
@@ -173,8 +171,8 @@ namespace warpcore::impl
             .grid = grid,
             .best = &best,
             .bestIdx = &bestIdx,
-            .pt = pt,
             .proj = proj,
+            .pt = p,
             .coarseRadius = coarseRadius,
             .cx = cx,
             .cy = cy,
@@ -201,6 +199,8 @@ namespace warpcore::impl
                 const trigrid_cell* cell = ctx.grid->cells + idx;
 
                 if (cell->n > 0) {
+                    _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
+
                     float d2 = FLT_MAX;
                     alignas(32) float cellResult[TPtTriTraits::ResultSize];
                     const int hitIdx = pttri<TPtTriTraits>(ctx.pt, cell->vert, cell->n, cell->n, cellResult, &d2);

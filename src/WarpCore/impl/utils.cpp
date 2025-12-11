@@ -4,8 +4,10 @@
 #include <cfloat>
 #include <algorithm>
 #include <cstdint>
-#include <immintrin.h>
+#include <intrin.h>
 #include <stdio.h>
+
+using namespace std;
 
 namespace warpcore::impl
 {
@@ -55,29 +57,6 @@ namespace warpcore::impl
 		}
 	}
 
-	/*void range(const float* x, int n, float& min, float& max)
-	{
-		__m256 r0v = _mm256_set1_ps(FLT_MAX), r1v = _mm256_set1_ps(FLT_MIN);
-
-		int n8 = round_down(n, 8);
-		for (int i = 0; i < n8; i += 8) {
-			const __m256 xv = _mm256_loadu_ps(x + i);
-			r0v = _mm256_min_ps(r0v, xv);
-			r1v = _mm256_max_ps(r1v, xv);
-		}
-
-		float r0 = reduce_min(r0v);
-		float r1 = reduce_max(r1v);
-
-		for (int i = n8; i < n; i++) {
-			r0 = std::min(r0, x[i]);
-			r1 = std::max(r1, x[i]);
-		}
-
-		min = r0;
-		max = r1;
-	}*/
-
 	size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg)
 	{
 		constexpr size_t BLK = 32;
@@ -119,12 +98,13 @@ namespace warpcore::impl
 			int32_t m = *(allow_mask++) ^ mask_mod;
 			for (size_t i = 0; i < BLK; i++) {
 				if ((m >> i) & 0x1) {
+
 					for(int k = 0; k < dim; k++)
 						*(xc++) = x[(ib + i) * dim + k];
-
-					ret++;
 				}
 			}
+
+			ret += _mm_popcnt_u32(m);
 		}
 
 		int32_t m = *(allow_mask) ^ mask_mod;

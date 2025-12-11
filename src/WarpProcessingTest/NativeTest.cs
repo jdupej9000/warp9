@@ -320,26 +320,42 @@ namespace Warp9.Test
 
         [DoNotParallelize]
         [TestMethod]
-        public void ImputeTest()
+        [DataRow(PCL_IMPUTE_METHOD.TPS_DECIMATED, 30)]
+        [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 2)]
+        [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 6)]
+        public void ImputeTest(PCL_IMPUTE_METHOD method, int q)
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud twisted = TranslateTwistPcl(teapot, new Vector3(0.5f, -0.2f, 0.1f), 0.25f);
 
+            teapot.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos);
+
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> damagedPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+
             int nv = teapot.VertexCount;
             bool[] allow = new bool[nv];
 
-            for(int i = 0; i < nv; i++)
+            for (int i = 0; i < nv; i++)
+            {
                 allow[i] = true;
+                damagedPos.Add(pos.Data[i]);
+            }
 
-            for(int i = nv/4; i < nv; i++)
+            for (int i = nv / 4; i < nv; i++)
+            {
                 allow[i] = false;
+                damagedPos.Add(Vector3.Zero);
+            }
 
-            PointCloud? imputed = MeshImputation.ImputePositions(teapot, twisted, BitMask.MakeBitMask(allow), 30);
+            PointCloud damaged = mb.ToPointCloud();
+
+            PointCloud? imputed = MeshImputation.ImputePositions(damaged, twisted, BitMask.MakeBitMask(allow), quality: q, method: method);
             Assert.IsNotNull(imputed);
 
-            TestUtils.Render("ImputeTest_0.png",
-               new TestRenderItem(TriStyle.PointCloud, twisted, wireCol: Color.DarkCyan),
-               new TestRenderItem(TriStyle.PointCloud, imputed, wireCol: Color.White));
+            TestUtils.Render($"ImputeTest_{method}_{q}_0.png",
+               new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(twisted, teapot), col: Color.DarkCyan),
+               new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(imputed, teapot), col: Color.White));
         }
 
         [TestMethod]
@@ -369,6 +385,8 @@ namespace Warp9.Test
         [TestMethod]
         public void TpsTrivialTest()
         {
+            // TPS should transform the initial points exactly to the destination points
+
             PointCloud pclFrom = TestUtils.MakePcl(
                 new Vector3(-3, -3, -3), new Vector3(-3, -3, 3), new Vector3(-3, 3, -3), new Vector3(-3, 3, 3),
                 new Vector3(3, -3, -3), new Vector3(3, -3, 3), new Vector3(3, 3, -3), new Vector3(3, 3, 3),
@@ -382,17 +400,17 @@ namespace Warp9.Test
             using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
             PointCloud twisted = tps.TransformPosition(pclFrom);
 
-            Assert.IsTrue(pclFrom.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posFrom));
-            Assert.IsTrue(pclFrom.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posTo));
+            Assert.IsTrue(pclTo.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos0));
+            Assert.IsTrue(twisted.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos1));
 
             for (int i = 0; i < pclFrom.VertexCount; i++)
             {
-                float d = Vector3.Distance(posFrom[i], posTo[i]);
+                float d = Vector3.Distance(pos0[i], pos1[i]);
                 Assert.IsTrue(d < 1e-5f);
             }
         }
 
-        static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
+        public static void TrigridRaycastTestCase(string referenceFileName, int gridCells, int bitmapSize)
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
