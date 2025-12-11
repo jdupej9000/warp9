@@ -14,7 +14,7 @@ Its features include registration algorithms, spatial searching structures, data
 
 ## Build instructions
 Ensure you have the following dependencies installed:
-- Visual Studio 2022
+- Visual Studio 2026
 - CUDA Toolkit 12.9 with VS integration
 
 **1. Install OpenBLAS**<br>
@@ -28,3 +28,7 @@ Use Visual Studio's Test explorer to find and execute unit tests.
 Certain tests will not run and will report as inconclusive because they depend on data files that are not public.
 If replacement data become available in public domain, we are open to using those instead.
 Some unit tests generate bitmaps, these can be found in `bin\testresults`.
+
+### Note on CUDA 
+CUDA 12.9 does not support VS2026.
+To work around this problem, you need to copy the MSBuild customizations from VS2022 to VS2026.
