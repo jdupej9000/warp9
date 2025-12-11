@@ -335,7 +335,9 @@ namespace Warp9.Navigation
                 renderer.AddRenderItem(itemGrid);
 
                 itemLms = new RenderItemInstancedMesh();
-                itemLms.Mesh = MeshUtils.MakeCubeIndexed(1);
+                itemLms.Mesh = MeshUtils.MakeIcosahedron(1);
+                itemLms.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.EstimateNormals | MeshRenderStyle.DiffuseLighting;
+                itemLms.FillColor = System.Drawing.Color.Lime;
                 renderer.AddRenderItem(itemLms);
 
                 itemMesh = new RenderItemMesh();

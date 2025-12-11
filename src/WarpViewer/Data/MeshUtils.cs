@@ -65,33 +65,59 @@ namespace Warp9.Data
             return ret;
         }
 
-        public static Mesh MakeCubeIndexed(float scale = 1)
+        public static Mesh MakeIndexedMesh(float[] pos, int[] ib, float posScale = 1)
         {
-            float[] vb = {
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f
-            };
-
-            int[] ib = {
-                1,2,3,7,6,5,4,5,1,5,6,2,2,6,7,0,3,7,0,1,3,4,7,5,0,4,1,1,5,2,3,2,7,4,0,7
-            };
-
             MeshBuilder mb = new MeshBuilder();
-            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
-            for (int i = 0; i < vb.Length; i += 3)
-                pos.Add(new Vector3(scale * vb[i], scale * vb[i + 1], scale * vb[i + 2]));
+            List<Vector3> vbPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            for (int i = 0; i < pos.Length; i += 3)
+                vbPos.Add(posScale * new Vector3(pos[i], pos[i + 1], pos[i + 2]));
 
             List<FaceIndices> faces = mb.GetIndexSegmentForEditing();
             for (int i = 0; i < ib.Length; i += 3)
                 faces.Add(new FaceIndices(ib[i], ib[i + 1], ib[i + 2]));
 
             return mb.ToMesh();
+        }
+
+        public static Mesh MakeIcosahedron(float scale=1)
+        {
+            float[] vb = {
+                -1, 0, -1.61803f,
+                0, 1.61803f, -1,
+                1, 0, -1.61803f,
+                0, 1.61803f, 1,
+                1.61803f, 1, 0,
+                1, 0, 1.61803f,
+                -1.61803f, 1, 0,
+                -1.61803f, -1, 0,
+                -1, 0, 1.61803f,
+                0, -1.61803f, 1,
+                1.61803f, -1, 0,
+                0, -1.61803f, -1
+            };
+
+            int[] ib = { 1, 6, 3, 0, 6, 1, 3, 4, 1, 3, 6, 8, 6, 0, 7, 2, 0, 1, 4, 3, 5, 4, 2, 1, 7, 8, 6, 5, 3, 8, 0, 11, 7, 11, 0, 2, 4, 5, 10, 10, 2, 4, 8, 7, 9, 8, 9, 5, 7, 11, 9, 11, 2, 10, 10, 5, 9, 11, 10, 9 };
+
+            return MakeIndexedMesh(vb, ib, scale);
+        }
+        public static Mesh MakeCubeIndexed(float scale = 1)
+        {
+            float[] vb = {
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, 1.0f,
+                -1.0f, -1.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,
+                1.0f, 1.0f, -1.0f,
+                1.0f, 1.0f, 1.0f,
+                -1.0f, 1.0f, 1.0f,
+                -1.0f, 1.0f, -1.0f
+            };
+
+            int[] ib = {
+                1,2,3,7,6,5,4,5,1,5,6,2,2,6,7,0,3,7,0,1,3,4,7,5,0,4,1,1,5,2,3,2,7,4,0,7
+            };
+
+           return MakeIndexedMesh(vb, ib, scale);
         }
 
     }
