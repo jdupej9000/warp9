@@ -30,6 +30,7 @@ namespace Warp9.Data
         public Vector3 Max;
         public bool IsInvalid => Min.X > Max.X || Min.Y > Max.Y || Min.Z > Max.Z;
         public float MaxSide => MathF.Max(MathF.Max(Max.X - Min.X, Max.Y - Min.Y), Max.Z - Min.Z);
+        public Vector3 Center => 0.5f * (Max + Min);
 
         public static Aabb Invalid => new Aabb();
 

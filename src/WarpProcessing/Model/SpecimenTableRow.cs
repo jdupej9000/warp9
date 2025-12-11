@@ -15,7 +15,7 @@ namespace Warp9.Model
         int rowIndex;
 
         internal SpecimenTable ParentTable => parent;
-        internal int RowIndex => rowIndex;
+        public int RowIndex => rowIndex;
 
         public object? this[string column]
         {

@@ -15,7 +15,7 @@ namespace Warp9.Viewer
         Vector2 viewportSize = Vector2.One;
         Vector2 rotationSpeed = new Vector2(2 * MathF.PI, 2 * MathF.PI);
 
-        Matrix4x4 prevRot = Matrix4x4.Identity;
+        Matrix4x4 prevRot = Matrix4x4.Identity, lastXForm = Matrix4x4.Identity;
         Vector3 prevTrans = Vector3.Zero;
         Vector2 pt0 = Vector2.Zero;
         float radius = 4f;
@@ -74,7 +74,7 @@ namespace Warp9.Viewer
 
         public void Get(out Matrix4x4 view)
         {
-            view = Matrix4x4.Identity;
+            view = lastXForm;
         }
 
         public void Execute(CameraCommand command)
@@ -115,6 +115,7 @@ namespace Warp9.Viewer
             Vector3 camera = new Vector3(viewi.M41, viewi.M42, viewi.M43);
 
             UpdateView?.Invoke(this, new CameraInfo(newXform, camera));
+            lastXForm = newXform;
 
             if (release)
             {

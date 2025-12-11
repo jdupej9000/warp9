@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection.Metadata;
@@ -15,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Warp9.Controls;
+using Warp9.Data;
 using Warp9.Forms;
 using Warp9.Model;
 using Warp9.ProjectExplorer;
@@ -32,6 +34,13 @@ namespace Warp9.Navigation
             InitializeComponent();
             this.owner = owner;
 
+            using FileStream fontStream = new FileStream(
+                System.IO.Path.Combine("Assets", "segoe-ui-minimal.fnt"), 
+                FileMode.Open, FileAccess.Read);
+
+            font = FontDefinition.FromStream(fontStream, "Assets");
+            itemHud = new RenderItemHud(font);
+
             ICameraControl ctl = Options.Instance.CameraControlIndex switch
             {
                 0 => new EulerCameraControl(),
@@ -46,15 +55,26 @@ namespace Warp9.Navigation
         Window owner;
         Warp9ViewModel? viewModel;
         WpfInteropRenderer? renderer = null;
+        RenderItemGrid? itemGrid = null;
+        RenderItemMesh? itemMesh = null;
+        RenderItemInstancedMesh? itemLms = null;
+        RenderItemHud itemHud;
+        FontDefinition font;
         ICameraControl cameraControl;
         ViewProjConst vpc = new ViewProjConst();
         CameraLightConst clp = new CameraLightConst();
         TimeSpan lastRender = TimeSpan.Zero;
         Vector2 viewportSize = Vector2.One;
+        Vector3 sceneCenter = Vector3.Zero;
+        DateTime lastHudUpdate = DateTime.MinValue;
+        long lastFrameCount = 0;
         long entryIndex = -1;
 
         bool mustMakeTarget = false;
         int viewDirty = 1;
+
+        readonly static System.Drawing.Color hudColor = System.Drawing.Color.SlateGray;
+        readonly static float hudSize = 14.0f;
 
         SpecimenTable Table
         {
@@ -68,6 +88,8 @@ namespace Warp9.Navigation
                 return entry.Payload.Table ?? throw new InvalidOperationException();
             }
         }
+
+        Project Project => viewModel?.Project ?? throw new InvalidOperationException();
 
         public void SetCameraControl(ICameraControl cctl)
         {
@@ -236,7 +258,6 @@ namespace Warp9.Navigation
             InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
             viewportSize = new Vector2((float)size.Width, (float)size.Height);
 
-            //content?.ViewportResized(new System.Drawing.Size((int)size.Width, (int)size.Height));
             cameraControl?.ResizeViewport(new Vector2((float)size.Width, (float)size.Height));
         }
 
@@ -272,7 +293,27 @@ namespace Warp9.Navigation
                 mustMakeTarget = false;
             }
 
+            cameraControl.Get(out Matrix4x4 viewMat);
+            UpdateConstant(viewMat, viewportSize);
             renderer.Present();
+
+            DateTime now = DateTime.Now;
+            if ((now - lastHudUpdate).TotalSeconds > 1)
+            {
+                long curFrameCount = renderer.FrameIdx;
+                double fps = (curFrameCount - lastFrameCount) / (now - lastHudUpdate).TotalSeconds;
+
+                itemHud.SetSubText(0, string.Format("{0}\n{1:F1}fps ({2:F1}ms frame)",
+                        renderer.DeviceName,
+                        fps,
+                        renderer.LastFrameTime.TotalMilliseconds),
+                    hudSize, hudColor,
+                    new System.Drawing.RectangleF(0, 0, 500, 100),
+                    false, Utils.TextRenderFlags.AlignLeft);
+
+                lastHudUpdate = now;
+                lastFrameCount = curFrameCount;
+            }
         }
 
         private void EnsureRenderer()
@@ -282,44 +323,80 @@ namespace Warp9.Navigation
                 if (!WpfInteropRenderer.TryCreate(0, out renderer) || renderer is null)
                     throw new InvalidOperationException();
 
-                renderer.CanvasColor = Themes.ThemesController.GetColor("Brush.Background");
-                //if (FindResource("ThemeColors.Window.Background") is Color clr)
-                //    renderer.CanvasColor = System.Drawing.Color.FromArgb(clr.R, clr.G, clr.B);
-                //else
-                //    renderer.CanvasColor = System.Drawing.Color.Black;
+                renderer.CanvasColor = Themes.ThemesController.GetColor("Brush.Background");             
 
                 renderer.Fussy = false;
                 renderer.Shaders.AddShaders(StockShaders.AllShaders);
 
-                ModelConst mc = new ModelConst();
-                mc.model = Matrix4x4.Identity;
-                renderer.SetConstant(StockShaders.Name_ModelConst, mc);
-
                 cameraControl.Get(out Matrix4x4 viewMat);
-                Matrix4x4.Invert(viewMat, out Matrix4x4 viewMati);
-                Vector3 camera = new Vector3(viewMati.M41, viewMati.M42, viewMati.M43);
+                UpdateConstant(viewMat, viewportSize);
 
-                vpc.viewProj = Matrix4x4.Transpose(viewMat *
-                    Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, 1, 0.01f, 100.0f));
+                itemGrid = new RenderItemGrid();
+                renderer.AddRenderItem(itemGrid);
 
-                vpc.camera = new Vector4(camera, 1);
-                renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
+                itemLms = new RenderItemInstancedMesh();
+                itemLms.Mesh = MeshUtils.MakeCubeIndexed(1);
+                renderer.AddRenderItem(itemLms);
 
-                clp.cameraPos = camera;
-                clp.lightPos = camera;
-                renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
+                itemMesh = new RenderItemMesh();
+                itemMesh.FillColor = System.Drawing.Color.White;
+                itemMesh.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+                itemMesh.RenderFace = true;
+                itemMesh.RenderDepth = true;
+                itemMesh.RenderBlend = BlendMode.NoBlend;
+                itemMesh.RenderCull = false;
+                renderer.AddRenderItem(itemMesh);
 
-                PshConst pc = new PshConst();
-                pc.color = new Vector4(0, 1, 0, 1);
-                pc.ambStrength = 0.2f;
-                pc.flags = 0;
-                renderer.SetConstant(StockShaders.Name_PshConst, pc);
+                itemHud.SetSubText(0, "HUD", 12, hudColor, new System.Drawing.RectangleF(0, 0, 100, 100));
+                itemHud.Order = 1000;
+                renderer.AddRenderItem(itemHud);
 
                 InteropImage.WindowOwner = (new System.Windows.Interop.WindowInteropHelper(owner)).Handle;
                 InteropImage.IsFrontBufferAvailableChanged += InteropImage_IsFrontBufferAvailableChanged;
                 InteropImage.OnRender += OnRender;
             }
         }
+
+        private void UpdateConstant(Matrix4x4 view, Vector2 viewport)
+        {
+            if (renderer is null)
+                return;
+
+            Matrix4x4.Invert(view, out Matrix4x4 viewInv);
+            Vector3 camera = viewInv.Translation;
+            float aspect = viewport.X / viewport.Y;
+
+            ModelConst mc = new ModelConst
+            {
+                model = Matrix4x4.Identity
+            };
+            renderer.SetConstant(StockShaders.Name_ModelConst, mc);
+
+            ViewProjConst vpc = new ViewProjConst
+            {
+                viewProj = Matrix4x4.Transpose(view *
+                   Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(MathF.PI / 3, aspect, 0.01f, 1000.0f)),
+
+                camera = new Vector4(camera, 1)
+            };
+            renderer.SetConstant(StockShaders.Name_ViewProjConst, vpc);
+
+            CameraLightConst clp = new CameraLightConst
+            {
+                cameraPos = camera,
+                lightPos = camera
+            };
+            renderer.SetConstant(StockShaders.Name_CameraLightConst, clp);
+
+            PshConst pc = new PshConst
+            {
+                color = new Vector4(0, 1, 0, 1),
+                ambStrength = 0.2f,
+                flags = 0
+            };
+            renderer.SetConstant(StockShaders.Name_PshConst, pc);
+        }
+
 
         private void InteropImage_IsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
@@ -390,6 +467,50 @@ namespace Warp9.Navigation
                 return;
 
             
+        }
+
+        private void dataMain_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count == 0 ||
+                e.AddedItems[0] is not SpecimenTableRow row)
+                return;
+
+            Aabb? box = null;
+
+            // TODO: cache the search and base it on which column is visible
+            string? meshColumn = Table.Columns.FirstOrDefault((x) => x.Value.ColumnType == SpecimenTableColumnType.Mesh).Key;
+            if (itemMesh is not null &&
+                meshColumn is not null &&
+                row[meshColumn] is long meshLnk &&
+                Project.TryGetReference(meshLnk, out Mesh? mesh) &&
+                mesh is not null)
+            {
+                box = MeshUtils.FindBoundingBox(mesh, MeshSegmentSemantic.Position);
+                if (box is null)
+                    throw new InvalidOperationException();
+
+                itemMesh.ModelMatrix = Matrix4x4.CreateTranslation(-box.Value.Center);
+                itemMesh.Mesh = mesh;
+            }
+
+            string? lmsColumn = Table.Columns.FirstOrDefault((x) => x.Value.ColumnType == SpecimenTableColumnType.PointCloud).Key;
+            if (itemLms is not null &&
+                lmsColumn is not null &&
+                row[lmsColumn] is long lmsLnk &&
+                Project.TryGetReference(lmsLnk, out PointCloud? lms) &&
+                lms is not null)
+            {
+                if (box is null)
+                    box = MeshUtils.FindBoundingBox(lms, MeshSegmentSemantic.Position);
+
+                if (box is null)
+                    throw new InvalidOperationException();
+
+                itemLms.BaseModelMatrix = Matrix4x4.CreateTranslation(-box.Value.Center);
+                itemLms.Instances = lms;
+            }
+
+            InteropImage.RequestRender();
         }
     }
 }

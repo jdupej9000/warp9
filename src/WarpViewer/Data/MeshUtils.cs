@@ -64,6 +64,35 @@ namespace Warp9.Data
 
             return ret;
         }
-      
+
+        public static Mesh MakeCubeIndexed(float scale = 1)
+        {
+            float[] vb = {
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f
+            };
+
+            int[] ib = {
+                1,2,3,7,6,5,4,5,1,5,6,2,2,6,7,0,3,7,0,1,3,4,7,5,0,4,1,1,5,2,3,2,7,4,0,7
+            };
+
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            for (int i = 0; i < vb.Length; i += 3)
+                pos.Add(new Vector3(scale * vb[i], scale * vb[i + 1], scale * vb[i + 2]));
+
+            List<FaceIndices> faces = mb.GetIndexSegmentForEditing();
+            for (int i = 0; i < ib.Length; i += 3)
+                faces.Add(new FaceIndices(ib[i], ib[i + 1], ib[i + 2]));
+
+            return mb.ToMesh();
+        }
+
     }
 }

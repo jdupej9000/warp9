@@ -40,7 +40,7 @@
             </TabItem>
 
             <!-- TABLE -->
-            <TabItem Header="Table" Background="{DynamicResource Brush.Background}">
+            <!--<TabItem Header="Table" Background="{DynamicResource Brush.Background}">
                 <DockPanel Background="{DynamicResource Brush.Background}" Margin="0,8">    
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
                         <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,1,0" Content="Add row" Click="btnSpecAdd_Click" />
@@ -68,23 +68,45 @@
 
                     </DataGrid>
                 </DockPanel>
-            </TabItem>
+            </TabItem>-->
 
             <!-- EDITOR -->
             <TabItem Header="Editor" Background="{DynamicResource Brush.Background}">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition  />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="250" />
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="250" />
+                    </Grid.RowDefinitions>
 
-                    <DockPanel Background="{DynamicResource Brush.BackgroundDark}" Grid.Column="2">
+                    <DockPanel Background="{DynamicResource Brush.BackgroundDark}" Grid.Row="2">
+                        <StackPanel DockPanel.Dock="Left" Margin="0,0,8,0">
+                            <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,0,0" Content="Add row" Click="btnSpecAdd_Click" />
+                            <Button x:Name="btnSpecDelete" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,0,0" Content="Remove row" Click="btnSpecDelete_Click" />
+                            <Button x:Name="btnSpecExport" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Content="Export..." Click="btnSpecExport_Click" />
+                        </StackPanel>
+
+                        <DataGrid x:Name="dataMain" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" SelectionChanged="dataMain_SelectionChanged">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <StackPanel Margin="4">
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Brush.Foreground}" FontWeight="Bold"/>
+                                                    <TextBlock Text="{Binding Type}" Foreground="{DynamicResource Brush.ForegroundDark}"/>
+                                                    <!-- TODO: add visibility toggle -->
+                                                </StackPanel>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.Resources>
+
+                        </DataGrid>
                     </DockPanel>
 
-                    <Label Grid.Column="1" Background="{DynamicResource Window.Static.Background}" Width="2" />
-
-                    <Grid x:Name="ImageGrid" Grid.Column="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
+                    <Grid x:Name="ImageGrid" Grid.Row="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
                         <Image x:Name="ImageHost" Stretch="Fill" Mouse.MouseDown="InteropImage_MouseDown" Mouse.MouseUp="InteropImage_MouseUp" Mouse.MouseMove="InteropImage_MouseMove" Mouse.MouseWheel="InteropImage_MouseWheel">
                             <Image.Source>
                                 <dx:D3D11Image x:Name="InteropImage" />
@@ -92,6 +114,7 @@
                         </Image>
                     </Grid>
 
+                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="{DynamicResource Brush.BackgroundDark}" ShowsPreview="True" Height="4" />
                 </Grid>
             </TabItem>
         </TabControl>
