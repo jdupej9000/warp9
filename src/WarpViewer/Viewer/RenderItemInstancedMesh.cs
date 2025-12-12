@@ -1,6 +1,4 @@
-﻿using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
@@ -9,7 +7,10 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using SharpDX.Direct3D11;
+using SharpDX.DXGI;
 using Warp9.Data;
+using Warp9.IO;
 using Warp9.Utils;
 
 namespace Warp9.Viewer
@@ -33,7 +34,10 @@ namespace Warp9.Viewer
         float instanceScale = 1;
 
         IBufferSegment? posUpdateDyn, normalUpdateDyn, colorUpdateDyn;
-        int posUpdateDynElemSize = 0, normalUpdateDynElemSize = 0, colorUpdateDynElemSize = 0;
+        MeshSegmentFormat posUpdateDynElemSize = MeshSegmentFormat.Unknown, normalUpdateDynElemSize = MeshSegmentFormat.Unknown, colorUpdateDynElemSize = MeshSegmentFormat.Unknown;
+
+        SimpleVertexLayoutProvider dynNormalLayoutProvider = SimpleVertexLayoutProvider.CreateTexCoord(6, true);
+        SimpleVertexLayoutProvider dynColorLayoutProvider = SimpleVertexLayoutProvider.CreateTexCoord(5, true);
 
         public bool RenderDepth
         {
@@ -139,15 +143,13 @@ namespace Warp9.Viewer
 
             if (instances.TryGetRawData(MeshSegmentSemantic.Normal, out ReadOnlySpan<byte> instNormData, out MeshSegmentFormat instNormFmt))
             {
-                VertexDataLayout layoutInst = new VertexDataLayout(true);
-                layoutInst.AddTex(instNormFmt, 6, 0);
+                VertexDataLayout layoutInst = dynNormalLayoutProvider.Generate(instNormFmt);
                 job.SetVertexBuffer(ctx, 3, instNormData, layoutInst, true);
             }
 
             if (instances.TryGetRawData(MeshSegmentSemantic.Color, out ReadOnlySpan<byte> instColorData, out MeshSegmentFormat instColorFmt))
             {
-                VertexDataLayout layoutInst = new VertexDataLayout(true);
-                layoutInst.AddTex(instColorFmt, 5, 0);
+                VertexDataLayout layoutInst = dynColorLayoutProvider.Generate(instColorFmt);
                 job.SetVertexBuffer(ctx, 4, instColorData, layoutInst, true);
             }
 
@@ -184,19 +186,13 @@ namespace Warp9.Viewer
             if (kind.HasFlag(RenderItemDelta.Dynamic)) 
             {
                 if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
-                {
                     job.TryUpdateDynamicVertexBuffer(ctx, 7, posUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
-                }
-
+     
                 if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)
-                {
-                    job.TryUpdateDynamicVertexBuffer(ctx, 6, normalUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
-                }
+                    job.TryUpdateDynamicVertexBuffer(ctx, 6, normalUpdateDyn.RawData, normalUpdateDynElemSize, dynNormalLayoutProvider);
 
                 if (colorUpdateDyn is not null && colorUpdateDyn.Length > 0 && colorUpdateDynElemSize != 0)
-                {
-                    job.TryUpdateDynamicVertexBuffer(ctx, 5, colorUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
-                }
+                    job.TryUpdateDynamicVertexBuffer(ctx, 5, colorUpdateDyn.RawData, colorUpdateDynElemSize, dynColorLayoutProvider);
             }
         }
 
@@ -225,8 +221,13 @@ namespace Warp9.Viewer
                     flags = flags,
                     scale = instanceScale
                 };
-
                 job.TrySetConstBuffer(-1, StockShaders.Name_InstanceConst, instConst);
+
+                ModelConst modelConst = new ModelConst
+                {
+                    model = Matrix4x4.Transpose(BaseModelMatrix)
+                };
+                job.TrySetConstBuffer(-1, StockShaders.Name_ModelConst, modelConst);
 
                 UpdateDrawCallSettings(job);
 
@@ -240,17 +241,17 @@ namespace Warp9.Viewer
             {
                 case MeshSegmentSemantic.Position:
                     posUpdateDyn = data;
-                    posUpdateDynElemSize = Marshal.SizeOf<T>();
+                    posUpdateDynElemSize = MiscUtils.TypeComposition<T>();
                     break;
 
                 case MeshSegmentSemantic.Normal:
                     normalUpdateDyn = data;
-                    normalUpdateDynElemSize = Marshal.SizeOf<T>();
+                    normalUpdateDynElemSize = MiscUtils.TypeComposition<T>();
                     break;
 
                 case MeshSegmentSemantic.Color:
                     colorUpdateDyn = data;
-                    colorUpdateDynElemSize = Marshal.SizeOf<T>();
+                    colorUpdateDynElemSize = MiscUtils.TypeComposition<T>();
                     break;
 
                 default:

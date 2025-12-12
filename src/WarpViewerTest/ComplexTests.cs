@@ -428,6 +428,7 @@ namespace Warp9.Test
             rend.Present();
 
             ri.UpdateInstanceData(new BufferSegment<uint>(dynColor), MeshSegmentSemantic.Color);
+            rend.Present();
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("InstancedDynamicNoInitTest_0.png", bmp);

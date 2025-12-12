@@ -226,11 +226,17 @@ namespace Warp9.Viewer
             }
         }
 
-        public bool TryUpdateDynamicVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data)
+        public bool TryUpdateDynamicVertexBuffer(DeviceContext ctx, int slot, ReadOnlySpan<byte> data, MeshSegmentFormat fmt = MeshSegmentFormat.Unknown, SimpleVertexLayoutProvider? provider=null)
         {
             if (vertBuffBindings.TryGetValue(slot, out Buffer? rjb) && rjb is not null)
             {
                 return rjb.TryUpdateDynamic(ctx, data);
+            }
+            else if(provider is not null && fmt != MeshSegmentFormat.Unknown)
+            {
+                VertexDataLayout layout = provider.Generate(fmt);
+                SetVertexBuffer(ctx, slot, data, layout, true);
+                return true;
             }
 
             return false;

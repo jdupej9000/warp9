@@ -1,6 +1,7 @@
 ﻿using SharpDX.Direct3D11;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Warp9.Data;
 using Warp9.Utils;
 
@@ -17,7 +18,13 @@ namespace Warp9.Viewer
         List<InputElement> inputElements = new List<InputElement>();
         InputClassification inputCls;
         int stepRate;
-        
+
+        internal VertexDataLayout Add(string elem, int elemIdx, MeshSegmentFormat fmt)
+        {
+            inputElements.Add(new InputElement(elem, elemIdx, MiscUtils.GetDxgiFormat(fmt), 0, 0, inputCls, stepRate));
+            return this;
+        }
+
         public VertexDataLayout AddPosition(MeshSegmentFormat fmt, int byteOffset)
         {
             inputElements.Add(new InputElement("POSITION", 0, MiscUtils.GetDxgiFormat(fmt), byteOffset, 0, inputCls, stepRate));
@@ -55,6 +62,31 @@ namespace Warp9.Viewer
                 ie.Slot = slot;
                 ret.Add(ie);
             }
+        }
+    }
+
+    public class SimpleVertexLayoutProvider
+    {
+        private SimpleVertexLayoutProvider(string elem, int elemIndex, bool instance)
+        {
+            elementName = elem;
+            elementIndex = elemIndex;
+            isInstance = instance;
+        }
+
+        private string elementName;
+        private int elementIndex;
+        private bool isInstance;
+
+        public VertexDataLayout Generate(MeshSegmentFormat fmt)
+        {
+            VertexDataLayout layout = new VertexDataLayout(isInstance);
+            return layout.Add(elementName, elementIndex, fmt);
+        }
+
+        public static SimpleVertexLayoutProvider CreateTexCoord(int elemIndex, bool instance = false)
+        {
+            return new SimpleVertexLayoutProvider("TEXCOORD", elemIndex, instance);
         }
     }
 }

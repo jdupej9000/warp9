@@ -171,8 +171,9 @@ VsOutput main(VsInput input)
         public readonly static ShaderSpec VsDefaultInstanced = ShaderSpec.Create(
      "VsDefaultInstanced",
      ShaderType.Vertex,
-     [  new (0, Name_InstanceConst),
-        new (1, Name_ViewProjConst)
+     [  new (0, Name_ModelConst),
+        new (1, Name_ViewProjConst),
+        new (2, Name_InstanceConst)
      ],
      [  new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
         new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
@@ -203,7 +204,7 @@ struct VsOutput
    float value : TEXCOORD1;
 };
 
-cbuffer InstanceConst : register(b0)
+cbuffer InstanceConst : register(b2)
 {
     float3 normal_ref;
     float scale;
@@ -215,7 +216,12 @@ cbuffer ViewProjConst : register(b1)
 {
    matrix viewProj;
    float4 camera;
-}
+};
+
+cbuffer ModelConst : register(b0)
+{
+   matrix model;
+};
 
 matrix rotation_from_vectors(float3 from, float3 to)
 {
@@ -248,13 +254,13 @@ VsOutput main(VsInput input)
 {
    float4 posw = float4(input.pos * scale, 1);
    
-   matrix model = matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+   matrix instModel = matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
    if(flags & 0x1) {
-        model = rotation_from_vectors(normal_ref, input.inst_normal);
-        posw = mul(posw, model);
+        instModel = rotation_from_vectors(normal_ref, input.inst_normal);
+        posw = mul(posw, instModel);
    }
 
-   posw = posw + float4(input.inst_offset, 0);
+   posw = mul(posw + float4(input.inst_offset, 0), model);
 
    VsOutput ret;   
    ret.posw = posw.xyz;
