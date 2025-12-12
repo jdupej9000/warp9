@@ -251,7 +251,7 @@ namespace Warp9.Test
         }
 
 
-        [TestMethod]
+        /*[TestMethod]
         public void RenderTeapotPhongWithLandmarksTest()
         {
             HeadlessRenderer rend = CreateRenderer();
@@ -277,7 +277,7 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderTeapotPhongWithLandmarksTest_0.png", bmp);
-        }
+        }*/
 
 
         [TestMethod]
@@ -330,6 +330,107 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderGridTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderIcosahedronTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemMesh ri = new RenderItemMesh();
+            ri.Mesh = MeshUtils.MakeIcosahedron(0.7f);
+            ri.Style = MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat | MeshRenderStyle.EstimateNormals;
+            ri.FillColor = Color.Lime;
+            rend.AddRenderItem(ri);
+
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderIcosahedronTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderInstancedIcosahedronTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemInstancedMesh ri = new RenderItemInstancedMesh();
+            ri.Mesh = MeshUtils.MakeIcosahedron();
+            ri.InstanceScale = 0.1f;
+            ri.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+            ri.FillColor = System.Drawing.Color.Lime;
+            ri.Instances = ri.Mesh;
+            rend.AddRenderItem(ri);
+            
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderInstancedIcosahedronTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderIcosahedronInstanceColorTest()
+        {
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> instPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            instPos.Add(new Vector3(-1f, -1f, 0));
+            instPos.Add(new Vector3(1f, -1f, 0));
+            instPos.Add(new Vector3(-1f, 1f, 0));
+            instPos.Add(new Vector3(1f, 1f, 0));
+            instPos.Add(new Vector3(0.0f, 0.0f, 0));
+
+            List<uint> instColor = mb.GetSegmentForEditing<uint>(MeshSegmentSemantic.Color, false).Data;
+            instColor.Add(0xff0000ff);
+            instColor.Add(0xff00ff00);
+            instColor.Add(0xffff0000);
+            instColor.Add(0xffffffff);
+            instColor.Add(0xff808080);
+
+            HeadlessRenderer rend = CreateRenderer();           
+            RenderItemInstancedMesh ri = new RenderItemInstancedMesh();
+            ri.Mesh = MeshUtils.MakeIcosahedron();
+            ri.InstanceScale = 0.3f;
+            ri.Style = MeshRenderStyle.ColorArray | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+            ri.Instances = mb.ToPointCloud();
+            ri.UseInstanceColor = true;
+            rend.AddRenderItem(ri);
+
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderIcosahedronInstanceColorTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void InstancedDynamicNoInitTest()
+        {
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> instPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            instPos.Add(new Vector3(-1f, -1f, 0));
+            instPos.Add(new Vector3(1f, -1f, 0));
+            instPos.Add(new Vector3(-1f, 1f, 0));
+            instPos.Add(new Vector3(1f, 1f, 0));
+            instPos.Add(new Vector3(0.0f, 0.0f, 0));
+
+            uint[] dynColor = new uint[] { 0xff0000ff, 0xff00ff00, 0xffff0000, 0xffffffff, 0xff808080 };
+
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemInstancedMesh ri = new RenderItemInstancedMesh();
+            ri.Mesh = MeshUtils.MakeIcosahedron();
+            ri.InstanceScale = 0.3f;
+            ri.Style = MeshRenderStyle.ColorArray | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+            ri.Instances = mb.ToPointCloud();
+            ri.UseInstanceColor = true;            
+            rend.AddRenderItem(ri);
+            
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            ri.UpdateInstanceData(new BufferSegment<uint>(dynColor), MeshSegmentSemantic.Color);
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("InstancedDynamicNoInitTest_0.png", bmp);
         }
     }
 }

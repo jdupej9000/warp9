@@ -28,6 +28,12 @@ namespace Warp9.Viewer
         Color fillColor;
         bool renderDepth = true;
         bool constBuffDirty = false;
+        bool rotateByInstNormal = false;
+        bool useInstColor = false;
+        float instanceScale = 1;
+
+        IBufferSegment? posUpdateDyn, normalUpdateDyn, colorUpdateDyn;
+        int posUpdateDynElemSize = 0, normalUpdateDynElemSize = 0, colorUpdateDynElemSize = 0;
 
         public bool RenderDepth
         {
@@ -63,6 +69,24 @@ namespace Warp9.Viewer
         {
             get { return modelMatrix; }
             set { modelMatrix = value; constBuffDirty = true; }
+        }
+
+        public bool RotateByInstanceNormal
+        {
+            get { return rotateByInstNormal; }
+            set { rotateByInstNormal = value; constBuffDirty = true; ; }
+        }
+
+        public bool UseInstanceColor
+        {
+            get { return useInstColor; }
+            set { useInstColor = value; constBuffDirty = true; ; }
+        }
+
+        public float InstanceScale
+        {
+            get { return instanceScale; }
+            set { instanceScale = value; constBuffDirty = true; ; }
         }
 
         protected override bool UpdateJobInternal(RenderJob job, DeviceContext ctx)
@@ -105,12 +129,26 @@ namespace Warp9.Viewer
             {
                 VertexDataLayout layoutInst = new VertexDataLayout(true);
                 layoutInst.AddTex(instPosFmt, 7, 0);
-                job.SetVertexBuffer(ctx, 1, instPosData, layoutInst);
+                job.SetVertexBuffer(ctx, 1, instPosData, layoutInst, true);
             }
             else
             {
                 SetError("Instances has no vertex position view.");
                 return true;
+            }
+
+            if (instances.TryGetRawData(MeshSegmentSemantic.Normal, out ReadOnlySpan<byte> instNormData, out MeshSegmentFormat instNormFmt))
+            {
+                VertexDataLayout layoutInst = new VertexDataLayout(true);
+                layoutInst.AddTex(instNormFmt, 6, 0);
+                job.SetVertexBuffer(ctx, 3, instNormData, layoutInst, true);
+            }
+
+            if (instances.TryGetRawData(MeshSegmentSemantic.Color, out ReadOnlySpan<byte> instColorData, out MeshSegmentFormat instColorFmt))
+            {
+                VertexDataLayout layoutInst = new VertexDataLayout(true);
+                layoutInst.AddTex(instColorFmt, 5, 0);
+                job.SetVertexBuffer(ctx, 4, instColorData, layoutInst, true);
             }
 
             DrawCall dcMain;
@@ -141,6 +179,27 @@ namespace Warp9.Viewer
             return true;
         }
 
+        protected override void PartialUpdateJobInternal(RenderItemDelta kind, RenderJob job, DeviceContext ctx)
+        {
+            if (kind.HasFlag(RenderItemDelta.Dynamic)) 
+            {
+                if (posUpdateDyn is not null && posUpdateDyn.Length > 0 && posUpdateDynElemSize != 0)
+                {
+                    job.TryUpdateDynamicVertexBuffer(ctx, 7, posUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
+                }
+
+                if (normalUpdateDyn is not null && normalUpdateDyn.Length > 0 && normalUpdateDynElemSize != 0)
+                {
+                    job.TryUpdateDynamicVertexBuffer(ctx, 6, normalUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
+                }
+
+                if (colorUpdateDyn is not null && colorUpdateDyn.Length > 0 && colorUpdateDynElemSize != 0)
+                {
+                    job.TryUpdateDynamicVertexBuffer(ctx, 5, colorUpdateDyn.RawData); // TODO: use SetVertexBuffer instead (this fails if no buffer has been loaded yet)
+                }
+            }
+        }
+
         public override void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
         {
             base.UpdateConstantBuffers(job, vport);
@@ -156,15 +215,49 @@ namespace Warp9.Viewer
                 };
                 job.TrySetConstBuffer(0, StockShaders.Name_PshConst, pshConst);
 
-                ModelConst mc = new ModelConst();
-                mc.model = Matrix4x4.Transpose(modelMatrix);
+                uint flags = 0;
+                if (rotateByInstNormal) flags |= StockShaders.InstanceConst_Flags_RotateByNormal;
+                if (useInstColor) flags |= StockShaders.InstanceConst_Flags_UseInstColor;
 
-                job.TrySetConstBuffer(-1, StockShaders.Name_ModelConst, mc);
+                InstanceConst instConst = new InstanceConst
+                {
+                    normalRef = Vector3.UnitX,
+                    flags = flags,
+                    scale = instanceScale
+                };
+
+                job.TrySetConstBuffer(-1, StockShaders.Name_InstanceConst, instConst);
 
                 UpdateDrawCallSettings(job);
 
                 constBuffDirty = false;
             }
+        }
+
+        public void UpdateInstanceData<T>(BufferSegment<T> data, MeshSegmentSemantic kind) where T : struct
+        {
+            switch (kind)
+            {
+                case MeshSegmentSemantic.Position:
+                    posUpdateDyn = data;
+                    posUpdateDynElemSize = Marshal.SizeOf<T>();
+                    break;
+
+                case MeshSegmentSemantic.Normal:
+                    normalUpdateDyn = data;
+                    normalUpdateDynElemSize = Marshal.SizeOf<T>();
+                    break;
+
+                case MeshSegmentSemantic.Color:
+                    colorUpdateDyn = data;
+                    colorUpdateDynElemSize = Marshal.SizeOf<T>();
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+
+            Commit(RenderItemDelta.Dynamic);
         }
 
         private void UpdateDrawCallSettings(RenderJob job)

@@ -37,12 +37,22 @@ namespace Warp9.Viewer
         private uint reserved0, reserved1, reserved2;
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct InstanceConst
+    {
+        public Vector3 normalRef;
+        public float scale;
+        public uint flags; // bit0 = rotate by normal from normal_ref, bit1 = use instance color
+        uint res0, res1, res2;
+    };
+
     public static class StockShaders
     {
         public const int Name_ModelConst = 0;
         public const int Name_ViewProjConst = 1;
         public const int Name_CameraLightConst = 2;
         public const int Name_PshConst = 3;
+        public const int Name_InstanceConst = 4;
 
         public const uint PshConst_Flags_ColorFlat = 0;
         public const uint PshConst_Flags_ColorArray = 1;
@@ -54,6 +64,9 @@ namespace Warp9.Viewer
 
         public const uint PshConst_Flags_EstimateNormals = 0x100;
         public const uint PshConst_Flags_ValueLevel = 0x200;
+
+        public const uint InstanceConst_Flags_RotateByNormal = 0x1;
+        public const uint InstanceConst_Flags_UseInstColor = 0x2;
 
         public readonly static ShaderSpec VsDefault = ShaderSpec.Create(
             "VsDefault", 
@@ -158,14 +171,16 @@ VsOutput main(VsInput input)
         public readonly static ShaderSpec VsDefaultInstanced = ShaderSpec.Create(
      "VsDefaultInstanced",
      ShaderType.Vertex,
-     [   new (0, Name_ModelConst),
-         new (1, Name_ViewProjConst)
+     [  new (0, Name_InstanceConst),
+        new (1, Name_ViewProjConst)
      ],
-     [   new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
-                new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
-                new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
-                new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
-                new ("TEXCOORD", 7, SharpDX.DXGI.Format.R32G32B32_Float)
+     [  new ("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+        new ("COLOR", 0, SharpDX.DXGI.Format.R32G32B32A32_Float),
+        new ("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float),
+        new ("NORMAL", 0, SharpDX.DXGI.Format.R32G32B32_Float),
+        new ("TEXCOORD", 5, SharpDX.DXGI.Format.R32G32B32_Float), // instance color
+        new ("TEXCOORD", 6, SharpDX.DXGI.Format.R32G32B32_Float), // instance normal
+        new ("TEXCOORD", 7, SharpDX.DXGI.Format.R32G32B32_Float)  // instance offset
      ], @"
 struct VsInput
 {
@@ -173,7 +188,9 @@ struct VsInput
    float4 color : COLOR0;
    float2 tex0: TEXCOORD0;
    float3 normal : NORMAL;
-   float3 translation : TEXCOORD7;
+   float3 inst_color : TEXCOORD5;
+   float3 inst_normal : TEXCOORD6;
+   float3 inst_offset : TEXCOORD7;
 };
 
 struct VsOutput
@@ -186,9 +203,12 @@ struct VsOutput
    float value : TEXCOORD1;
 };
 
-cbuffer ModelConst : register(b0)
+cbuffer InstanceConst : register(b0)
 {
-   matrix model;
+    float3 normal_ref;
+    float scale;
+    uint flags; // bit0 = rotate by normal from normal_ref, bit1 = use instance color
+    uint res0, res1, res2;    
 };
 
 cbuffer ViewProjConst : register(b1)
@@ -197,13 +217,49 @@ cbuffer ViewProjConst : register(b1)
    float4 camera;
 }
 
+matrix rotation_from_vectors(float3 from, float3 to)
+{
+    float3 v = cross(from, to);
+    float c = dot(from, to);
+    float k = 1.0f / (1.0f + c);
+    
+    if (c < -0.99999f)
+    {        
+        float3 orthogonal = abs(from.x) < 0.9f ? float3(1, 0, 0) : float3(0, 1, 0);
+        float3 axis = normalize(cross(from, orthogonal));
+        return matrix(
+            2.0f * axis.x * axis.x - 1.0f,    2.0f * axis.x * axis.y,           2.0f * axis.x * axis.z,        0,
+            2.0f * axis.y * axis.x,           2.0f * axis.y * axis.y - 1.0f,    2.0f * axis.y * axis.z,        0,
+            2.0f * axis.z * axis.x,           2.0f * axis.z * axis.y,           2.0f * axis.z * axis.z - 1.0f, 0,
+            0, 0, 0, 1
+        );
+    }
+    
+    // Rodrigues' formula
+    return matrix(
+        v.x * v.x * k + c,     v.y * v.x * k - v.z,   v.z * v.x * k + v.y, 0,
+        v.x * v.y * k + v.z,   v.y * v.y * k + c,     v.z * v.y * k - v.x, 0,
+        v.x * v.z * k - v.y,   v.y * v.z * k + v.x,   v.z * v.z * k + c,   0,
+        0, 0, 0, 1
+    );
+}
+
 VsOutput main(VsInput input)
 {
-   VsOutput ret;
-   float4 posw = mul(float4(input.pos, 1), model) + float4(input.translation, 0);
+   float4 posw = float4(input.pos * scale, 1);
+   
+   matrix model = matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+   if(flags & 0x1) {
+        model = rotation_from_vectors(normal_ref, input.inst_normal);
+        posw = mul(posw, model);
+   }
+
+   posw = posw + float4(input.inst_offset, 0);
+
+   VsOutput ret;   
    ret.posw = posw.xyz;
    ret.pos = mul(posw, viewProj);
-   ret.color = input.color;
+   ret.color = (flags & 0x2) ? float4(input.inst_color,1) : input.color;
    ret.tex0 = input.tex0;
    ret.normal = normalize(mul(input.normal, (float3x3)model));
    ret.value = 0;
