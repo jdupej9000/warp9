@@ -350,6 +350,25 @@ namespace Warp9.Test
         }
 
         [TestMethod]
+        public void RenderDoublePointTest()
+        {
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemMesh ri = new RenderItemMesh();
+            ri.Mesh = MeshUtils.MakeDoublePoint(12, 1.5f, 0.35f);
+            ri.Style = MeshRenderStyle.PhongBlinn | MeshRenderStyle.ColorFlat;
+            ri.FillColor = Color.Lime;
+            ri.RenderCull = false;
+            ri.RenderFace = true;
+            rend.AddRenderItem(ri);
+
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderDoublePointTest_0.png", bmp);
+        }
+
+        [TestMethod]
         public void RenderInstancedIcosahedronTest()
         {
             HeadlessRenderer rend = CreateRenderer();
@@ -400,6 +419,48 @@ namespace Warp9.Test
 
             using (Bitmap bmp = rend.ExtractColorAsBitmap())
                 BitmapAsserts.AssertEqual("RenderIcosahedronInstanceColorTest_0.png", bmp);
+        }
+
+        [TestMethod]
+        public void RenderInstancedWithNormalsNoInitTest()
+        {
+            // Instance data is comprised of icosahedron vertices with normals pointing outwards.
+            // Normals are a dynamic array provided without initialization.
+
+            Mesh icosahedron = MeshUtils.MakeIcosahedron(0.85f);
+            icosahedron.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> posSeg);
+            Vector3[] pos = posSeg.DataArray;
+
+            int nv = icosahedron.VertexCount;
+            Vector3[] normals = new Vector3[nv];
+            for (int i = 0; i < nv; i++)
+                normals[i] = Vector3.Normalize(pos[i]);
+
+            HeadlessRenderer rend = CreateRenderer();
+            RenderItemInstancedMesh ri = new RenderItemInstancedMesh();
+            ri.Mesh = MeshUtils.MakeDoublePoint();
+            ri.InstanceScale = 0.3f;
+            ri.Style = MeshRenderStyle.ColorFlat | MeshRenderStyle.DiffuseLighting | MeshRenderStyle.EstimateNormals;
+            ri.FillColor = Color.Lime;
+            ri.Instances = icosahedron;            
+            ri.RotateByInstanceNormal = true;
+            ri.UpdateInstanceData(new BufferSegment<Vector3>(normals), MeshSegmentSemantic.Normal);
+            rend.AddRenderItem(ri);
+
+            RenderItemMesh rii = new RenderItemMesh();
+            rii.Mesh = icosahedron;
+            rii.Style = MeshRenderStyle.ColorFlat;
+            rii.PointWireColor = Color.Gray;
+            rii.RenderCull = false;
+            rii.RenderFace = false;
+            rii.RenderWireframe = true;
+            rend.AddRenderItem(rii);
+
+            rend.CanvasColor = Color.FromArgb(52, 52, 52);
+            rend.Present();
+
+            using (Bitmap bmp = rend.ExtractColorAsBitmap())
+                BitmapAsserts.AssertEqual("RenderInstancedWithNormalsTest_0.png", bmp);
         }
 
         [TestMethod]

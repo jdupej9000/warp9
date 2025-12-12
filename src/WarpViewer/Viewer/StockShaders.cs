@@ -256,7 +256,7 @@ VsOutput main(VsInput input)
    
    matrix instModel = matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
    if(flags & 0x1) {
-        instModel = rotation_from_vectors(normal_ref, input.inst_normal);
+        instModel = transpose(rotation_from_vectors(normal_ref, input.inst_normal));
         posw = mul(posw, instModel);
    }
 
@@ -267,7 +267,7 @@ VsOutput main(VsInput input)
    ret.pos = mul(posw, viewProj);
    ret.color = (flags & 0x2) ? float4(input.inst_color,1) : input.color;
    ret.tex0 = input.tex0;
-   ret.normal = normalize(mul(input.normal, (float3x3)model));
+   ret.normal = normalize(mul(input.normal, (float3x3)mul(instModel,model)));
    ret.value = 0;
    return ret;
 }

@@ -79,6 +79,57 @@ namespace Warp9.Data
             return mb.ToMesh();
         }
 
+        public static Mesh MakeDoublePoint(int quality=12, float height = 1f, float radius = 0.25f)
+        {
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            List<Vector3> norm = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;
+
+            Vector3 top = new Vector3(height, 0, 0);
+            Vector3 center = Vector3.Zero;
+            Vector3 bottom = new Vector3(-height, 0, 0);
+            Vector3 up = Vector3.UnitX;
+            Vector3 down = -Vector3.UnitX;
+
+            for (int i = 0; i < quality; i++)
+            {
+                (float s0, float c0) = MathF.SinCos((float)i / quality * MathF.PI * 2);
+                (float s1, float c1) = MathF.SinCos((float)(i + 1) / quality * MathF.PI * 2);
+                Vector3 perim0 = new Vector3(0, radius * c0, radius * s0);
+                Vector3 perim1 = new Vector3(0, radius * c1, radius * s1);
+
+                Vector3 norm0 = -Vector3.Cross(perim0 + top - center, perim1 + top - center);
+                Vector3 norm1 = Vector3.Cross(perim0 + bottom - center, perim1 + bottom - center);
+
+                pos.Add(top); norm.Add(up);
+                pos.Add(top + perim0); norm.Add(up);
+                pos.Add(top + perim1); norm.Add(up);
+
+                pos.Add(top + perim0); norm.Add(norm0);
+                pos.Add(top + perim1); norm.Add(norm0);
+                pos.Add(center); norm.Add(norm0);
+
+                pos.Add(bottom + perim1); norm.Add(norm1);
+                pos.Add(bottom + perim0); norm.Add(norm1);
+               
+                pos.Add(center); norm.Add(norm1);
+
+                pos.Add(bottom); norm.Add(down);
+                pos.Add(bottom + perim0); norm.Add(down);
+                pos.Add(bottom + perim1); norm.Add(down);
+            }
+
+            // TODO: unindexed meshes should not need an index buffer
+            List<FaceIndices> faces = mb.GetIndexSegmentForEditing();
+            int nt = pos.Count / 3;
+            for (int i = 0; i < nt; i++)
+            {
+                faces.Add(new FaceIndices(3 * i, 3 * i + 1, 3 * i + 2));
+            }
+
+            return mb.ToMesh();
+        }
+
         public static Mesh MakeIcosahedron(float scale=1)
         {
             float[] vb = {
