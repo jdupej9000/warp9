@@ -7,7 +7,7 @@
       xmlns:dx="clr-namespace:TqkLibrary.Wpf.Interop.DirectX;assembly=TqkLibrary.Wpf.Interop.DirectX"
       xmlns:local="clr-namespace:Warp9.Navigation"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="600" d:DesignWidth="800"
       Title="SpecimenEditorPage">
 
     <DockPanel Background="{DynamicResource Brush.Background}" Margin="8">
@@ -39,39 +39,9 @@
                 </DockPanel>
             </TabItem>
 
-            <!-- TABLE -->
-            <!--<TabItem Header="Table" Background="{DynamicResource Brush.Background}">
-                <DockPanel Background="{DynamicResource Brush.Background}" Margin="0,8">    
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-                        <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,1,0" Content="Add row" Click="btnSpecAdd_Click" />
-                        <Button x:Name="btnSpecDelete" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,8,0" Content="Remove row" Click="btnSpecDelete_Click" />
-                       
-                        <Button x:Name="btnSpecExport" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Content="Export..." Click="btnSpecExport_Click" />
-                    </StackPanel>
-                    <Label Height="8" DockPanel.Dock="Top" />
-
-                    <DataGrid x:Name="dataMain" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" BorderThickness="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
-                        <DataGrid.Resources>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate>
-                                            <StackPanel Margin="4">
-                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Brush.Foreground}" FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding Type}" Foreground="{DynamicResource Brush.ForegroundDark}"/>
-                                            </StackPanel>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </DataGrid.Resources>
-
-                    </DataGrid>
-                </DockPanel>
-            </TabItem>-->
 
             <!-- EDITOR -->
-            <TabItem Header="Editor" Background="{DynamicResource Brush.Background}">
+            <TabItem Header="Editor" Background="{DynamicResource Brush.Background}" Height="20" VerticalAlignment="Top">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -79,7 +49,12 @@
                         <RowDefinition Height="250" />
                     </Grid.RowDefinitions>
 
-                    <DockPanel Background="{DynamicResource Brush.BackgroundDark}" Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition  />                 
+                        <ColumnDefinition Width="220" />
+                    </Grid.ColumnDefinitions>
+
+                    <DockPanel Background="{DynamicResource Brush.BackgroundDark}" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
                         <StackPanel DockPanel.Dock="Left" Margin="0,0,8,0">
                             <Button x:Name="btnSpecAdd" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,0,0" Content="Add row" Click="btnSpecAdd_Click" />
                             <Button x:Name="btnSpecDelete" DockPanel.Dock="Right" Style="{DynamicResource ControlButton}" Padding="4,0,4,0" Margin="0,0,0,0" Content="Remove row" Click="btnSpecDelete_Click" />
@@ -106,7 +81,44 @@
                         </DataGrid>
                     </DockPanel>
 
-                    <Grid x:Name="ImageGrid" Grid.Row="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Width="206" Margin="4,4,4,4"  HorizontalAlignment="Left" Grid.Column="1" Grid.Row="0">
+                        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mesh</TextBlock>
+                        <ComboBox x:Name="cmbMesh" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="50" Margin="0,0,2,0" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+                                ToolTip="Add wireframe."/>
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="50" Margin="0,0,2,0" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                                ToolTip="Fill faces."/>
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="50" Margin="0,0,2,0" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                                ToolTip="Use vertex normals. If disabled, face normals are used."/>
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Diffuse" Width="50" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+                                ToolTip="Use diffuse lighting."/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Style="{DynamicResource ControlButton}" Content="Load..." Width="154" Margin="0,0,2,0"/>
+                            <Button Style="{DynamicResource ControlButton}" Content="Clear" Width="50"/>
+                        </StackPanel>
+
+                        <Label Height="8" />
+                        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Landmarks</TextBlock>
+                        <ComboBox x:Name="cmbLms" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="0,0,0,4" />
+                        <ListBox Height="200" />
+                        <Button Style="{DynamicResource ControlButton}" Content="Load..." Width="206" Margin="0,0,2,0"/>
+
+                        <Label Height="8" />
+                        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Attribute field</TextBlock>
+                        <ComboBox x:Name="cmbAttr" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="0,0,0,4" />
+
+                        <Label Height="8" />
+                        <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                                ToolTip="Show grid."/>
+                        </StackPanel>
+
+                    </StackPanel>
+
+                    <Grid x:Name="ImageGrid" Grid.Row="0" Grid.Column="0" Loaded="Grid_Loaded" SizeChanged="Grid_SizeChanged">
                         <Image x:Name="ImageHost" Stretch="Fill" Mouse.MouseDown="InteropImage_MouseDown" Mouse.MouseUp="InteropImage_MouseUp" Mouse.MouseMove="InteropImage_MouseMove" Mouse.MouseWheel="InteropImage_MouseWheel">
                             <Image.Source>
                                 <dx:D3D11Image x:Name="InteropImage" />
@@ -114,7 +126,7 @@
                         </Image>
                     </Grid>
 
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="{DynamicResource Brush.BackgroundDark}" ShowsPreview="True" Height="4" />
+                    <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="{DynamicResource Brush.BackgroundDark}" ShowsPreview="True" Height="4" />
                 </Grid>
             </TabItem>
         </TabControl>
