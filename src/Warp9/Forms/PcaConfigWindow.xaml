@@ -28,6 +28,9 @@
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
             <StackPanel Orientation="Vertical" Width="500">
 
+                <TextBlock TextWrapping="Wrap" Style="{DynamicResource TextBlockDimmed}">Dimension reduction techniques for point cloud data.</TextBlock>
+                <Label Height="8" />
+
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Data</TextBlock>
                     <Label Height="4" />

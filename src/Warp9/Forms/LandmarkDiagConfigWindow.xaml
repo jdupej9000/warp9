@@ -28,6 +28,9 @@
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
             <StackPanel Orientation="Vertical" Width="500">
 
+                <TextBlock TextWrapping="Wrap" Style="{DynamicResource TextBlockDimmed}">Landmark diagnostics help uncover errors in manual landmarking by identifying landmarks hovering over their surfaces, outlier configurations in GPA and poorly reproducible landmarks.</TextBlock>
+                <Label Height="8" />
+
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Data</TextBlock>
                     <Label Height="4" />

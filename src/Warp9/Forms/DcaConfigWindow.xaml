@@ -35,8 +35,11 @@
         <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Padding="4">
                          
             <StackPanel Orientation="Vertical" Width="500">
-                
-                    <StackPanel Orientation="Vertical">
+
+                <TextBlock TextWrapping="Wrap" Style="{DynamicResource TextBlockDimmed}">This filter resamples the models in the selected table column in a way that yields homologous representations. Various correspondence algorithms can be configured. With homologous vertex and triangle coverages, visualizations and data mining methods can be performed. The process is potentially time consuming.</TextBlock>
+                <Label Height="8" />
+
+                <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Data</TextBlock>
                         <Label Height="4" />
                         <Grid>
