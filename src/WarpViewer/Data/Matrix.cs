@@ -42,6 +42,14 @@ namespace Warp9.Data
             data = new T[cols * rows];
         }
 
+        public Matrix(int cols, int rows, T initial)
+            : base(cols, rows, typeof(T))
+        {
+            data = new T[cols * rows];
+            for(int i = 0; i < cols * rows; i++)
+                data[i] = initial;
+        }
+
         public Matrix(T[] data, int cols, int rows)
           : base(cols, rows, typeof(T))
         {

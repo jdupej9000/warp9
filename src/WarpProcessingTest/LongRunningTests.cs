@@ -185,5 +185,31 @@ namespace Warp9.Test
             Console.WriteLine("PC variability (%): " +
                 string.Join(", ", pca.PcVariance.Select((t) => (t * 100.0f).ToString("F1"))));
         }
+
+        [TestMethod]
+        public void MeshSampleDistanceMatrixTest()
+        {
+            string facesFile = ProcessingTestUtils.GetExternalDependency("faces-dca.w9");
+            MeshDistanceKind[] distanceKinds = Enum.GetValues<MeshDistanceKind>();
+
+            using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
+            using Project project = Project.Load(archive);
+
+            SpecimenTableColumn<ProjectReferenceLink>? corrColumn = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
+              project, 35, "corrPcl");
+            Assert.IsNotNull(corrColumn);
+
+            List<PointCloud?> dcaCorrPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, corrColumn).ToList();
+            Assert.IsFalse(dcaCorrPcls.Exists((t) => t is null));
+
+            MatrixCollection mc = MeshDistance.Compute(dcaCorrPcls, null, distanceKinds);
+
+            foreach (MeshDistanceKind k in distanceKinds)
+            {
+                Console.WriteLine(k.ToString());
+                Console.WriteLine(mc[(int)k].ToString());
+                Console.WriteLine();
+            }
+        }
     }
 }
