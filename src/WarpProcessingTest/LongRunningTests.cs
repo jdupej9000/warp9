@@ -181,6 +181,9 @@ namespace Warp9.Test
             ArrayPool<float>.Shared.Return(scores);
 
             Console.WriteLine(scoresMat.ToString());
+
+            Console.WriteLine("PC variability (%): " +
+                string.Join(", ", pca.PcVariance.Select((t) => (t * 100.0f).ToString("F1"))));
         }
     }
 }
