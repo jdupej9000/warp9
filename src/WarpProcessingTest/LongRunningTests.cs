@@ -103,11 +103,15 @@ namespace Warp9.Test
         }
 
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(true, true)]
-        public void FacesPcaTest(bool restoreSize, bool normalizeScale)
+        [DataRow(false, false, false)]
+        [DataRow(true, false, false)]
+        [DataRow(false, true, false)]
+        [DataRow(true, true, false)]
+        [DataRow(false, false, true)]
+        [DataRow(true, false, true)]
+        [DataRow(false, true, true)]
+        [DataRow(true, true, true)]
+        public void FacesPcaTest(bool restoreSize, bool normalizeScale, bool reject)
         {
             string facesFile = ProcessingTestUtils.GetExternalDependency("faces-dca.w9");
 
@@ -137,8 +141,26 @@ namespace Warp9.Test
 
             int nv = dcaCorrPcls[0]!.VertexCount;
             bool[] allow = new bool[nv];
-            for (int i = 0; i < nv; i++)
-                allow[i] = true;
+            if (reject)
+            {
+                float thresh = 0.05f;
+
+                if (!project.TryGetReference(32, out MatrixCollection? rejmc) ||
+                    rejmc is null ||
+                    !rejmc.TryGetMatrix(ModelConstants.VertexRejectionRatesKey, out Matrix<float>? rejectRates) ||
+                    rejectRates is null)
+                {
+                    Assert.Fail();
+                    return;
+                }
+
+                MiscUtils.ThresholdBelow(rejectRates.Data.AsSpan(), thresh, allow.AsSpan());
+            }
+            else
+            {
+                for (int i = 0; i < nv; i++)
+                    allow[i] = true;
+            }
 
             Pca? pca = Pca.Fit(dcaCorrPcls!, allow, normalizeScale);
             Assert.IsNotNull(pca);
