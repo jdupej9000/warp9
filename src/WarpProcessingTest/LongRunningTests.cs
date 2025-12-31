@@ -1,9 +1,11 @@
-﻿using System.Drawing;
+﻿using System.Buffers;
+using System.Drawing;
 using System.Numerics;
 using Warp9.Data;
 using Warp9.JobItems;
 using Warp9.Jobs;
 using Warp9.Model;
+using Warp9.Native;
 using Warp9.Processing;
 using Warp9.Utils;
 using Warp9.Viewer;
@@ -47,7 +49,7 @@ namespace Warp9.Test
 
             IJobContext ctx = JobEngine.RunImmediately(job);
 
-            //Assert.AreEqual(0, job.NumItemsFailed);
+            Assert.AreEqual(0, job.NumItemsFailed);
             Assert.AreEqual(job.NumItemsDone, job.NumItems);
 
             Console.WriteLine("Workspace contents: ");
@@ -98,7 +100,65 @@ namespace Warp9.Test
                 lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.01f));
             lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.01f));
             TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
+        }
 
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void FacesPcaTest(bool restoreSize, bool normalizeScale)
+        {
+            string facesFile = ProcessingTestUtils.GetExternalDependency("faces-dca.w9");
+
+            using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
+            using Project project = Project.Load(archive);
+
+            SpecimenTableColumn<ProjectReferenceLink>? corrColumn = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
+               project, 35, "corrPcl");
+            Assert.IsNotNull(corrColumn);
+
+            List<PointCloud?> dcaCorrPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, corrColumn).ToList();
+            Assert.IsFalse(dcaCorrPcls.Exists((t) => t is null));
+
+            int ns = dcaCorrPcls.Count;
+            if (restoreSize)
+            {
+                SpecimenTableColumn<double>? csColumn = ModelUtils.TryGetSpecimenTableColumn<double>(
+                  project, 35, "cs");
+
+                if (csColumn is not null)
+                {
+                    IReadOnlyList<double> cs = csColumn.GetData<double>();
+                    for (int i = 0; i < ns; i++)
+                        dcaCorrPcls[i] = MeshScaling.ScalePosition(dcaCorrPcls[i]!, (float)cs[i]).ToPointCloud();
+                }
+            }
+
+            int nv = dcaCorrPcls[0]!.VertexCount;
+            bool[] allow = new bool[nv];
+            for (int i = 0; i < nv; i++)
+                allow[i] = true;
+
+            Pca? pca = Pca.Fit(dcaCorrPcls!, allow, normalizeScale);
+            Assert.IsNotNull(pca);
+
+            int npcs = Math.Min(50, ns - 1);
+            Matrix<float> scoresMat = new Matrix<float>(npcs, ns);
+
+            int npcsall = pca.NumPcs;
+            float[] scores = ArrayPool<float>.Shared.Rent(npcsall);
+            for (int i = 0; i < ns; i++)
+            {
+                if (dcaCorrPcls[i] is null || !pca.TryGetScores(dcaCorrPcls[i]!, scores.AsSpan()))                
+                    Assert.Fail();
+
+                for (int j = 0; j < npcs; j++)
+                    scoresMat[i, j] = scores[j];
+            }
+            ArrayPool<float>.Shared.Return(scores);
+
+            Console.WriteLine(scoresMat.ToString());
         }
     }
 }

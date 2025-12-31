@@ -1,6 +1,8 @@
 using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Warp9.Data
 {
@@ -78,6 +80,32 @@ namespace Warp9.Data
                 throw new IndexOutOfRangeException();
 
             return data.AsSpan().Slice(col * Rows, Rows);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"{Rows}x{Columns}x{ElementType.Name}");
+
+            sb.AppendFormat("{0,6} ", "");
+            for (int i = 0; i < Columns; i++)
+                sb.AppendFormat("{0,6} ", ColumnName(i) ?? $"{i}");
+            sb.AppendLine();
+
+            for (int j = 0; j < Rows; j++)
+            {
+                sb.AppendFormat("{0,6}|", j);
+
+                if (data is float[] fdata)
+                {
+                    for (int i = 0; i < Columns; i++)
+                        sb.AppendFormat("{0,6:##0.00} ", fdata[j + i * Rows]);
+                }
+
+                sb.AppendLine();
+            }            
+
+            return sb.ToString();
         }
     }
 }
