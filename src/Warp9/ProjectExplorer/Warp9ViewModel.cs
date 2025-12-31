@@ -201,5 +201,19 @@ namespace Warp9.ProjectExplorer
 
             Model.StartJob(LandmarkDiagJob.Create(config, Project), "Landmark diagnostics");
         }
+
+        public void ComputeDistanceMatrix()
+        {
+            DistMatrixConfigWindow cfgWnd = new DistMatrixConfigWindow();
+
+            //LandmarkDiagConfigWindow cfgWnd = new LandmarkDiagConfigWindow();
+            cfgWnd.Attach(Project, null);
+            cfgWnd.ShowDialog();
+
+            if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
+                return;
+
+            // TODO
+        }
     }
 }

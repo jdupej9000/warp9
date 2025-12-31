@@ -19,6 +19,9 @@
     <Compile Update="Forms\DcaConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\DistMatrixConfigWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\ImportCsvWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

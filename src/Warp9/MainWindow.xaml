@@ -35,6 +35,7 @@
                 <MenuItem Header="Compute">
                     <MenuItem Header="Mesh homology (DCA)" Click="mnuProjectComputeDca_Click" />
                     <MenuItem Header="Principal component analysis" Click="mnuProjectComputePca_Click" />
+                    <MenuItem Header="Point cloud distance matrix" Click="mnuProjectComputePclDistMat_Click" />
                     <MenuItem Header="Landmark diagnostics" Click="mnuProjectComputeLmDiag_Click" />
                 </MenuItem>
             </MenuItem>

@@ -284,6 +284,11 @@ namespace Warp9
             model?.ViewModel?.ComputeDcaPca();
         }
 
+        private void mnuProjectComputePclDistMat_Click(object sender, RoutedEventArgs e)
+        {
+            model?.ViewModel?.ComputeDistanceMatrix();
+        }
+
         private void mnuProjectComputeLmDiag_Click(object sender, RoutedEventArgs e)
         {
             model?.ViewModel?.ComputeLandmarkDiag();
