@@ -9,6 +9,7 @@ using System.Windows.Media;
 using Warp9.Data;
 using Warp9.Model;
 using Warp9.Navigation;
+using Warp9.Processing;
 using Warp9.Themes;
 using Warp9.Utils;
 using Warp9.Viewer;
@@ -229,6 +230,10 @@ namespace Warp9.ProjectExplorer
                     case ProjectEntryKind.MeshPca:
                         Children.Add(new PcaProjectItem(ParentViewModel, kvp.Key));
                         break;
+
+                    case ProjectEntryKind.DiffMatrix:
+                        Children.Add(new DiffMatrixProjectItem(ParentViewModel, kvp.Key));
+                        break;
                 }
             }
 
@@ -307,6 +312,63 @@ namespace Warp9.ProjectExplorer
         protected override ProjectItemKind GetKind() => ProjectItemKind.Viewer;
     }
 
+    public class DiffMatrixProjectItem : ProjectItem        
+    {
+        public DiffMatrixProjectItem(Warp9ViewModel vm, long key) :
+            base(vm, typeof(MatrixViewPage))
+        {
+            Key = key;
+        }
+
+        public long Key { get; init; }
+
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
+
+        public override void Update()
+        {
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                Name = entry.Name;
+            else
+                Name = "(error)";
+
+            base.Update();
+        }
+
+        public override void ConfigurePresenter(IWarp9View pres)
+        {
+            base.ConfigurePresenter(pres);
+
+            if (pres is not MatrixViewPage page)
+                throw new ArgumentException();
+
+            Project proj = ParentViewModel.Project;
+
+            if (ParentViewModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) &&
+                entry.Payload.DiffMatrixExtra is not null &&
+                proj.TryGetReference(entry.Payload.DiffMatrixExtra.DataKey, out MatrixCollection? mat) &&
+                mat is not null)
+            {
+                List<MatrixViewProvider> mats = new List<MatrixViewProvider>();
+                foreach (var kvp in mat)
+                {
+                    MeshDistanceKind mdk = (MeshDistanceKind)kvp.Key;
+                    mats.Add(new MatrixViewProvider(mat[kvp.Key], mdk.ToString()));
+                }
+
+                page.SetMatrices(mats.ToArray());
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
+    }
+
     public class PcaProjectItem : ProjectItem
     {
         public PcaProjectItem(Warp9ViewModel vm, long key) :
@@ -347,6 +409,7 @@ namespace Warp9.ProjectExplorer
 
         protected override ProjectItemKind GetKind() => ProjectItemKind.Viewer;
     }
+
     public class PcaTableProjectItem : ProjectItem
     {
         public PcaTableProjectItem(Warp9ViewModel vm, long key) :

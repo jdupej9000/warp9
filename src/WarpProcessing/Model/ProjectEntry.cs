@@ -9,6 +9,7 @@ namespace Warp9.Model
         MeshCorrespondence = 1,
         MeshPca = 2,
         Gallery = 3,
+        DiffMatrix = 4,
 
         Invalid = -1
     };

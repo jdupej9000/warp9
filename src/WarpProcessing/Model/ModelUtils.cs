@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Buffers;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Warp9.Data;
-using System.Linq;
+using Warp9.Jobs;
+using Warp9.Processing;
+using Warp9.Utils;
 using static System.ComponentModel.Design.ObjectSelectorEditor;
-using System.Buffers;
 
 namespace Warp9.Model
 {
@@ -142,6 +146,68 @@ namespace Warp9.Model
                     yield return new SpecimenTableInfo(kvp.Key, kvp.Value.Name, table);
                 }
             }
+        }
+
+        public static List<PointCloud> LoadModelsAsPclsWithSize(Project proj, long entityKey, string columnName, string? sizeColumn)
+        {
+            SpecimenTableColumn<ProjectReferenceLink>? corrColumn = TryGetSpecimenTableColumn<ProjectReferenceLink>(
+                proj, entityKey, columnName);
+
+            if (corrColumn is null)
+                throw new ModelException($"Entity #{entityKey} does not contain a mesh/point cloud column '{columnName}'.");
+
+            List<PointCloud?> dcaCorrPcls = LoadSpecimenTableRefs<PointCloud>(proj, corrColumn).ToList();
+            if (dcaCorrPcls.Exists((t) => t is null))
+                throw new ModelException("Selected specimen table column contains incomplete data.");
+
+            int nv = dcaCorrPcls[0]!.VertexCount;
+            int ns = dcaCorrPcls.Count;
+
+            if (sizeColumn is not null)
+            {
+                SpecimenTableColumn<double>? csColumn = ModelUtils.TryGetSpecimenTableColumn<double>(
+                    proj, entityKey, sizeColumn);
+
+                if (csColumn is null)
+                    throw new ModelException($"Entity #{entityKey} does contain a numeric column '{sizeColumn}'.");
+
+                IReadOnlyList<double> cs = csColumn.GetData<double>();
+
+                for (int i = 0; i < ns; i++)
+                    dcaCorrPcls[i] = MeshScaling.ScalePosition(dcaCorrPcls[i]!, (float)cs[i]).ToPointCloud();
+            }
+
+            return dcaCorrPcls!;
+        }
+
+        public static bool[] MakeAllowList(Project proj, int nv, bool useThreshold, float thresh, long rejectMatrixKey)
+        {
+            // thresh is between 0 and 1
+
+            if (nv < 1)
+                throw new ModelException("Invalid vertex count.");
+
+            bool[] allow = new bool[nv];
+
+            if (useThreshold)
+            {
+                if (!proj.TryGetReference(rejectMatrixKey, out MatrixCollection? rejmc) ||
+                    rejmc is null ||
+                    !rejmc.TryGetMatrix(ModelConstants.VertexRejectionRatesKey, out Matrix<float>? rejectRates) ||
+                    rejectRates is null)
+                {
+                    throw new ModelException("Vertex rejection rates could be loaded.");
+                }
+
+                MiscUtils.ThresholdBelow(rejectRates.Data.AsSpan(), thresh, allow.AsSpan());
+            }
+            else
+            {
+                for (int i = 0; i < nv; i++)
+                    allow[i] = true;
+            }
+
+            return allow;
         }
 
         public static string DescribeSpecimenSelection(SpecimenTable spec, bool[] sel, out bool isComplete)

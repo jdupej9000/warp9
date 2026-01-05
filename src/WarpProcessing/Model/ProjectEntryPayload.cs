@@ -20,6 +20,10 @@ namespace Warp9.Model
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public PcaExtraInfo? PcaExtra { get; set; }
 
+        [JsonPropertyName("diff-matrtix")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public DiffMatrixExtraInfo? DiffMatrixExtra { get; set; }
+
         [JsonIgnore]
         public static readonly ProjectEntryPayload Empty = new ProjectEntryPayload();
     }

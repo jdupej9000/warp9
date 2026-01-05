@@ -54,7 +54,7 @@
                         <ComboBox Grid.Row="1" Grid.Column="2" x:Name="cmbSpecTable" SelectionChanged="cmbSpecTable_SelectionChanged" VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">Point clouds</TextBlock>
-                        <ComboBox x:Name="cmbLandmarkColumn" Grid.Row="2" Grid.Column="2"  VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cmbSourceColumn" Grid.Row="2" Grid.Column="2"  VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">Size</TextBlock>
                         <ComboBox x:Name="cmbSizeColumn" Grid.Row="3" Grid.Column="2"  VerticalAlignment="Center"/>
@@ -65,18 +65,46 @@
                 </StackPanel>
 
                 <Label Height="8" />
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Column rejection</TextBlock>
+                    <Label Height="4" />
+                    <RadioButton GroupName="reject" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertColumnRejection}, ConverterParameter=None}">
+                        Use all columns (or vertices)
+                    </RadioButton>
+                    <RadioButton GroupName="reject" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertColumnRejection}, ConverterParameter=AsParent}">
+                        Follow source entry
+                    </RadioButton>
+                    <RadioButton GroupName="reject" Margin="2" IsChecked="{Binding Path=RigidPreregistration, Mode=TwoWay, Converter={StaticResource convertColumnRejection}, ConverterParameter=CustomThreshold}">
+                        Follow source entry but override threshold (DCA only)
+                    </RadioButton>
+                    <Label Height="4" />
+                    <Grid Margin="12,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="24"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0">Threshold</TextBlock>
+                        <TextBox Grid.Row="1" Grid.Column="0" Height="20" Text="{Binding Path=RejectionThreshold, Mode=TwoWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <Label Height="8" />
 
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Results</TextBlock>
                     <Label Height="4" />
                     
-                    <CheckBox Margin="2">
+                    <CheckBox x:Name="chkMethodProcrustesRaw" Margin="2">
                         Procrustes distance (raw data)
                     </CheckBox>
                     <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Adds Procrustes distance from raw models contained in the specified source.</TextBlock>
                     <Label Height="4" />
 
-                    <CheckBox Margin="2">
+                    <CheckBox x:Name="chkMethodProcrustesOpa" Margin="2">
                         Procrustes distance (OPA)
                     </CheckBox>
                     <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,0,0,0">Adds Procrustes distance from models contained in the specified source after aligning them with OPA. Size is unaffected by this step.</TextBlock>

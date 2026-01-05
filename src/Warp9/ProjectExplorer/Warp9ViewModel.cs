@@ -206,14 +206,14 @@ namespace Warp9.ProjectExplorer
         {
             DistMatrixConfigWindow cfgWnd = new DistMatrixConfigWindow();
 
-            //LandmarkDiagConfigWindow cfgWnd = new LandmarkDiagConfigWindow();
-            cfgWnd.Attach(Project, null);
+            DiffMatrixConfiguration config = new DiffMatrixConfiguration();
+            cfgWnd.Attach(Project, config);
             cfgWnd.ShowDialog();
 
             if (cfgWnd.DialogResult is null || cfgWnd.DialogResult == false)
                 return;
 
-            // TODO
+            Model.StartJob(DiffMatrixJob.Create(config, Project));
         }
     }
 }

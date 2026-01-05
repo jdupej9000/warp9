@@ -38,87 +38,57 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            SpecimenTableColumn<ProjectReferenceLink>? corrColumn = ModelUtils.TryGetSpecimenTableColumn<ProjectReferenceLink>(
-                ctx.Project, Config.ParentEntityKey, Config.ParentColumnName);
-            if (corrColumn is null)
+            try
+            {
+                List<PointCloud> dcaCorrPcls = ModelUtils.LoadModelsAsPclsWithSize(ctx.Project, Config.ParentEntityKey, Config.ParentColumnName,
+                    Config.RestoreSize ? Config.ParentSizeColumn : null);
+
+                int nv = dcaCorrPcls[0]!.VertexCount;
+                int ns = dcaCorrPcls.Count;
+
+                bool[] allow = ModelUtils.MakeAllowList(proj, nv, Config.RejectionMode != PcaRejectionMode.None,
+                    Config.RejectionMode == PcaRejectionMode.CustomThreshold ?
+                        Config.RejectionThreshold : 0.01f * dcaEntry.Payload.MeshCorrExtra!.DcaConfig.RejectCountPercent,
+                    dcaEntry.Payload.MeshCorrExtra.VertexRejectionRatesKey);
+
+                ctx.WriteLog(ItemIndex, MessageKind.Information, "Fitting PCA.");
+                Pca pca = FitPca(dcaCorrPcls, allow);
+
+                ctx.WriteLog(ItemIndex, MessageKind.Information, "Transforming source data into PCs.");
+                MatrixCollection mc = TransformToScores(dcaCorrPcls, pca);
+
+                StoreToProject(proj, mc, dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey);
+            }
+            catch (ModelException e)
+            {
+                ctx.WriteLog(ItemIndex, MessageKind.Error, e.Message);
                 return false;
-
-            List<PointCloud?> dcaCorrPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(proj, corrColumn).ToList();
-            if (dcaCorrPcls.Exists((t) => t is null))
-                return false;
-
-            int nv = dcaCorrPcls[0]!.VertexCount;
-            int ns = dcaCorrPcls.Count;
-
-            if (Config.RestoreSize)
-            {
-                if (Config.ParentSizeColumn is null)
-                {
-                    ctx.WriteLog(ItemIndex, MessageKind.Error,
-                        "Restore size is enabled, but no size column is selected.");
-                    return false;
-                }
-
-                SpecimenTableColumn<double>? csColumn = ModelUtils.TryGetSpecimenTableColumn<double>(
-                    ctx.Project, Config.ParentEntityKey, Config.ParentSizeColumn);
-
-                if (csColumn is not null)
-                {
-                    IReadOnlyList<double> cs = csColumn.GetData<double>();
-
-                    for (int i = 0; i < ns; i++)
-                        dcaCorrPcls[i] = MeshScaling.ScalePosition(dcaCorrPcls[i]!, (float)cs[i]).ToPointCloud();
-                }
             }
 
-            bool[] allow = new bool[nv];
-            if (Config.RejectionMode == PcaRejectionMode.None)
-            {
-                for (int i = 0; i < nv; i++)
-                    allow[i] = true;
-            }
-            else
-            {
-                float thresh = Config.RejectionMode == PcaRejectionMode.CustomThreshold ?
-                    Config.RejectionThreshold :
-                    0.01f * dcaEntry.Payload.MeshCorrExtra!.DcaConfig.RejectCountPercent;
+            return true;
+        }
 
-                if (!proj.TryGetReference(dcaEntry.Payload.MeshCorrExtra.VertexRejectionRatesKey, out MatrixCollection? rejmc) ||
-                    rejmc is null ||
-                    !rejmc.TryGetMatrix(ModelConstants.VertexRejectionRatesKey, out Matrix<float>? rejectRates) ||
-                    rejectRates is null)
-                {
-                    ctx.WriteLog(ItemIndex, MessageKind.Error,
-                        "Vertex rejection rates are required but not present in the DCA entry.");
-                    return false;
-                }
-
-                MiscUtils.ThresholdBelow(rejectRates.Data.AsSpan(), thresh, allow.AsSpan());
-            }
-
-            ctx.WriteLog(ItemIndex, MessageKind.Information, "Fitting PCA.");
+        Pca FitPca(List<PointCloud> dcaCorrPcls, bool[] allow)
+        {
             Pca? pca = Pca.Fit(dcaCorrPcls!, allow, Config.NormalizeScale);
             if (pca is null)
-            {
-                ctx.WriteLog(ItemIndex, MessageKind.Error, "Failed to fit PCA.");
-                return false;
-            }
+                throw new ModelException("Failed to fit PCA.");
 
-            
+            return pca;
+        }
+
+        MatrixCollection TransformToScores(List<PointCloud> dcaCorrPcls, Pca pca)
+        {
+            int ns = dcaCorrPcls.Count;
             int npcs = Math.Min(50, ns - 1);
-            ctx.WriteLog(ItemIndex, MessageKind.Information, $"Transforming source data ({dcaCorrPcls.Count} datapoints), keeping {npcs} PCs.");
-            
+
             int npcsall = pca.NumPcs;
             float[] scores = ArrayPool<float>.Shared.Rent(npcsall);
             Matrix<float> scoresMat = new Matrix<float>(npcs, ns);
             for (int i = 0; i < ns; i++)
             {
-                if (dcaCorrPcls[i] is null || 
-                    !pca.TryGetScores(dcaCorrPcls[i]!, scores.AsSpan()))
-                {
-                    ctx.WriteLog(ItemIndex, MessageKind.Error, $"Cannot transform specimen {i}.");
-                    return false;
-                }
+                if (dcaCorrPcls[i] is null || !pca.TryGetScores(dcaCorrPcls[i]!, scores.AsSpan()))
+                    throw new ModelException($"Cannot transform specimen {i}.");
 
                 for (int j = 0; j < npcs; j++)
                     scoresMat[i, j] = scores[j];
@@ -127,6 +97,12 @@ namespace Warp9.JobItems
 
             MatrixCollection mcPca = pca.ToMatrixCollection();
             mcPca[Pca.KeyScores] = scoresMat;
+
+            return mcPca;
+        }
+
+        void StoreToProject(Project proj, MatrixCollection mcPca, long baseMeshCorrKey)
+        {
             long pcaDataKey = proj.AddReferenceDirect(ProjectReferenceFormat.W9Matrix, mcPca);
 
             ProjectEntry entry = proj.AddNewEntry(ProjectEntryKind.MeshPca);
@@ -136,15 +112,8 @@ namespace Warp9.JobItems
             {
                 Info = Config,
                 DataKey = pcaDataKey,
-                TemplateKey = dcaEntry.Payload.MeshCorrExtra.BaseMeshCorrKey
+                TemplateKey = baseMeshCorrKey
             };
-
-            ctx.WriteLog(ItemIndex, MessageKind.Information,
-               string.Format("The entry '{0}' has been added to the project.", ResultEntryName));
-
-            return true;
         }
-
-     
     }
 }
