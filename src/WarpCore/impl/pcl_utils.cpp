@@ -10,6 +10,30 @@
 
 using namespace std;
 
+#define FOR_MASKED(i,m,allow,nallow,neg_allow,fun) { \
+    constexpr size_t __bs = 32; \
+    size_t __mb = round_down((int)(m), (int)(__bs)); \
+    const int32_t* __am = (const int32_t*)allow; \
+    int32_t __mmod = neg_allow ? 0xffffffff : 0x0; \
+    for (size_t __ib = 0; __ib < __mb; __ib += __bs) { \
+        int32_t __mask = *(__am++) ^ __mmod; \
+        for (size_t __i = 0; __i < __bs; __i++) { \
+            if ((__mask >> __i) & 0x1) { \
+                size_t i = __ib + __i; \
+                nallow += _mm_popcnt_u32(__mask); \
+                fun \
+            } \
+        } \
+    }; \
+    int32_t __mask = *(__am) ^ __mmod; \
+    for (size_t __i = 0; __i < std::min(__bs, (size_t)(m) - __mb); __i++) { \
+        if ((__mask >> __i) & 0x1) { \
+            size_t i = __mb + __i; \
+            nallow += _mm_popcnt_u32(__mask); \
+            fun \
+        } \
+    } }
+
 namespace warpcore::impl
 {
     void pcl_center(const float* x, int d, int m, float* c)
@@ -22,6 +46,24 @@ namespace warpcore::impl
         }
 
         sum = _mm_mul_ps(sum, _mm_set1_ps(1.0f / m));
+        alignas(16) float sump[4];
+        _mm_store_ps(sump, sum);
+
+        for (int i = 0; i < d; i++)
+            c[i] = sump[i];
+    }
+
+    void pcl_center(const float* x, const void* allow, int d, int m, float* c)
+    {
+        WCORE_ASSERT(d <= 4);
+
+        __m128 sum = _mm_setzero_ps();
+        int nallow = 0;
+        FOR_MASKED(i, m, allow, nallow, false, {
+            sum = _mm_add_ps(sum, _mm_loadu_ps(x + d * i));
+        });
+
+        sum = _mm_mul_ps(sum, _mm_set1_ps(1.0f / nallow));
         alignas(16) float sump[4];
         _mm_store_ps(sump, sum);
 
@@ -49,6 +91,29 @@ namespace warpcore::impl
             ret += ssqp[i];
 
         return sqrtf(ret / m);
+    }
+
+    float pcl_cs(const float* x, const void* allow, int d, int m, const float* offs)
+    {
+        WCORE_ASSERT(d <= 4);
+
+        __m128 center = _mm_loadu_ps(offs);
+        __m128 ssq = _mm_setzero_ps();
+        int num_allowed = 0;
+        
+        FOR_MASKED(i, m, allow, num_allowed, false, {
+            __m128 xt = _mm_sub_ps(_mm_loadu_ps(x + d * i), center);
+            ssq = _mm_fmadd_ps(xt, xt, ssq);
+        });
+
+        alignas(16) float ssqp[4];
+        _mm_store_ps(ssqp, ssq);
+
+        float ret = 0;
+        for (int i = 0; i < d; i++)
+            ret += ssqp[i];
+
+        return sqrtf(ret / num_allowed);
     }
 
     void pcl_transform(const float* x, int d, int m, bool add, float sc, const float* offs, float* y)
@@ -159,35 +224,12 @@ namespace warpcore::impl
         __m128 xmin = _mm_set1_ps(FLT_MAX);
         __m128 xmax = _mm_set1_ps(FLT_MIN);
 
-        constexpr size_t BLK = 32;
-        size_t mb = round_down((int)m, (int)BLK);
-        const int32_t* allow_mask = (const int32_t*)allow;
-        int32_t mask_mod = neg_allow ? 0xffffffff : 0x0;
-        size_t ret = 0;
+        FOR_MASKED(i, m, allow, num_included, neg_allow, {
+            __m128 xi = _mm_loadu_ps(x + 3 * i);
+            xmin = _mm_min_ps(xi, xmin);
+            xmax = _mm_max_ps(xi, xmax);
+        });
 
-        for (size_t ib = 0; ib < mb; ib += BLK) {
-            int32_t mask = *(allow_mask++) ^ mask_mod;
-            for (size_t i = 0; i < BLK; i++) {
-                if ((mask >> i) & 0x1) {
-                    __m128 xi = _mm_loadu_ps(x + 3 * i);
-                    xmin = _mm_min_ps(xi, xmin);
-                    xmax = _mm_max_ps(xi, xmax);
-                }
-
-                num_included += _mm_popcnt_u32(mask);
-            }
-        }
-
-        int32_t mask = *(allow_mask) ^ mask_mod;
-        for (size_t i = 0; i < std::min(BLK, m - mb); i++) {
-            if ((mask >> i) & 0x1) {
-                __m128 xi = _mm_loadu_ps(x + 3 * i);
-                xmin = _mm_min_ps(xi, xmin);
-                xmax = _mm_max_ps(xi, xmax);
-                num_included++;
-            }
-        }
-       
         alignas(16) float xminp[4], xmaxp[4];
         _mm_store_ps(xminp, xmin);
         _mm_store_ps(xmaxp, xmax);
@@ -210,39 +252,15 @@ namespace warpcore::impl
         p3i flatten = p3i_set(1, grid_dim, grid_dim * grid_dim);
         unordered_set<int> visited{ grid_dim * grid_dim * grid_dim };
 
-        constexpr size_t BLK = 32;
-        size_t nb = round_down((int)n, (int)BLK);
-        const int32_t* allow_mask = (const int32_t*)allow;
-        int32_t mask_mod = neg ? 0xffffffff : 0x0;
+        int dummy = 0;
+        FOR_MASKED(i, n, allow, dummy, neg, {
+            p3f pt = p3f_set(x + 3 * i);
+            p3f ptgrid = p3f_mul(p3f_sub(pt, p0), pf);
+            int key = p3i_sum(p3i_mul(p3f_to_p3i(ptgrid), flatten));
 
-        for (size_t ib = 0; ib < nb; ib += BLK) {
-            int32_t m = *(allow_mask++) ^ mask_mod;
-
-            for (size_t i = 0; i < BLK; i++) {
-                if ((m >> i) & 0x1) {
-                    p3f pt = p3f_set(x + 3 * (ib + i));
-                    p3f ptgrid = p3f_mul(p3f_sub(pt, p0), pf);
-                    int key = p3i_sum(p3i_mul(p3f_to_p3i(ptgrid), flatten));
-
-                    if (visited.insert(key).second) {
-                        indices.push_back((int)(ib + i));
-                    }
-                }
-            }
-        }
-
-        int32_t m = *(allow_mask) ^ mask_mod;
-        for (size_t i = 0; i < std::min(BLK, n - nb); i++) {
-            if ((m >> i) & 0x1) {
-                p3f pt = p3f_set(x + 3 * (nb + i));
-                p3f ptgrid = p3f_mul(p3f_sub(pt, p0), pf);
-                int key = p3i_sum(p3f_to_p3i(ptgrid));
-
-                if (visited.insert(key).second) {
-                    indices.push_back((int)(nb + i));
-                }
-            }
-        }
+            if (visited.insert(key).second)
+                indices.push_back((int)i);
+        });
 
         return num_allowed;
     }
