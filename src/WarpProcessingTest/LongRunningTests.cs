@@ -202,7 +202,7 @@ namespace Warp9.Test
             List<PointCloud?> dcaCorrPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, corrColumn).ToList();
             Assert.IsFalse(dcaCorrPcls.Exists((t) => t is null));
 
-            MatrixCollection mc = MeshDistance.Compute(dcaCorrPcls, null, distanceKinds);
+            MatrixCollection mc = MeshDistance.Compute(dcaCorrPcls, null, null, distanceKinds);
 
             foreach (MeshDistanceKind k in distanceKinds)
             {

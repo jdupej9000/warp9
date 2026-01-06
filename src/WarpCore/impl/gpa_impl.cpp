@@ -12,6 +12,7 @@
 namespace warpcore::impl
 {
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov);
+    void opa_cov(const float* x, const float* y, const void* allow, int d, int m, const float* xoff, float xcs, float* cov);
     float mat3_det(const float* m);
     void mat3_transpose(float* m);
   
@@ -43,12 +44,47 @@ namespace warpcore::impl
         icov[8] = _mm_extract_ps(cov2, 2);
     }
 
-    int opa_fit(const float* x, const float* y, int d, int m, float* xoffs, float* xcs, float* rot)
+    void opa_cov(const float* x, const float* y, const void* allow, int d, int m, const float* xoff, float xcs, float* cov)
+    {
+        __m128 offset = _mm_loadu_ps(xoff);
+        __m128 rcs = _mm_set1_ps(1.0f / xcs);
+        __m128 cov0 = _mm_setzero_ps(), cov1 = _mm_setzero_ps(), cov2 = _mm_setzero_ps();
+
+        int dummy = 0;
+        FOR_MASKED(i, m, allow, dummy, false, {
+             __m128 xi = _mm_mul_ps(rcs, _mm_sub_ps(_mm_loadu_ps(x + 3 * i), offset));
+            __m128 yi = _mm_loadu_ps(y + 3 * i);
+
+            cov0 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b00000000), cov0);
+            cov1 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b01010101), cov1);
+            cov2 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b10101010), cov2);
+        });
+       
+        int* icov = (int*)cov;
+        icov[0] = _mm_extract_ps(cov0, 0);
+        icov[1] = _mm_extract_ps(cov1, 0);
+        icov[2] = _mm_extract_ps(cov2, 0);
+        icov[3] = _mm_extract_ps(cov0, 1);
+        icov[4] = _mm_extract_ps(cov1, 1);
+        icov[5] = _mm_extract_ps(cov2, 1);
+        icov[6] = _mm_extract_ps(cov0, 2);
+        icov[7] = _mm_extract_ps(cov1, 2);
+        icov[8] = _mm_extract_ps(cov2, 2);
+    }
+
+    int opa_fit(const float* x, const float* y, const void* allow, int d, int m, float* xoffs, float* xcs, float* rot)
     {
         WCORE_ASSERT(d == 3); // static cov size
 
-        pcl_center(x, d, m, xoffs);
-        float cs = pcl_cs(x, d, m, xoffs);
+        float cs = 0;
+        if (allow) {
+            pcl_center(x, allow, d, m, xoffs);
+            cs = pcl_cs(x, allow, d, m, xoffs);
+        } else {
+            pcl_center(x, d, m, xoffs);
+            cs = pcl_cs(x, d, m, xoffs);            
+        }
+
         *xcs = cs;
 
         // Kabsch algorithm follows
@@ -59,7 +95,12 @@ namespace warpcore::impl
         float* vt = u + d * d;
         float* s = vt + d * d;
         float* superb = s + d;
-        opa_cov(x, y, d, m, xoffs, cs, cov);
+
+        if (allow) {
+            opa_cov(x, y, allow, d, m, xoffs, cs, cov);
+        } else {
+            opa_cov(x, y, d, m, xoffs, cs, cov);
+        }
 
         int info = LAPACKE_sgesvd(LAPACK_COL_MAJOR, 'A', 'A', d, d, cov, d, s, u, d, vt, d, superb);
         if (info != 0)

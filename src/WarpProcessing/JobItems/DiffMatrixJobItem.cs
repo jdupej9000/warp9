@@ -64,7 +64,7 @@ namespace Warp9.JobItems
 
         private MatrixCollection MakeDiffMatrix(List<PointCloud> pcls, bool[] allow)
         {
-            MatrixCollection mc = MeshDistance.Compute(pcls, null,
+            MatrixCollection mc = MeshDistance.Compute(pcls, null, allow,
                 Config.Methods.Select((t) => (MeshDistanceKind)t).ToArray());
             return mc;
         }

@@ -1,9 +1,10 @@
-﻿using SharpDX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using SharpDX;
 using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Native
 {
@@ -73,7 +74,39 @@ namespace Warp9.Native
                 fixed (byte* ptrT = &MemoryMarshal.GetReference(t))
                 fixed (byte* ptrX = &MemoryMarshal.GetReference(x))
                 {
-                    s = (WarpCoreStatus)WarpCore.opa_fit((nint)ptrT, (nint)ptrX, 3, templ.VertexCount, ref ret);
+                    s = (WarpCoreStatus)WarpCore.opa_fit((nint)ptrT, (nint)ptrX, nint.Zero, 3, templ.VertexCount, ref ret);
+                }
+            }
+
+            if (s != WarpCoreStatus.WCORE_OK)
+                throw new InvalidOperationException();
+
+            return ret;
+        }
+
+        public static Rigid3 FitOpa(PointCloud templ, PointCloud floating, int[]? allowBitField)
+        {
+            if (allowBitField is null)
+                return FitOpa(templ, floating);
+
+            if (!templ.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> t, out _))
+                throw new InvalidOperationException();
+
+            if (!floating.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> x, out _))
+                throw new InvalidOperationException();
+
+            //int[] allowBitField = BitMask.MakeBitMask(allow, 1);
+
+            Rigid3 ret = new Rigid3();
+            WarpCoreStatus s = WarpCoreStatus.WCORE_OK;
+
+            unsafe
+            {
+                fixed (byte* ptrT = &MemoryMarshal.GetReference(t))
+                fixed (byte* ptrX = &MemoryMarshal.GetReference(x))
+                fixed (int* ptrAllow = allowBitField)
+                {
+                    s = (WarpCoreStatus)WarpCore.opa_fit((nint)ptrT, (nint)ptrX, (nint)ptrAllow, 3, templ.VertexCount, ref ret);
                 }
             }
 

@@ -25,7 +25,7 @@ namespace Warp9.Processing
             return kinds.Any((t) => t == MeshDistanceKind.Procrustes);
         }
 
-        public static float DistanceProcrustes(PointCloud pclA, float scaleA, PointCloud pclB, float scaleB)
+        public static float DistanceProcrustes(PointCloud pclA, float scaleA, PointCloud pclB, float scaleB, bool[]? allow)
         {
             int n = pclA.VertexCount;
             if (n != pclB.VertexCount ||
@@ -39,13 +39,33 @@ namespace Warp9.Processing
             ReadOnlySpan<Vector3> ptB = segB.Data;
 
             double rms = 0;
-            for (int i = 0; i < n; i++)
-                rms += Vector3.DistanceSquared(scaleA * ptA[i], scaleB * ptB[i]);
 
-            return (float)Math.Sqrt(rms / n);
+            if (allow is not null)
+            {
+                int nallow = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    if (allow[i])
+                    {
+                        rms += Vector3.DistanceSquared(scaleA * ptA[i], scaleB * ptB[i]);
+                        nallow++;
+                    }
+
+                    rms /= nallow;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                    rms += Vector3.DistanceSquared(scaleA * ptA[i], scaleB * ptB[i]);
+
+                rms /= n;
+            }
+
+            return (float)Math.Sqrt(rms);
         }
 
-        private static void ComputeDistances(Dictionary<MeshDistanceKind, Matrix<float>> res, int a, int b, bool opaHint, IReadOnlyList<PointCloud> pcls, IReadOnlyList<float>? scale, MeshDistanceKind[] kinds)
+        private static void ComputeDistances(Dictionary<MeshDistanceKind, Matrix<float>> res, int a, int b, bool opaHint, IReadOnlyList<PointCloud> pcls, IReadOnlyList<float>? scale, bool[]? allow, int[]? allowBitField, MeshDistanceKind[] kinds)
         {
             if (a == b)
             {
@@ -67,7 +87,7 @@ namespace Warp9.Processing
 
                 if (opaHint)
                 {
-                    Rigid3 rigid = RigidTransform.FitOpa(pclA, pclB); // rigid transforms pcl1 -> pcl2
+                    Rigid3 rigid = RigidTransform.FitOpa(pclA, pclB, allowBitField); // rigid transforms pcl1 -> pcl2
                     rigid.cs = 1;
                     pclBalign = RigidTransform.TransformPosition(pclB, rigid)!;
                 }
@@ -76,8 +96,8 @@ namespace Warp9.Processing
                 {
                     float metric = k switch
                     {
-                        MeshDistanceKind.ProcrustesRaw => DistanceProcrustes(pclA, scaleA, pclB, scaleB),
-                        MeshDistanceKind.Procrustes => DistanceProcrustes(pclA, scaleA, pclBalign, scaleB),
+                        MeshDistanceKind.ProcrustesRaw => DistanceProcrustes(pclA, scaleA, pclB, scaleB, allow),
+                        MeshDistanceKind.Procrustes => DistanceProcrustes(pclA, scaleA, pclBalign, scaleB, allow),
 
                         _ => float.NaN
                     };
@@ -89,7 +109,7 @@ namespace Warp9.Processing
             }
         }
 
-        public static MatrixCollection Compute(IReadOnlyList<PointCloud> pcls, IReadOnlyList<float>? scale, MeshDistanceKind[] kinds)
+        public static MatrixCollection Compute(IReadOnlyList<PointCloud> pcls, IReadOnlyList<float>? scale, bool[]? allow, MeshDistanceKind[] kinds)
         {
             int ns = pcls.Count;
             int nk = kinds.Length;
@@ -97,6 +117,9 @@ namespace Warp9.Processing
 
             MatrixCollection ret = new MatrixCollection();
             Dictionary<MeshDistanceKind, Matrix<float>> mats = new Dictionary<MeshDistanceKind, Matrix<float>>();
+
+            int[]? allowBitField = null;
+            if (allow is not null) allowBitField = BitMask.MakeBitMask(allow);
 
             foreach (MeshDistanceKind k in kinds)
             {
@@ -106,7 +129,7 @@ namespace Warp9.Processing
             }
 
             PairIterator pairs = new PairIterator(ns, true);
-            Parallel.ForEach(pairs, (p) => ComputeDistances(mats, p.Item1, p.Item2, doOpa, pcls, scale, kinds));
+            Parallel.ForEach(pairs, (p) => ComputeDistances(mats, p.Item1, p.Item2, doOpa, pcls, scale, allow, allowBitField, kinds));
 
             return ret;
         }

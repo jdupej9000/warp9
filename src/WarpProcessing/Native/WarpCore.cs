@@ -358,7 +358,7 @@ namespace Warp9.Native
         public static extern int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
 
         [DllImport("WarpCore.dll")]
-        public static extern int opa_fit(nint t, nint x, int d, int m, ref Rigid3 xform);
+        public static extern int opa_fit(nint t, nint x, nint allow, int d, int m, ref Rigid3 xform);
 
         [DllImport("WarpCore.dll")]
         public static extern int search_build(int structure, nint vert, nint idx, int nv, int nt, nint config, ref nint ctx);

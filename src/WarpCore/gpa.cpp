@@ -24,7 +24,7 @@ extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, v
     float err = 1;
     while(it < MAX_IT) {
         for(int i = 0; i < n; i++) {
-            int opa_res = warpcore::impl::opa_fit((const float*)data[i], m1, d, m, xforms[i].offs, &xforms[i].cs, xforms[i].rot);
+            int opa_res = warpcore::impl::opa_fit((const float*)data[i], m1, nullptr, d, m, xforms[i].offs, &xforms[i].cs, xforms[i].rot);
         }
 
         warpcore::impl::gpa_update_mean((const float**)data, d, n, m, xforms, m2);
@@ -61,7 +61,7 @@ void print_rigid(const rigid3& r)
         "[" << r.rot[6] << ", " << r.rot[7] << ", " << r.rot[8] << "]" << std::endl;
 }
 
-extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, rigid3* xform)
+extern "C" int opa_fit(const void* templ, const void* floating, const void* allow, int d, int m, rigid3* xform)
 {
     if (templ == nullptr || floating == nullptr || d != 3 || m < 4 || xform == NULL)
         return WCORE_INVALID_ARGUMENT;
@@ -73,34 +73,27 @@ extern "C" int opa_fit(const void* templ, const void* floating, int d, int m, ri
     // offset and cs are reversed to make an inverse transform (temp_mean -> templ)
     float* temp_mean = new float[d * m];    
     rigid3 outer;
-    warpcore::impl::pcl_center(t, d, m, outer.offs);
-    outer.cs = 1.0f / warpcore::impl::pcl_cs(t, d, m, outer.offs);
+
+    if (allow) {
+        warpcore::impl::pcl_center(t, d, m, outer.offs);
+        outer.cs = 1.0f / warpcore::impl::pcl_cs(t, d, m, outer.offs);
+    } else {
+        warpcore::impl::pcl_center(t, allow, d, m, outer.offs);
+        outer.cs = 1.0f / warpcore::impl::pcl_cs(t, allow, d, m, outer.offs);
+    }
+
     warpcore::impl::pcl_transform(t, d, m, false, outer.cs, outer.offs, temp_mean);
     outer.rot[0] = 1; outer.rot[1] = 0; outer.rot[2] = 0;
     outer.rot[3] = 0; outer.rot[4] = 1; outer.rot[5] = 0;
     outer.rot[6] = 0; outer.rot[7] = 0; outer.rot[8] = 1;
     outer.offs[0] *= -1; outer.offs[1] *= -1; outer.offs[2] *= -1;
-
-   /// for (int i = 0; i < d * m; i++)
-    //    std::cout << t[i] << " -> " << temp_mean[i] << std::endl;
-
+     
     // transform floating -> temp_mean
     rigid3 inner;
-    warpcore::impl::opa_fit(x, temp_mean, d, m, inner.offs, &inner.cs, inner.rot);
+    warpcore::impl::opa_fit(x, temp_mean, allow, d, m, inner.offs, &inner.cs, inner.rot);
 
     // xform(x) = outer(inner(x))
     warpcore::impl::rigid_combine(xform, &inner, &outer);
-    //memcpy(xform, &inner, sizeof(rigid3));
-
-    std::cout << "INNER" << std::endl;
-    print_rigid(inner);
-
-    std::cout << "OUTER" << std::endl;
-    print_rigid(outer);
-
-    std::cout << "XFORM" << std::endl;
-    print_rigid(*xform);
-
 
     delete[] temp_mean;
 

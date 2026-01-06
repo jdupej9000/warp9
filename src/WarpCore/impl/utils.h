@@ -6,6 +6,30 @@
 #include <immintrin.h>
 #include <memory.h>
 
+#define FOR_MASKED(i,m,allow,nallow,neg_allow,fun) { \
+    constexpr size_t __bs = 32; \
+    size_t __mb = round_down((int)(m), (int)(__bs)); \
+    const int32_t* __am = (const int32_t*)allow; \
+    int32_t __mmod = neg_allow ? 0xffffffff : 0x0; \
+    for (size_t __ib = 0; __ib < __mb; __ib += __bs) { \
+        int32_t __mask = *(__am++) ^ __mmod; \
+        for (size_t __i = 0; __i < __bs; __i++) { \
+            if ((__mask >> __i) & 0x1) { \
+                size_t i = __ib + __i; \
+                nallow += _mm_popcnt_u32(__mask); \
+                fun \
+            } \
+        } \
+    }; \
+    int32_t __mask = *(__am) ^ __mmod; \
+    for (size_t __i = 0; __i < std::min(__bs, (size_t)(m) - __mb); __i++) { \
+        if ((__mask >> __i) & 0x1) { \
+            size_t i = __mb + __i; \
+            nallow += _mm_popcnt_u32(__mask); \
+            fun \
+        } \
+    } }
+
 namespace warpcore::impl
 {
     int decode_zigzag(unsigned int x);
