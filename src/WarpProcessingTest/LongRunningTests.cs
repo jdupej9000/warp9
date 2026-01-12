@@ -37,7 +37,7 @@ namespace Warp9.Test
             cfg.RejectExpandedLowThreshold = 0.1f;
             cfg.RejectDistant = false;
             cfg.BaseMeshIndex = 0;
-            cfg.BaseMeshOptimize = true;
+            cfg.BaseMeshOptimize = false;
             cfg.CpdConfig.UseGpu = true;
             cfg.CpdConfig.Beta = 2;
             cfg.CpdConfig.Lambda = 2;

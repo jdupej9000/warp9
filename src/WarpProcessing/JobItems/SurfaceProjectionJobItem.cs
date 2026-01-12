@@ -35,7 +35,7 @@ namespace Warp9.JobItems
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
-            const int GridSize = 16;
+            const int GridSize = 12;
 
             if (!ctx.TryGetSpecTableMeshRegistered(SpecimenTableKey, MeshColumn, MeshIndex, GpaItem, out Mesh? floatingMesh) ||
                 floatingMesh is null)

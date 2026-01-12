@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,6 +20,20 @@ namespace Warp9.Jobs
                 if (repository.TryGetValue(src, out object? x) && x is not null)
                 {
                     repository[dest] = x;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool TryCopy<T>(string src, string dest, int srcIndex, int destIndex)
+        {
+            lock (repository)
+            {
+                if (TryGet<T>(src, srcIndex, out T srcVal))
+                {
+                    Set<T>(dest, destIndex, srcVal);
                     return true;
                 }
             }
