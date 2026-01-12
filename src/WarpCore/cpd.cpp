@@ -171,7 +171,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
         conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol, tol_old);
 
-        if ((conv & CPD_CONV_NUMERIC_ERROR) == 0)
+        if ((conv & CPD_CONV_NUMERIC_ERROR) == 0 && tol > 0) // tol > 0 is important
             std::memcpy(tt, ttemp, sizeof(float) * 3 * m);
         else
             debug = 4;
