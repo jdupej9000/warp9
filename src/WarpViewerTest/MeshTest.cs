@@ -116,7 +116,7 @@ namespace Warp9.Test
             for (int i = 0; i < 3; i++)
                 tex.Add(new Vector2(i + 100, i + 200));
 
-            Assert.ThrowsException<InvalidDataException>(() => builder.ToMesh());
+            Assert.Throws<InvalidDataException>(() => builder.ToMesh());
            
         }
     }
