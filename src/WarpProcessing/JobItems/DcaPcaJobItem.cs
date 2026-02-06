@@ -85,14 +85,15 @@ namespace Warp9.JobItems
             int npcsall = pca.NumPcs;
             float[] scores = ArrayPool<float>.Shared.Rent(npcsall);
             Matrix<float> scoresMat = new Matrix<float>(npcs, ns);
-            for (int i = 0; i < ns; i++)
+            Parallel.For(0, ns, (i) =>
             {
                 if (dcaCorrPcls[i] is null || !pca.TryGetScores(dcaCorrPcls[i]!, scores.AsSpan()))
                     throw new ModelException($"Cannot transform specimen {i}.");
 
                 for (int j = 0; j < npcs; j++)
                     scoresMat[i, j] = scores[j];
-            }
+            });
+
             ArrayPool<float>.Shared.Return(scores);
 
             MatrixCollection mcPca = pca.ToMatrixCollection();
