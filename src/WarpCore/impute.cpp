@@ -76,7 +76,7 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 
 		int grid_dim = info->decim_count;
 		std::vector<int> controlpts{};
-		int num_allowed = grid_select(controlpts, fdata, info->n, grid_dim, valid_mask, !negate_mask);
+		int num_allowed = grid_select(controlpts, fdata, info->n, grid_dim, valid_mask, negate_mask);
 		int num_ctl = (int)controlpts.size();
 
 		if (num_allowed == info->n) // no imputation needed

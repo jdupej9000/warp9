@@ -40,5 +40,10 @@ namespace Warp9.Data
                 }
             }
         }
+
+        public readonly bool IsDegenerate()
+        {
+            return I0 == I1 || I0 == I2 || I1 == I2;
+        }
     }
 }

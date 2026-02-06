@@ -50,7 +50,7 @@ namespace Warp9.Data
             return mb.ToPointCloud();
         }
 
-        public static float TriangleArea(Vector3 a, Vector3 b, Vector3 c)
+        public static float TriangleAreaHeron(Vector3 a, Vector3 b, Vector3 c)
         {
             float ret = 0.0f;
             float d0 = Vector3.Distance(a, b);
@@ -63,6 +63,12 @@ namespace Warp9.Data
                 ret = 0;
 
             return ret;
+        }
+
+        public static float TriangleAreaCross(Vector3 a, Vector3 b, Vector3 c)
+        {
+            Vector3 x = Vector3.Cross(b - a, c - a);
+            return 0.5f * x.Length();
         }
 
         public static Mesh MakeIndexedMesh(float[] pos, int[] ib, float posScale = 1)

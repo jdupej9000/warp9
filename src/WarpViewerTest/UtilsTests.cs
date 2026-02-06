@@ -86,7 +86,7 @@ namespace Warp9.Test
         [DataRow(2f, 0, 0, 0, 2, 0, 0, 0, 2, 0)]
         public void TriangleAreaTest(float expected, float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2)
         {
-            float area = MeshUtils.TriangleArea(new Vector3(x0, y0, z0), new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
+            float area = MeshUtils.TriangleAreaHeron(new Vector3(x0, y0, z0), new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
             if (MathF.Abs(area - expected) > 1e-6f)
             {
                 Console.WriteLine($"Wanted {expected}, got {area}.");
