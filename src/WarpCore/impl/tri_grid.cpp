@@ -74,6 +74,10 @@ namespace warpcore::impl
         for(int i = 0; i < num_cells; i++)
             populate_grid_cell(grid->cells[i].vert, vert, idx, grid->cells[i].idx, grid->cells[i].n, nv, nt);
 
+        grid->search_pat_len = k * k * k;
+        grid->search_pat = new int[grid->search_pat_len];
+        prepare_search_pattern_uniform(grid->search_pat, k, k, k);
+
         delete[] hist;
         delete[] idx_range;
     }
@@ -83,6 +87,10 @@ namespace warpcore::impl
         if(grid->cells) {
             delete[] grid->cells;
             grid->cells = nullptr;
+        }
+
+        if (grid->search_pat) {
+            delete[] grid->search_pat;
         }
 
         _aligned_free(grid->buff_vert);

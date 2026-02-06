@@ -213,6 +213,35 @@ namespace warpcore::impl
 			idx[j] = -1;
 	}
 
+	void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz)
+	{
+		int index = 0;
+		for (int i = 0; i < nx; i++) {
+			for (int j = 0; j < ny; j++) {
+				for (int k = 0; k < nz; k++) {
+					pat[index] = i | (j << 10) | (k << 20);
+					index++;
+				}
+			}
+		}
+
+		int size = nx * ny * nz;
+
+		std::sort(pat, pat + size, [](int a, int b) -> bool {
+			// TODO: use expand_search_pattern_index
+			int ax = a & 0x3ff; int ay = (a >> 10) & 0x3ff; int az = (a >> 20) & 0x3ff;
+			int bx = b & 0x3ff; int by = (b >> 10) & 0x3ff; int bz = (b >> 20) & 0x3ff;
+			return (ax * ax + ay * ay + az * az) < (bx * bx + by * by + bz * bz);
+			});
+	}
+
+	void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz)
+	{
+		dx = idx & 0x3ff; 
+		dy = (idx >> 10) & 0x3ff; 
+		dz = (idx >> 20) & 0x3ff;
+	}
+
 	void debug_matrix(const char* prefix, int index, const float* data, int rows, int cols)
 	{
 		constexpr size_t BUFF_SIZE = 512;
