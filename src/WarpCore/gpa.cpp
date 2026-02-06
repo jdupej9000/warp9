@@ -75,11 +75,11 @@ extern "C" int opa_fit(const void* templ, const void* floating, const void* allo
     rigid3 outer;
 
     if (allow) {
-        warpcore::impl::pcl_center(t, d, m, outer.offs);
-        outer.cs = 1.0f / warpcore::impl::pcl_cs(t, d, m, outer.offs);
-    } else {
         warpcore::impl::pcl_center(t, allow, d, m, outer.offs);
         outer.cs = 1.0f / warpcore::impl::pcl_cs(t, allow, d, m, outer.offs);
+    } else {
+        warpcore::impl::pcl_center(t, d, m, outer.offs);
+        outer.cs = 1.0f / warpcore::impl::pcl_cs(t, d, m, outer.offs);
     }
 
     warpcore::impl::pcl_transform(t, d, m, false, outer.cs, outer.offs, temp_mean);
