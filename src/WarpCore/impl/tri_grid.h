@@ -28,6 +28,9 @@ namespace warpcore::impl
 
         float* buff_vert;
         int* buff_idx;
+
+        int* search_pat;
+        int search_pat_len;
     };
 
 
@@ -180,17 +183,18 @@ namespace warpcore::impl
         };
 
         int initialRadius = std::max(std::max(coarseRadius[0], coarseRadius[1]), coarseRadius[2]);
-        foreach_voxel_central<trigrid_nn_ctx&>(initialRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
+        //foreach_voxel_central<trigrid_nn_ctx&>(initialRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], ctx,
+        foreach_voxel_central<trigrid_nn_ctx&>(initialRadius, cx, cy, cz, grid->ncell[0], grid->ncell[1], grid->ncell[2], grid->search_pat, grid->search_pat_len, ctx,
             [](int dx, int dy, int dz, int dr, trigrid_nn_ctx& ctx) noexcept -> bool {
 
-                if (dr > ctx.coarseRadius[0] && 
-                    dr > ctx.coarseRadius[1] && 
+                if (dr > ctx.coarseRadius[0] &&
+                    dr > ctx.coarseRadius[1] &&
                     dr > ctx.coarseRadius[2])
                     return false;
 
                 // early out if the cell cannot possibly contain any closer triangles
-                if (abs(dx - ctx.cx) > ctx.coarseRadius[0] || 
-                    abs(dy - ctx.cy) > ctx.coarseRadius[1] || 
+                if (abs(dx - ctx.cx) > ctx.coarseRadius[0] ||
+                    abs(dy - ctx.cy) > ctx.coarseRadius[1] ||
                     abs(dz - ctx.cz) > ctx.coarseRadius[2])
                     return true;
 

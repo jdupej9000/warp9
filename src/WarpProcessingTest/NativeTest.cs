@@ -488,6 +488,44 @@ namespace Warp9.Test
                 numTested++;
             }
         }
+        
+        [TestMethod]
+        public void WideTrigridNnTestCase()
+        {
+            const int bitmapSize = 128;
+            const float scale = 3;
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitTrigrid(mesh, 16, out SearchContext? ctx);
+            Assert.IsNotNull(ctx);
+
+            Aabb bbox = ctx.GetSpan();
+            Assert.IsFalse(bbox.IsInvalid);
+            Console.WriteLine(bbox.ToString());
+
+            // x0=<-3, 0, -2>, x1=<3.434, 3.15, 2>, center=<0.053937342, 1.7241387, -0.00024491842>, cs=2.0256174
+            TestUtils.GenerateGrid(bitmapSize, bitmapSize,
+                scale * new Vector3(-3.5f, 5.2f, 0f), scale * new Vector3(3.5f, 5.2f, 0f), scale * new Vector3(-3.5f, -1.8f, 0f),
+                out Vector3[] pts);
+
+            int[] hit = new int[bitmapSize * bitmapSize];
+            ResultInfoDPtBary[] res = new ResultInfoDPtBary[bitmapSize * bitmapSize];
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 100.0f, hit.AsSpan(), res.AsSpan());
+            sw.Stop();
+
+            Console.WriteLine("{0:F1} queries per second",
+                bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds);
+
+           
+            Bitmap bmp = TestUtils.RenderAsHeatmap(bitmapSize, bitmapSize, 0, scale * 1.5f,
+                (i, j) => MathF.Sqrt(res[j * bitmapSize + i].d));
+
+            BitmapAsserts.AssertEqual("WideTrigridNnTestCase_0.png", bmp);
+           
+            ctx.Dispose();
+        }
 
         public (int[], ResultInfoDPtBary[], Mesh) TrigridNnTestCase(string referenceFileName, int gridCells, int bitmapSize, bool render=true)
         {

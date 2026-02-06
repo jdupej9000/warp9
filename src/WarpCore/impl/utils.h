@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <float.h>
 #include <immintrin.h>
+#include <algorithm>
 #include <memory.h>
 
 #define FOR_MASKED(i,m,allow,nallow,neg_allow,fun) { \
@@ -42,6 +43,8 @@ namespace warpcore::impl
     void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
     size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg);
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
+    void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
+    void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);
     void debug_matrix(const char* prefix, int index, const float* data, int rows, int cols);
 
     template<typename T>
@@ -162,6 +165,35 @@ namespace warpcore::impl
 				}
 			}
 		}
+    }
+
+    template<typename TCtx>
+    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, const int* pattern, int pat_len, TCtx ctx, bool (*fun)(int x, int y, int z, int r, TCtx ctx))
+    {
+        #define FUN(x,y,z,l) if((x) >= 0 && (x) < maxx && (y) >= 0 && (y) < maxy && (z) >= 0 && (z) < maxz) if(!fun((x), (y), (z), (l), ctx)) return;
+        //FUN(cx, cy, cz, 0);
+        
+        int r2 = radius * radius;
+
+        for (int i = 0; i < pat_len; i++) {
+            int dx, dy, dz;
+            expand_search_pattern_index(pattern[i], dx, dy, dz);
+
+            if (dx * dx + dy * dy + dz * dz > r2) 
+                break;
+
+            int coarse_radius = std::max(dx, std::max(dy, dz));
+
+            FUN(cx - dx, cy - dy, cz - dz, coarse_radius);
+            FUN(cx + dx, cy - dy, cz - dz, coarse_radius);
+            FUN(cx - dx, cy + dy, cz - dz, coarse_radius);
+            FUN(cx + dx, cy + dy, cz - dz, coarse_radius);
+
+            FUN(cx - dx, cy - dy, cz + dz, coarse_radius);
+            FUN(cx + dx, cy - dy, cz + dz, coarse_radius);
+            FUN(cx - dx, cy + dy, cz + dz, coarse_radius);
+            FUN(cx + dx, cy + dy, cz + dz, coarse_radius);
+        }
     }
 
     template<int NDim>
