@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Numerics;
 using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Model;
@@ -14,7 +16,7 @@ namespace Warp9.JobItems
     /// </summary>
     public class LandmarkGpaJobItem : ProjectJobItem
     {
-        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, string sizeResultKey, string? logKey, GpaConfiguration? cfg) :
+        public LandmarkGpaJobItem(int index, long specTableKey, string colName, string resultKey, string sizeResultKey, string? logKey, GpaConfiguration? cfg, int[]? landmarkIndices) :
             base(index, "Landmark GPA", JobItemFlags.RunsAlone | JobItemFlags.FailuesAreFatal)
         {
             SpecimenTableKey = specTableKey;
@@ -23,6 +25,7 @@ namespace Warp9.JobItems
             SizeResultKey = sizeResultKey;
             LogKey = logKey;
             Config = cfg ?? new GpaConfiguration();
+            LandmarkIndices = landmarkIndices;
         }
 
         public long SpecimenTableKey { get; init; }
@@ -31,6 +34,7 @@ namespace Warp9.JobItems
         public string SizeResultKey { get; init; }
         public string? LogKey { get; init; }
         public GpaConfiguration Config { get; init; }
+        public int[]? LandmarkIndices { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
@@ -49,6 +53,16 @@ namespace Warp9.JobItems
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Error, "Cannot load landmarks in one or more specimens.");
                 return false;
+            }
+
+            if (LandmarkIndices is not null)
+            {
+                for (int i = 0; i < pcls.Length; i++)
+                    pcls[i] = MeshUtils.PermuteSegment<Vector3>(pcls[i]!, MeshSegmentSemantic.Position, LandmarkIndices.AsSpan());
+
+                ctx.WriteLog(ItemIndex, MessageKind.Information,
+                    "Restring landmarks to indices: " + string.Join(',',
+                        LandmarkIndices.Select((t) => t.ToString())));
             }
 
             Gpa res = Gpa.Fit(pcls!, Config);

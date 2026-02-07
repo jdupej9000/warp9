@@ -81,6 +81,10 @@ namespace Warp9.Forms
                 cmbSpecTable.SelectedIndex = 0;
 
             cmbImpute.SelectedIndex = (int)cfg.RejectImputation;
+
+            if (cfg.RigidPreregistrationSubset is not null)
+                txtLandmarkSubset.Text = string.Join(',',
+                    cfg.RigidPreregistrationSubset.Select((t) => t.ToString()));
         }
 
         private void UpdateColumnSelectors()
@@ -139,6 +143,35 @@ namespace Warp9.Forms
             configuration.BaseMeshIndex = cmbBase.SelectedIndex;
             configuration.RejectImputation = (DcaImputationKind)cmbImpute.SelectedIndex;
 
+            if (txtLandmarkSubset.Text.Length == 0)
+            {
+                configuration.RigidPreregistrationSubset = null;
+            }
+            else
+            {
+                List<int> indices = new List<int>();
+                foreach (string s in txtLandmarkSubset.Text.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (int.TryParse(s, out int i) && i >= 0)
+                    {
+                        indices.Add(i);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Landmark index '{s}' is not valid.", "warp9", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
+                if (indices.Count < 3)
+                {
+                    MessageBox.Show("At least 3 unique landmarks must be selected.", "warp9", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                configuration.RigidPreregistrationSubset = indices.ToArray();
+            }
+             
             DialogResult = true;
         }
 

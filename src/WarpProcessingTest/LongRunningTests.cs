@@ -33,9 +33,11 @@ namespace Warp9.Test
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.RejectImputation = DcaImputationKind.Tps;
-            cfg.RejectExpandedHighThreshold = 10.0f;
-            cfg.RejectExpandedLowThreshold = 0.1f;
+            cfg.RejectExpandedHighThreshold = 5.0f;
+            cfg.RejectExpandedLowThreshold = 0.2f;
+            cfg.RejectDistanceThreshold = 1.5f;
             cfg.RejectDistant = false;
+            cfg.RejectExpanded = true;
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = false;
             cfg.CpdConfig.UseGpu = true;
@@ -49,9 +51,6 @@ namespace Warp9.Test
 
             IJobContext ctx = JobEngine.RunImmediately(job);
 
-            Assert.AreEqual(0, job.NumItemsFailed);
-            Assert.AreEqual(job.NumItemsDone, job.NumItems);
-
             Console.WriteLine("Workspace contents: ");
             foreach (var kvp in ctx.Workspace.Items)
                 Console.WriteLine("   " + kvp.Key + " = " + kvp.Value.ToString());
@@ -62,7 +61,7 @@ namespace Warp9.Test
 
             if (!ctx.Workspace.TryGet("rigid.reg", out List<Mesh>? rigidPcls) ||
                 rigidPcls is null)
-                Assert.Fail("corr.reg is not present in the workspace");
+                Assert.Fail("rigid.reg is not present in the workspace");
 
             if (!ctx.Workspace.TryGet("corr.reject", out DcaVertexRejection? rej) ||
               corrPcls is null)
@@ -82,10 +81,12 @@ namespace Warp9.Test
                 MeshSegmentBuilder<uint> colorSeg = mb.GetSegmentForEditing<uint>(MeshSegmentSemantic.Color, false);
                 uint[] colors = BitMask.Expand(rej.ModelRejectionMask(i), baseMesh.VertexCount,
                     0xff808080, 0xff0000ff);
+                    //0xff808080, 0xff808080);
                 colorSeg.Data.Clear();
                 colorSeg.Data.AddRange(colors);
 
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
+                    new TestRenderItem(TriStyle.MeshFilled, rigidPcls[i], Color.DodgerBlue),
                     new TestRenderItem(TriStyle.MeshFilledVertexColor, mb.ToMesh()));
             }
 
@@ -100,6 +101,9 @@ namespace Warp9.Test
                 lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.01f));
             lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.01f));
             TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
+
+            Assert.AreEqual(0, job.NumItemsFailed);
+            Assert.AreEqual(job.NumItemsDone, job.NumItems);
         }
 
         [TestMethod]

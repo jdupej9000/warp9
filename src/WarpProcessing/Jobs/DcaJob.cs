@@ -40,7 +40,7 @@ namespace Warp9.Jobs
                 case DcaRigidPreregKind.LandmarkFittedGpa:
                     yield return new LandmarkGpaJobItem(index++, cfg.SpecimenTableKey,
                         cfg.LandmarkColumnName ?? throw new InvalidOperationException(),
-                        GpaPreregKey, CorrespondenceSizeKey, LogKey, null);
+                        GpaPreregKey, CorrespondenceSizeKey, LogKey, null, cfg.RigidPreregistrationSubset);
                     gpaRegItem = GpaPreregKey;
                     break;
 

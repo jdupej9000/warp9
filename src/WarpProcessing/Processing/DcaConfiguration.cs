@@ -60,6 +60,10 @@ namespace Warp9.Processing
         [JsonPropertyName("rigid-prereg")]
         public DcaRigidPreregKind RigidPreregistration { get; set; } = DcaRigidPreregKind.LandmarkFittedGpa;
 
+        [JsonPropertyName("rigid-prereg-subset")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int[]? RigidPreregistrationSubset { get; set; } = null;
+
         [JsonPropertyName("nonrigid")]
         public DcaNonrigidRegistrationKind NonrigidRegistration { get; set; } = DcaNonrigidRegistrationKind.LowRankCpd;
 

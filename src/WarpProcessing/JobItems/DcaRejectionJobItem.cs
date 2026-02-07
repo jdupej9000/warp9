@@ -50,7 +50,7 @@ namespace Warp9.JobItems
             Mesh dcaBaseMesh = Mesh.FromPointCloud(corrPcls[BaseMeshIndex], baseMesh);
 
             DcaVertexRejection rejection = DcaVertexRejection.Create(dcaBaseMesh, corrPcls,
-                DcaConfig.RejectExpanded, DcaConfig.RejectExpanded,
+                DcaConfig.RejectExpanded, DcaConfig.RejectDistant,
                 DcaConfig.RejectExpandedLowThreshold, DcaConfig.RejectExpandedHighThreshold, DcaConfig.RejectDistanceThreshold);
 
             ctx.Workspace.Set(ResultItem, rejection);
@@ -65,9 +65,11 @@ namespace Warp9.JobItems
                 for (int i = 0; i < corrPcls.Count; i++)
                 {
                     PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i), 
-                        8, true, PCL_IMPUTE_METHOD.TPS_GRIDSEL);
+                        16, true, PCL_IMPUTE_METHOD.TPS_GRIDSEL);
                     if (imputed is not null)
                         corrPcls[i] = imputed;
+                    else
+                        ctx.WriteLog(ItemIndex, MessageKind.Warning, $"Imputation failed on model {i}.");
                 }
             }
 
