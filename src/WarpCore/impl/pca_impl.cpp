@@ -139,8 +139,10 @@ namespace warpcore::impl
         for (int i = 0; i < dim; i++)
             f[i] = 1.0f / sqrtf(mat[i + i * dim]);
 
-        for (int i = 0; i < dim; i++)
-            cblas_saxpy(dim, f[i], f, 1, mat + i * dim, 1);
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++)
+                mat[i * dim + j] *= f[i] * f[j];
+        }
 
         delete[] f;
     }
