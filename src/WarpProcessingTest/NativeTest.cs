@@ -353,6 +353,23 @@ namespace Warp9.Test
             PointCloud? imputed = MeshImputation.ImputePositions(damaged, twisted, BitMask.MakeBitMask(allow), quality: q, method: method);
             Assert.IsNotNull(imputed);
 
+            imputed.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos2);
+            twisted.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos3);
+
+            float rmse = 0;
+            int numImputed = 0;
+            for (int i = 0; i < nv; i++)
+            {
+                if (!allow[i])
+                {
+                    rmse += Vector3.DistanceSquared(pos2.Data[i], pos3.Data[i]);
+                    numImputed++;
+                }
+            }
+            rmse = MathF.Sqrt(rmse / numImputed);
+
+            Console.WriteLine($"Error: {rmse}");
+
             TestUtils.Render($"ImputeTest_{method}_{q}_0.png",
                new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(twisted, teapot), col: Color.DarkCyan),
                new TestRenderItem(TriStyle.MeshFilled, Mesh.FromPointCloud(imputed, teapot), col: Color.White));
