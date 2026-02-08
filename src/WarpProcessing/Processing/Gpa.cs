@@ -66,9 +66,9 @@ namespace Warp9.Processing
         }
         
 
-        public static Gpa Fit(PointCloud[] data, GpaConfiguration? cfg = null)
+        public static Gpa Fit(PointCloud[] data, int[]? allowBitField = null, GpaConfiguration? cfg = null)
         {
-            WarpCoreStatus s = RigidTransform.FitGpa(data, 
+            WarpCoreStatus s = RigidTransform.FitGpa(data, allowBitField, 
                 out PointCloud mean, out Rigid3[] xforms, out GpaResult res);
 
             if (s != WarpCoreStatus.WCORE_OK)

@@ -15,7 +15,7 @@ struct gparesult {
     float err;
 };
 
-extern "C" WCEXPORT int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res);
+extern "C" WCEXPORT int gpa_fit(const void** data, const void* allow, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res);
 extern "C" WCEXPORT int rigid_transform(const void* x, int d, int m, const rigid3* xform, void* res);
 extern "C" WCEXPORT int pcl_stat(const void* x, int d, int m, pclstat3* stat);
 extern "C" WCEXPORT int opa_fit(const void* templ, const void* floating, const void* allow, int d, int m, rigid3* xform);

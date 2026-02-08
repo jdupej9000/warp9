@@ -116,7 +116,7 @@ namespace Warp9.Native
             return ret;
         }
 
-        public static WarpCoreStatus FitGpa(IReadOnlyList<PointCloud> pcls, out PointCloud meanPcl, out Rigid3[] transforms, out GpaResult result)
+        public static WarpCoreStatus FitGpa(IReadOnlyList<PointCloud> pcls, int[]? allowBitField, out PointCloud meanPcl, out Rigid3[] transforms, out GpaResult result)
         {
             const int d = 3;
             int n = pcls.Count;
@@ -139,12 +139,27 @@ namespace Warp9.Native
 
             unsafe
             {
-                fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
-                fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
-                fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
+                if (allowBitField is not null)
                 {
-                    ret = (WarpCoreStatus)WarpCore.gpa_fit(
-                        (nint)ppdata, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
+                    fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
+                    fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
+                    fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
+                    fixed (int* pallow = &MemoryMarshal.GetReference(allowBitField.AsSpan()))
+                    {
+                        ret = (WarpCoreStatus)WarpCore.gpa_fit(
+                            (nint)ppdata, (nint)pallow, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
+                    }
+                }
+                else
+                {
+
+                    fixed (nint* ppdata = &MemoryMarshal.GetReference(handles.AsSpan()))
+                    fixed (Rigid3* pxforms = &MemoryMarshal.GetReference(xforms.AsSpan()))
+                    fixed (byte* pmean = &MemoryMarshal.GetReference(mean.AsSpan()))
+                    {
+                        ret = (WarpCoreStatus)WarpCore.gpa_fit(
+                            (nint)ppdata, nint.Zero, d, n, specimenDataSize / 4 / d, (nint)pxforms, (nint)pmean, ref gpaRes);
+                    }
                 }
             }
            

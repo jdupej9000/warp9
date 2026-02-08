@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res)
+extern "C" int gpa_fit(const void** data, const void* allow, int d, int n, int m, rigid3* xforms, void* mean, gparesult* res)
 {
     constexpr int MAX_IT = 150;
     constexpr float TOL_REL = 1e-5f;
@@ -23,12 +23,18 @@ extern "C" int gpa_fit(const void** data, int d, int n, int m, rigid3* xforms, v
     int it = 0;
     float err = 1;
     while(it < MAX_IT) {
-        for(int i = 0; i < n; i++) {
-            int opa_res = warpcore::impl::opa_fit((const float*)data[i], m1, nullptr, d, m, xforms[i].offs, &xforms[i].cs, xforms[i].rot);
+        for (int i = 0; i < n; i++) {
+            warpcore::impl::opa_fit((const float*)data[i], m1, allow, d, m, xforms[i].offs, &xforms[i].cs, xforms[i].rot);
+        }
+        
+        warpcore::impl::gpa_update_mean((const float**)data, d, n, m, xforms, m2);
+        float new_err = 0;
+        if (allow) {
+            new_err = warpcore::impl::pcl_rmse(m1, m2, d, m, allow, false);
+        } else {
+            new_err = warpcore::impl::pcl_rmse(m1, m2, d, m);
         }
 
-        warpcore::impl::gpa_update_mean((const float**)data, d, n, m, xforms, m2);
-        const float new_err = warpcore::impl::pcl_rmse(m1, m2, d, m);
         if((err-new_err) / new_err < TOL_REL) 
             break;
     

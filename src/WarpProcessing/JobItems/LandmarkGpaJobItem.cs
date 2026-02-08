@@ -65,7 +65,7 @@ namespace Warp9.JobItems
                         LandmarkIndices.Select((t) => t.ToString())));
             }
 
-            Gpa res = Gpa.Fit(pcls!, Config);
+            Gpa res = Gpa.Fit(pcls!, null, Config);
             ctx.Workspace.Set(WorkspaceResultKey, res);
 
             for (int i = 0; i < pcls.Length; i++)

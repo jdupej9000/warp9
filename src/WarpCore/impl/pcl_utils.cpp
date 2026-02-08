@@ -163,6 +163,24 @@ namespace warpcore::impl
         return sqrtf(rms / m);
     }
 
+    float pcl_rmse(const float* x, const float* y, int d, int m, const void* allow, bool neg_allow)
+    {
+        __m128 sse = _mm_setzero_ps();
+        int num_included = 0;
+
+        FOR_MASKED(i, m, allow, num_included, neg_allow, {
+            __m128 xyi = _mm_sub_ps(_mm_loadu_ps(x + 3 * i), _mm_loadu_ps(y + 3 * i));
+            sse = _mm_fmadd_ps(xyi, xyi, sse);
+            });
+
+        sse = _mm_blend_ps(_mm_setzero_ps(), sse, 0b111);
+        sse = _mm_hadd_ps(sse, sse);
+        sse = _mm_hadd_ps(sse, sse);
+
+        float rmse = sqrtf(_mm_cvtss_f32(sse) / d / num_included);
+        return rmse;
+    }
+
     void pcl_aabb(const float* x, int d, int m, float* x0, float* x1)
     {
         WCORE_ASSERT(d <= 4);

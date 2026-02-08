@@ -93,7 +93,7 @@ namespace Warp9.JobItems
             ctx.WriteLog(ItemIndex, MessageKind.Information, "GPA OUTLIERS");
             ctx.WriteLog(ItemIndex, MessageKind.Information, "Landmark distances to GPA mean, relative to GPA mean size, maxima over specimen. Large values may indicate incorrect landmark ordering.");
             GpaConfiguration gpaCfg = new GpaConfiguration();
-            Gpa gpa = Gpa.Fit(pcls!, gpaCfg);
+            Gpa gpa = Gpa.Fit(pcls!, null, gpaCfg);
             Aabb lmBox = MeshUtils.FindBoundingBox(gpa.Mean, MeshSegmentSemantic.Position).Value;
             for (int i = 0; i < n; i++)
             {
