@@ -91,7 +91,7 @@ namespace warpcore::impl
 
         const float factor = -1.0f / (2.0f * sigma2);
         //const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
-        constexpr float AffinityThresh = 1e-5f;
+        constexpr float AffinityThresh = 1e-6f;
         const float thresh = logf(AffinityThresh) / factor;
 
         if(has_feature(WCORE_OPTPATH::AVX512)) {

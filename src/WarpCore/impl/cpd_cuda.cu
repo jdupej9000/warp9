@@ -74,7 +74,7 @@ void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t
     cudaStream_t stream = (cudaStream_t)pStream;
     const float factor = -1.0f / (2.0f * sigma2);
     //const float thresh = std::max(0.0001f, 2.0f * sqrtf(sigma2));
-    constexpr float AffinityThresh = 1e-5f;
+    constexpr float AffinityThresh = 1e-6f;
     const float thresh = logf(AffinityThresh) / factor;
 
     float* dx = (float*)pDevCtx;
