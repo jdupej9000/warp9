@@ -126,6 +126,8 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
     int it = 0;
     int64_t etime = 0;
 
+    //debug_pcl("cpd", cpd->debug_key, 0, tt, m, true);
+
     while (!conv) {
         double l0_old = l0;
         float denom = cpd->w / (1.0f - cpd->w) * powf(2.0f * (float)M_PI * sigma2, 1.5f) * (float)m / (float)n;
@@ -175,6 +177,8 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             std::memcpy(tt, ttemp, sizeof(float) * 3 * m);
         else
             debug = 4;
+
+        //debug_pcl("cpd", cpd->debug_key, it + 1, tt, m, true);
 
         tol_old = tol;
         it++;

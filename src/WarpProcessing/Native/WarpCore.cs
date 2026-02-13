@@ -116,6 +116,7 @@ namespace Warp9.Native
         public float lambda, beta, w, sigma2init;
         public int maxit, neigen, flags;
         public float tol;
+        public int debug_key;
     }
 
     [StructLayout(LayoutKind.Sequential)]

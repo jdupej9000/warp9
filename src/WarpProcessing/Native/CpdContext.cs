@@ -77,11 +77,12 @@ namespace Warp9.Native
 
         public ReadOnlySpan<byte> NativeInitData => cpdInitData.AsSpan();
 
-        public WarpCoreStatus Register(PointCloud pclTarget, out PointCloud? pclBent, out CpdResult result)
+        public WarpCoreStatus Register(PointCloud pclTarget, out PointCloud? pclBent, out CpdResult result, int debug_key=0)
         {
             CpdInfo info = cpdInfo;
             info.n = pclTarget.VertexCount;
             info.sigma2init = -1;
+            info.debug_key = debug_key;
 
             CpdResult cpdRes = new CpdResult();
             int sizeBytesT = info.d * info.m * Marshal.SizeOf<float>();

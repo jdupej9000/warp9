@@ -49,7 +49,7 @@ namespace Warp9.JobItems
                 return false;
             }
 
-            WarpCoreStatus regStatus = cpdContext.Register(pcl, out PointCloud? pclBent, out CpdResult resultInfo);
+            WarpCoreStatus regStatus = cpdContext.Register(pcl, out PointCloud? pclBent, out CpdResult resultInfo, debug_key: MeshIndex);
             ctx.Workspace.Set(ResultItem, MeshIndex, pclBent);
 
             ctx.WriteLog(ItemIndex, MessageKind.Information, "CPD registration complete: " + resultInfo.ToString());

@@ -267,4 +267,29 @@ namespace warpcore::impl
 
 		fclose(f);
 	}
+
+	void debug_pcl(const char* prefix, int index, int iterartion, const float* data, int num_vert, bool soa)
+	{
+		constexpr size_t BUFF_SIZE = 512;
+		char path[BUFF_SIZE];
+		sprintf_s(path, BUFF_SIZE, "%s-%i-%i.xyz", prefix, index, iterartion);
+
+		FILE* f;
+		fopen_s(&f, path, "w");
+
+		if (f == nullptr)
+			return;
+
+		if (soa) {
+			for (int i = 0; i < num_vert; i++) {
+				fprintf_s(f, "%f %f %f\n", data[i], data[num_vert + i], data[2 * num_vert + i]);
+			}
+		} else {
+			for (int i = 0; i < num_vert; i++) {
+				fprintf_s(f, "%f %f %f\n", data[3 * i], data[3 * i + 1], data[3 * i + 2]);
+			}
+		}
+
+		fclose(f);
+	}
 }

@@ -17,6 +17,7 @@ struct cpdinfo {
     float lambda, beta, w, sigma2init;
     int32_t maxit, neigen, flags;
     float tol;
+    int32_t debug_key;
 };
 
 enum CPD_CONV {
