@@ -29,6 +29,7 @@ namespace Warp9.Test
             cfg.LandmarkColumnName = "Landmarks";
             cfg.MeshColumnName = "Model";
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
+            cfg.RigidPreregistrationSubset = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
