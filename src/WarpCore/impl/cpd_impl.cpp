@@ -180,9 +180,9 @@ namespace warpcore::impl
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-        float ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
+        double ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
         ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
-        return ret / (3 * reduce_add(p1, m));
+        return (float)ret / (3 * reduce_add(p1, m));
     }
 
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi)

@@ -356,7 +356,7 @@ namespace warpcore::impl
             }
 
             for (int j = n16; j < n; j++) {
-                if (fabs(v[j]) > 1e-4f)
+                if (fabs(v[j]) > 1e-6f)
                     y[i * n + j] = x[i * n + j] / v[j];
                 else
                     y[i * n + j] = 0;
@@ -486,12 +486,14 @@ namespace warpcore::impl
 
         // trace(A' * diag(B) * A)
 
+        __m256 ret8 = _mm256_setzero_ps();
         float ret = 0;
       
         int n16 = round_down(n, 16);
         for(int i = 0; i < m; i++) {
             const float* ai = a + i * n;
-            __m256 accum = _mm256_setzero_ps();
+            __m256 accum = _mm256_setzero_ps(), 
+                accum2 = _mm256_setzero_ps();
             
             for(int j = 0; j < n16; j+=16) {
                 const __m256 aj0 = _mm256_loadu_ps(ai + j);
@@ -503,8 +505,11 @@ namespace warpcore::impl
                 const __m256 p0 = _mm256_mul_ps(_mm256_mul_ps(aj0, aj0), bj0);
                 const __m256 p1 = _mm256_mul_ps(_mm256_mul_ps(aj1, aj1), bj1);
 
-                accum = _mm256_add_ps(accum, _mm256_add_ps(p0, p1));
+                accum = _mm256_add_ps(accum, p0);
+                accum2 = _mm256_add_ps(accum2, p1);
             }
+
+            ret8 = _mm256_add_ps(ret8, _mm256_add_ps(accum, accum2));
 
             float part = 0;
             for(int j = n16; j < n; j++) {
@@ -512,10 +517,10 @@ namespace warpcore::impl
                 part += aj * aj * b[j]; 
             }
 
-            ret += part + reduce_add(accum);
+            ret += part;
         }
 
-        return ret;
+        return reduce_add(ret8) + ret;
     }
 
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res)
