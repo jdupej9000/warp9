@@ -60,13 +60,13 @@ float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, cons
     cudaMemcpyAsync(sumpart, dtemp, sizeof(float) * n, cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
 
-    float sum = 0;
+    double sum = 0;
     for (int i = 0; i < n; i++)
         sum += sumpart[i];
 
     delete[] sumpart;
 
-    return sum / (3 * m * n);
+    return (float)sum / (3 * m * n);
 }
 
 void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
