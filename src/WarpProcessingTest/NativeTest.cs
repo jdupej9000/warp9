@@ -123,7 +123,9 @@ namespace Warp9.Test
         {
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud pcl = mesh;
-            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, new CpdConfiguration());
+            CpdConfiguration cfg = new CpdConfiguration();
+            cfg.Beta = 4;
+            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, cfg);
 
             Assert.AreEqual(WarpCoreStatus.WCORE_OK, stat);
             Assert.IsNotNull(ctx);
@@ -147,13 +149,13 @@ namespace Warp9.Test
             bmpEigenvectors.Save(Path.Combine(BitmapAsserts.ResultPath, "CpdInitDefaultTest_0.png"));
         }
 
-        private static Bitmap VisualizeEigenvectors(Mesh m, Size frameSize, int neigs, ReadOnlySpan<float> d)
+        public static Bitmap VisualizeEigenvectors(Mesh m, Size frameSize, int neigs, ReadOnlySpan<float> d)
         {
             HeadlessRenderer rend = ComplexTests.CreateRenderer();
             RenderItemMesh rim = new RenderItemMesh();
             rim.Mesh = m;
             rim.Lut = Lut.Create(256, Lut.JetColors);
-            rim.Style = MeshRenderStyle.ColorLut | MeshRenderStyle.ShowValueLevel;
+            rim.Style = MeshRenderStyle.ColorLut;// | MeshRenderStyle.ShowValueLevel;
             rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.4f, -2.0f, -2.0f);
             rim.ValueMax = 0.02f;
             rim.ValueMin = -0.02f;

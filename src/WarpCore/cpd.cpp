@@ -10,7 +10,7 @@
 
 extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream);
 extern void cpd_deinit_cuda(void* pDevCtx, void* pStream);
-extern void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
+extern float cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
 extern float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n);
 int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
 
@@ -80,11 +80,11 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
     // Do not change the order of these arrays. CUDA part relies on this structure.
     float* pp = new float[2 * n + 4 * m + tmp_size + 3 * m + 2 * 3 * m + 3 * n];
-    float* psum = pp;
-    float* pt1 = psum + n;
+    float* pt1 = pp;
     float* p1 = pt1 + n;
     float* px = p1 + m;
-    float* tmp = px + 3 * m;
+    float* psum = px + 3 * m;
+    float* tmp = psum + n;
     float* ttemp = tmp + tmp_size;
     float* xt = ttemp + 3 * m;
     float* yt = xt + 3 * n;
@@ -134,7 +134,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
         auto te0 = std::chrono::high_resolution_clock::now();
         if (use_cuda) {
-            cpd_estep_cuda(cuda_ctx, cuda_stream, xt, tt, m, n, cpd->w, sigma2, denom, pt1);
+            l0 = cpd_estep_cuda(cuda_ctx, cuda_stream, xt, tt, m, n, cpd->w, sigma2, denom, pp);
         } else {
             cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
         }

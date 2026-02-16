@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 
 #include <math.h>
+#include <stdio.h>
 
 #define CONST_ARG const __grid_constant__
 
@@ -11,10 +12,18 @@ __global__ void cpd_sigmaest_cuda(CONST_ARG int m, CONST_ARG int n, float* ctx);
 
 #define BLOCK_SIZE (512)
 
+#define CUDA_CHECK() {                                          \
+ cudaError_t e=cudaGetLastError();                                 \
+ if(e!=cudaSuccess) {                                              \
+   printf("Cuda failure %s:%d: '%s' (%i)\n",__FILE__,__LINE__,cudaGetErrorString(e), e);           \
+   exit(0); \
+ }                                                                 \
+}
+
 bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream)
 {
     // Layout:
-    size_t devMemorySize = sizeof(float) * (3 * n + 3 * m + n + m + 3 * m);
+    size_t devMemorySize = sizeof(float) * (3 * n + 3 * m + 2 * n + m + 3 * m);
 
     if (cudaStreamCreate((cudaStream_t*)ppStream) != cudaSuccess)
         return false;
@@ -69,7 +78,7 @@ float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, cons
     return (float)sum / (3 * m * n);
 }
 
-void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
+float cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)
 {
     cudaStream_t stream = (cudaStream_t)pStream;
     const float factor = -1.0f / (2.0f * sigma2);
@@ -84,7 +93,9 @@ void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t
     float* dpx = dp1 + m;  
     //float* dpsum = dpx + 3 * m;
     cudaMemcpyAsync(dt, t, sizeof(float) * 3 * m, cudaMemcpyHostToDevice, stream);
-    cudaMemsetAsync(dpx, 0, sizeof(float) * (3 * m + m + n + n), stream);
+    CUDA_CHECK();
+    //cudaMemsetAsync(dpt1, 0, sizeof(float) * (3 * m + m + n + n), stream);
+    
 
     const int threadsPerBlock = BLOCK_SIZE;
 
@@ -95,8 +106,18 @@ void cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t
     cpd_p1px_cuda<<<blocksPerGrid, threadsPerBlock, 0, stream>>>(m, n, thresh, factor, dx);
    
     // TODO: check errors
-    cudaMemcpyAsync(pt1p1px, dpt1, sizeof(float) * (n + m + 3 * m), cudaMemcpyDeviceToHost, stream);
+    cudaMemcpyAsync(pt1p1px, dpt1, sizeof(float) * (2 * n + m + 3 * m), cudaMemcpyDeviceToHost, stream);
+    CUDA_CHECK();
     cudaStreamSynchronize(stream);
+    CUDA_CHECK();
+
+
+    const float* psum = pt1p1px + n + m + 3 * m;
+    double err = 0;
+    for(int i = 0; i < n; i++) 
+        err += -logf(psum[i]);
+
+    return err + 3 * n * logf(sigma2) / 2;
 }
 
 __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float thresh, CONST_ARG float expFactor, CONST_ARG float denomAdd, float* ctx)
@@ -123,6 +144,7 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
         x2 = x[2 * n + i];
     }
 
+    int q = 0;
     for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
@@ -141,8 +163,10 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
                 float d2 = x2 - t012[3 * j + 2];
                 float dist = fmaf(d0, d0, fmaf(d1, d1, d2 * d2));
 
-                if (dist < thresh)
+                if (dist < thresh) {
                     sumb += __expf(expFactor * dist);
+                    q += 1;
+                }
             }
             sum += sumb;
         }
@@ -151,14 +175,8 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
     }
 
     if (i < n) {
-        //if (fabs(sum + denomAdd) > 1e-6f) {
-            float psumi = 1.0f / (sum + denomAdd);
-            psum[i] = psumi;
-            pt1[i] = sum * psumi;
-       // } else {
-       //     psum[i] = 100000;
-       //     pt1[i] = 0;
-       // }
+        psum[i] = sum + denomAdd;
+        pt1[i] = 1.0f - denomAdd / sum;
     }
 }
 
@@ -195,7 +213,7 @@ __global__ void cpd_p1px_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG float 
         x012sum[4 * thread + 0] = x[0 * n + ithread];
         x012sum[4 * thread + 1] = x[1 * n + ithread];
         x012sum[4 * thread + 2] = x[2 * n + ithread];
-        x012sum[4 * thread + 3] = psum[ithread];
+        x012sum[4 * thread + 3] = 1.0f / psum[ithread];
 
         __syncthreads();
 

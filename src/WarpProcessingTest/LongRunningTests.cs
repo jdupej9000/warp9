@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Warp9.Data;
 using Warp9.JobItems;
 using Warp9.Jobs;
@@ -31,7 +32,7 @@ namespace Warp9.Test
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.RigidPreregistrationSubset = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
+            cfg.SurfaceProjection = DcaSurfaceProjectionKind.ClosestPoint;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.RejectImputation = DcaImputationKind.Tps;
             cfg.RejectExpandedHighThreshold = 5.0f;
@@ -42,8 +43,9 @@ namespace Warp9.Test
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = false;
             cfg.CpdConfig.UseGpu = true;
-            cfg.CpdConfig.Beta = 2;
+            cfg.CpdConfig.Beta = 3;
             cfg.CpdConfig.Lambda = 2;
+            cfg.CpdConfig.W = 0.001f;
 
 
             IEnumerable<ProjectJobItem> jobItems = DcaJob.Create(cfg, project, true);
@@ -73,6 +75,9 @@ namespace Warp9.Test
             if (!ctx.Workspace.TryGet("base", out Mesh? baseMesh) || baseMesh is null)
                 Assert.Fail("Cannot get base mesh.");
 
+            if (!ctx.Workspace.TryGet("nonrigid.init", out CpdContext? cpdCtx) || cpdCtx is null)
+                Assert.Fail("Cannot get CPD context.");
+
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(1024, 1024);
             Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);
@@ -87,7 +92,7 @@ namespace Warp9.Test
                 colorSeg.Data.AddRange(colors);
 
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
-                    new TestRenderItem(TriStyle.MeshFilled, rigidPcls[i], Color.DodgerBlue),
+                    //new TestRenderItem(TriStyle.MeshFilled, rigidPcls[i], Color.DodgerBlue),
                     new TestRenderItem(TriStyle.MeshFilledVertexColor, mb.ToMesh()));
             }
 
@@ -102,6 +107,15 @@ namespace Warp9.Test
                 lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.GetTransformed(i), col: Color.Yellow, lmScale: 0.01f));
             lmrend.Add(new TestRenderItem(TriStyle.Landmarks, gpa.Mean, col: Color.Red, lmScale: 0.01f));
             TestUtils.Render(rend, $"FacesCpdDcaTest_lmsgpa.png", modelMat, lmrend.ToArray());
+
+            ReadOnlySpan<float> initData = MemoryMarshal.Cast<byte, float>(cpdCtx.NativeInitData);
+            int neig = cpdCtx.NumEigenvectors;
+            ReadOnlySpan<float> lambda = initData.Slice(0, neig);
+            ReadOnlySpan<float> q = initData.Slice(baseMesh.VertexCount * 2);
+            Console.WriteLine("Eigenvalues: " +
+               string.Join(", ", lambda.ToArray().Select((l) => l.ToString())));
+            Bitmap bmpEigenvectors = NativeTest.VisualizeEigenvectors(baseMesh, new Size(128, 128), neig, q);
+            bmpEigenvectors.Save(Path.Combine(BitmapAsserts.ResultPath, "FacesCpdDcaTest_eigs.png"));
 
             Assert.AreEqual(0, job.NumItemsFailed);
             Assert.AreEqual(job.NumItemsDone, job.NumItems);

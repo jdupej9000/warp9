@@ -270,7 +270,7 @@ namespace warpcore::impl
         }
 
         for (int l = 0; l < k; l++)
-            lambda[l] = reduce_add(lambda8[l]);
+            lambda[l] = fabs(reduce_add(lambda8[l]));
 
         delete[] lambda8;
     }
