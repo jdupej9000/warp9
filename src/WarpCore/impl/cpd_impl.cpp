@@ -26,12 +26,11 @@ namespace warpcore::impl
     void cpd_p1px_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     void cpd_p1px_avx512(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px);
     
-    constexpr float PT1_CUTOFF = 1e5f;
-    constexpr float PT1_CUTOFF_REC = 1.0f / 1e5f;
+    constexpr int TIER_SIZE = 256;
 
     constexpr bool cpd_is_tier_complete(int x) 
     {
-        return (x & 0xff) == 0;
+        return (x & (TIER_SIZE-1)) == 0;
     }
 
     int cpd_lowrank_numcols(int m) 
@@ -121,12 +120,12 @@ namespace warpcore::impl
 
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-
+        
         dxinva(px, p1, m, 3, _p0);
         cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1);
         // _p0 (m,3): diag(p1)^-1 * px - y [right]
 
-        float tf = 1.0f / (sigma2 * lambda);
+        const float tf = 1.0f / (sigma2 * lambda);
         atdba(q, m, k, p1, tf, _p1);
         cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
         int* piv = (int*)_p2;
@@ -145,7 +144,6 @@ namespace warpcore::impl
         replace_nan(_p0, m * 3, 0);
         replace_nan(_p3, m * 3, 0);
        
-        // TODOL mul by tf^2
         cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k);
         // _p0 (k,3): q^T * diag(p1) * right
 
@@ -172,7 +170,7 @@ namespace warpcore::impl
 
         replace_nan(_p3, k * 3, 0);
 
-        float ret = lambda / 2 * tratdba(_p3, k, 3, l);
+        const float ret = lambda / 2 * tratdba(_p3, k, 3, l);
 
         dxa(_p3, l, k, 3, _p0);
         // _p0 (k,3): diag(l) * q^T * w
@@ -279,7 +277,7 @@ namespace warpcore::impl
         }
 
         for (int l = 0; l < k; l++)
-            lambda[l] = fabs(reduce_add(lambda8[l]));
+            lambda[l] = fabsf(reduce_add(lambda8[l]));
 
         delete[] lambda8;
     }
@@ -338,21 +336,22 @@ namespace warpcore::impl
         for (int i = i0; i < n; i++) {
             float sumAccum = 0.0f;
             float sumAccumB = 0;
-            for (int j = 0; j < m; j++) {
-                const float dd1 = x[0 * n + i] - t[0 * m + j];
-                const float dd2 = x[1 * n + i] - t[1 * m + j];
-                const float dd3 = x[2 * n + i] - t[2 * m + j];
-                float dist = dd1 * dd1 + dd2 * dd2 + dd3 * dd3;
+            for (int jj = 0; jj < m; jj += TIER_SIZE) {
+                int mm = std::min(m, jj + TIER_SIZE);
 
-                if (dist < thresh)
-                    sumAccumB += expf_fast(expFactor * dist);
+                for (int j = jj; j < mm; j++) {
+                    const float dd1 = x[0 * n + i] - t[0 * m + j];
+                    const float dd2 = x[1 * n + i] - t[1 * m + j];
+                    const float dd3 = x[2 * n + i] - t[2 * m + j];
+                    float dist = dd1 * dd1 + dd2 * dd2 + dd3 * dd3;
 
-                if (cpd_is_tier_complete(j)) {
-                    sumAccum += sumAccumB;
-                    sumAccumB = 0;
+                    if (dist < thresh)
+                        sumAccumB += expf_fast(expFactor * dist);
                 }
+
+                sumAccum += sumAccumB;
+                sumAccumB = 0;
             }
-            sumAccum += sumAccumB;
 
             const float sumCorr = sumAccum + denomAdd;           
             psum[i] = sumCorr;
@@ -383,27 +382,28 @@ namespace warpcore::impl
             const __m256 x1 = _mm256_loadu_ps(x + i + n);
             const __m256 x2 = _mm256_loadu_ps(x + i + 2*n);
 
-            for(int j = 0; j < m; j++) {
-                const __m256 d0 = _mm256_sub_ps(_mm256_broadcast_ss(t + j), x0);
-                const __m256 d1 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + m), x1);
-                const __m256 d2 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + 2*m), x2);
+            for(int jj = 0; jj < m; jj += TIER_SIZE) {
+                int mm = std::min(m, jj + TIER_SIZE);
 
-                __m256 dist = _mm256_add_ps(_mm256_mul_ps(d0, d0), _mm256_mul_ps(d1, d1));
-                dist = _mm256_fmadd_ps(d2, d2, dist);
+                for (int j = jj; j < mm; j++) {
+                    const __m256 d0 = _mm256_sub_ps(_mm256_broadcast_ss(t + j), x0);
+                    const __m256 d1 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + m), x1);
+                    const __m256 d2 = _mm256_sub_ps(_mm256_broadcast_ss(t + j + 2 * m), x2);
 
-                const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
-                int mask = _mm256_movemask_epi8(_mm256_castps_si256(compareMask));
-                if (mask != 0) {
-                    __m256 affinity = _mm256_and_ps(expf_fast(_mm256_mul_ps(dist, factor8)), compareMask);
-                    accumb = _mm256_add_ps(accumb, affinity);
+                    __m256 dist = _mm256_add_ps(_mm256_mul_ps(d0, d0), _mm256_mul_ps(d1, d1));
+                    dist = _mm256_fmadd_ps(d2, d2, dist);
+
+                    const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
+                    int mask = _mm256_movemask_epi8(_mm256_castps_si256(compareMask));
+                    if (mask != 0) {
+                        __m256 affinity = _mm256_and_ps(expf_fast(_mm256_mul_ps(dist, factor8)), compareMask);
+                        accumb = _mm256_add_ps(accumb, affinity);
+                    }
                 }
 
-                if (cpd_is_tier_complete(j)) {
-                    accum = _mm256_add_ps(accum, accumb);
-                    accumb = _mm256_setzero_ps();
-                }
+                accum = _mm256_add_ps(accum, accumb);
+                accumb = _mm256_setzero_ps();
             }
-            accum = _mm256_add_ps(accum, accumb);
             
             __m256 sumCorr = _mm256_add_ps(accum, denomAdd8);
             _mm256_storeu_ps(psum + i, sumCorr);
@@ -428,26 +428,27 @@ namespace warpcore::impl
             const __m512 x1 = _mm512_loadu_ps(x + i + n);
             const __m512 x2 = _mm512_loadu_ps(x + i + 2 * n);
 
-            for (int j = 0; j < m; j++) {
-                const __m512 d0 = _mm512_sub_ps(x0, _mm512_set1_ps(t[j]));
-                const __m512 d1 = _mm512_sub_ps(x1, _mm512_set1_ps(t[j + m]));
-                const __m512 d2 = _mm512_sub_ps(x2, _mm512_set1_ps(t[j + 2 * m]));
-                __m512 dist = _mm512_mul_ps(d0, d0);
-                dist = _mm512_fmadd_ps(d1, d1, dist);
-                dist = _mm512_fmadd_ps(d2, d2, dist);
+            for (int jj = 0; jj < m; jj += TIER_SIZE) {
+                int mm = std::min(m, jj + TIER_SIZE);
 
-                const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
-                if (_cvtmask16_u32(compareMask) != 0) {
-                    __m512 affinity = expf_fast(_mm512_mul_ps(dist, factorb));
-                    accumb = _mm512_mask_add_ps(accumb, compareMask, accumb, affinity);
-                }
+                for (int j = jj; j < mm; j++) {
+                    const __m512 d0 = _mm512_sub_ps(x0, _mm512_set1_ps(t[j]));
+                    const __m512 d1 = _mm512_sub_ps(x1, _mm512_set1_ps(t[j + m]));
+                    const __m512 d2 = _mm512_sub_ps(x2, _mm512_set1_ps(t[j + 2 * m]));
+                    __m512 dist = _mm512_mul_ps(d0, d0);
+                    dist = _mm512_fmadd_ps(d1, d1, dist);
+                    dist = _mm512_fmadd_ps(d2, d2, dist);
 
-                if (cpd_is_tier_complete(j)) {
-                    accum = _mm512_add_ps(accum, accumb);
-                    accumb = _mm512_setzero_ps();
+                    const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
+                    if (_cvtmask16_u32(compareMask) != 0) {
+                        __m512 affinity = expf_fast(_mm512_mul_ps(dist, factorb));
+                        accumb = _mm512_mask_add_ps(accumb, compareMask, accumb, affinity);
+                    }
                 }
+                
+                accum = _mm512_add_ps(accum, accumb);
+                accumb = _mm512_setzero_ps();                
             }
-            accum = _mm512_add_ps(accum, accumb);
 
             __m512 sumCorr = _mm512_add_ps(accum, denomAddb);
             _mm512_storeu_ps(psum + i, sumCorr);
@@ -546,42 +547,40 @@ namespace warpcore::impl
             __m256 px2 = _mm256_setzero_ps(), px2b = _mm256_setzero_ps();
             __m256 p1a = _mm256_setzero_ps(), p1ab = _mm256_setzero_ps();
 
-            for(int i = 0; i < n; i++) {
-                const __m256 x0 = _mm256_broadcast_ss(x + 0*n+i);
-                const __m256 x1 = _mm256_broadcast_ss(x + 1*n+i);
-                const __m256 x2 = _mm256_broadcast_ss(x + 2*n+i);
-                const __m256 dd1 = _mm256_sub_ps(x0, t0);
-                const __m256 dd2 = _mm256_sub_ps(x1, t1);
-                const __m256 dd3 = _mm256_sub_ps(x2, t2);
+            for(int ii = 0; ii < n; ii += TIER_SIZE) {
+                int nn = std::min(ii + TIER_SIZE, n);
 
-                __m256 dist = _mm256_add_ps(_mm256_mul_ps(dd1, dd1), _mm256_mul_ps(dd2, dd2));                
-                dist = _mm256_fmadd_ps(dd3, dd3, dist);
+                for (int i = ii; i < nn; i++) {
+                    const __m256 x0 = _mm256_broadcast_ss(x + 0 * n + i);
+                    const __m256 x1 = _mm256_broadcast_ss(x + 1 * n + i);
+                    const __m256 x2 = _mm256_broadcast_ss(x + 2 * n + i);
+                    const __m256 dd1 = _mm256_sub_ps(x0, t0);
+                    const __m256 dd2 = _mm256_sub_ps(x1, t1);
+                    const __m256 dd3 = _mm256_sub_ps(x2, t2);
 
-                const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
-                const int mask = _mm256_movemask_ps(compareMask);
-                if (mask != 0) {
-                    __m256 pmn = expf_fast(_mm256_mul_ps(dist, factor8));
-                    pmn = _mm256_mul_ps(pmn, _mm256_broadcast_ss(psum + i));
-                    pmn = _mm256_and_ps(pmn, compareMask);
+                    __m256 dist = _mm256_add_ps(_mm256_mul_ps(dd1, dd1), _mm256_mul_ps(dd2, dd2));
+                    dist = _mm256_fmadd_ps(dd3, dd3, dist);
 
-                    px0b = _mm256_fmadd_ps(x0, pmn, px0b);
-                    px1b = _mm256_fmadd_ps(x1, pmn, px1b);
-                    px2b = _mm256_fmadd_ps(x2, pmn, px2b);
-                    p1ab = _mm256_add_ps(p1ab, pmn);
+                    const __m256 compareMask = _mm256_cmp_ps(dist, thresh8, _CMP_LT_OQ);
+                    const int mask = _mm256_movemask_ps(compareMask);
+                    if (mask != 0) {
+                        __m256 pmn = expf_fast(_mm256_mul_ps(dist, factor8));
+                        pmn = _mm256_mul_ps(pmn, _mm256_broadcast_ss(psum + i));
+                        pmn = _mm256_and_ps(pmn, compareMask);
+
+                        px0b = _mm256_fmadd_ps(x0, pmn, px0b);
+                        px1b = _mm256_fmadd_ps(x1, pmn, px1b);
+                        px2b = _mm256_fmadd_ps(x2, pmn, px2b);
+                        p1ab = _mm256_add_ps(p1ab, pmn);
+                    }
                 }
-
-                if (cpd_is_tier_complete(i)) {
-                    px0 = _mm256_add_ps(px0, px0b); px0b = _mm256_setzero_ps();
-                    px1 = _mm256_add_ps(px1, px1b); px1b = _mm256_setzero_ps();
-                    px2 = _mm256_add_ps(px2, px2b); px2b = _mm256_setzero_ps();
-                    p1a = _mm256_add_ps(p1a, p1ab); p1ab = _mm256_setzero_ps();
-                }
+                
+                px0 = _mm256_add_ps(px0, px0b); px0b = _mm256_setzero_ps();
+                px1 = _mm256_add_ps(px1, px1b); px1b = _mm256_setzero_ps();
+                px2 = _mm256_add_ps(px2, px2b); px2b = _mm256_setzero_ps();
+                p1a = _mm256_add_ps(p1a, p1ab); p1ab = _mm256_setzero_ps();                
             }
-            px0 = _mm256_add_ps(px0, px0b);
-            px1 = _mm256_add_ps(px1, px1b);
-            px2 = _mm256_add_ps(px2, px2b);
-            p1a = _mm256_add_ps(p1a, p1ab); 
-            
+                        
             _mm256_storeu_ps(p1 + j, p1a);
             _mm256_storeu_ps(px + j, px0);
             _mm256_storeu_ps(px + j + m, px1);
@@ -609,42 +608,40 @@ namespace warpcore::impl
             __m512 px2 = _mm512_setzero_ps(), px2b = _mm512_setzero_ps();
             __m512 p1a = _mm512_setzero_ps(), p1ab = _mm512_setzero_ps();
 
-            for (int i = 0; i < n; i++) {
-                const __m512 x0 = _mm512_set1_ps(x[i]);
-                const __m512 x1 = _mm512_set1_ps(x[n + i]);
-                const __m512 x2 = _mm512_set1_ps(x[2 * n + i]);
-                const __m512 dd1 = _mm512_sub_ps(x0, t0);
-                const __m512 dd2 = _mm512_sub_ps(x1, t1);
-                const __m512 dd3 = _mm512_sub_ps(x2, t2);
+            for (int ii = 0; ii < n; ii += TIER_SIZE) {
+                int nn = std::min(ii + TIER_SIZE, n);
 
-                __m512 dist = _mm512_mul_ps(dd1, dd1);
-                dist = _mm512_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
-                dist = _mm512_fmadd_ps(dd3, dd3, dist);
+                for (int i = ii; i < nn; i++) {
+                    const __m512 x0 = _mm512_set1_ps(x[i]);
+                    const __m512 x1 = _mm512_set1_ps(x[n + i]);
+                    const __m512 x2 = _mm512_set1_ps(x[2 * n + i]);
+                    const __m512 dd1 = _mm512_sub_ps(x0, t0);
+                    const __m512 dd2 = _mm512_sub_ps(x1, t1);
+                    const __m512 dd3 = _mm512_sub_ps(x2, t2);
 
-                const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
-                if (_cvtmask16_u32(compareMask) != 0) {
-                    __m512 pmn = expf_fast(_mm512_mul_ps(dist, factorb));
-                    pmn = _mm512_mul_ps(pmn, _mm512_set1_ps(psum[i]));
-                    pmn = _mm512_maskz_mov_ps(compareMask, pmn);
+                    __m512 dist = _mm512_mul_ps(dd1, dd1);
+                    dist = _mm512_fmadd_ps(dd2, dd2, dist); // a*b + c, FMA3
+                    dist = _mm512_fmadd_ps(dd3, dd3, dist);
 
-                    px0b = _mm512_fmadd_ps(x0, pmn, px0b);
-                    px1b = _mm512_fmadd_ps(x1, pmn, px1b);
-                    px2b = _mm512_fmadd_ps(x2, pmn, px2b);
-                    p1ab = _mm512_add_ps(p1ab, pmn);
+                    const __mmask16 compareMask = _mm512_cmplt_ps_mask(dist, threshb);
+                    if (_cvtmask16_u32(compareMask) != 0) {
+                        __m512 pmn = expf_fast(_mm512_mul_ps(dist, factorb));
+                        pmn = _mm512_mul_ps(pmn, _mm512_set1_ps(psum[i]));
+                        pmn = _mm512_maskz_mov_ps(compareMask, pmn);
+
+                        px0b = _mm512_fmadd_ps(x0, pmn, px0b);
+                        px1b = _mm512_fmadd_ps(x1, pmn, px1b);
+                        px2b = _mm512_fmadd_ps(x2, pmn, px2b);
+                        p1ab = _mm512_add_ps(p1ab, pmn);
+                    }
                 }
 
-                if (cpd_is_tier_complete(i)) {
-                    px0 = _mm512_add_ps(px0, px0b); px0b = _mm512_setzero_ps();
-                    px1 = _mm512_add_ps(px1, px1b); px1b = _mm512_setzero_ps();
-                    px2 = _mm512_add_ps(px2, px2b); px2b = _mm512_setzero_ps();
-                    p1a = _mm512_add_ps(p1a, p1ab); p1ab = _mm512_setzero_ps();
-                }
+                px0 = _mm512_add_ps(px0, px0b); px0b = _mm512_setzero_ps();
+                px1 = _mm512_add_ps(px1, px1b); px1b = _mm512_setzero_ps();
+                px2 = _mm512_add_ps(px2, px2b); px2b = _mm512_setzero_ps();
+                p1a = _mm512_add_ps(p1a, p1ab); p1ab = _mm512_setzero_ps();
             }
-            px0 = _mm512_add_ps(px0, px0b);
-            px1 = _mm512_add_ps(px1, px1b);
-            px2 = _mm512_add_ps(px2, px2b);
-            p1a = _mm512_add_ps(p1a, p1ab);
-
+            
             _mm512_storeu_ps(p1 + j, p1a);
             _mm512_storeu_ps(px + j, px0);
             _mm512_storeu_ps(px + j + m, px1);
