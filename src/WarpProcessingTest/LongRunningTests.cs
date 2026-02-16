@@ -43,7 +43,7 @@ namespace Warp9.Test
             cfg.BaseMeshIndex = 0;
             cfg.BaseMeshOptimize = false;
             cfg.CpdConfig.UseGpu = true;
-            cfg.CpdConfig.Beta = 3;
+            cfg.CpdConfig.Beta = 2;
             cfg.CpdConfig.Lambda = 2;
             cfg.CpdConfig.W = 0.001f;
 
