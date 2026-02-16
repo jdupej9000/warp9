@@ -136,7 +136,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         if (use_cuda) {
             l0 = cpd_estep_cuda(cuda_ctx, cuda_stream, xt, tt, m, n, cpd->w, sigma2, denom, pp);
         } else {
-            cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
+            l0 = cpd_estep(xt, tt, m, n, cpd->w, sigma2, denom, psum, pt1, p1, px);
         }
 
 #if defined(DEBUG_CPD)

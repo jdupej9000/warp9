@@ -15,6 +15,8 @@ namespace warpcore::impl
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
+    float cpd_error(int n, const float* psum, float sigma2);
+    void cpd_recip(int n, float* x);
 
     void cpd_psumpt1(int i0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
     void cpd_psumpt1_avx2(int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
@@ -84,7 +86,7 @@ namespace warpcore::impl
         return reduce_add(tmp, n) / (3 * m * n);
     }
 
-    void cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
+    float cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -94,13 +96,20 @@ namespace warpcore::impl
         constexpr float AffinityThresh = 1e-6f;
         const float thresh = logf(AffinityThresh) / factor;
 
-        if(has_feature(WCORE_OPTPATH::AVX512)) {
-            cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);
-            cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
-        } else {
+        if(has_feature(WCORE_OPTPATH::AVX512))
+            cpd_psumpt1_avx512(m, n, thresh, factor, denom, x, t, psum, pt1);          
+        else
             cpd_psumpt1_avx2(m, n, thresh, factor, denom, x, t, psum, pt1);
+       
+        float tol = cpd_error(n, psum, sigma2);
+        cpd_recip(n, psum);
+
+        if (has_feature(WCORE_OPTPATH::AVX512))          
+            cpd_p1px_avx512(m, n, thresh, factor, denom, x, t, psum, p1, px);
+        else           
             cpd_p1px_avx2(m, n, thresh, factor, denom, x, t, psum, p1, px);
-        }
+  
+        return tol;
     }
 
     float cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
@@ -345,15 +354,9 @@ namespace warpcore::impl
             }
             sumAccum += sumAccumB;
 
-            const float sumCorr = sumAccum + denomAdd;
-            if (fabs(sumCorr) > PT1_CUTOFF_REC) {
-                const float rcp = 1.0f / sumCorr;
-                psum[i] = rcp;
-                pt1[i] = sumAccum * rcp;
-            } else {
-                psum[i] = PT1_CUTOFF;
-                pt1[i] = 0;
-            }
+            const float sumCorr = sumAccum + denomAdd;           
+            psum[i] = sumCorr;
+            pt1[i] = 1.0f - denomAdd / sumAccum;
         }
     }
 
@@ -403,14 +406,8 @@ namespace warpcore::impl
             accum = _mm256_add_ps(accum, accumb);
             
             __m256 sumCorr = _mm256_add_ps(accum, denomAdd8);
-            __m256 sumCorrNormal = _mm256_cmp_ps(_mm256_abs_ps(sumCorr), _mm256_set1_ps(PT1_CUTOFF_REC), _CMP_GT_OQ);
-            sumCorr = _mm256_blendv_ps(_mm256_set1_ps(1), sumCorr, sumCorrNormal); // replace zeros to prevent division by zero
-
-            __m256 denom = _mm256_div_ps(_mm256_set1_ps(1), sumCorr);
-            denom = _mm256_blendv_ps(_mm256_set1_ps(PT1_CUTOFF), denom, sumCorrNormal);
-
-            _mm256_storeu_ps(psum + i, denom);
-            _mm256_storeu_ps(pt1 + i, _mm256_and_ps(_mm256_mul_ps(denom, accum), sumCorrNormal)); // pt1=0 where sumCorrNormal==0
+            _mm256_storeu_ps(psum + i, sumCorr);
+            _mm256_storeu_ps(pt1 + i, _mm256_sub_ps(_mm256_set1_ps(1.0f), _mm256_div_ps(denomAdd8, accum)));
         }
 
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
@@ -453,17 +450,46 @@ namespace warpcore::impl
             accum = _mm512_add_ps(accum, accumb);
 
             __m512 sumCorr = _mm512_add_ps(accum, denomAddb);
-            const __mmask16 sumCorrNormal = _mm512_cmplt_ps_mask(_mm512_set1_ps(PT1_CUTOFF_REC), _mm512_abs_ps(sumCorr));
-            sumCorr = _mm512_mask_blend_ps(sumCorrNormal, _mm512_set1_ps(1), sumCorr); // replace zeros to prevent division by zero
-
-            __m512 denom = _mm512_div_ps(_mm512_set1_ps(1), sumCorr);
-            denom = _mm512_mask_blend_ps(sumCorrNormal, _mm512_set1_ps(PT1_CUTOFF), denom);
-
-            _mm512_storeu_ps(psum + i, denom);
-            _mm512_storeu_ps(pt1 + i, _mm512_mask_blend_ps(sumCorrNormal, _mm512_setzero_ps(), _mm512_mul_ps(denom, accum)));
+            _mm512_storeu_ps(psum + i, sumCorr);
+            _mm512_storeu_ps(pt1 + i, _mm512_sub_ps(_mm512_set1_ps(1.0f), _mm512_div_ps(denomAddb, accum)));
         }
 
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
+    }
+
+    float cpd_error(int n, const float* psum, float sigma2)
+    {
+        constexpr int BlockSize = 8;
+        const int nb = round_down(n, BlockSize);
+
+        __m256 err8 = _mm256_setzero_ps();
+
+        for (int i = 0; i < nb; i += BlockSize) {
+            const __m256 x = _mm256_loadu_ps(psum + i);
+            err8 = _mm256_add_ps(err8, _mm256_log_ps(x));
+        }
+
+        float err = 0;
+        for (int i = nb; i < n; i++)
+            err += logf(psum[i]);
+
+        err += reduce_add(err8);
+
+        return -err + 3 * n * logf(sigma2) / 2;
+    }
+
+    void cpd_recip(int n, float* x)
+    {
+        constexpr int BlockSize = 8;        
+        const int nb = round_down(n, BlockSize);
+
+        for (int i = 0; i < nb; i += BlockSize) {            
+            const __m256 xx = _mm256_loadu_ps(x + i);
+            _mm256_storeu_ps(x + i, _mm256_rcp_ps(xx));
+        }
+
+        for (int i = nb; i < n; i++)
+            x[i] = 1.0f / x[i];
     }
 
     void cpd_p1px(int j0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, const float* psum, float* p1, float* px)

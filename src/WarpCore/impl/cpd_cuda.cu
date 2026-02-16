@@ -144,7 +144,6 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
         x2 = x[2 * n + i];
     }
 
-    int q = 0;
     for (int jb = 0; jb < m; jb += BLOCK_SIZE) {
         int mb = __min(m, jb + BLOCK_SIZE) - jb;
 
@@ -163,10 +162,8 @@ __global__ void cpd_psumpt1_cuda(CONST_ARG int m, CONST_ARG int n, CONST_ARG flo
                 float d2 = x2 - t012[3 * j + 2];
                 float dist = fmaf(d0, d0, fmaf(d1, d1, d2 * d2));
 
-                if (dist < thresh) {
+                if (dist < thresh)
                     sumb += __expf(expFactor * dist);
-                    q += 1;
-                }
             }
             sum += sumb;
         }
