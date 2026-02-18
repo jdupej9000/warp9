@@ -24,7 +24,7 @@ namespace warpcore::impl
 		if (is_bit(regs[1], 16)) // TODO: check more than avx512.f
 			features |= (int)WCORE_OPTPATH::AVX512;
 
-		if (is_bit(regs[3], 15)) // TODO: check more than avx512.f
+		if (is_bit(regs[3], 15))
 			features |= (int)WCORE_OPTPATH::HYBRID;
 
 		g_platform_optpath = (WCORE_OPTPATH)features;

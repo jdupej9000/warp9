@@ -5,6 +5,7 @@
 #include <openblas_config.h>
 #include <cblas.h>
 #include <cuda_runtime.h>
+#include <omp.h>
 #include "impl/kmeans.h"
 #include "impl/cpu_info.h"
 #include "defs.h"
@@ -50,6 +51,10 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << __DATE__ << " " << __TIME__;
         break;
 
+    case WCINFO_OPENMP_THREADS:
+        ss << omp_get_max_threads();
+        break;
+
     case WCINFO_OPENBLAS_VERSION:
         ss << OPENBLAS_VERSION;
         break;
@@ -59,12 +64,28 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         break;
 
     case WCINFO_CUDA_DEVICE: 
+    case WCINFO_CUDA_DEVICE_SM_COUNT:
+    case WCINFO_CUDA_DEVICE_MEMORY:
+    case WCINFO_CUDA_DEVICE_COMPUTE_CAP:
         if (cudaGetDevice(&device) != cudaSuccess) {
             ss << "Cannot get a CUDA device.";
         } else {
             cudaDeviceProp props;
             cudaGetDeviceProperties(&props, device);
-            ss << props.name;
+
+            if (index == WCINFO_CUDA_DEVICE) {
+                ss << props.name;
+            } else if (index == WCINFO_CUDA_DEVICE_SM_COUNT) {
+                ss << props.multiProcessorCount;
+            } else if (index == WCINFO_CUDA_DEVICE_MEMORY) {
+                ss << props.totalGlobalMem / 1048576 << " MB RAM, " <<
+                    props.memoryClockRate / 1000 << " MHz @ " <<
+                    props.memoryBusWidth << " bits , " <<
+                    ((size_t)props.memoryBusWidth / 8 * props.memoryClockRate * 1000) / 1048576 / 1024 << " GB/s" <<
+                    (props.ECCEnabled ? " ECC" : "");
+            } else if (index == WCINFO_CUDA_DEVICE_COMPUTE_CAP) {
+                ss << props.major << "." << props.minor;
+            }
         }
         break;
     
