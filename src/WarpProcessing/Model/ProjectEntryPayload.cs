@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Warp9.Model
 {
@@ -26,5 +28,15 @@ namespace Warp9.Model
 
         [JsonIgnore]
         public static readonly ProjectEntryPayload Empty = new ProjectEntryPayload();
+
+        public IEnumerable<long> GetParentSpecimenTables()
+        {
+            HashSet<long> ret = new HashSet<long>();
+
+            if (MeshCorrExtra is not null)
+                ret.Add(MeshCorrExtra.DcaConfig.SpecimenTableKey);
+
+            return ret;
+        }
     }
 }

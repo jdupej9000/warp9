@@ -21,6 +21,7 @@ namespace Warp9.Navigation
 
         Warp9ViewModel? viewModel;
         long entryIndex = -1;
+        bool fullResolveTable = false;
 
         SpecimenTable Table
         {
@@ -31,7 +32,13 @@ namespace Warp9.Navigation
                     !viewModel.Project.Entries.TryGetValue(entryIndex, out ProjectEntry? entry))
                     throw new InvalidOperationException();
 
-                return entry.Payload.Table ?? throw new InvalidOperationException();
+                if(entry.Payload.Table is null)
+                    throw new InvalidOperationException();
+
+                if (fullResolveTable)
+                    return ModelUtils.MakeFullSpecimenTable(viewModel.Project, entryIndex) ?? throw new InvalidOperationException();
+
+                return entry.Payload.Table;
             }
         }
 
@@ -45,11 +52,12 @@ namespace Warp9.Navigation
             viewModel = null;
         }
 
-        public void ShowEntry(long idx)
+        public void ShowEntry(long idx, bool fullResolve = false)
         {
             dataMain.Columns.Clear();
 
             entryIndex = idx;
+            fullResolveTable = fullResolve;
             SpecimenTable table = Table;
             dataMain.ItemsSource = table;
 

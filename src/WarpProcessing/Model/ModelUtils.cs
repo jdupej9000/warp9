@@ -33,7 +33,7 @@ namespace Warp9.Model
     {
         public static ReferencedData<T> Resolve<T>(Project proj, ReferencedData<T> x) where T : class
         {
-            if(x.IsLoaded)
+            if (x.IsLoaded)
                 return x;
 
             if (proj.TryGetReference(x.Key, out T? val) && val is not null)
@@ -56,7 +56,7 @@ namespace Warp9.Model
             else
                 return x;
 
-            if(!pcl.TryGetData(semantic, out BufferSegment<T> buffer))
+            if (!pcl.TryGetData(semantic, out BufferSegment<T> buffer))
                 return x;
 
             return new ReferencedData<BufferSegment<T>>(buffer, x.Key);
@@ -76,7 +76,7 @@ namespace Warp9.Model
 
         public static SpecimenTableColumn<T>? TryGetSpecimenTableColumn<T>(Project proj, long tableKey, string column)
         {
-            if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||                
+            if (!proj.Entries.TryGetValue(tableKey, out ProjectEntry? entry) ||
                 entry.Payload.Table is null ||
                 !entry.Payload.Table.Columns.TryGetValue(column, out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<T> typedCol)
@@ -107,7 +107,7 @@ namespace Warp9.Model
             if (index >= links.Count)
                 return null;
 
-            if(proj.TryGetReference(links[index].ReferenceIndex, out T? val))
+            if (proj.TryGetReference(links[index].ReferenceIndex, out T? val))
                 return val;
 
             return null;
@@ -228,7 +228,7 @@ namespace Warp9.Model
             foreach (var kvp in spec.Columns)
             {
                 SpecimenTableColumn col = kvp.Value;
-                if (kvp.Value.ColumnType == SpecimenTableColumnType.Integer && 
+                if (kvp.Value.ColumnType == SpecimenTableColumnType.Integer &&
                     col is SpecimenTableColumn<long> colint)
                 {
                     bool isOneValue = !colint.Data
@@ -320,8 +320,62 @@ namespace Warp9.Model
                 isComplete = false;
                 return string.Format("{0} points", numSel);
             }
-            
+
             return string.Join(" and ", conditions);
         }
-    }
+
+        [Flags]
+        public enum MergeSpecimenTableFlags
+        { 
+            None = 0,
+
+            OverwriteDest = 1,
+            KeepDest = 0,
+
+            AddSimpleColumnsOnly = 2
+        }
+        
+
+        public static SpecimenTable? MergeSpecimenTables(SpecimenTable dest, SpecimenTable? src, MergeSpecimenTableFlags flags)
+        {
+            if (src is null) return dest;
+
+            SpecimenTable ret = new SpecimenTable();
+            foreach(var kvp in dest.Columns)
+                ret.Add(kvp.Key, kvp.Value, true);
+
+            foreach(var kvp in src.Columns)
+            {
+                if (flags.HasFlag(MergeSpecimenTableFlags.AddSimpleColumnsOnly) &&
+                    (kvp.Value.ColumnType == SpecimenTableColumnType.Image ||
+                     kvp.Value.ColumnType == SpecimenTableColumnType.Matrix ||
+                     kvp.Value.ColumnType == SpecimenTableColumnType.Mesh ||
+                     kvp.Value.ColumnType == SpecimenTableColumnType.PointCloud))
+                    continue;
+
+                ret.Add(kvp.Key, kvp.Value, flags.HasFlag(MergeSpecimenTableFlags.OverwriteDest));
+            }
+
+            return ret;
+        }
+
+        public static SpecimenTable? MakeFullSpecimenTable(Project proj, long entryKey)
+        {
+            if(!proj.Entries.TryGetValue(entryKey, out ProjectEntry? entry) ||
+                entry is null ||
+                entry.Payload.Table is null)
+                return null;
+
+            if(entry.Kind ==  ProjectEntryKind.Specimens)
+                return entry.Payload.Table;
+
+            if (entry.Kind == ProjectEntryKind.MeshCorrespondence && entry.Payload.MeshCorrExtra is not null)
+                return MergeSpecimenTables(
+                    entry.Payload.Table, 
+                    MakeFullSpecimenTable(proj, entry.Payload.MeshCorrExtra.DcaConfig.SpecimenTableKey), 
+                    MergeSpecimenTableFlags.AddSimpleColumnsOnly | MergeSpecimenTableFlags.KeepDest);
+
+            return null;
+        }
+    }   
 }

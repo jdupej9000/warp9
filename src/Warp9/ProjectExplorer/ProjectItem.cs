@@ -136,15 +136,17 @@ namespace Warp9.ProjectExplorer
 
     public class SpecimenTableProjectItem : ProjectItem
     {
-        public SpecimenTableProjectItem(Warp9ViewModel vm, long key, string? explicitName = null) :
+        public SpecimenTableProjectItem(Warp9ViewModel vm, long key, string? explicitName = null, bool fullResolve = false) :
             base(vm, typeof(SpecimenTablePage))
         {
             Key = key;
             ExplicitName = explicitName;
+            FullResolve = fullResolve;
         }
 
         public long Key { get; init; }
         public string? ExplicitName { get; init; }
+        public bool FullResolve { get; init; }
 
         protected override string? GetAdvancedNamePart()
         {
@@ -156,7 +158,7 @@ namespace Warp9.ProjectExplorer
             if (pres is not SpecimenTablePage page)
                 throw new ArgumentException();
 
-            page.ShowEntry(Key);
+            page.ShowEntry(Key, FullResolve);
         }
 
         public override void Update()
@@ -250,7 +252,7 @@ namespace Warp9.ProjectExplorer
         {
             Key = key;
             Children.Add(new MeshCorrespondenceViewerProjectItem(vm, key, "DCA viewer"));
-            Children.Add(new SpecimenTableProjectItem(vm, key, "Results table"));
+            Children.Add(new SpecimenTableProjectItem(vm, key, "Results table", true));
         }
 
         public long Key { get; init; }

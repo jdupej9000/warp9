@@ -68,6 +68,23 @@ namespace Warp9.Model
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
+        public bool Add(string name, SpecimenTableColumn col, bool force=false)
+        {
+            if (Columns.Count != 0 &&
+                Columns.First().Value.NumRows != col.NumRows)
+            {
+                throw new InvalidOperationException("Trying to merge in a column with incorrect number of items.");
+            }
+
+            if(force)
+            {
+                Columns[name] = col;
+                return true;
+            }
+
+            return Columns.TryAdd(name, col);
+        }
+
         public void Clear()
         {
             foreach (var kvp in Columns)
