@@ -209,4 +209,5 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.9.targets" />
   </ImportGroup>
+  <Import Project="WarpCore.targets" />
 </Project>

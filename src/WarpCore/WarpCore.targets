@@ -1,0 +1,11 @@
+<Project>
+    <Target Name="GetGitHash" BeforeTargets="ClCompile">
+        <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitHash" />
+        </Exec>
+        <WriteLinesToFile File="$(ProjectDir)git_version.g.h"
+            Lines="#define GIT_HASH &quot;$(GitHash)&quot;"
+            Overwrite="True"
+            Encoding="ASCII" />
+    </Target>
+</Project>

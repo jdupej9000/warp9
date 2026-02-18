@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Generated files
+*.g.h
+
 # Compiled Object files
 *.slo
 *.lo

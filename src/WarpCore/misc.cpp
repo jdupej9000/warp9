@@ -9,6 +9,7 @@
 #include "impl/kmeans.h"
 #include "impl/cpu_info.h"
 #include "defs.h"
+#include "git_version.g.h"
 
 using namespace std;
 using namespace warpcore::impl;
@@ -49,6 +50,12 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 
     case WCINFO_BUILD_DATE:
         ss << __DATE__ << " " << __TIME__;
+        break;
+
+    case WCINFO_GIT_HASH:
+#if defined(GIT_HASH)
+        ss << GIT_HASH;
+#endif
         break;
 
     case WCINFO_OPENMP_THREADS:
