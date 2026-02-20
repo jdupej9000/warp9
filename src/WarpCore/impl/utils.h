@@ -45,9 +45,7 @@ namespace warpcore::impl
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
     void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
     void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);
-    void debug_matrix(const char* prefix, int index, const float* data, int rows, int cols);
-    void debug_pcl(const char* prefix, int index, int iterartion, const float* data, int num_vert, bool soa);
-
+  
     template<typename T>
     int binary_search(const T* x, int n, const T& v)
     {

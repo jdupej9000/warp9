@@ -106,19 +106,19 @@ namespace warpcore::impl
 
     __m256 WCORE_VECCALL expf_schraudolph(__m256 x)
     {
-		__m256 a = _mm256_set1_ps(12102203.0f); /* (1 << 23) / log(2) */
-		__m256i b = _mm256_set1_epi32(127 * (1 << 23) - 298765);
-		__m256i t = _mm256_add_epi32(_mm256_cvtps_epi32(_mm256_mul_ps(a, x)), b);
-		return _mm256_castsi256_ps(t);
+        __m256 a = _mm256_set1_ps(12102203.0f); /* (1 << 23) / log(2) */
+        __m256i b = _mm256_set1_epi32(127 * (1 << 23) - 298765);
+        __m256i t = _mm256_add_epi32(_mm256_cvtps_epi32(_mm256_mul_ps(a, x)), b);
+        return _mm256_castsi256_ps(t);
     }
 
     double WCORE_VECCALL reduce_add(__m256d v)
     {
         __m128d vlow = _mm256_castpd256_pd128(v);
-        __m128d vhigh = _mm256_extractf128_pd(v, 1); 
-        vlow = _mm_add_pd(vlow, vhigh);    
+        __m128d vhigh = _mm256_extractf128_pd(v, 1);
+        vlow = _mm_add_pd(vlow, vhigh);
         __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
-        return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64)); 
+        return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64));
     }
 
     float WCORE_VECCALL reduce_add(__m256 v)
@@ -143,7 +143,7 @@ namespace warpcore::impl
         __m128i reduce = _mm_add_epi32(_mm256_extracti128_si256(v, 0), _mm256_extracti128_si256(v, 1));
         reduce = _mm_hadd_epi32(reduce, reduce);
         reduce = _mm_hadd_epi32(reduce, reduce);
-        return _mm_cvtsi128_si32 (reduce);
+        return _mm_cvtsi128_si32(reduce);
     }
 
     float reduce_add(const float* x, int n)
@@ -151,11 +151,11 @@ namespace warpcore::impl
         __m256 sum = _mm256_setzero_ps();
 
         int n8 = round_down(n, 8);
-        for(int i = 0; i < n8; i+=8)
+        for (int i = 0; i < n8; i += 8)
             sum = _mm256_add_ps(sum, _mm256_loadu_ps(x + i));
 
         float ret = 0;
-        for(int i = n8; i < n; i++)
+        for (int i = n8; i < n; i++)
             ret += x[i];
 
         return reduce_add(sum) + ret;
@@ -166,11 +166,11 @@ namespace warpcore::impl
         __m256i sum = _mm256_setzero_si256();
 
         int n8 = round_down(n, 8);
-        for(int i = 0; i < n8; i+=8)
+        for (int i = 0; i < n8; i += 8)
             sum = _mm256_add_epi32(sum, _mm256_loadu_si256((const __m256i*)(x + i)));
 
         int ret = 0;
-        for(int i = n8; i < n; i++)
+        for (int i = n8; i < n; i++)
             ret += x[i];
 
         return reduce_add_i32(sum) + ret;
@@ -181,7 +181,7 @@ namespace warpcore::impl
         const uint64_t* xx = (const uint64_t*)x;
         int nb = (n + 7) / 8;
         int n8 = round_down(nb, 8);
-       
+
         int i = 0;
         int64_t sum = 0;
         for (; i < n8; i += 8)
@@ -209,7 +209,7 @@ namespace warpcore::impl
         return _mm_cvtss_f32(reduce);
     }
 
-    int is_corrupted(__m256 v) 
+    int is_corrupted(__m256 v)
     {
         // https://stackoverflow.com/questions/30674291/how-to-check-inf-for-avx-intrinsic-m256
         __m256 self_sub_v8 = _mm256_sub_ps(v, v);
@@ -259,7 +259,7 @@ namespace warpcore::impl
     {
         // There sure are dependent fmas nested, but usually we do at least 2 of these dots back to back.
         // If inlined, the CPU will able to reorder this.
-        return _mm256_fmadd_ps(ax, bx, 
+        return _mm256_fmadd_ps(ax, bx,
             _mm256_fmadd_ps(ay, by, _mm256_mul_ps(az, bz)));
     }
 
@@ -298,7 +298,7 @@ namespace warpcore::impl
         __m256 xmax8 = _mm256_set1_ps(*xmax);
 
         int n8 = round_down(n, 8);
-        for(int i = 0; i < n8; i+= 8) {
+        for (int i = 0; i < n8; i += 8) {
             const __m256 xi = _mm256_loadu_ps(x + i);
             xmin8 = _mm256_min_ps(xmin8, xi);
             xmax8 = _mm256_max_ps(xmax8, xi);
@@ -306,7 +306,7 @@ namespace warpcore::impl
 
         float xmin1 = reduce_min(xmin8);
         float xmax1 = reduce_max(xmax8);
-        for(int i = n8; i < n; i++) {
+        for (int i = n8; i < n; i++) {
             xmin1 = std::min(x[i], xmin1);
             xmax1 = std::max(x[i], xmax1);
         }
@@ -318,6 +318,23 @@ namespace warpcore::impl
     __m256i WCORE_VECCALL clamp(__m256i x, __m256i x0, __m256i x1)
     {
         return _mm256_max_epi32(x0, _mm256_min_epi32(x1, x));
+    }
+
+    void axpy(float* y, const float* x, float alpha, int n)
+    {
+        const int n16 = round_down(n, 16);
+        __m256 a = _mm256_broadcast_ss(&alpha);
+
+        for (int i = 0; i < n16; i+=16) {
+            __m256 t0 = _mm256_fmadd_ps(a, _mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i));
+            __m256 t1 = _mm256_fmadd_ps(a, _mm256_loadu_ps(x + i + 8), _mm256_loadu_ps(y + i + 8));
+            _mm256_storeu_ps(y + i, t0);
+            _mm256_storeu_ps(y + i + 8, t1);
+        }
+
+        for (int i = n16; i < n; i++) {
+            y[i] += alpha * x[i];
+        }
     }
 
     void dxa(const float* x, const float* v, int n, int m, float* y)
@@ -616,10 +633,12 @@ namespace warpcore::impl
 
     void replace_nan(float* x, size_t len, float repl)
     {
-        __m256 repl8 = _mm256_set1_ps(repl);
-        const int nb = round_down(len, 8);
+        constexpr int BLK_SIZE = 8;
 
-        for (int i = 0; i < nb; i++) {
+        __m256 repl8 = _mm256_set1_ps(repl);
+        const int nb = round_down(len, BLK_SIZE);
+
+        for (int i = 0; i < nb; i+= BLK_SIZE) {
             __m256 xi = _mm256_loadu_ps(x + i);
             __m256 t = _mm256_sub_ps(xi, xi);
             __m256 mask = _mm256_cmp_ps(t, t, _CMP_EQ_OQ);

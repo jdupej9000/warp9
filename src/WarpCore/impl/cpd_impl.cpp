@@ -8,6 +8,7 @@
 #include <immintrin.h>
 #include "cpu_info.h"
 #include <omp.h>
+#include "debug.h"
 
 
 namespace warpcore::impl
@@ -122,16 +123,19 @@ namespace warpcore::impl
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
         
         dxinva(px, p1, m, 3, _p0);
-        cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1);
+
+        // saxpy is very slow here
+        //cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1));
+        axpy(_p0, y, -1.0f, m * 3);
         // _p0 (m,3): diag(p1)^-1 * px - y [right]
 
         const float tf = 1.0f / (sigma2 * lambda);
-        atdba(q, m, k, p1, tf, _p1);
+        atdba(q, m, k, p1, tf, _p1); // 15.3 %
         cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
         int* piv = (int*)_p2;
         std::memset(piv, 0, k * sizeof(int));
         LAPACKE_sgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
-        LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv); 
+        LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv);
         // _p1 (k,k): ( tf * q^T * diag(p1) * q + l^-1)^-1  [inner]
         // _p2 (k,1): destroyed
 
@@ -141,10 +145,10 @@ namespace warpcore::impl
         // _p2 (m,3): tf * diag(p1) * right [w]
         // _p3 (m,3): diag(p1) * right
 
-        replace_nan(_p0, m * 3, 0);
-        replace_nan(_p3, m * 3, 0);
+        replace_nan(_p0, m * 3, 0); // 15.5 %
+        replace_nan(_p3, m * 3, 0); // 15.1 %
        
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k);
+        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k); // 12.7 %
         // _p0 (k,3): q^T * diag(p1) * right
 
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, 3, k, 1.0f, _p1, k, _p0, k, 0.0f, _p3, k);
@@ -162,10 +166,12 @@ namespace warpcore::impl
         memcpy(_p0, _p2, m * 3 * sizeof(float));
         // _p0 (m,3): [w]
 
-        cblas_saxpy(m*3, -1.0f, _p3, 1, _p2, 1);
+        // saxpy is very slow here
+        //cblas_saxpy(m*3, -1.0f, _p3, 1, _p2, 1));
+        axpy(_p2, _p3, -1.0f, m * 3);
         // _p2 (m,3): [w] - [solve1]
 
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k); 
+        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k);
         // _p3 (k,3): q^T * w
 
         replace_nan(_p3, k * 3, 0);
@@ -176,7 +182,7 @@ namespace warpcore::impl
         // _p0 (k,3): diag(l) * q^T * w
 
         std::memcpy(t, y, m * 3 * sizeof(float));
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p0, k, 1.0f, t, m); 
+        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p0, k, 1.0f, t, m);
         // T (m,3): q * diag(l) * q^t * w + y
 
         return ret;

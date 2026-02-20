@@ -45,6 +45,9 @@ namespace warpcore::impl
     // Y = diag(x) * A
     void dxa(const float* x, const float* v, int n, int m, float* y); 
 
+    // Y += alpha * X
+    void axpy(float* y, const float* x, float alpha, int n);
+
     // Y = diag(x)^-1 * A
     void dxinva(const float* x, const float* v, int n, int m, float* y);
 

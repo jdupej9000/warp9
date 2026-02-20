@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="cpd.h" />
+    <ClInclude Include="impl\debug.h" />
     <ClInclude Include="defs.h" />
     <ClInclude Include="gpa.h" />
     <ClInclude Include="impl\cpd_impl.h" />
@@ -183,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cpd.cpp" />
+    <ClCompile Include="impl\debug.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gpa.cpp" />
     <ClCompile Include="impl\cpd_impl.cpp" />
