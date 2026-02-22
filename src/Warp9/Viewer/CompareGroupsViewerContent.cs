@@ -65,7 +65,7 @@ namespace Warp9.Viewer
         {
             "Vertex distance", "Signed vertex distance",
             "Surface distance", "Signed surface distance",
-            "Triangle expansion", "Triangle shape"
+            "Triangle expansion", "Log10 triangle expansion"
         };
               
         public int MappedFieldIndex
@@ -231,11 +231,11 @@ namespace Warp9.Viewer
                         break;
 
                     case 4: // triangle expansion
-                        // TODO
+                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), meshMean, pclA, meshB, false);
                         break;
 
-                    case 5: // triangle shape
-                        // TODO
+                    case 5: // log10 triangle expansion
+                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), meshMean, pclA, meshB, true);
                         break;
                 }
 
