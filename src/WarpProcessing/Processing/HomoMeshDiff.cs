@@ -41,24 +41,32 @@ namespace Warp9.Processing
                 float area0 = MeshUtils.TriangleAreaCross(pos0[fi.I0], pos0[fi.I1], pos0[fi.I2]);
                 float area1 = MeshUtils.TriangleAreaCross(pos1[fi.I0], pos1[fi.I1], pos1[fi.I2]);
 
-                w[fi.I0] += area0;
-                w[fi.I1] += area0;
-                w[fi.I1] += area0;
-
+                float weight = 1;
                 float metric = area1 / area0;
-                if (log) metric = MathF.Log10(metric);
 
                 if (!float.IsNormal(metric) || float.IsNaN(metric))
+                {
                     metric = 0;
+                    weight = 0;
+                }
+                else if (log)
+                {
+                    metric = MathF.Log10(metric);
+                }
 
                 result[fi.I0] += metric;
                 result[fi.I1] += metric;
                 result[fi.I2] += metric;
+
+                w[fi.I0] += weight;
+                w[fi.I1] += weight;
+                w[fi.I2] += weight;
             }
 
             for (int i = 0; i < nv; i++)
             {
                 if(w[i] > 0) result[i] /= w[i];
+                else result[i] = 0;
             }
 
             ArrayPool<float>.Shared.Return(w);
