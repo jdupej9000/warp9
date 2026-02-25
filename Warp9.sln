@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35222.181
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WarpCore", "src\WarpCore\WarpCore.vcxproj", "{30B9BED9-AFAF-4D12-9425-3B293D889A9F}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warp9", "src\Warp9\Warp9.csproj", "{214F71FF-C1A3-429C-B4CE-A4D1BCDA818A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarpProcessingTest", "src\WarpProcessingTest\WarpProcessingTest.csproj", "{129C9A5D-8979-43E4-B4AE-A6DD9F810970}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{D0611937-6486-4B69-B905-D63ABBCBBDF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6E68D1A1-E99E-4AA5-88D9-9878192358DB} = {D0611937-6486-4B69-B905-D63ABBCBBDF0}
+		{129C9A5D-8979-43E4-B4AE-A6DD9F810970} = {D0611937-6486-4B69-B905-D63ABBCBBDF0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BF225FCF-B1B3-4C08-A0A4-F25FFAD55CD3}

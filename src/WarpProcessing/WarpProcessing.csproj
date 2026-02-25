@@ -11,7 +11,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>Warp9.Processing</PackageId>
     <Configurations>Debug;Release</Configurations>
-	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	<PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Any CPU'">

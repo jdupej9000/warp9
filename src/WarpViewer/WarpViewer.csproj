@@ -11,7 +11,8 @@
     <RootNamespace>Warp9</RootNamespace>
     <Platforms>Any CPU;x64</Platforms>
     <Configurations>Debug;Release</Configurations>
-	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	<PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
