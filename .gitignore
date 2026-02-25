@@ -37,3 +37,5 @@
 [Oo]bj/
 .vs/
 thirdparty/
+publish/
+/src/Warp9/Properties/PublishProfiles/FolderProfile.pubxml.user
