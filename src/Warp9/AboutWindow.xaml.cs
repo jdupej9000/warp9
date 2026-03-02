@@ -28,29 +28,34 @@ namespace Warp9
 
         private void PopulateDebugItems()
         {
-            listDebug.Items.Add(new WarpCoreDebugItem(
-                ".NET version", Environment.Version.ToString()));
-            listDebug.Items.Add(new WarpCoreDebugItem(
-                "OS version", Environment.OSVersion.ToString()));
-            listDebug.Items.Add(new WarpCoreDebugItem(
-                "Machine name", Environment.MachineName));
-
+            // Force WarpCore.dll to be loaded.
             const int MaxDataLen = 1024;
             StringBuilder sb = new StringBuilder(MaxDataLen);
+            WarpCore.wcore_get_info((int)WarpCoreInfoIndex.VERSION, sb, MaxDataLen);
 
-            foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
+            Dispatcher.Invoke(() =>
             {
-                int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
                 listDebug.Items.Add(new WarpCoreDebugItem(
-                    idx.ToString(), sb.ToString()));
-            }
+                    ".NET version", Environment.Version.ToString()));
+                listDebug.Items.Add(new WarpCoreDebugItem(
+                    "OS version", Environment.OSVersion.ToString()));
+                listDebug.Items.Add(new WarpCoreDebugItem(
+                    "Machine name", Environment.MachineName));
+
+                foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
+                {
+                    int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
+                    listDebug.Items.Add(new WarpCoreDebugItem(
+                        idx.ToString(), sb.ToString()));
+                }
+            });
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                PopulateDebugItems();
+                Task.Run(() => PopulateDebugItems());
             }
             catch (DllNotFoundException)
             {
