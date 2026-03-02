@@ -42,7 +42,7 @@ namespace Warp9
                 listDebug.Items.Add(new WarpCoreDebugItem(
                     "Machine name", Environment.MachineName));
 
-                foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
+                foreach (WarpCoreInfoIndex idx in Enum.GetValues<WarpCoreInfoIndex>())
                 {
                     int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
                     listDebug.Items.Add(new WarpCoreDebugItem(

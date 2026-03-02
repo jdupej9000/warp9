@@ -10,7 +10,7 @@ namespace Warp9.Viewer
 {
     public class PlaneCameraControl : ICameraControl
     {
-        public event EventHandler<CameraInfo> UpdateView;
+        public event EventHandler<CameraInfo>? UpdateView;
 
         Vector2 viewportSize = Vector2.One;
         float planeDistance = 1.0f;

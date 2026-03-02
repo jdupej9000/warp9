@@ -37,7 +37,7 @@ extern "C" int cpd_init(cpdinfo* cpd, int method, const void* y, void* init)
     const int m = cpd->m;
 
     if(init == NULL)
-        return sizeof(float) * (m * num_g_cols + 2 * m);
+        return sizeof(float) * ((size_t)m * num_g_cols + 2ull * m);
 
     float* lambda = (float*)init;
     float* lambda_inv = lambda + m;
@@ -111,7 +111,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             sigma2 = cpd_estimate_sigma(xt, yt, m, n, pp);
     }
 
-    std::memset(pp, 0, sizeof(float) * (2 * n + 4 * m + tmp_size));
+    std::memset(pp, 0, sizeof(float) * (2ull * n + 4ull * m + tmp_size));
 
     const float* q = (const float*)init + 2 * m;
     const float* l = (const float*)init;
@@ -162,7 +162,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             break;
         }
         
-        tol = abs((l0 - l0_old) / l0);
+        tol = (float)abs((l0 - l0_old) / l0);
         const float sigma2_old = sigma2;
         sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {

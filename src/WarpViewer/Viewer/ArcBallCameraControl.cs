@@ -12,7 +12,7 @@ namespace Warp9.Viewer
     public class ArcBallCameraControl : ICameraControl
     {
         // https://stackoverflow.com/questions/23747013/arcball-controls-with-qt-and-opengl
-        public event EventHandler<CameraInfo> UpdateView;
+        public event EventHandler<CameraInfo>? UpdateView;
 
         Vector2 viewportSize = Vector2.One;
         Vector3 st;

@@ -10,7 +10,7 @@ namespace Warp9.Viewer
 {
     public class EulerCameraControl : ICameraControl
     {
-        public event EventHandler<CameraInfo> UpdateView;
+        public event EventHandler<CameraInfo>? UpdateView;
 
         Vector2 viewportSize = Vector2.One;
         Vector2 rotationSpeed = new Vector2(2 * MathF.PI, 2 * MathF.PI);

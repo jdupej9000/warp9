@@ -12,8 +12,8 @@ namespace Warp9.Utils
             this.includeSelf = includeSelf;
         }
 
-        int numItems, itemA = 0, itemB = 1;
-        bool includeSelf;
+        int numItems;
+        readonly bool includeSelf;
 
 
         public IEnumerator<(int, int)> GetEnumerator()

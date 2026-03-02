@@ -27,7 +27,7 @@ namespace Warp9.Jobs
             return false;
         }
 
-        public bool TryCopy<T>(string src, string dest, int srcIndex, int destIndex)
+       /* public bool TryCopy<T>(string src, string dest, int srcIndex, int destIndex)
         {
             lock (repository)
             {
@@ -39,7 +39,7 @@ namespace Warp9.Jobs
             }
 
             return false;
-        }
+        }*/
 
         public void Add<T>(string key, T value)
         {

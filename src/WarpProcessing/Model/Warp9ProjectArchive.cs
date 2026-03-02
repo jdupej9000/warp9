@@ -150,6 +150,9 @@ namespace Warp9.Model
 
         private NotifyingMemoryStream OpenInternal(string name)
         {
+            if (archive is null)
+                throw new InvalidOperationException();
+
             lock (openFiles)
             {
                 if (openFiles.TryGetValue(name, out W9ArchiveOpenFile? wof) && wof is not null)
