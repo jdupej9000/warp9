@@ -308,6 +308,7 @@ namespace Warp9.ProjectExplorer
             page.SetContent(
                 new CorrMeshViewerContent(proj, Key, "Correspondence meshes"),
                 new CompareGroupsViewerContent(proj, Key, "Compare groups"),
+                new RepeatedMeasurementsViewerContent(proj, Key, "Repeated measurements"),
                 new DcaDiagnosticsViewerContent(proj, Key, "DCA diagnostics"));
         }
 

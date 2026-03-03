@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,18 +15,18 @@ using Warp9.Data;
 namespace Warp9.Viewer
 {
     /// <summary>
-    /// Interaction logic for CompareGroupsSideBar.xaml
+    /// Interaction logic for RepeatedMeasurementsViewerContent.xaml
     /// </summary>
-    public partial class CompareGroupsSideBar : Page, IViewerPage
+    public partial class RepeatedMeasurementsSideBar : Page, IViewerPage
     {
-        public CompareGroupsSideBar(CompareGroupsViewerContent content)
+        public RepeatedMeasurementsSideBar(RepeatedMeasurementsViewerContent content)
         {
             InitializeComponent();
             Content = content;
             DataContext = content;
         }
 
-        CompareGroupsViewerContent Content { get; init; }
+        RepeatedMeasurementsViewerContent Content { get; init; }
 
         private void GroupA_Click(object sender, RoutedEventArgs e)
         {
@@ -59,12 +56,6 @@ namespace Warp9.Viewer
         public void SetLut(Lut lut)
         {
             histField.Lut = lut;
-        }
-
-        public void SetSelectionDescription(string descA, string descB)
-        {
-            lblGroupA.Text = descA;
-            lblGroupB.Text = descB;
         }
 
         private void histField_ScaleHover(object sender, float? e)
