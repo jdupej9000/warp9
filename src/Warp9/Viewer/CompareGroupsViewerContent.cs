@@ -19,70 +19,22 @@ using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
-    public class CompareGroupsViewerContent : ColormapMeshViewerContentBase
+    public class CompareGroupsViewerContent : GroupColormapMeshViewerContentBase
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
-            base(proj, name)
-        {
-            entityKey = dcaEntityKey;
-
-            if (!proj.Entries.TryGetValue(entityKey, out ProjectEntry? entry) ||
-                entry is null ||
-                entry.Kind != ProjectEntryKind.MeshCorrespondence)
-            {
-                throw new InvalidOperationException();
-            }
-
-            long specTableKey = entry.Payload.MeshCorrExtra!.DcaConfig.SpecimenTableKey;
-            if (!project.Entries.TryGetValue(specTableKey, out ProjectEntry? specTableEntry) ||
-                specTableEntry is null ||
-                specTableEntry.Kind != ProjectEntryKind.Specimens ||
-                specTableEntry.Payload.Table is null)
-            {
-                throw new InvalidOperationException();
-            }
-
+            base(proj, dcaEntityKey, name)
+        { 
             selectionA = new SpecimenTableSelection(specTableEntry.Payload.Table);
             selectionB = new SpecimenTableSelection(specTableEntry.Payload.Table);
-
-            dcaEntry = entry;        
-
+          
             sidebar = new CompareGroupsSideBar(this);            
         }
-
-        ProjectEntry dcaEntry;
+               
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
-        Mesh? meshB = null;
-        Mesh? meshMean = null;
+        Mesh? meshB = null;       
         CompareGroupsSideBar sidebar;
-        long entityKey;       
-        bool compareForm = false;
-        float[]? field = null;
-        int mappedFieldIndex = 0;
-
-        static readonly List<string> mappedFieldsList = new List<string>
-        {
-            "Vertex distance", "Signed vertex distance",
-            "Surface distance", "Signed surface distance",
-            "Triangle expansion", "Log10 triangle expansion"
-        };
-              
-        public int MappedFieldIndex
-        {
-            get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
-        }
-
-        public bool ModelsForm
-        {
-            get { return compareForm; }
-            set { compareForm = value; UpdateGroups(true, true); OnPropertyChanged("ModelsForm"); }
-        }
-
-
-        public List<string> MappedFieldsList => mappedFieldsList;
-
+       
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             field = null;
@@ -127,7 +79,7 @@ namespace Warp9.Viewer
                 ModelsForm ? "form" : "shape");
         }
 
-        public void UpdateGroups(bool a, bool b)
+        public override void UpdateGroups(bool a, bool b)
         {
             if (a)
             {
@@ -151,24 +103,7 @@ namespace Warp9.Viewer
             selectionB = selT;
             UpdateGroups(true, true);
         }
-               
-
-        private Mesh? GetVisibleMesh()
-        {
-            if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
-                col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
-                throw new InvalidOperationException();
-
-            PointCloud? meanPcl = MeshBlend.Mean(ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol));
-            if (meanPcl is null)
-                return null;
-
-            if (!project.TryGetReference(dcaEntry.Payload.MeshCorrExtra!.BaseMeshCorrKey, out Mesh? baseMesh) || baseMesh is null)
-                throw new InvalidOperationException();
-
-            return MeshNormals.MakeNormals(Mesh.FromPointCloud(meanPcl, baseMesh));
-        }
-
+       
         private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form)
         {
             if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
@@ -203,7 +138,7 @@ namespace Warp9.Viewer
 
         protected override void UpdateMappedField(bool recalcField)
         {
-            if (pclA is null || meshB is null)
+            if (pclA is null || meshB is null || meshMean is null)
                 return;
 
             if (recalcField)

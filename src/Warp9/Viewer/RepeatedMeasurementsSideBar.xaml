@@ -1,0 +1,98 @@
+﻿<Page x:Class="Warp9.Viewer.RepeatedMeasurementsSideBar"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Warp9.Viewer"
+      xmlns:ctls="clr-namespace:Warp9.Controls"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="218"
+      Title="RepeatedMeasurementsViewerContent">
+
+    <StackPanel Orientation="Vertical" Margin="4">
+
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Source</TextBlock>
+            <Label Height="4" />
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{DynamicResource ControlButton}" Content="Group A" Width="86" Click="GroupA_Click"  Margin="0,0,1,0"
+                        ToolTip="Select the A group subjects."/>
+                <Button Style="{DynamicResource ControlButton}" Content="{DynamicResource Swap}" Width="24" Click="GroupSwap_Click"  Margin="0,0,1,0"
+                        ToolTip="Swap the A and B group subjects."/>
+                <Button Style="{DynamicResource ControlButton}" Content="Group B" Width="86"  Click="GroupB_Click"
+                        ToolTip="Select the B group subjects."/>
+            </StackPanel>
+            <Label Height="4" />
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Restore size" Width="198" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
+   ToolTip="Restore size when computing mean group models. This compares form and the mapped units are the same as the units of the original models if enabled." />
+            </StackPanel>
+        </StackPanel>
+
+        <Label Height="8" />
+
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Wire" Width="50" IsChecked="{Binding Path=RenderWireframe, Mode=TwoWay}"
+                      ToolTip="Add wireframe."/>
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Fill" Width="50" IsChecked="{Binding Path=RenderFill, Mode=TwoWay}"
+                      ToolTip="Fill faces."/>
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Normals" Width="50" IsChecked="{Binding Path=RenderSmoothNormals, Mode=TwoWay}"
+                      ToolTip="Use vertex normals. If disabled, face normals are used."/>
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Diffuse" Width="50" IsChecked="{Binding Path=RenderDiffuse, Mode=TwoWay}"
+                      ToolTip="Use diffuse lighting."/>
+            </StackPanel>
+        </StackPanel>
+
+        <Label Height="8" />
+
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
+            <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap">Compute means of difference fields within Group A and Group B. Use the following operation and visualization on the mean difference fields.</TextBlock>
+            <Label Height="4" />
+            
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+            <Label Height="4" />
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=SourceOperationList}" SelectedIndex="{Binding Path=SourceOperationIndex, Mode=TwoWay}" />
+            <Label Height="4" />
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Image}"/>
+                            <Label Width="4" />
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Label Height="4" />
+            <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
+                                             PlotBackground="{DynamicResource Brush.Background}"
+                                             PlotBorder="{DynamicResource Brush.BorderDark}"
+                                             PlotForeground="{DynamicResource Brush.Foreground}"
+                                             ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
+            <Label Height="4" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox Width="50" Height="24" Text="{Binding Path=ValueMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Width="98" />
+                <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+        </StackPanel>
+
+        <Label Height="8" />
+
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Miscellaneous</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Grid" Width="50" IsChecked="{Binding Path=RenderGrid, Mode=TwoWay}"
+                      ToolTip="Show grid."/>
+            </StackPanel>
+        </StackPanel>
+
+
+
+    </StackPanel>
+</Page>

@@ -12,7 +12,7 @@
     <StackPanel Orientation="Vertical" Margin="4">
                 
                 <StackPanel Orientation="Vertical" Margin="4">
-                    <TextBlock>Source</TextBlock>
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Source</TextBlock>
                     <StackPanel Orientation="Horizontal">
                         <Button Style="{DynamicResource ControlButton}" Content="Group A" Width="86" Click="GroupA_Click"  Margin="0,0,1,0"
                             ToolTip="Select the A group subjects."/>
@@ -47,8 +47,11 @@
             <Label Height="8" />
 
             <StackPanel Orientation="Vertical" Margin="4">
-                    <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
-                    <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
+                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
+            <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap">Subtract mean of Group A from the mean of Group B and use the following visualization.</TextBlock>
+
+            <Label Height="4" />
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
                 <Label Height="4" />
                 <ComboBox Height="24" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>

@@ -90,12 +90,8 @@
     <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockSidebarSection">
         <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>        
         <Setter Property="TextAlignment" Value="Left" />
-        <Setter Property="Margin" Value="0,0,0,4" />        
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.5" />
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="FontWeight" Value="Bold" />        
     </Style>
 
     <Style TargetType="{x:Type Button}">

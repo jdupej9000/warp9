@@ -84,6 +84,9 @@
     <Compile Update="Viewer\PcaSynthMeshSideBar.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Viewer\RepeatedMeasurementsSideBar.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Assets\Icons.xaml">
