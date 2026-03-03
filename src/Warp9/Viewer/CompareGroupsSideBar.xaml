@@ -10,25 +10,38 @@
       Title="CompareGroupsSideBar">
 
     <StackPanel Orientation="Vertical" Margin="4">
-                
-                <StackPanel Orientation="Vertical" Margin="4">
-                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Source</TextBlock>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Style="{DynamicResource ControlButton}" Content="Group A" Width="86" Click="GroupA_Click"  Margin="0,0,1,0"
-                            ToolTip="Select the A group subjects."/>
-                        <Button Style="{DynamicResource ControlButton}" Content="{DynamicResource Swap}" Width="24" Click="GroupSwap_Click"  Margin="0,0,1,0"
-                            ToolTip="Swap the A and B group subjects."/>
-                        <Button Style="{DynamicResource ControlButton}" Content="Group B" Width="86"  Click="GroupB_Click"
-                            ToolTip="Select the B group subjects."/>
-                    </StackPanel>
-                    <Label Height="4" />
-                    <StackPanel Orientation="Horizontal">
-                        <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Restore size" Width="198" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
-       ToolTip="Restore size when computing mean group models. This compares form and the mapped units are the same as the units of the original models if enabled." />
-                    </StackPanel>
-                </StackPanel>
 
-            <Label Height="8" />
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Source</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{DynamicResource ControlButton}" Content="A" Width="24" Click="GroupA_Click"  Margin="0,0,6,0"
+                            ToolTip="Select the A group subjects."/>
+                <TextBlock x:Name="lblGroupA" Style="{DynamicResource TextBlockDimmed}" VerticalAlignment="Center">nothing</TextBlock>
+            </StackPanel>
+
+            <Label Height="4" />
+
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{DynamicResource ControlButton}" Content="B" Width="24" Click="GroupB_Click"  Margin="0,0,6,0"
+                ToolTip="Select the B group subjects."/>
+                <TextBlock x:Name="lblGroupB" Style="{DynamicResource TextBlockDimmed}" VerticalAlignment="Center">nothing</TextBlock>
+            </StackPanel>
+
+            <Label Height="4" />
+
+            <StackPanel Orientation="Horizontal">
+
+                <Button Style="{DynamicResource ControlButton}" Content="Swap" Width="48" Click="GroupSwap_Click"  Margin="0,0,1,0"
+                            ToolTip="Swap the A and B group subjects."/>
+
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Restore size" Width="154" IsChecked="{Binding Path=ModelsForm, Mode=TwoWay}"
+ToolTip="Restore size when computing mean group models. This compares form and the mapped units are the same as the units of the original models if enabled." />
+
+            </StackPanel>
+        </StackPanel>
+
+
+        <Label Height="8" />
 
             <StackPanel Orientation="Vertical" Margin="4">
                     <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Rendering</TextBlock>

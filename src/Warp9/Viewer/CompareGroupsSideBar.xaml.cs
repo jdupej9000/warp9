@@ -61,6 +61,12 @@ namespace Warp9.Viewer
             histField.Lut = lut;
         }
 
+        public void SetSelectionDescription(string descA, string descB)
+        {
+            lblGroupA.Text = descA;
+            lblGroupB.Text = descB;
+        }
+
         private void histField_ScaleHover(object sender, float? e)
         {
             Content.MeshScaleHover(e);

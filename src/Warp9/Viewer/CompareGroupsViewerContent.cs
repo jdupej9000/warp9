@@ -93,6 +93,7 @@ namespace Warp9.Viewer
                 meshB = mbB.ToMesh();
             }
 
+            sidebar.SetSelectionDescription(Describe(selectionA), Describe(selectionB));
             UpdateMappedField(true);
         }
 
@@ -103,7 +104,16 @@ namespace Warp9.Viewer
             selectionB = selT;
             UpdateGroups(true, true);
         }
-       
+
+        private string Describe(SpecimenTableSelection sel)
+        {
+            string desc = ModelUtils.DescribeSpecimenSelection(specTableEntry.Payload.Table, sel.Selected, out bool complete);
+            if (!complete)
+                return "≈ " + desc;
+
+            return desc;
+        }
+
         private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form)
         {
             if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
@@ -138,8 +148,12 @@ namespace Warp9.Viewer
 
         protected override void UpdateMappedField(bool recalcField)
         {
-            if (pclA is null || meshB is null || meshMean is null)
+            if (pclA is null || meshB is null || meshMean is null ||
+                pclA.VertexCount != meshB.VertexCount || pclA.VertexCount != meshMean.VertexCount)
+            {
+                AttributeField = null;
                 return;
+            }
 
             if (recalcField)
             {
