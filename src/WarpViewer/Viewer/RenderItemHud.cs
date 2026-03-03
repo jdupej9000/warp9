@@ -56,9 +56,7 @@ namespace Warp9.Viewer
         FontDefinition Font { get; init; }
 
         VertexDataLayout instanceLayout;
-        Dictionary<int, HudSubText> subTexts = new Dictionary<int, HudSubText>();
-        bool inited = false;
-      
+        Dictionary<int, HudSubText> subTexts = new Dictionary<int, HudSubText>();      
 
         public void SetSubText(int key, string text, float size = 12.0f, Color color = default, RectangleF rect = default, bool relativePos = false, TextRenderFlags flags = TextRenderFlags.AlignLeft)
         {
@@ -98,7 +96,6 @@ namespace Warp9.Viewer
                 job.SetVertexBuffer(ctx, 0, MemoryMarshal.Cast<float, byte>(VertexBuffer.AsSpan()), layout, false);
 
                 job.SetTexture(ctx, 0, Font.Bitmap, false);                
-                inited = true;
             }
 
             List<HudCharacterInstanceData> instanceData = new List<HudCharacterInstanceData>();

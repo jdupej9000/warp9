@@ -185,7 +185,7 @@ namespace Warp9.Model
         public void Insert(int index, object? value)
         {
             throw new NotImplementedException();
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            //CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public void Remove(object? value)

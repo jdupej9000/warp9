@@ -8,17 +8,17 @@
         Style="{StaticResource CustomWindowStyle}"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
-        Title="About Warp9" Height="450" Width="450" ResizeMode="NoResize">
+        Title="About Warp9" Height="550" Width="550" ResizeMode="NoResize">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
     </Window.Resources>
     <Canvas>
         <Image Source="{DynamicResource AImage.MonoIcon}" Canvas.Left="16" Canvas.Top="16" Height="56"/>
         <TextBlock Canvas.Left="180" Canvas.Top="16">Warp9</TextBlock>
-        <TextBlock Canvas.Left="180" Canvas.Top="36">Version 0.0.1</TextBlock>
+        <TextBlock Canvas.Left="180" Canvas.Top="36">Version 0.0.2</TextBlock>
         <TextBlock Canvas.Left="180" Canvas.Top="56"><Hyperlink>www.github.com/jdupej9000/warp9</Hyperlink></TextBlock>
 
-        <TabControl Canvas.Left="16" Canvas.Top="158" Width="412" Height="212" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <TabControl Canvas.Left="16" Canvas.Top="158" Width="512" Height="312" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TabItem Header="Acknowledgments">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource Brush.Background}">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
@@ -64,8 +64,8 @@
                 <ListView x:Name="listDebug" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="11">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Width="120" Header="ID" DisplayMemberBinding="{Binding Id}"/>
-                            <GridViewColumn Width="280" Header="Value" DisplayMemberBinding="{Binding Data}" />
+                            <GridViewColumn Width="140" Header="ID" DisplayMemberBinding="{Binding Id}"/>
+                            <GridViewColumn Width="360" Header="Value" DisplayMemberBinding="{Binding Data}" />
                         </GridView>
                     </ListView.View>
 
@@ -74,6 +74,6 @@
         </TabControl>
 
 
-        <Button x:Name="btnClose" Width="50" Canvas.Left="378" Canvas.Top="385" Click="btnClose_Click" Style="{DynamicResource ControlButton}">Close</Button>
+        <Button x:Name="btnClose" Width="50" Canvas.Left="478" Canvas.Top="485" Click="btnClose_Click" Style="{DynamicResource ControlButton}">Close</Button>
     </Canvas>
 </Window>
