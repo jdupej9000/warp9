@@ -1,8 +1,9 @@
 Name "warp9 Setup"
+BrandingText " "
 OutFile "warp9-setup.exe"
 Caption "$(^Name)"
 XPStyle on
-RequestExecutionLevel Admin
+RequestExecutionLevel user
 
 !define SrcDir "..\bin\Release"
 InstallDir "$ProgramFiles\warp9"
