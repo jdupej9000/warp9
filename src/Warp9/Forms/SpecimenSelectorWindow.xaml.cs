@@ -232,8 +232,23 @@ namespace Warp9.Forms
             dataMain.ItemsSource = table;
         }
 
+        static bool oldFilterEnable0 = true, oldFilterEnable1 = false;
+        static int oldColIndex0 = 0, oldColIndex1 = 0;
+        static int oldOpIndex0 = 0, oldOpIndex1 = 0;
+        static string oldFilterValue0 = "", oldFilterValue1 = "";
+
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
+            oldFilterEnable0 = chkTest0.IsChecked.GetValueOrDefault();
+            oldColIndex0 = cmbCol0.SelectedIndex;
+            oldOpIndex0 = cmbOperator0.SelectedIndex;
+            oldFilterValue0 = txtValue0.Text;
+
+            oldFilterEnable1 = chkTest1.IsChecked.GetValueOrDefault();
+            oldColIndex1 = cmbCol1.SelectedIndex;
+            oldOpIndex1 = cmbOperator1.SelectedIndex;
+            oldFilterValue1 = txtValue1.Text;
+
             DialogResult = true;
         }
 
@@ -245,6 +260,22 @@ namespace Warp9.Forms
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ShowEntry();
+
+            try
+            {
+                chkTest0.IsChecked = oldFilterEnable0;
+                cmbCol0.SelectedIndex = oldColIndex0;
+                cmbOperator0.SelectedIndex = oldOpIndex0;
+                txtValue0.Text = oldFilterValue0;
+
+                chkTest1.IsChecked = oldFilterEnable1;
+                cmbCol1.SelectedIndex = oldColIndex1;
+                cmbOperator1.SelectedIndex = oldOpIndex1;
+                txtValue1.Text = oldFilterValue1;
+            }
+            catch
+            {
+            }
         }
     }
 }
