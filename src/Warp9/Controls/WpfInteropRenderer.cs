@@ -102,7 +102,7 @@ namespace Warp9.Controls
 
             try
             {
-                DeviceCreationFlags devFlags = DeviceCreationFlags.BgraSupport;
+                DeviceCreationFlags devFlags = DeviceCreationFlags.BgraSupport | DeviceCreationFlags.SingleThreaded;
 
             #if DEBUG
                 devFlags |= DeviceCreationFlags.Debug;
