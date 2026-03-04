@@ -41,7 +41,8 @@
                   VirtualizingPanel.IsVirtualizing="True"
                   VirtualizingPanel.VirtualizationMode="Recycling"
                   VirtualizingPanel.CacheLength="20"
-                  VirtualizingPanel.CacheLengthUnit="Item">
+                  VirtualizingPanel.CacheLengthUnit="Item"
+                  ScrollViewer.IsDeferredScrollingEnabled="True">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Template">
