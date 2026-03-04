@@ -58,7 +58,8 @@ namespace Warp9.Viewer
             if (group != 0 && group != 1)
                 throw new ArgumentException();
 
-            throw new NotImplementedException();
+            RepeatedMeasurementsConfigWindow wnd = new RepeatedMeasurementsConfigWindow();
+            wnd.ShowDialog();
         }
 
         public void SwapGroups()

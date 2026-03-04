@@ -39,6 +39,9 @@
     <Compile Update="Forms\RenderSettingsWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Forms\RepeatedMeasurementsConfigWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Forms\SpecimenSelectorWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
