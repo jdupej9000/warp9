@@ -126,6 +126,10 @@ namespace Warp9.Controls
             Brush borderBrush = PlotBorder;
             Pen borderPen = new Pen(borderBrush, BorderThickness.Left);
 
+            ctx.DrawRoundedRectangle(PlotBackground, borderPen,
+                new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin),
+                4, 4);
+
             /*ctx.DrawRectangle(fill, borderPen,
                 new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));*/
 

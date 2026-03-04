@@ -87,8 +87,9 @@ ToolTip="Restore size when computing mean group models. This compares form and t
                     <Label Height="4" />
                     <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
                                                  PlotBackground="Transparent"                                                
-                                                 PlotBorder="{DynamicResource Brush.BorderDark}"
-                                                 PlotForeground="{DynamicResource Brush.Foreground}"                                                 
+                                                 PlotBorder="{DynamicResource Brush.Border}"
+                                                 PlotForeground="{DynamicResource Brush.Foreground}"
+                                                 BorderThickness="1"
                                                  ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />
                     <StackPanel Orientation="Horizontal">
