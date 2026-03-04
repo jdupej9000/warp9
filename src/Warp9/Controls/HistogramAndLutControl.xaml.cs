@@ -59,9 +59,22 @@ namespace Warp9.Controls
 
         public event EventHandler<float?> ScaleHover;
 
-        public Brush PlotBackground { get; set; } = new SolidColorBrush();
-        public Brush PlotBorder { get; set; } = new SolidColorBrush();
-        public Brush PlotForeground { get; set; } = new SolidColorBrush();
+        public Brush PlotBackground
+        {
+            get { return (Brush)GetValue(PlotBackgroundProperty); }
+            set { SetValue(PlotBackgroundProperty, value); }
+        }
+
+        public Brush PlotBorder
+        {
+            get { return (Brush)GetValue(PlotBorderProperty); }
+            set { SetValue(PlotBorderProperty, value); }
+        }
+        public Brush PlotForeground
+        {
+            get { return (Brush)GetValue(PlotForegroundProperty); }
+            set { SetValue(PlotForegroundProperty, value); }
+        }
 
         public float X0
         {
@@ -109,19 +122,19 @@ namespace Warp9.Controls
         protected override void OnRender(DrawingContext ctx)
         {
             //base.OnRender(ctx);
-            Brush fill = PlotBackground ?? Background;
-            Brush borderBrush = PlotBorder ?? BorderBrush;
+            Brush fill = PlotBackground;
+            Brush borderBrush = PlotBorder;
             Pen borderPen = new Pen(borderBrush, BorderThickness.Left);
 
-            ctx.DrawRectangle(fill, borderPen,
-                new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));
+            /*ctx.DrawRectangle(fill, borderPen,
+                new Rect(0, 0, ActualWidth, ActualHeight - AxisMargin));*/
 
             if (geomHist is not null && brushHist is not null)
                 ctx.DrawGeometry(brushHist, borderPen, geomHist);
 
             double w = ActualWidth;
             double axisY = ActualHeight - AxisMargin + 1;
-            Brush axisBrush = PlotForeground ?? Foreground;
+            Brush axisBrush = PlotForeground;
             Pen axisPen = new Pen(axisBrush, 1);
             
             if (Math.Min(x0, x1) < 0 && Math.Max(x0, x1) > 0)

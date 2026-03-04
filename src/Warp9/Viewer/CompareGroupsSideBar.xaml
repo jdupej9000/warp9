@@ -86,15 +86,15 @@ ToolTip="Restore size when computing mean group models. This compares form and t
 
                     <Label Height="4" />
                     <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
-                                                 PlotBackground="{DynamicResource Brush.Background}"
+                                                 PlotBackground="Transparent"                                                
                                                  PlotBorder="{DynamicResource Brush.BorderDark}"
-                                                 PlotForeground="{DynamicResource Brush.Foreground}"
+                                                 PlotForeground="{DynamicResource Brush.Foreground}"                                                 
                                                  ScaleHover="histField_ScaleHover" HorizontalAlignment="Left"/>
                     <Label Height="4" />
                     <StackPanel Orientation="Horizontal">
-                        <TextBox Width="50" Height="24" Text="{Binding Path=ValueMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="50" Height="24" VerticalContentAlignment="Center" Text="{Binding Path=ValueMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <Label Width="98" />
-                        <TextBox Width="50" Height="24" TextAlignment="Right" Text="{Binding Path=ValueMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Width="50" Height="24" VerticalContentAlignment="Center" TextAlignment="Right" Text="{Binding Path=ValueMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </StackPanel>
 
