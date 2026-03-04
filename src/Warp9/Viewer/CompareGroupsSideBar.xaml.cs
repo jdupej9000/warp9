@@ -61,6 +61,11 @@ namespace Warp9.Viewer
             histField.Lut = lut;
         }
 
+        public void SetInfoText(string txt)
+        {
+            lblInfo.Text = txt;
+        }
+
         public void SetSelectionDescription(string descA, string descB)
         {
             lblGroupA.Text = descA;

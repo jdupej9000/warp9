@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
@@ -19,6 +20,12 @@ using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
+    enum CompGroupRegType
+    {
+        None = 0,
+        GpaGroups_OpaMean = 1
+    }
+
     public class CompareGroupsViewerContent : GroupColormapMeshViewerContentBase
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
@@ -32,9 +39,23 @@ namespace Warp9.Viewer
                
         SpecimenTableSelection selectionA, selectionB;
         PointCloud? pclA = null;
-        Mesh? meshB = null;       
+        Mesh? meshB = null;
+        int regIndex = 0;
         CompareGroupsSideBar sidebar;
-       
+
+        protected static readonly List<string> regList = new List<string>
+        {
+            "None", "Group GPAs + Means OPA"
+        };
+
+        public List<string> RegistrationList => regList;
+
+        public int RegistrationIndex
+        {
+            get { return regIndex; }
+            set { regIndex = value; UpdateGroups(true, true); OnPropertyChanged("RegistrationIndex"); }
+        }
+
         public override void AttachRenderer(WpfInteropRenderer renderer)
         {
             field = null;
@@ -81,14 +102,18 @@ namespace Warp9.Viewer
 
         public override void UpdateGroups(bool a, bool b)
         {
+            CompGroupRegType regType = (CompGroupRegType)regIndex;
+
             if (a)
             {
-                pclA = GetCorrPosBlend(selectionA, compareForm);
+                pclA = GetCorrPosBlend(selectionA, compareForm, regType);
             }
 
             if (b)
             {
-                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm), meshMean!, NormalsAlgorithm.FastRobust);
+                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm, regType), 
+                    meshMean!, NormalsAlgorithm.FastRobust);
+
                 mbB.CopyIndicesFrom(meshMean!);
                 meshB = mbB.ToMesh();
             }
@@ -105,6 +130,8 @@ namespace Warp9.Viewer
             UpdateGroups(true, true);
         }
 
+       
+
         private string Describe(SpecimenTableSelection sel)
         {
             string desc = ModelUtils.DescribeSpecimenSelection(specTableEntry.Payload.Table, sel.Selected, out bool complete);
@@ -114,7 +141,7 @@ namespace Warp9.Viewer
             return desc;
         }
 
-        private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form)
+        private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form, CompGroupRegType reg = CompGroupRegType.None)
         {
             if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
                 col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
@@ -128,22 +155,39 @@ namespace Warp9.Viewer
                 cs = csCol.Data.ConvertAll((t) => (float)t).ToArray();
             }
 
-            if (cs is not null)
-            {
-                return MeshBlend.WeightedMean(
-                    ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
+            IEnumerable<(int Index, PointCloud? Item)> groupPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
                         .Index()
-                        .Where((t) => sel.Selected[t.Index])
-                        .Select((t) => (t.Item, cs[t.Index])));
-            }
-            else
+                        .Where((t) => sel.Selected[t.Index]);
+
+            if (reg == CompGroupRegType.None)
             {
-                return MeshBlend.WeightedMean(
-                    ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
-                        .Index()
-                        .Where((t) => sel.Selected[t.Index])
-                        .Select((t) => (t.Item, 1.0f)));
+                if (cs is not null)
+                {
+                    return MeshBlend.WeightedMean(groupPcls.Select((t) => (t.Item, cs[t.Index])));
+                }
+                else
+                {
+                    return MeshBlend.WeightedMean(groupPcls.Select((t) => (t.Item, 1.0f)));
+                }
             }
+            else if(reg == CompGroupRegType.GpaGroups_OpaMean)
+            { 
+                PointCloud[] pcls = groupPcls.Select((t) => t.Item!).ToArray();
+                Gpa gpaFit = Gpa.Fit(pcls);
+
+                if (form)
+                {
+                    // Recompute mean but with properly scaled meshes.
+                    return MeshBlend.WeightedMean(pcls.Index().
+                        Select((t) => (t.Item, cs[t.Index] / gpaFit.GetTransform(t.Index).cs)));
+                }
+                else
+                {
+                    return gpaFit.Mean;
+                }
+            }
+
+            throw new NotImplementedException();
         }
 
         protected override void UpdateMappedField(bool recalcField)
@@ -151,9 +195,19 @@ namespace Warp9.Viewer
             if (pclA is null || meshB is null || meshMean is null ||
                 pclA.VertexCount != meshB.VertexCount || pclA.VertexCount != meshMean.VertexCount)
             {
+                sidebar?.SetInfoText("");
                 AttributeField = null;
                 return;
             }
+
+            PointCloud pclAreg = pclA;
+            if (RegistrationIndex != 0)
+            {
+                Rigid3 rigid = RigidTransform.FitOpa(meshB, pclA);
+                rigid.cs = 1;
+                pclAreg = RigidTransform.TransformPosition(pclA, rigid);
+            }
+            // TODO: opa on means
 
             if (recalcField)
             {
@@ -190,6 +244,10 @@ namespace Warp9.Viewer
 
                 AttributeField = field;
             }
+
+            float rmsDistance = MeshDistance.DistanceProcrustes(pclAreg, 1, meshB, 1, null);
+            sidebar?.SetInfoText(string.Format("RMS distance: {0:F4}\nVertex count: {1}\n# Group A: {2}\n# Group B: {3}", 
+                rmsDistance, pclA.VertexCount, selectionA.NumSelected(), selectionB.NumSelected()));
 
             base.UpdateMappedField(recalcField);
         }

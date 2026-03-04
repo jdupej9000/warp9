@@ -211,6 +211,17 @@ namespace Warp9.Model
             throw new NotImplementedException();
         }
 
+        public int NumSelected()
+        {
+            int sel = 0;
+            for (int i = 0; i < Count; i++)
+            {
+                if (selected[i]) sel++;
+            }
+
+            return sel;
+        }
+
         public void NotifyUpdated()
         {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));

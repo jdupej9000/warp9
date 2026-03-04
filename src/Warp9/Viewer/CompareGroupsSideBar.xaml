@@ -40,6 +40,12 @@ ToolTip="Restore size when computing mean group models. This compares form and t
             </StackPanel>
         </StackPanel>
 
+        <Label Height="8" />
+
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Registration</TextBlock>
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=RegistrationList}" SelectedIndex="{Binding Path=RegistrationIndex, Mode=TwoWay}" />
+        </StackPanel>
 
         <Label Height="8" />
 
@@ -101,8 +107,15 @@ ToolTip="Restore size when computing mean group models. This compares form and t
                           ToolTip="Show grid."/>
                     </StackPanel>
                 </StackPanel>
-                
-            
+
+        <Label Height="8" />
         
+        <StackPanel Orientation="Vertical" Margin="4">
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Info</TextBlock>
+            <TextBlock x:Name="lblInfo" TextWrapping="Wrap" Style="{DynamicResource TextBlockDimmed}"/>
+        </StackPanel>
+
+
+
     </StackPanel>
 </Page>
