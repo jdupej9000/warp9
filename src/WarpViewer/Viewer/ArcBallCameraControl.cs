@@ -13,6 +13,8 @@ namespace Warp9.Viewer
     {
         // https://stackoverflow.com/questions/23747013/arcball-controls-with-qt-and-opengl
         public event EventHandler<CameraInfo>? UpdateView;
+              
+
 
         Vector2 viewportSize = Vector2.One;
         Vector3 st;
@@ -68,9 +70,9 @@ namespace Warp9.Viewer
 
         public void Set(Matrix4x4 view)
         {
-            
+
         }
-       
+
         public void Get(out Matrix4x4 view)
         {
             view = Matrix4x4.Identity;
@@ -78,13 +80,43 @@ namespace Warp9.Viewer
 
         public void Execute(CameraCommand command)
         {
-            throw new NotImplementedException();
+            switch (command)
+            {
+                case CameraCommand.SetFront:
+                    camera = Vector3.UnitZ;
+                    up = Vector3.UnitY;
+                    break;
+                case CameraCommand.SetBack:
+                    camera = -Vector3.UnitZ;
+                    up = Vector3.UnitY;
+                    break;
+                case CameraCommand.SetRight:
+                    camera = Vector3.UnitX;
+                    up = Vector3.UnitY;
+                    break;
+                case CameraCommand.SetLeft:
+                    camera = -Vector3.UnitX;
+                    up = Vector3.UnitY;
+                    break;
+                case CameraCommand.SetTop:
+                    camera = Vector3.UnitY;
+                    up = -Vector3.UnitZ;
+                    break;
+                case CameraCommand.SetBottom:
+                    camera = -Vector3.UnitY;
+                    up = Vector3.UnitZ;
+                    break;
+            }
+
+            Vector3 camera2full = radius * camera + offset;
+            Matrix4x4 view = Matrix4x4.CreateLookAtLeftHanded(camera2full, offset, up);
+            UpdateView?.Invoke(this, new CameraInfo(view, camera2full));
         }
 
         private Quaternion GetRotation(Vector2 pt)
         {
             Vector3 en = ToSphere(ToScreenRelative(pt));
-            
+
             float alpha = MathF.Acos(MathF.Min(1, Vector3.Dot(en, st)));
             Vector3 axis = Vector3.Normalize(Vector3.Cross(st, en));
 
@@ -109,8 +141,9 @@ namespace Warp9.Viewer
             }
             else
             {
-                return Vector3.Normalize(new Vector3(ptyx, MathF.Sqrt(1.0f - len)));
+                return Vector3.Normalize(new Vector3(ptyx, -MathF.Sqrt(1.0f - len)));
             }
         }
     }
 }
+    

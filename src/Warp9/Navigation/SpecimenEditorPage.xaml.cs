@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using Warp9.Controls;
 using Warp9.Data;
 using Warp9.Forms;
@@ -254,11 +255,13 @@ namespace Warp9.Navigation
 
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            // actual pixel size accounting for scaling
             Size size = WpfSizeToPixels(ImageGrid);
             InteropImage.SetPixelSize((int)size.Width, (int)size.Height);
             viewportSize = new Vector2((float)size.Width, (float)size.Height);
 
-            cameraControl?.ResizeViewport(new Vector2((float)size.Width, (float)size.Height));
+            // do not compensate for scaling
+            cameraControl?.ResizeViewport(new Vector2((float)ImageGrid.ActualWidth, (float)ImageGrid.ActualHeight));
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
