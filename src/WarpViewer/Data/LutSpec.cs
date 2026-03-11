@@ -12,17 +12,8 @@ namespace Warp9.Data
 {
     public class LutSpec
     {
-        public LutSpec()
+        private LutSpec()
         {
-            numSegments = 0;
-            numStops = 2;
-            stopPos = new float[numStops];
-            stopColors = new Color[numStops];
-
-            stopPos[0] = 0;
-            stopColors[0] = Color.Black;
-            stopPos[1] = 1;
-            stopColors[1] = Color.White;
         }
 
         public LutSpec(int numSeg, (float, Color)[] stops)
@@ -93,6 +84,17 @@ namespace Warp9.Data
             Vector4 colort = Vector4.Lerp(color0, color1, t);
 
             return RenderUtils.ToColor(colort);
+        }
+
+        public LutSpec WithSteps(int numSteps)
+        {
+            return new LutSpec()
+            {
+                numStops = numStops,
+                numSegments = numSteps,
+                stopPos = stopPos,
+                stopColors = stopColors
+            };
         }
 
         private void SampleQuantRgba8(Span<int> colors)

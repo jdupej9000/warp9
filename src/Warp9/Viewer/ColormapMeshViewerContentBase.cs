@@ -23,7 +23,8 @@ namespace Warp9.Viewer
             UpdateLut();
         }
 
-        protected int paletteIndex = 0;
+        protected int paletteIndex = 0, paletteSteps = 0;
+        protected bool useLutSteps = false;
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;
         protected LutSpec? LutSpec { get; private set; }
@@ -79,6 +80,18 @@ namespace Warp9.Viewer
             set { paletteIndex = value; UpdateLut(); OnPropertyChanged("PaletteIndex"); }
         }
 
+        public int PaletteSteps
+        {
+            get { return paletteSteps; }
+            set { paletteSteps = value; UpdateLut(); OnPropertyChanged("PaletteSteps"); }
+        }
+
+        public bool UsePaletteSteps
+        {
+            get { return useLutSteps; }
+            set { useLutSteps = value; UpdateLut(); OnPropertyChanged("UseLutSteps"); }
+        }
+
         public float ValueMin
         {
             get { return Scene.Mesh0!.AttributeMin; }
@@ -131,28 +144,6 @@ namespace Warp9.Viewer
             }
         }
 
-        /*public float ValueMin
-        {
-            get { return Scene.Mesh0!.AttributeMin; }
-            set { Scene.Mesh0!.AttributeMin = value; UpdateMappedField(false); OnPropertyChanged("ValueMin"); }
-        }
-
-        public float ValueMax
-        {
-            get { return Scene.Mesh0!.AttributeMax; }
-            set { Scene.Mesh0!.AttributeMax = value; UpdateMappedField(false); OnPropertyChanged("ValueMax"); }
-        }*/
-
-        public bool UseLutSteps
-        {
-            get; set;
-        }
-
-        public int NumLutSteps
-        {
-            get; set;
-        }
-
         public override void MeshScaleHover(float? value)
         {
             // this is a constant buffer-level change and does not require a commit
@@ -171,7 +162,11 @@ namespace Warp9.Viewer
         private void UpdateLut()
         {
             var stops = Palettes[paletteIndex].Stops;
-            LutSpec = new LutSpec(0, stops);
+
+            if(UsePaletteSteps)
+                LutSpec = new LutSpec(PaletteSteps, stops);
+            else
+                LutSpec = new LutSpec(0, stops);
 
             Scene.Mesh0!.LutSpec = LutSpec;
             UpdateMappedField(false);

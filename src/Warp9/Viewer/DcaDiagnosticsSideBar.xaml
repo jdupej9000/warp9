@@ -45,10 +45,10 @@
                 </ComboBox>
                 <Label Height="4" />
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Content="Steps" IsChecked="{Binding Path=NumLitSteps, Mode=TwoWay}" />
-                    <Label Width="16"/>
-                    <TextBox Width="64" Height="24" Text="{Binding Path=NumLitSteps, Mode=TwoWay}" />
+                    <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Steps" Width="50" IsChecked="{Binding Path=UsePaletteSteps, Mode=TwoWay}" />
+                    <TextBox Width="50" Height="24" Text="{Binding Path=PaletteSteps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
                 </StackPanel>
+
                 <Label Height="4" />
                 <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
                                              PlotBackground="{DynamicResource Brush.Background}"

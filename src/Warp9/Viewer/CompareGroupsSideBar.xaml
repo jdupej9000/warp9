@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Warp9.Viewer"
       xmlns:ctls="clr-namespace:Warp9.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="218"
+      d:DesignHeight="550" d:DesignWidth="218"
       Title="CompareGroupsSideBar">
 
     <StackPanel Orientation="Vertical" Margin="4">
@@ -83,7 +83,13 @@ ToolTip="Restore size when computing mean group models. This compares form and t
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                    <Label Height="4" />
 
+                <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Steps" Width="50" IsChecked="{Binding Path=UsePaletteSteps, Mode=TwoWay}" />
+                <TextBox Width="50" Height="24" Text="{Binding Path=PaletteSteps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+            </StackPanel>
+                
                     <Label Height="4" />
                     <ctls:HistogramAndLutControl x:Name="histField" Width="200" Height="120" 
                                                  PlotBackground="Transparent"                                                
