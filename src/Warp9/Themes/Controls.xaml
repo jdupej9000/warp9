@@ -341,6 +341,7 @@
         </Setter>
     </Style>
 
+
     <Style x:Key="StaticBorderToggleButtonStyle" TargetType="{x:Type ToggleButton}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}"/>

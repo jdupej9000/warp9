@@ -40,8 +40,19 @@
         </ComboBox>
         <Label Height="4" />
         <StackPanel Orientation="Horizontal">
-            <ToggleButton Style="{DynamicResource NoBorderToggle}" Content="Steps" Width="50" IsChecked="{Binding Path=UsePaletteSteps, Mode=TwoWay}" />
-            <TextBox Width="50" Height="24" Text="{Binding Path=PaletteSteps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+            <ToggleButton Style="{DynamicResource NoBorderToggle}" Width="100" IsChecked="{Binding Path=UsePaletteSteps, Mode=TwoWay}" Margin="0" Padding="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Steps:" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox Width="50" Grid.Column="1" Grid.Row="0" Height="20" Margin="0" Padding="0" BorderThickness="0" Text="{Binding Path=PaletteSteps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+                </Grid>
+            </ToggleButton>
         </StackPanel>
 
         <Label Height="4" />
