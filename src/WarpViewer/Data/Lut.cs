@@ -45,6 +45,11 @@ namespace Warp9.Data
             return Create(width, new LutSpec(0, stops));
         }
 
+        public static Lut Create(int width, int steps, params (float, Color)[] stops)
+        {
+            return Create(width, new LutSpec(steps, stops));
+        }
+
         // https://www.kennethmoreland.com/color-advice/
         public static readonly (float, Color)[] FastColors =
         {

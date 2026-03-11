@@ -78,11 +78,16 @@ namespace Warp9.Data
 
             int idx1 = Math.Abs(Array.BinarySearch(stopPos, pos));
             int idx0 = idx1 - 1;
-            if (idx0 < 0) idx0 = 0;
-            if(idx1 >= numStops) idx1 = numStops - 1;
+            if (idx0 < 0) 
+                idx0 = 0;
+
+            if (idx1 >= numStops) 
+                idx1 = numStops - 1;
+
+            if(idx0 == idx1)
+                return stopColors[idx0];
 
             float t = (pos - stopPos[idx0]) / (stopPos[idx1] - stopPos[idx0]);
-
             Vector4 color0 = RenderUtils.ToNumColor(stopColors[idx0]);
             Vector4 color1 = RenderUtils.ToNumColor(stopColors[idx1]);
             Vector4 colort = Vector4.Lerp(color0, color1, t);
@@ -97,12 +102,14 @@ namespace Warp9.Data
             {
                 int j0 = width * i / numSegments;
                 int j1 = width * (i + 1) / numSegments;
-                if (j1 >= width) j1 = width - 1;
+                if (j1 > width) j1 = width;
 
-                float segt = ((float)i + 0.5f) / (float)numSegments;
-
+                float segt = (i + 0.5f) / numSegments;
                 int segc = Sample(segt).ToArgb();
-                for(int j = j0; j < j1; j++) 
+
+                Console.WriteLine($"{j0} - {j1} @{segt} = {segc:X}");
+
+                for (int j = j0; j < j1; j++) 
                     colors[j] = segc;            
             }
         }
