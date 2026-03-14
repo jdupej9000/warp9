@@ -322,7 +322,6 @@ namespace Warp9.Test
 
         [DoNotParallelize]
         [TestMethod]
-        [DataRow(PCL_IMPUTE_METHOD.TPS_DECIMATED, 30)]
         [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 2)]
         [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 6)]
         public void ImputeTest(PCL_IMPUTE_METHOD method, int q)
@@ -330,29 +329,30 @@ namespace Warp9.Test
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PointCloud twisted = TranslateTwistPcl(teapot, new Vector3(0.5f, -0.2f, 0.1f), 0.25f);
 
-            teapot.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos);
+            twisted.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos);
 
             MeshBuilder mb = new MeshBuilder();
             List<Vector3> damagedPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             int nv = teapot.VertexCount;
+            int nvgood = nv / 4;
             bool[] allow = new bool[nv];
 
-            for (int i = 0; i < nv; i++)
+            for (int i = 0; i < nvgood; i++)
             {
                 allow[i] = true;
                 damagedPos.Add(pos.Data[i]);
             }
 
-            for (int i = nv / 4; i < nv; i++)
+            for (int i = nvgood; i < nv; i++)
             {
                 allow[i] = false;
-                damagedPos.Add(Vector3.Zero);
+                damagedPos.Add(0.2f * pos.Data[i]);
             }
 
             PointCloud damaged = mb.ToPointCloud();
 
-            PointCloud? imputed = MeshImputation.ImputePositions(damaged, twisted, BitMask.MakeBitMask(allow), quality: q, method: method);
+            PointCloud? imputed = MeshImputation.ImputePositions(teapot, damaged, BitMask.MakeBitMask(allow), quality: q, method: method);
             Assert.IsNotNull(imputed);
 
             imputed.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos2);

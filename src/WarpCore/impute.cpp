@@ -23,55 +23,7 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 	int ret = WCORE_INVALID_ARGUMENT;
 	bool negate_mask = !!(info->flags & PCL_IMPUTE_NEGATE_MASK);
 
-	if (info->method == PCL_IMPUTE_METHOD::TPS_DECIMATED) {
-		// Maybe remove this method.
-
-		int max_valid = info->d * info->n;
-		float* data_valid = new float[max_valid];
-		int num_valid = compress(info->d, data_valid, (const float*)data, valid_mask, info->n, !negate_mask);
-		
-		// Cluster allowed vertices (if their valid_mask==1) to TPS_CLUSTERS number of
-		// centers. Fit a TPS at those centers bending templ into data. For each 
-		// disallowed point (if their valid_mask==0), transform temp with TPS and
-		// replace the respective row of data.
-		// TODO: optimize allocations
-		int num_tps_points = std::min(info->decim_count, num_valid);
-		int* ci = new int[num_tps_points];
-		int* labels = new int[num_valid];
-		float* cx = new float[num_valid * 3];
-
-		kmeans<3>(data_valid, num_valid, num_tps_points, cx, labels, ci);	
-		for (int i = 0; i < num_tps_points; i++) {
-			const float* row = cx + 3 * i;
-			ci[i] = nearest<3>(data_valid, num_valid, row);
-		}
-		delete[] labels;
-		delete[] cx;
-		
-		std::sort(ci, ci + num_tps_points);
-
-		for (int i = 1; i < num_tps_points; i++) {
-			if (ci[i - 1] == ci[i]) {
-				throw new std::exception();
-			}
-		}
-
-		expand_indices(ci, valid_mask, num_tps_points, info->n, !negate_mask);
-
-		float* tps_src = new float[2 * 3 * num_tps_points];
-		float* tps_dest = tps_src + 3 * num_tps_points;
-		get_rows<float, 3>((const float*)data, info->n, ci, num_tps_points, tps_dest);
-		get_rows<float, 3>((const float*)templ, info->n, ci, num_tps_points, tps_src);
-		delete[] ci;
-
-		tps3 tps{ num_tps_points };
-		tps.fit(tps_src, tps_dest);
-		tps.transform((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
-
-		ret = WCORE_OK;
-		
-		delete[] data_valid;
-	} else if (info->method == PCL_IMPUTE_METHOD::TPS_GRIDSEL) {
+	if (info->method == PCL_IMPUTE_METHOD::TPS_GRIDSEL) {
 		const float* fdata = (const float*)data;
 
 		int grid_dim = info->decim_count;
