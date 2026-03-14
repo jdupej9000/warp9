@@ -17,19 +17,19 @@
         for (size_t __i = 0; __i < __bs; __i++) { \
             if ((__mask >> __i) & 0x1) { \
                 size_t i = __ib + __i; \
-                nallow += _mm_popcnt_u32(__mask); \
                 fun \
             } \
         } \
+        nallow += _mm_popcnt_u32(__mask); \
     }; \
     int32_t __mask = *(__am) ^ __mmod; \
     for (size_t __i = 0; __i < std::min(__bs, (size_t)(m) - __mb); __i++) { \
         if ((__mask >> __i) & 0x1) { \
             size_t i = __mb + __i; \
-            nallow += _mm_popcnt_u32(__mask); \
             fun \
         } \
-    } }
+    } \
+    nallow += _mm_popcnt_u32(__mask); }
 
 namespace warpcore::impl
 {
