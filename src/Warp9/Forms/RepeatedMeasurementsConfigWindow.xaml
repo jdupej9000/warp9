@@ -7,9 +7,11 @@
         xmlns:controls="clr-namespace:Warp9.Themes"
         Style="{StaticResource CustomWindowStyle}"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         Title="Repeated Measurements" Height="450" Width="450">
     <Window.Resources>
         <DropShadowBitmapEffect x:Key="NormalShadow" ShadowDepth="2" Softness="0.2" Opacity="0.64"/>
+        <local:RepeatedMeasurementsOperationRadioConverter x:Key="convertOperation"/>
     </Window.Resources>
     
     <DockPanel Margin="4">
@@ -33,17 +35,22 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Series identifier</TextBlock>
-                <ComboBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" 
+                          ItemsSource="{Binding SearchableColumns, UpdateSourceTrigger=PropertyChanged}" 
+                          SelectedIndex="{Binding SeriesColumnIndex, Mode=TwoWay}"/>
 
                 <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Independent variable</TextBlock>
-                <ComboBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" 
+                          ItemsSource="{Binding SearchableColumns, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedIndex="{Binding OrderColumnIndex, Mode=TwoWay}"
+                          SelectionChanged="OrderColumn_SelectionChanged"/>
             </Grid>
 
             <Label Height="8" />
 
             <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Series operation</TextBlock>
             <Label Height="4" />
-            <RadioButton GroupName="type">Two points</RadioButton>
+            <RadioButton GroupName="type" IsChecked="{Binding Path=Operation, Mode=TwoWay, Converter={StaticResource convertOperation}, ConverterParameter=TwoPointDifference}">Two points</RadioButton>
             <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,4,0,0">In each series, computes the difference between two data points if available.</TextBlock>
             <Label Height="4" />
 
@@ -59,16 +66,18 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">First</TextBlock>
-                <ComboBox Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"
+                          ItemsSource="{Binding OrderValueLevels, UpdateSourceTrigger=PropertyChanged}" />
 
                 <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">Second</TextBlock>
-                <ComboBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
+                          ItemsSource="{Binding OrderValueLevels, UpdateSourceTrigger=PropertyChanged}" />
 
             </Grid>
 
             <Label Height="8" />
 
-            <RadioButton GroupName="type">Linear regression</RadioButton>
+            <RadioButton GroupName="type" IsChecked="{Binding Path=Operation, Mode=TwoWay, Converter={StaticResource convertOperation}, ConverterParameter=LinearRegression}">Linear regression</RadioButton>
             <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="12,4,0,0">Computes the slope of a linear model fitted to all points in the series.</TextBlock>
 
         </StackPanel>

@@ -129,69 +129,15 @@ namespace Warp9.Forms
             }
         }
 
-        private static bool TestPredicate(SpecimenTableRow row, string column, int op, string value, string[] values)
+        private IEnumerable<SpecimenTableRow> GetFiltered()
         {
-            /*
-             * "Equals", "Not equal to", 
-            "Greater than", "Greater than or equal to",
-            "Less than", "Less than or equal to",
-            "In", "Not in" */
-            int opres = 0;
-            switch (op)
-            {
-                case 0: 
-                    return row.IsInSet(column, value);
-
-                case 1: 
-                    return !row.IsInSet(column, value);
-
-                case 2:
-                    opres = row.CompareTo(column, value);
-                    return opres == 1;
-
-                case 3:
-                    opres = row.CompareTo(column, value);
-                    return opres == 1 || opres == 0;
-
-                case 4:
-                    opres = row.CompareTo(column, value);
-                    return opres == -1;
-
-                case 5:
-                    opres = row.CompareTo(column, value);
-                    return opres == -1 || opres == 0;
-
-                case 6:
-                    return row.IsInSet(column, values);
-
-                case 7:
-                    return !row.IsInSet(column, values);
-
-                default:
-                    return false;
-            }
-        }
-
-        private IEnumerable<SpecimenTableSelectionRow> Select(IEnumerable<SpecimenTableSelectionRow> rows, string column, int op, string value)
-        {
-            string[] valueParts = value.Split(',');
-
-            foreach (SpecimenTableSelectionRow row in rows)
-            {
-                if (TestPredicate(row.ParentRow, column, op, value, valueParts))
-                    yield return row;
-            }
-        }
-
-        private IEnumerable<SpecimenTableSelectionRow> GetFiltered()
-        {
-            IEnumerable<SpecimenTableSelectionRow> rows = table;
+            IEnumerable<SpecimenTableRow> rows = table.Table;
 
             if ((chkTest0.IsChecked ?? true) == true && cmbCol0.SelectedValue is SpecimenTableColumnTextInfo col0)
-                rows = Select(rows, col0.Name, cmbOperator0.SelectedIndex, txtValue0.Text);
+                rows = SpecimenTableUtils.SelectRows(rows, col0.Name, (SpecimenTableValuePredicate)cmbOperator0.SelectedIndex, txtValue0.Text);
 
             if ((chkTest1.IsChecked ?? true) == true && cmbCol1.SelectedValue is SpecimenTableColumnTextInfo col1)
-                rows = Select(rows, col1.Name, cmbOperator1.SelectedIndex, txtValue1.Text);
+                rows = SpecimenTableUtils.SelectRows(rows, col1.Name, (SpecimenTableValuePredicate)cmbOperator1.SelectedIndex, txtValue1.Text);
 
             return rows;
         }
@@ -207,8 +153,8 @@ namespace Warp9.Forms
 
         private void Select_Click(object sender, RoutedEventArgs e)
         {
-            foreach (SpecimenTableSelectionRow row in GetFiltered())
-                row.IsSelected = true;
+            foreach (SpecimenTableRow row in GetFiltered())
+                table.Selected[row.RowIndex] = true;
 
             dataMain.ItemsSource = null;
             dataMain.ItemsSource = table;
@@ -216,17 +162,17 @@ namespace Warp9.Forms
 
         private void Unselect_Click(object sender, RoutedEventArgs e)
         {
-            foreach (SpecimenTableSelectionRow row in GetFiltered())
-                row.IsSelected = false;
-
+            foreach (SpecimenTableRow row in GetFiltered())
+                table.Selected[row.RowIndex] = false;
+            
             dataMain.ItemsSource = null;
             dataMain.ItemsSource = table;
         }
 
         private void Invert_Click(object sender, RoutedEventArgs e)
         {
-            foreach (SpecimenTableSelectionRow row in GetFiltered())
-                row.IsSelected ^= true;
+            foreach (SpecimenTableRow row in GetFiltered())
+                table.Selected[row.RowIndex] ^= true;
 
             dataMain.ItemsSource = null;
             dataMain.ItemsSource = table;
