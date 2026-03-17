@@ -17,19 +17,19 @@
         for (size_t __i = 0; __i < __bs; __i++) { \
             if ((__mask >> __i) & 0x1) { \
                 size_t i = __ib + __i; \
-                nallow += _mm_popcnt_u32(__mask); \
                 fun \
             } \
         } \
+        nallow += _mm_popcnt_u32(__mask); \
     }; \
     int32_t __mask = *(__am) ^ __mmod; \
     for (size_t __i = 0; __i < std::min(__bs, (size_t)(m) - __mb); __i++) { \
         if ((__mask >> __i) & 0x1) { \
             size_t i = __mb + __i; \
-            nallow += _mm_popcnt_u32(__mask); \
             fun \
         } \
-    } }
+    } \
+    nallow += _mm_popcnt_u32(__mask); }
 
 namespace warpcore::impl
 {
@@ -37,11 +37,7 @@ namespace warpcore::impl
     int round_down(int x, int blk);
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
-    void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);
-    //void range(const float* x, int n, float& min, float& max);
-    size_t compress(float* xc, const float* x, const void* allow, size_t n, bool neg);
-    void expand(float* x, const float* xc, const void* allow, size_t n, bool neg, bool zero);
-    size_t compress(int dim, float* xc, const float* x, const void* allow, size_t n, bool neg);
+    void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
     void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
     void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);

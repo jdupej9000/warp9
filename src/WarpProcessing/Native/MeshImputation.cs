@@ -11,7 +11,7 @@ namespace Warp9.Native
 {
     public static class MeshImputation
     {
-        public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int quality=300, bool negate_mask = false, PCL_IMPUTE_METHOD method=PCL_IMPUTE_METHOD.TPS_DECIMATED)
+        public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int quality=6, bool negate_mask = false, PCL_IMPUTE_METHOD method=PCL_IMPUTE_METHOD.TPS_GRIDSEL)
         {
             if (!template.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> templPos, out MeshSegmentFormat templFmt) ||
                 templFmt != MeshSegmentFormat.Float32x3 ||

@@ -104,8 +104,7 @@ namespace Warp9.Native
 
     public enum PCL_IMPUTE_METHOD : int
     {
-        TPS_DECIMATED = 0,
-        TPS_GRIDSEL = 1
+        TPS_GRIDSEL = 0
     };
 
     [Flags]
