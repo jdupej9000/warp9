@@ -21,14 +21,14 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		return WCORE_INVALID_ARGUMENT;
 
 	int ret = WCORE_INVALID_ARGUMENT;
-	bool negate_mask = !!(info->flags & PCL_IMPUTE_NEGATE_MASK);
+	bool negate_mask = (info->flags & PCL_IMPUTE_NEGATE_MASK) != 0;
 
 	if (info->method == PCL_IMPUTE_METHOD::TPS_GRIDSEL) {
 		const float* fdata = (const float*)data;
 
 		int grid_dim = info->decim_count;
 		std::vector<int> controlpts{};
-		int num_allowed = grid_select(controlpts, fdata, info->n, grid_dim, valid_mask, negate_mask);
+		int num_allowed = grid_select_central(controlpts, fdata, info->n, grid_dim, valid_mask, negate_mask);
 		int num_ctl = (int)controlpts.size();
 
 		if (num_allowed == info->n) // no imputation needed

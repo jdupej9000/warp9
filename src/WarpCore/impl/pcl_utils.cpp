@@ -37,7 +37,7 @@ namespace warpcore::impl
         int nallow = 0;
         FOR_MASKED(i, m, allow, nallow, false, {
             sum = _mm_add_ps(sum, _mm_loadu_ps(x + d * i));
-        });
+            });
 
         sum = _mm_mul_ps(sum, _mm_set1_ps(1.0f / nallow));
         alignas(16) float sump[4];
@@ -76,11 +76,11 @@ namespace warpcore::impl
         __m128 center = _mm_loadu_ps(offs);
         __m128 ssq = _mm_setzero_ps();
         int num_allowed = 0;
-        
+
         FOR_MASKED(i, m, allow, num_allowed, false, {
             __m128 xt = _mm_sub_ps(_mm_loadu_ps(x + d * i), center);
             ssq = _mm_fmadd_ps(xt, xt, ssq);
-        });
+            });
 
         alignas(16) float ssqp[4];
         _mm_store_ps(ssqp, ssq);
@@ -141,7 +141,7 @@ namespace warpcore::impl
         }
     }
 
-    
+
     float pcl_rmse(const float* x, const float* y, int d, int m)
     {
         float rms = 0;
@@ -149,7 +149,7 @@ namespace warpcore::impl
         int k8 = round_down(k, 8);
 
         __m256 rms_accum = _mm256_setzero_ps();
-        for(int i = 0; i < k8; i += 8) {
+        for (int i = 0; i < k8; i += 8) {
             const __m256 r = _mm256_sub_ps(_mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i));
             rms_accum = _mm256_fmadd_ps(r, r, rms_accum);
         }
@@ -158,7 +158,7 @@ namespace warpcore::impl
             float r = x[i] - y[i];
             rms += r * r;
         }
-        
+
         rms += reduce_add(rms_accum);
         return sqrtf(rms / m);
     }
@@ -222,7 +222,7 @@ namespace warpcore::impl
             __m128 xi = _mm_loadu_ps(x + 3 * i);
             xmin = _mm_min_ps(xi, xmin);
             xmax = _mm_max_ps(xi, xmax);
-        });
+            });
 
         alignas(16) float xminp[4], xmaxp[4];
         _mm_store_ps(xminp, xmin);
@@ -236,6 +236,8 @@ namespace warpcore::impl
         return num_included;
     }
 
+    // Goes through the allowed vertices in x. For each cell (in grid_dim^3), finds the first vertex
+    // that is contained in that cell and marks the index in indices.
     int grid_select(vector<int>& indices, const float* x, size_t n, int grid_dim, const void* allow, bool neg)
     {
         float dims[6];
@@ -244,8 +246,8 @@ namespace warpcore::impl
         p3f p0 = p3f_set(dims);
         p3f pf = p3f_div(p3f_set(grid_dim), p3f_sub(p3f_set(dims + 3), p0));
         p3i flatten = p3i_set(1, grid_dim, grid_dim * grid_dim);
-        unordered_set<int> visited{ grid_dim * grid_dim * grid_dim };
 
+        unordered_set<int> visited{ grid_dim * grid_dim * grid_dim };
         int dummy = 0;
         FOR_MASKED(i, n, allow, dummy, neg, {
             p3f pt = p3f_set(x + 3 * i);
@@ -254,8 +256,54 @@ namespace warpcore::impl
 
             if (visited.insert(key).second)
                 indices.push_back((int)i);
-        });
+            });
 
+        return num_allowed;
+    }
+
+    // Goes through the allowed vertices in x. For each cell (in grid_dim^3), finds the vertex
+    // that is contained in that cell and is the closest to its center and marks the index in indices.
+    int grid_select_central(vector<int>& indices, const float* x, size_t n, int grid_dim, const void* allow, bool neg)
+    {
+        float dims[6];
+        int num_allowed = pcl_aabb(x, 3, (int)n, dims, dims + 3, allow, neg);
+
+        p3f p0 = p3f_set(dims);
+        p3f pf = p3f_div(p3f_set(grid_dim), p3f_sub(p3f_set(dims + 3), p0));
+        p3f fdim = p3f_set(grid_dim);
+        p3f half = p3f_set(0.5f);
+        p3f pfr = p3f_recip(pf);
+        p3i flatten = p3i_set(1, grid_dim, grid_dim * grid_dim);
+
+        int num_cells = grid_dim * grid_dim * grid_dim;
+        float* err = new float[num_cells];
+        int* idx = new int[num_cells];
+        for (int i = 0; i < num_cells; i++) {
+            err[i] = FLT_MAX;
+            idx[i] = -1;
+        }
+
+        int dummy = 0;
+        FOR_MASKED(i, n, allow, dummy, neg, {
+            p3f pt = p3f_set(x + 3 * i);
+            p3f ptgrid = p3f_mul(p3f_sub(pt, p0), pf);
+            p3f center = p3f_fma(pfr, p3f_add(p3f_floor(p3f_mul(ptgrid, fdim)), half), p0);
+            int key = p3i_sum(p3i_mul(p3f_to_p3i(ptgrid), flatten));
+
+            float dist = p3f_distsq(center, pt);
+            if (dist < err[key]) {
+                idx[key] = i;
+                err[key] = dist;
+            }
+            });
+
+        for (int i = 0; i < num_cells; i++) {
+            if (idx[i] != -1)
+                indices.push_back(idx[i]);
+        }
+
+        delete[] err;
+        delete[] idx;
         return num_allowed;
     }
 };

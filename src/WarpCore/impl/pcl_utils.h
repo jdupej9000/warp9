@@ -14,4 +14,5 @@ namespace warpcore::impl
     void pcl_aabb(const float* x, int d, int m, float* x0, float* x1);
     int pcl_aabb(const float* x, int d, int m, float* x0, float* x1, const void* allow, bool neg_allow);
     int grid_select(std::vector<int>& indices, const float* x, size_t n, int grid_dim, const void* allow, bool neg);
+    int grid_select_central(std::vector<int>& indices, const float* x, size_t n, int grid_dim, const void* allow, bool neg);
 };

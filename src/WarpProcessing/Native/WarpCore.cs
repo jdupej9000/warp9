@@ -113,6 +113,13 @@ namespace Warp9.Native
         PCL_IMPUTE_NEGATE_MASK = 1
     };
 
+    public enum WCORE_CLUST_METHOD : int
+    {
+        KMEANS = 0,
+        GRIDSEL = 1,
+        GRIDSEL_CENTRAL = 2
+    };
+
     [StructLayout(LayoutKind.Sequential)]
     public struct CpdInfo
     {
@@ -381,7 +388,7 @@ namespace Warp9.Native
         public static extern int search_info(nint ctx, int kind, int param, nint res, int ressize);
 
         [DllImport("WarpCore.dll")]
-        public static extern int clust_kmeans(nint x, int d, int n, int k, nint cent, nint label);
+        public static extern int clust_fit(nint x, int d, int n, int k, nint cent, nint label, int method);
 
         [DllImport("WarpCore.dll")]
         public static extern int pca_fit(ref PcaInfo pca, nint ppdata, nint allow, nint pcs, nint lambda);

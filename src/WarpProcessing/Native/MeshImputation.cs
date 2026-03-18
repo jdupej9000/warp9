@@ -11,6 +11,11 @@ namespace Warp9.Native
 {
     public static class MeshImputation
     {
+        /// Finds a deformation from template to destination using only allowed vertices. That function
+        /// is used to transform template vertices with disallowed vertices and replace those in destination.
+        /// The resulting point cloud is returned, while destination is left unspoilt. Allow mask is bit-packed
+        /// into a span of ints. If a particular bit is 1, the vertex is considered allowed. If negate_mask is
+        /// true, than the assignment is reversed.
         public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int quality=6, bool negate_mask = false, PCL_IMPUTE_METHOD method=PCL_IMPUTE_METHOD.TPS_GRIDSEL)
         {
             if (!template.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> templPos, out MeshSegmentFormat templFmt) ||

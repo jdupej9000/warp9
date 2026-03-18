@@ -335,7 +335,7 @@ namespace Warp9.Test
             List<Vector3> damagedPos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
 
             int nv = teapot.VertexCount;
-            int nvgood = nv / 4;
+            int nvgood = nv / 3;
             bool[] allow = new bool[nv];
 
             for (int i = 0; i < nvgood; i++)
@@ -649,6 +649,28 @@ namespace Warp9.Test
             TestUtils.Render("TeapotKMeansTest_0.png",
               new TestRenderItem(TriStyle.PointCloud, pcl, wireCol:Color.White),
               new TestRenderItem(TriStyle.Landmarks, pclK, col:Color.Red, lmScale:0.05f));
+        }
+
+        [TestMethod]
+        [DataRow(2, false)]
+        [DataRow(2, true)]
+        [DataRow(4, false)]
+        [DataRow(4, true)]
+        public void TeapotGridSelTest(int dim, bool central)
+        {
+            PointCloud pcl = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            Clustering.FitGridSel(pcl, dim, central, out Vector3[] centers);
+
+            MeshBuilder builder = new MeshBuilder();
+            List<Vector3> verts = builder.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+            verts.AddRange(centers);
+            PointCloud pclK = builder.ToPointCloud();
+
+            string method = central ? "central" : "fast";
+
+            TestUtils.Render($"TeapotKMeansTest_{method}_{dim}.png",
+              new TestRenderItem(TriStyle.PointCloud, pcl, wireCol: Color.White),
+              new TestRenderItem(TriStyle.Landmarks, pclK, col: Color.Red, lmScale: 0.05f));
         }
 
         [TestMethod]

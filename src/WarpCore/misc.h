@@ -20,6 +20,13 @@ enum WCORE_INFO_INDEX
     WCINFO_CUDA_DRIVER_VERSION = 2101
 };
 
+enum WCORE_CLUST_METHOD
+{
+    WCCLUST_KMEANS = 0,
+    WCCLUST_GRIDSEL = 1,
+    WCCLUST_GRIDSEL_CENTRAL = 2
+};
+
 extern "C" WCEXPORT int wcore_get_info(int index, char* buffer, int bufferSize);
 extern "C" WCEXPORT int set_optpath(int path);
-extern "C" WCEXPORT int clust_kmeans(const float* x, int d, int n, int k, float* cent, int* label);
+extern "C" WCEXPORT int clust_fit(const float* x, int d, int n, int k, float* cent, int* label, int method);

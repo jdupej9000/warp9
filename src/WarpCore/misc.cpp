@@ -7,6 +7,7 @@
 #include <cuda_runtime.h>
 #include <omp.h>
 #include "impl/kmeans.h"
+#include "impl/pcl_utils.h"
 #include "impl/cpu_info.h"
 #include "defs.h"
 #include "git_version.g.h"
@@ -131,12 +132,39 @@ extern "C" int set_optpath(int path)
     return (int)get_optpath();
 }
 
-extern "C" int clust_kmeans(const float* x, int d, int n, int k, float* cent, int* label)
+extern "C" int clust_fit(const float* x, int d, int n, int k, float* cent, int* label, int method)
 {
-    if (x == nullptr || d != 3 || cent == nullptr || label == nullptr)
+    if (x == nullptr || d != 3 || cent == nullptr)
         return WCORE_INVALID_ARGUMENT;
 
-    warpcore::impl::kmeans<3>(x, n, k, cent, label, nullptr);
+    switch (method) {
+    case WCCLUST_KMEANS:
+        if (label == nullptr)
+            return WCORE_INVALID_ARGUMENT;
+
+        warpcore::impl::kmeans<3>(x, n, k, cent, label, nullptr);
+        break;
+
+    case WCCLUST_GRIDSEL: 
+    case WCCLUST_GRIDSEL_CENTRAL: {
+        vector<int> indices;
+        if(method == WCCLUST_GRIDSEL_CENTRAL)
+            warpcore::impl::grid_select_central(indices, x, n, k, nullptr, false);
+        else
+            warpcore::impl::grid_select(indices, x, n, k, nullptr, false);
+
+        for (size_t i = 0; i < indices.size(); i++) {
+            for (int j = 0; j < d; j++)
+                cent[i * d + j] = x[indices[i] * d + j];
+        }
+        return indices.size();
+
+        break;
+    }
+
+    default:
+        return WCORE_INVALID_ARGUMENT;
+    }
 
     return WCORE_OK;
 }
