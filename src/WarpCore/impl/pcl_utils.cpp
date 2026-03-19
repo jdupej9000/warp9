@@ -297,10 +297,14 @@ namespace warpcore::impl
             }
             });
 
+        unordered_set<int> unique;
         for (int i = 0; i < num_cells; i++) {
             if (idx[i] != -1)
-                indices.push_back(idx[i]);
+                unique.insert(idx[i]);
         }
+
+        for (int x : unique)
+            indices.push_back(x);
 
         delete[] err;
         delete[] idx;
