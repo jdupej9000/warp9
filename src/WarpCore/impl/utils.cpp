@@ -141,9 +141,9 @@ namespace warpcore::impl
 		int size = nx * ny * nz;
 
 		std::sort(pat, pat + size, [](int a, int b) -> bool {
-			// TODO: use expand_search_pattern_index
-			int ax = a & 0x3ff; int ay = (a >> 10) & 0x3ff; int az = (a >> 20) & 0x3ff;
-			int bx = b & 0x3ff; int by = (b >> 10) & 0x3ff; int bz = (b >> 20) & 0x3ff;
+			int ax, ay, az, bx, by, bz;
+			expand_search_pattern_index(a, ax, ay, az);
+			expand_search_pattern_index(b, bx, by, bz);			
 			return (ax * ax + ay * ay + az * az) < (bx * bx + by * by + bz * bz);
 			});
 	}

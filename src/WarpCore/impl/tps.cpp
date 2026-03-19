@@ -101,11 +101,7 @@ namespace warpcore::impl
 
 			for (int j = i; j < n; j++) {
 				const float* srcj = src + 3 * j;
-
-				float dx = srci[0] - srcj[0];
-				float dy = srci[1] - srcj[1];
-				float dz = srci[2] - srcj[2];
-				float u = sqrtf(dx * dx + dy * dy + dz * dz);
+				float u = p3f_dist(p3f_set(srci), p3f_set(srcj));
 				u = u * u * u;
 
 				m[i + n4 * (4 + j)] = u;
@@ -165,11 +161,7 @@ namespace warpcore::impl
 
 			for (int j = i; j < n; j++) {
 				const float* srcj = src + 3 * idx[j];
-
-				float dx = srci[0] - srcj[0];
-				float dy = srci[1] - srcj[1];
-				float dz = srci[2] - srcj[2];
-				float u = sqrtf(dx * dx + dy * dy + dz * dz);
+				float u = p3f_dist(p3f_set(srci), p3f_set(srcj));
 				u = u * u * u;
 
 				m[i + n4 * (4 + j)] = u;

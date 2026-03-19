@@ -15,8 +15,8 @@ namespace warpcore::impl
     void opa_cov(const float* x, const float* y, const void* allow, int d, int m, const float* xoff, float xcs, float* cov);
     float mat3_det(const float* m);
     void mat3_transpose(float* m);
+    void extract_mat3_transpose(float* dest, __m128 row0, __m128 row1, __m128 row2);
   
-
     void opa_cov(const float* x, const float* y, int d, int m, const float* xoff, float xcs, float* cov)
     {
         __m128 offset = _mm_loadu_ps(xoff);
@@ -32,16 +32,7 @@ namespace warpcore::impl
             cov2 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b10101010), cov2);
         }
 
-        int* icov = (int*)cov;
-        icov[0] = _mm_extract_ps(cov0, 0);
-        icov[1] = _mm_extract_ps(cov1, 0);
-        icov[2] = _mm_extract_ps(cov2, 0);
-        icov[3] = _mm_extract_ps(cov0, 1);
-        icov[4] = _mm_extract_ps(cov1, 1);
-        icov[5] = _mm_extract_ps(cov2, 1);
-        icov[6] = _mm_extract_ps(cov0, 2);
-        icov[7] = _mm_extract_ps(cov1, 2);
-        icov[8] = _mm_extract_ps(cov2, 2);
+        extract_mat3_transpose(cov, cov0, cov1, cov2);
     }
 
     void opa_cov(const float* x, const float* y, const void* allow, int d, int m, const float* xoff, float xcs, float* cov)
@@ -52,7 +43,7 @@ namespace warpcore::impl
 
         int dummy = 0;
         FOR_MASKED(i, m, allow, dummy, false, {
-             __m128 xi = _mm_mul_ps(rcs, _mm_sub_ps(_mm_loadu_ps(x + 3 * i), offset));
+            __m128 xi = _mm_mul_ps(rcs, _mm_sub_ps(_mm_loadu_ps(x + 3 * i), offset));
             __m128 yi = _mm_loadu_ps(y + 3 * i);
 
             cov0 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b00000000), cov0);
@@ -60,16 +51,7 @@ namespace warpcore::impl
             cov2 = _mm_fmadd_ps(yi, _mm_shuffle_ps(xi, xi, 0b10101010), cov2);
         });
        
-        int* icov = (int*)cov;
-        icov[0] = _mm_extract_ps(cov0, 0);
-        icov[1] = _mm_extract_ps(cov1, 0);
-        icov[2] = _mm_extract_ps(cov2, 0);
-        icov[3] = _mm_extract_ps(cov0, 1);
-        icov[4] = _mm_extract_ps(cov1, 1);
-        icov[5] = _mm_extract_ps(cov2, 1);
-        icov[6] = _mm_extract_ps(cov0, 2);
-        icov[7] = _mm_extract_ps(cov1, 2);
-        icov[8] = _mm_extract_ps(cov2, 2);
+        extract_mat3_transpose(cov, cov0, cov1, cov2);
     }
 
     int opa_fit(const float* x, const float* y, const void* allow, int d, int m, float* xoffs, float* xcs, float* rot)
@@ -88,7 +70,6 @@ namespace warpcore::impl
         *xcs = cs;
 
         // Kabsch algorithm follows
-        //float* cov = STACK_ALLOC(float, d * d * 3 + 2 * d);
         float cov[33 + 10];
         memset(cov, 0x0, sizeof(float) * 43);
         float* u = cov + d * d;
@@ -180,11 +161,27 @@ namespace warpcore::impl
 
     void mat3_transpose(float* m)
     {
-        float t = 0;
-        #define SWAP(i,j) { t = m[i]; m[i] = m[j]; m[j] = t;}
+        // move as integers
+        int* mm = (int*)m;
+        int t = 0;
+        #define SWAP(i,j) { t = mm[i]; mm[i] = mm[j]; mm[j] = t;}
         
         SWAP(1, 3);
         SWAP(2, 6);
         SWAP(5, 7);
+    }
+
+    void extract_mat3_transpose(float* dest, __m128 row0, __m128 row1, __m128 row2)
+    {
+        int* icov = (int*)dest;
+        icov[0] = _mm_extract_ps(row0, 0);
+        icov[1] = _mm_extract_ps(row1, 0);
+        icov[2] = _mm_extract_ps(row2, 0);
+        icov[3] = _mm_extract_ps(row0, 1);
+        icov[4] = _mm_extract_ps(row1, 1);
+        icov[5] = _mm_extract_ps(row2, 1);
+        icov[6] = _mm_extract_ps(row0, 2);
+        icov[7] = _mm_extract_ps(row1, 2);
+        icov[8] = _mm_extract_ps(row2, 2);
     }
 };
