@@ -1,5 +1,8 @@
 #include "lstps.h"
+#include "../config.h"
 #include <memory.h>
+#include <cblas.h>
+#include <lapacke.h>
 
 namespace warpcore::impl
 {
@@ -45,14 +48,29 @@ namespace warpcore::impl
 		}
 
 		// Construct the T matrix.
-		float* t = new float[ncol * 3];
+		float* t = new float[nrow * 3];
 		memcpy(t, y, sizeof(float) * 3 * n);
 		memset(t + 3 * n, 0, sizeof(float) * 12);
 
+		float* mtm = new float[ncol * ncol];
+		memset(mtm, 0, sizeof(float) * ncol * ncol);
+		cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, ncol, ncol, nrow, 1, m, nrow, m, nrow, 0, mtm, ncol);
 		// TODO: w = inv(M'M).M'.t
 		// plug the rest into ordinary TPS
 
+		float* mtt = new float[ncol * 3];
+		memset(mtt, 0, sizeof(float) * ncol * 3);
+		cblas_sgemm(CblasColMajor, CblasTrans, CblasTrans, ncol, 3, nrow, 1, m, nrow, t, 3, 0, mtt, ncol);
+
+		int* piv = new int[ncol];
+		LAPACKE_sgesv(LAPACK_COL_MAJOR, ncol, 3, mtm, ncol, piv, mtt, ncol);
+
+		// TODO: move mtt to result.
+
 		delete[] m;
 		delete[] t;
+		delete[] mtm;
+		delete[] mtt;
+		delete[] piv;
 	}
 };
