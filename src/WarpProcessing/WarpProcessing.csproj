@@ -10,7 +10,6 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>Warp9.Processing</PackageId>
-    <Configurations>Debug;Release</Configurations>
 	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	<PublishAot>true</PublishAot>
   </PropertyGroup>

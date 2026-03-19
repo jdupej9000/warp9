@@ -4,21 +4,11 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/Test/">
-    <Project Path="src/WarpProcessingTest/WarpProcessingTest.csproj">
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/WarpViewerTest/WarpViewerTest.csproj">
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
+    <Project Path="src/WarpProcessingTest/WarpProcessingTest.csproj" />    
+    <Project Path="src/WarpViewerTest/WarpViewerTest.csproj" />
   </Folder>
-  <Project Path="src/Warp9/Warp9.csproj">
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
+  <Project Path="src/Warp9/Warp9.csproj" />
   <Project Path="src/WarpCore/WarpCore.vcxproj" Id="30b9bed9-afaf-4d12-9425-3b293d889a9f" />
-  <Project Path="src/WarpProcessing/WarpProcessing.csproj">
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="src/WarpViewer/WarpViewer.csproj">
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
+  <Project Path="src/WarpProcessing/WarpProcessing.csproj" />
+  <Project Path="src/WarpViewer/WarpViewer.csproj" />
 </Solution>

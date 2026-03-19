@@ -3,18 +3,18 @@
 
 namespace warpcore::impl
 {
-	p3f lstps::transform(p3f x) const noexcept
+	p3f lstps::apply(p3f x) const noexcept
 	{
 	}
 
-	void lstps::transform(float* y, const float* x, int n, const void* allow, bool neg_allow) const
+	void lstps::apply(float* y, const float* x, int n, const void* allow, bool neg_allow) const
 	{
 	}
 
-	static lstps* lstps::fit(const float* x, const float* y, int n, const int* ctl_indices, int num_ctl_indices)
+	lstps* lstps::fit(const float* x, const float* y, int n, const int* ctl_indices, int num_ctl_indices)
 	{
 		int nrow = 4 + n;
-		int ncol = 4 + num_ctls;		
+		int ncol = 4 + num_ctl_indices;
 
 		// Construct the M matrix.
 		float* m = new float[nrow * ncol];

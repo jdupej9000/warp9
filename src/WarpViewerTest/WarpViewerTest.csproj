@@ -10,7 +10,6 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	  <UseWindowsForms>true</UseWindowsForms>
 	  <Platforms>Any CPU;x64</Platforms>
-    <Configurations>Debug;Release</Configurations>
 	  <GenerateRuntimeConfigDevFile>True</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
