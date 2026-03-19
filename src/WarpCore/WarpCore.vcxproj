@@ -167,11 +167,13 @@
     <ClInclude Include="impl\cpu_info.h" />
     <ClInclude Include="impl\gpa_impl.h" />
     <ClInclude Include="impl\kmeans.h" />
+    <ClInclude Include="impl\lstps.h" />
     <ClInclude Include="impl\pca_impl.h" />
     <ClInclude Include="impl\pcl_utils.h" />
     <ClInclude Include="impl\random.h" />
     <ClInclude Include="impl\search_impl.h" />
     <ClInclude Include="impl\tps.h" />
+    <ClInclude Include="impl\transform.h" />
     <ClInclude Include="impl\tri_grid.h" />
     <ClInclude Include="impl\utils.h" />
     <ClInclude Include="impl\vec_math.h" />
@@ -190,11 +192,13 @@
     <ClCompile Include="impl\cpd_impl.cpp" />
     <ClCompile Include="impl\cpu_info.cpp" />
     <ClCompile Include="impl\gpa_impl.cpp" />
+    <ClCompile Include="impl\lstps.cpp" />
     <ClCompile Include="impl\pca_impl.cpp" />
     <ClCompile Include="impl\pcl_utils.cpp" />
     <ClCompile Include="impl\random.cpp" />
     <ClCompile Include="impl\search_impl.cpp" />
     <ClCompile Include="impl\tps.cpp" />
+    <ClCompile Include="impl\transform.cpp" />
     <ClCompile Include="impl\tri_grid.cpp" />
     <ClCompile Include="impl\utils.cpp" />
     <ClCompile Include="impl\vec_math.cpp" />
