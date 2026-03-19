@@ -9,35 +9,29 @@
 
 #define FOR_MASKED(i,m,allow,nallow,neg_allow,fun) { \
     constexpr size_t __bs = 32; \
-    size_t __mb = round_down((int)(m), (int)(__bs)); \
+    size_t __mb = round_up((int)(m), (int)(__bs)); \
     const int32_t __mask_ff = 0xffffffff; \
     const int32_t* __am = ((allow) == nullptr) ? &__mask_ff : (const int32_t*)(allow); \
     const size_t __mask_inc = ((allow) == nullptr) ? 0 : 1; \
-    int32_t __mmod = neg_allow ? 0xffffffff : 0x0; \
+    const int32_t __mmod = (neg_allow) ? 0xffffffff : 0x0; \
     for (size_t __ib = 0; __ib < __mb; __ib += __bs) { \
         int32_t __mask = *(__am) ^ __mmod; \
         __am += __mask_inc; \
-        for (size_t __i = 0; __i < __bs; __i++) { \
+        const size_t __ibs = std::min(__bs, __mb - __ib); \
+        for (size_t __i = 0; __i < __ibs; __i++) { \
             if ((__mask >> __i) & 0x1) { \
                 size_t i = __ib + __i; \
                 fun \
             } \
         } \
         nallow += _mm_popcnt_u32(__mask); \
-    }; \
-    int32_t __mask = *(__am) ^ __mmod; \
-    for (size_t __i = 0; __i < std::min(__bs, (size_t)(m) - __mb); __i++) { \
-        if ((__mask >> __i) & 0x1) { \
-            size_t i = __mb + __i; \
-            fun \
-        } \
-    } \
-    nallow += _mm_popcnt_u32(__mask); }
+    } }
 
 namespace warpcore::impl
 {
     int decode_zigzag(unsigned int x);
     int round_down(int x, int blk);
+    int round_up(int x, int blk);
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
     void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   

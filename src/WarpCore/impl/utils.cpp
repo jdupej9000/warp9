@@ -21,6 +21,11 @@ namespace warpcore::impl
 		return x & -blk;
 	}
 
+	int round_up(int x, int blk)
+	{
+		return (x + blk - 1) & -blk;
+	}
+
 	bool is_power_of_two(size_t x)
 	{
 		return (x & (x - 1)) == 0;
