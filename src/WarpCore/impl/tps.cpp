@@ -241,28 +241,29 @@ namespace warpcore::impl
 		int nrow = 4 + n;
 		int ncol = 4 + nctl;
 
+		// TODO: flip the i, j loops to get rid of the strided writes
 		memset(m, 0, sizeof(float) * nrow * ncol);
 		for (int i = 0; i < n; i++) {
 			p3f xi = p3f_set(src + Dim * i);
 
-			m[ncol * i] = 1.0f;
-			m[ncol * i + 1] = p3f_get<0>(xi);
-			m[ncol * i + 2] = p3f_get<1>(xi);
-			m[ncol * i + 3] = p3f_get<2>(xi);
+			m[i] = 1.0f;
+			m[1 * nrow + i] = p3f_get<0>(xi);
+			m[2 * nrow + i] = p3f_get<1>(xi);
+			m[3 * nrow + i] = p3f_get<2>(xi);
 
 			for (int j = 0; j < nctl; j++) {
 				p3f xj = p3f_set(src + Dim * ctl_idx[j]);
 				float u = p3f_dist(xi, xi);
-				m[4 + j + ncol * i] = u * u * u;
+				m[nrow * (4 + j) + i] = u * u * u;
 			}
 		}
 
 		for (int j = 0; j < nctl; j++) {
 			p3f xj = p3f_set(src + Dim * ctl_idx[j]);
-			m[ncol * (j + n) + j + 4] = 1.0f;
-			m[ncol * (j + n + 1) + j + 4] = p3f_get<0>(xj);
-			m[ncol * (j + n + 2) + j + 4] = p3f_get<1>(xj);
-			m[ncol * (j + n + 3) + j + 4] = p3f_get<2>(xj);
+			m[nrow * (4 + j) + n] = 1.0f;
+			m[nrow * (4 + j) + n + 1] = p3f_get<0>(xj);
+			m[nrow * (4 + j) + n + 2] = p3f_get<1>(xj);
+			m[nrow * (4 + j) + n + 3] = p3f_get<2>(xj);
 		}
 	}
 };
