@@ -198,4 +198,66 @@ namespace warpcore::impl
 		delete[] m;
 		delete[] b;
 	}
+
+	void tps3::fit_ls(const float* src, const float* dest, int n, const int* ctl_idx)
+	{
+		constexpr int Dim = 3; // do not change this
+		int nrow = 4 + n;
+		int ncol = 4 + m_n; // num_ctl_indices = m_n
+
+		// Construct the M matrix.
+		float* m = new float[nrow * ncol];
+		memset(m, 0, sizeof(float) * nrow * ncol);
+		for (int i = 0; i < n; i++) {
+			p3f xi = p3f_set(src + Dim * i);
+
+			m[ncol * i] = 1.0f;
+			m[ncol * i + 1] = p3f_get<0>(xi);
+			m[ncol * i + 2] = p3f_get<1>(xi);
+			m[ncol * i + 3] = p3f_get<2>(xi);
+
+			for (int j = 0; j < m_n; j++) {
+				p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+				float u = p3f_dist(xi, xi);
+				m[4 + j + ncol * i] = u * u * u;
+			}
+		}
+
+		for (int j = 0; j < m_n; j++) {
+			p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+			m[ncol * (j + n) + j + 4] = 1.0f;
+			m[ncol * (j + n + 1) + j + 4] = p3f_get<0>(xj);
+			m[ncol * (j + n + 2) + j + 4] = p3f_get<1>(xj);
+			m[ncol * (j + n + 3) + j + 4] = p3f_get<2>(xj);
+		}
+
+		// Construct the T matrix.
+		float* t = new float[nrow * Dim];
+		memcpy(t, dest, sizeof(float) * Dim * n);
+		memset(t + Dim * n, 0, sizeof(float) * Dim * 4);
+
+		// Solve for B.
+		float* b = new float[ncol * Dim];
+		if (!solve_ls_chol(b, m, t, nrow, ncol, Dim, true)) {
+			throw std::exception{};
+		}
+
+		// Copy results to the TPS structure.
+		float* p = ptr_p();
+		for (int i = 0; i < m_n; i++) {
+			int ii = Dim * ctl_idx[i];
+
+			for(int j = 0; j < Dim ; j++)
+				p[Dim * i + j] = src[ii + j];
+		}
+
+		for (int j = 0; j < Dim; j++) {
+			memcpy(ptr_a() + j * 4, b + j * ncol, sizeof(float) * 4);
+			memcpy(ptr_w() + j * m_n, b + 4 + j * ncol, sizeof(float) * m_n);
+		}
+
+		delete[] m;
+		delete[] t;
+		delete[] b;
+	}
 };

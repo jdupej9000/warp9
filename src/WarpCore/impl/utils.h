@@ -38,7 +38,14 @@ namespace warpcore::impl
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
     void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
     void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);
+
+    // Solve an overdetermined system of linear equations Ax=b when A is nrow x ncol and column-major.
+    // Y is column-major or row-major (yrowmajor==true) nrow x nrhs. The resulting matrix must be ncol x nrhs. 
+    // Returns true when successful, false when the system is rank-deficient. In either case, b is modified.
+    bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor=false);
   
+    bool solve_ls_qr(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor=false);
+
     template<typename T>
     int binary_search(const T* x, int n, const T& v)
     {

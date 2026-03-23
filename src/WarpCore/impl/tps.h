@@ -26,5 +26,7 @@ namespace warpcore::impl
 
 		void fit(const float* src, const float* dest);
 		void fit(int src_len, const float* src, const float* dest, const int* idx);
+
+		void fit_ls(const float* src, const float* dest, int n, const int* ctl_idx);
 	};
 };

@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <intrin.h>
 #include <stdio.h>
+#include "../config.h"
+#include <lapacke.h>
+#include <cblas.h>
 
 using namespace std;
 
@@ -153,5 +156,86 @@ namespace warpcore::impl
 		dx = idx & 0x3ff; 
 		dy = (idx >> 10) & 0x3ff; 
 		dz = (idx >> 20) & 0x3ff;
+	}
+
+	bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
+	{
+		assert(y != nullptr);
+		assert(a != nullptr);
+		assert(b != nullptr);
+		assert(nrow > 0);
+		assert(ncol > 0);
+		assert(nrhs > 0);
+
+		// A' . A
+		float* ata = new float[ncol * ncol];
+		cblas_ssyrk(CblasColMajor, CblasUpper, CblasTrans,
+			ncol, nrow, 
+			1.0f, a, nrow,
+			0.0f, ata, ncol);
+
+		// A' y
+		if (nrhs == 1) {
+			cblas_sgemv(CblasColMajor, CblasTrans,
+				nrow, ncol,
+				1.0f, a, nrow,
+				y, 1,
+				0.0f, b, 1);
+		} else {
+			cblas_sgemm(CblasColMajor, CblasTrans, yrowmajor ? CblasTrans : CblasNoTrans,
+				ncol, nrhs, nrow,
+				1.0f, a, nrow, y, nrow,
+				0.0f, b, ncol);
+		}
+
+		int info = LAPACKE_sposv(LAPACK_COL_MAJOR, 'U',
+			ncol, nrhs,
+			ata, ncol,
+			b, ncol);
+
+		delete[] ata;
+
+		return info == 0;
+	}
+
+	bool solve_ls_qr(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
+	{
+		assert(y != nullptr);
+		assert(a != nullptr);
+		assert(b != nullptr);
+		assert(nrow > 0);
+		assert(ncol > 0);
+		assert(nrhs > 0);
+
+		float* a2 = new float[nrow * ncol];
+		memcpy(a2, a, sizeof(float) * nrow * ncol);
+
+		// Make y2 always col-major.
+		float* y2 = new float[nrow * nrhs];
+		if (yrowmajor) {
+			cblas_somatcopy(CblasColMajor, CblasTrans, nrhs, nrow,
+				1.0f, y, nrhs,
+				y2, nrow);
+
+		} else {
+			memcpy(y2, y, sizeof(float) * nrow * nrhs);
+		}
+
+		// Minimze norm2(Ab - y) using QR fact.
+		int info = LAPACKE_sgels(LAPACK_COL_MAJOR, 'N',
+			nrow, ncol, nrhs,
+			a2, nrow,
+			y2, nrow);
+
+		// Extract the solutions.
+		if (info == 0) {			
+			for (int i = 0; i < nrhs; i++)
+				memcpy(b + i * ncol, y2 + i * nrow, sizeof(float) * ncol);
+		}
+
+		delete[] a2;
+		delete[] y2;
+
+		return info == 0;
 	}
 }
