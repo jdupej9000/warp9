@@ -119,15 +119,8 @@ namespace warpcore::impl
 		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
 		delete[] piv;
 
-		memcpy(ptr_p(), src, sizeof(float) * 3 * n);
-
-		memcpy(ptr_w(), b + 4, sizeof(float) * n);
-		memcpy(ptr_w() + n, b + 4 + n4, sizeof(float) * n);
-		memcpy(ptr_w() + 2 * n, b + 4 + 2 * n4, sizeof(float) * n);
-
-		memcpy(ptr_a(), b, sizeof(float) * 4);
-		memcpy(ptr_a() + 4, b + n4, sizeof(float) * 4);
-		memcpy(ptr_a() + 8, b + 2 * n4, sizeof(float) * 4);
+		set_p(src);
+		set_aw(b);
 
 		delete[] m;
 		delete[] b;
@@ -143,6 +136,7 @@ namespace warpcore::impl
 		memset(m, 0, sizeof(float) * n4 * n4);
 		memset(b, 0, sizeof(float) * 3 * n4);
 
+		init_m(m, src, n, idx, n);
 		for (int i = 0; i < n; i++) {
 			int ii = idx[i];
 			assert(ii < src_len);
@@ -179,21 +173,8 @@ namespace warpcore::impl
 		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
 		delete[] piv;
 
-		float* p = ptr_p();
-		for (int i = 0; i < n; i++) {
-			int ii = 3 * idx[i];
-			p[3 * i] = src[ii];
-			p[3 * i + 1] = src[ii + 1];
-			p[3 * i + 2] = src[ii + 2];
-		}
-		
-		memcpy(ptr_w(), b + 4, sizeof(float) * n);
-		memcpy(ptr_w() + n, b + 4 + n4, sizeof(float) * n);
-		memcpy(ptr_w() + 2 * n, b + 4 + 2 * n4, sizeof(float) * n);
-
-		memcpy(ptr_a(), b, sizeof(float) * 4);
-		memcpy(ptr_a() + 4, b + n4, sizeof(float) * 4);
-		memcpy(ptr_a() + 8, b + 2 * n4, sizeof(float) * 4);
+		set_p(src, idx);
+		set_aw(b);
 
 		delete[] m;
 		delete[] b;
@@ -201,35 +182,12 @@ namespace warpcore::impl
 
 	void tps3::fit_ls(const float* src, const float* dest, int n, const int* ctl_idx)
 	{
-		constexpr int Dim = 3; // do not change this
 		int nrow = 4 + n;
 		int ncol = 4 + m_n; // num_ctl_indices = m_n
 
 		// Construct the M matrix.
 		float* m = new float[nrow * ncol];
-		memset(m, 0, sizeof(float) * nrow * ncol);
-		for (int i = 0; i < n; i++) {
-			p3f xi = p3f_set(src + Dim * i);
-
-			m[ncol * i] = 1.0f;
-			m[ncol * i + 1] = p3f_get<0>(xi);
-			m[ncol * i + 2] = p3f_get<1>(xi);
-			m[ncol * i + 3] = p3f_get<2>(xi);
-
-			for (int j = 0; j < m_n; j++) {
-				p3f xj = p3f_set(src + Dim * ctl_idx[j]);
-				float u = p3f_dist(xi, xi);
-				m[4 + j + ncol * i] = u * u * u;
-			}
-		}
-
-		for (int j = 0; j < m_n; j++) {
-			p3f xj = p3f_set(src + Dim * ctl_idx[j]);
-			m[ncol * (j + n) + j + 4] = 1.0f;
-			m[ncol * (j + n + 1) + j + 4] = p3f_get<0>(xj);
-			m[ncol * (j + n + 2) + j + 4] = p3f_get<1>(xj);
-			m[ncol * (j + n + 3) + j + 4] = p3f_get<2>(xj);
-		}
+		init_m(m, src, n, ctl_idx, m_n);
 
 		// Construct the T matrix.
 		float* t = new float[nrow * Dim];
@@ -243,21 +201,68 @@ namespace warpcore::impl
 		}
 
 		// Copy results to the TPS structure.
-		float* p = ptr_p();
-		for (int i = 0; i < m_n; i++) {
-			int ii = Dim * ctl_idx[i];
+		set_p(src, ctl_idx);
+		set_aw(b);
 
-			for(int j = 0; j < Dim ; j++)
-				p[Dim * i + j] = src[ii + j];
-		}
+		delete[] m;
+		delete[] t;
+		delete[] b;
+	}
+
+	void tps3::set_aw(const float* b)
+	{
+		int ncol = 4 + m_n;
 
 		for (int j = 0; j < Dim; j++) {
 			memcpy(ptr_a() + j * 4, b + j * ncol, sizeof(float) * 4);
 			memcpy(ptr_w() + j * m_n, b + 4 + j * ncol, sizeof(float) * m_n);
 		}
+	}
 
-		delete[] m;
-		delete[] t;
-		delete[] b;
+	void tps3::set_p(const float* p)
+	{
+		memcpy(ptr_p(), p, sizeof(float) * 3 * m_n);
+	}
+
+	void tps3::set_p(const float* p, const int* ctl_idx)
+	{
+		float* pp = ptr_p();
+		for (int i = 0; i < m_n; i++) {
+			int ii = Dim * ctl_idx[i];
+
+			for (int j = 0; j < Dim; j++)
+				pp[Dim * i + j] = p[ii + j];
+		}
+	}
+
+	void tps3::init_m(float* m, const float* src, int n, const int* ctl_idx, int nctl)
+	{
+		// Note that this is not directly applicable to fit(..., idx) because it requires an indirection for both i,j. Here we do the indirection for j only.
+		int nrow = 4 + n;
+		int ncol = 4 + nctl;
+
+		memset(m, 0, sizeof(float) * nrow * ncol);
+		for (int i = 0; i < n; i++) {
+			p3f xi = p3f_set(src + Dim * i);
+
+			m[ncol * i] = 1.0f;
+			m[ncol * i + 1] = p3f_get<0>(xi);
+			m[ncol * i + 2] = p3f_get<1>(xi);
+			m[ncol * i + 3] = p3f_get<2>(xi);
+
+			for (int j = 0; j < nctl; j++) {
+				p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+				float u = p3f_dist(xi, xi);
+				m[4 + j + ncol * i] = u * u * u;
+			}
+		}
+
+		for (int j = 0; j < nctl; j++) {
+			p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+			m[ncol * (j + n) + j + 4] = 1.0f;
+			m[ncol * (j + n + 1) + j + 4] = p3f_get<0>(xj);
+			m[ncol * (j + n + 2) + j + 4] = p3f_get<1>(xj);
+			m[ncol * (j + n + 3) + j + 4] = p3f_get<2>(xj);
+		}
 	}
 };
