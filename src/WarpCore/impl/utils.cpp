@@ -213,9 +213,11 @@ namespace warpcore::impl
 		// Make y2 always col-major.
 		float* y2 = new float[nrow * nrhs];
 		if (yrowmajor) {
-			cblas_somatcopy(CblasColMajor, CblasTrans, nrhs, nrow,
+			assert(nrhs == 3);
+			aos_to_soa<float, 3>(y, nrow, y2);
+			/*cblas_somatcopy(CblasColMajor, CblasTrans, nrhs, nrow,
 				1.0f, y, nrhs,
-				y2, nrow);
+				y2, nrow);*/
 
 		} else {
 			memcpy(y2, y, sizeof(float) * nrow * nrhs);

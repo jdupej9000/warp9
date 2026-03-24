@@ -210,7 +210,7 @@ namespace warpcore::impl
 
 		// Solve for B.
 		float* b = new float[ncol * Dim];
-		if (!solve_ls_chol(b, m, t, nrow, ncol, Dim, true)) {
+		if (!solve_ls_qr(b, m, t, nrow, ncol, Dim, true)) {
 			throw std::exception{};
 		}
 

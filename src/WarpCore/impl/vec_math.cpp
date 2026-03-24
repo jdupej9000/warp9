@@ -179,16 +179,16 @@ namespace warpcore::impl
     int64_t reduce_add_i1(const void* x, int n)
     {
         const uint64_t* xx = (const uint64_t*)x;
-        int nb = (n + 7) / 8;
-        int n8 = round_down(nb, 8);
+        int nbytes = round_up(n, 8) / 8;
+        int nb = round_down(nbytes, 8);
 
         int i = 0;
         int64_t sum = 0;
-        for (; i < n8; i += 8)
-            sum += _mm_popcnt_u64(xx[i]);
+        for (; i < nb; i += 8)
+            sum += _mm_popcnt_u64(*(xx++));
 
         for (; i < nb; i++)
-            sum += _mm_popcnt_u32(*((const uint8_t*)x + i));
+            sum += _mm_popcnt_u32(*(((const uint8_t*)x) + i));
 
         return sum;
     }

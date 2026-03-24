@@ -234,7 +234,7 @@ namespace warpcore::impl
         size_t dest_idx = 0;
         FOR_MASKED(i, n, allow, ret, neg_allow, {
             for(size_t j = 0; j < D; j++)
-                dest[D * i + j] = src[dest_idx + j];
+                dest[dest_idx + j] = src[D * i + j];
             
             dest_idx += D;
             });

@@ -352,8 +352,9 @@ namespace Warp9.Test
             }
 
             PointCloud damaged = mb.ToPointCloud();
+            int[] allowbit = BitMask.MakeBitMask(allow);
 
-            PointCloud? imputed = MeshImputation.ImputePositions(teapot, damaged, BitMask.MakeBitMask(allow), quality: q, method: method);
+            PointCloud? imputed = MeshImputation.ImputePositions(teapot, damaged, allowbit, quality: q, method: method);
             Assert.IsNotNull(imputed);
 
             imputed.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> pos2);
