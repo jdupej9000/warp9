@@ -10,9 +10,9 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Warp9.Native
 {
-    public class Tps3dContext : IDisposable
+    public class TransformContext : IDisposable
     {
-        private Tps3dContext(nint ctx)
+        private TransformContext(nint ctx)
         {
             nativeCtx = ctx;
         }
@@ -24,7 +24,7 @@ namespace Warp9.Native
             GC.SuppressFinalize(this);
             if (nativeCtx != nint.Zero)
             {
-                WarpCore.tps_free(nativeCtx);
+                WarpCore.transform_destroy(nativeCtx);
                 nativeCtx = nint.Zero;
             }
         }
@@ -39,7 +39,7 @@ namespace Warp9.Native
                 fixed (Vector3* ptrX = &MemoryMarshal.GetReference(x))
                 fixed (Vector3* ptrY = &MemoryMarshal.GetReference(y))
                 {
-                    WarpCore.tps_transform(nativeCtx, x.Length, (nint)ptrX, (nint)ptrY);
+                    WarpCore.transform_apply(nativeCtx, x.Length, (nint)ptrX, (nint)ptrY);
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace Warp9.Native
             return PointCloud.FromRawPositions(nv, dest);
         }
 
-        public static Tps3dContext Fit(PointCloud source, PointCloud target)
+        public static TransformContext FitTps(PointCloud source, PointCloud target)
         {
             if (source.VertexCount != target.VertexCount)
                 throw new InvalidOperationException();
@@ -70,13 +70,51 @@ namespace Warp9.Native
                 fixed (byte* ptrSrc = &MemoryMarshal.GetReference(rawSrc))
                 fixed (byte* ptrDest = &MemoryMarshal.GetReference(rawDest))
                 {
-                    status = (WarpCoreStatus)WarpCore.tps_fit(3, source.VertexCount, (nint)ptrSrc, (nint)ptrDest, ref ctx);
+                    FitTransformInfo info = new FitTransformInfo() {
+                        kind = TRANSFORM_KIND.TPS,
+                        dimension = 3,
+                        flags = 0
+                    };
+
+                    status = (WarpCoreStatus)WarpCore.transform_fit(ref info, source.VertexCount, (nint)ptrSrc, (nint)ptrDest, ref ctx);
                 }
             }
 
-            // TODO: check status
+            return new TransformContext(ctx);
+        }
 
-            return new Tps3dContext(ctx);
+        public static TransformContext FitLsTps(PointCloud source, PointCloud target, int[] knotIdx)
+        {
+            if (source.VertexCount != target.VertexCount)
+                throw new InvalidOperationException();
+
+            if (!source.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> rawSrc, out MeshSegmentFormat fmtSrc) ||
+               !target.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> rawDest, out MeshSegmentFormat fmtDest) ||
+                fmtSrc != fmtDest)
+                throw new InvalidOperationException();
+
+            nint ctx = 0;
+            WarpCoreStatus status = WarpCoreStatus.WCORE_OK;
+            unsafe
+            {
+                fixed (byte* ptrSrc = &MemoryMarshal.GetReference(rawSrc))
+                fixed (byte* ptrDest = &MemoryMarshal.GetReference(rawDest))
+                fixed (int* ptrKnotIdx = knotIdx)
+                {
+                    FitTransformInfo info = new FitTransformInfo()
+                    {
+                        kind = TRANSFORM_KIND.LSTPS,
+                        dimension = 3,
+                        flags = 0,
+                        num_ctl_points = knotIdx.Length,
+                        ctl_idx = (nint)ptrKnotIdx
+                    };
+
+                    status = (WarpCoreStatus)WarpCore.transform_fit(ref info, source.VertexCount, (nint)ptrSrc, (nint)ptrDest, ref ctx);
+                }
+            }
+
+            return new TransformContext(ctx);
         }
     }
 }

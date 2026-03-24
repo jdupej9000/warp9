@@ -39,30 +39,52 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 	
 		tps3 tps{ num_ctl };
 		tps.fit(info->n, (const float*)templ, (const float*)data, controlpts.data());
-		tps.transform((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
+		tps.apply((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
 	}
 
 	return ret;
 }
 
-extern "C" WCEXPORT int tps_fit(int d, int m, const float* src, const float* dest, void** ctx)
+extern "C" WCEXPORT int transform_fit(const fit_transform_info* info, int m, const float* src, const float* dest, void** ctx)
 {
-	tps3* tps = new tps3{ m };
-	*ctx = tps;
-	tps->fit(src, dest);
+	if (info == nullptr || ctx == nullptr)
+		return WCORE_INVALID_ARGUMENT;
+
+	if (info->dimension != 3)
+		return WCORE_INVALID_DIMENSION;
+
+	switch (info->kind) {
+	case TRANSFORM_KIND::TPS: {
+		tps3* tps = new tps3{ m };
+		*ctx = tps;
+		tps->fit(src, dest);
+		return WCORE_OK;
+	}
+
+	case TRANSFORM_KIND::LSTPS: {
+		if (info->num_ctl_points < 4 || info->num_ctl_points > m || info->ctl_idx == nullptr)
+			return WCORE_INVALID_ARGUMENT;
+
+		tps3* tps = new tps3{ info->num_ctl_points };
+		*ctx = tps;
+		tps->fit_ls(src, dest, m, info->ctl_idx);
+		return WCORE_OK;
+	}
+	}
+
+	return WCORE_INVALID_ARGUMENT;
+}
+
+extern "C" WCEXPORT int transform_apply(void* ctx, int m, const float* x, float* y)
+{
+	transform* xform = (transform*)ctx;
+	xform->apply(y, x, m, nullptr);
 	return WCORE_OK;
 }
 
-extern "C" WCEXPORT int tps_transform(void* ctx, int m, const float* x, float* y)
+extern "C" WCEXPORT int transform_destroy(void* ctx)
 {
-	tps3* tps = (tps3*)ctx;
-	tps->transform(y, x, m, nullptr);
-	return WCORE_OK;
-}
-
-extern "C" WCEXPORT int tps_free(void* ctx)
-{
-	tps3* tps = (tps3*)ctx;
+	transform* tps = (transform*)ctx;
 	delete tps;
 	return WCORE_OK;
 }

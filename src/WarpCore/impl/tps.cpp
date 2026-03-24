@@ -26,7 +26,7 @@ namespace warpcore::impl
 			delete[] m_data;
 	}
 
-	p3f tps3::transform(p3f x, bool noaffine) noexcept
+	p3f tps3::apply(p3f x, bool noaffine) noexcept
 	{
 		p3f ret = x;
 
@@ -52,7 +52,7 @@ namespace warpcore::impl
 	}
 
 	// If allow[i] != neg, transforms x[i] and saves y[i] for i=0..m. x==y is permitted
-	void tps3::transform(float* y, const float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
+	void tps3::apply(float* y, const float* x, int m, const void* allow, bool noaffine, bool neg) noexcept
 	{
 		if (allow != nullptr) {
 			const int32_t* allow_mask = (const int32_t*)allow;
@@ -62,7 +62,7 @@ namespace warpcore::impl
 			for (int i = 0; i < m; i++) {
 				if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
 					const float* row = x + 3 * i;
-					p3f transformed = transform(p3f_set(row), noaffine);
+					p3f transformed = apply(p3f_set(row), noaffine);
 
 					p3f_store(y + 3 * i, transformed);
 				}
@@ -70,7 +70,7 @@ namespace warpcore::impl
 		} else {
 			for (int i = 0; i < m; i++) {
 				const float* row = x + 3 * i;
-				p3f transformed = transform(p3f_set(row), noaffine);
+				p3f transformed = apply(p3f_set(row), noaffine);
 				p3f_store(y + 3 * i, transformed);				
 			}
 		}

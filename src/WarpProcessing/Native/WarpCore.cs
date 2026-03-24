@@ -113,6 +113,18 @@ namespace Warp9.Native
         PCL_IMPUTE_NEGATE_MASK = 1
     };
 
+    public enum TRANSFORM_KIND : int
+    {
+        TPS = 0,
+        LSTPS = 1
+    }
+
+    [Flags]
+    public enum TRANSFORM_FLAGS : int
+    {
+        None = 0
+    }
+
     public enum WCORE_CLUST_METHOD : int
     {
         KMEANS = 0,
@@ -346,6 +358,16 @@ namespace Warp9.Native
         public PCL_IMPUTE_FLAGS flags;
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FitTransformInfo
+    {
+        public TRANSFORM_KIND kind;
+        public TRANSFORM_FLAGS flags;
+        public int dimension;
+        public int num_ctl_points;
+        public nint ctl_idx;
+    };
+
     public static class WarpCore
     {
         [DllImport("WarpCore.dll")]
@@ -403,12 +425,12 @@ namespace Warp9.Native
         public static extern int pcl_impute(ref ImputeInfo info, nint data, nint templ, nint valid_mask);
 
         [DllImport("WarpCore.dll")]
-        public static extern int tps_fit(int d, int m, nint src, nint dst, ref nint ctx);
+        public static extern int transform_fit(ref FitTransformInfo info, int m, nint src, nint dest, ref nint ctx);
 
         [DllImport("WarpCore.dll")]
-        public static extern int tps_transform(nint ctx, int m, nint x, nint y);
+        public static extern int transform_apply(nint ctx, int m, nint x, nint y);
 
         [DllImport("WarpCore.dll")]
-        public static extern int tps_free(nint ctx);
+        public static extern int transform_destroy(nint ctx);
     }
 }

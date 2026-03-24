@@ -392,7 +392,7 @@ namespace Warp9.Test
                  new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
                  new Vector3(-3, 0, 0));
 
-            using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
+            using TransformContext tps = TransformContext.FitTps(pclFrom, pclTo);
             PointCloud twisted = tps.TransformPosition(pcl);
 
             TestUtils.Render("TpsTest_0.png",
@@ -416,7 +416,7 @@ namespace Warp9.Test
                  new Vector3(2, -2, -2), new Vector3(2, -2, 2), new Vector3(2, 2, -2), new Vector3(2, 2, 2),
                  new Vector3(-3, 0, 0));
 
-            using Tps3dContext tps = Tps3dContext.Fit(pclFrom, pclTo);
+            using TransformContext tps = TransformContext.FitTps(pclFrom, pclTo);
             PointCloud twisted = tps.TransformPosition(pclFrom);
 
             Assert.IsTrue(pclTo.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos0));
