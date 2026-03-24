@@ -23,7 +23,9 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 	int ret = WCORE_INVALID_ARGUMENT;
 	bool negate_mask = (info->flags & PCL_IMPUTE_NEGATE_MASK) != 0;
 
-	if (info->method == PCL_IMPUTE_METHOD::TPS_GRIDSEL) {
+	switch (info->method) {
+	case PCL_IMPUTE_METHOD::TPS_GRIDSEL:
+	case PCL_IMPUTE_METHOD::LSTPS_GRIDSEL: {
 		const float* fdata = (const float*)data;
 
 		int grid_dim = info->decim_count;
@@ -34,12 +36,22 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		if (num_allowed == info->n) // no imputation needed
 			return WCORE_OK;
 
-		if (num_ctl < 4) 
+		if (num_ctl < 4)
 			return WCORE_INVALID_DATA;
-	
+
 		tps3 tps{ num_ctl };
-		tps.fit(info->n, (const float*)templ, (const float*)data, controlpts.data());
+		if (info->method == PCL_IMPUTE_METHOD::TPS_GRIDSEL)
+			tps.fit(info->n, (const float*)templ, fdata, controlpts.data());
+		else
+			tps.fit_ls((const float*)templ, fdata, info->n, controlpts.data(), valid_mask, negate_mask);
+
 		tps.apply((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
+		break;
+	}
+
+	default:
+		ret = WCORE_INVALID_ARGUMENT;
+		break;
 	}
 
 	return ret;

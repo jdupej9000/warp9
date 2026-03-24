@@ -227,6 +227,20 @@ namespace warpcore::impl
         }
     }
 
+    template<typename T, size_t D>
+    int compact_allowed(T* dest, const T* src, int n, const void* allow, bool neg_allow)
+    {
+        int ret = 0;
+        size_t dest_idx = 0;
+        FOR_MASKED(i, n, allow, ret, neg_allow, {
+            for(size_t j = 0; j < D; j++)
+                dest[D * i + j] = src[dest_idx + j];
+            
+            dest_idx += D;
+            });
+        return ret;
+    }
+
     template<int NDim>
     int nearest(const float* x, int n, const float* t)
     {

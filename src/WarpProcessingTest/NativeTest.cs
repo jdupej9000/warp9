@@ -324,6 +324,7 @@ namespace Warp9.Test
         [TestMethod]
         [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 2)]
         [DataRow(PCL_IMPUTE_METHOD.TPS_GRIDSEL, 6)]
+        [DataRow(PCL_IMPUTE_METHOD.LSTPS_GRIDSEL, 6)]
         public void ImputeTest(PCL_IMPUTE_METHOD method, int q)
         {
             Mesh teapot = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);

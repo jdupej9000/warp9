@@ -29,6 +29,7 @@ namespace warpcore::impl
 		void set_p(const float* p, const int* ctl_idx);
 
 		static void init_m(float* m, const float* src, int n, const int* ctl_idx, int nctl);
+		static void init_m(float* m, const float* src, int n, const int* ctl_idx, int nctl, int nallow, const void* allow, bool neg_allow);
 
 	public:
 		// transfrom
@@ -45,6 +46,6 @@ namespace warpcore::impl
 
 		void fit(const float* src, const float* dest);
 		void fit(int src_len, const float* src, const float* dest, const int* idx);
-		void fit_ls(const float* src, const float* dest, int n, const int* ctl_idx);
+		void fit_ls(const float* src, const float* dest, int n, const int* ctl_idx, const void* allow=nullptr, bool neg_allow=false);
 	};
 };

@@ -4,6 +4,7 @@
 #include <lapacke.h>
 #include <cblas.h>
 #include "utils.h"
+#include "vec_math.h"
 
 namespace warpcore::impl
 {
@@ -180,19 +181,32 @@ namespace warpcore::impl
 		delete[] b;
 	}
 
-	void tps3::fit_ls(const float* src, const float* dest, int n, const int* ctl_idx)
+	void tps3::fit_ls(const float* src, const float* dest, int n, const int* ctl_idx, const void* allow, bool neg_allow)
 	{
+		int num_allowed = n;
 		int nrow = 4 + n;
 		int ncol = 4 + m_n; // num_ctl_indices = m_n
 
+		if (allow != nullptr) {
+			num_allowed = reduce_add_i1(allow, n);
+			nrow = 4 + num_allowed;
+		}
+
 		// Construct the M matrix.
 		float* m = new float[nrow * ncol];
-		init_m(m, src, n, ctl_idx, m_n);
+		if (allow != nullptr)
+			init_m(m, src, n, ctl_idx, m_n, num_allowed, allow, neg_allow);
+		else
+			init_m(m, src, n, ctl_idx, m_n);
 
 		// Construct the T matrix.
 		float* t = new float[nrow * Dim];
-		memcpy(t, dest, sizeof(float) * Dim * n);
-		memset(t + Dim * n, 0, sizeof(float) * Dim * 4);
+		if (allow != nullptr)
+			compact_allowed<float, 3>(t, dest, n, allow, neg_allow);
+		else
+			memcpy(t, dest, sizeof(float) * Dim * n);
+
+		memset(t + Dim * num_allowed, 0, sizeof(float) * Dim * 4);
 
 		// Solve for B.
 		float* b = new float[ncol * Dim];
@@ -264,6 +278,46 @@ namespace warpcore::impl
 			m[nrow * (4 + j) + n + 1] = p3f_get<0>(xj);
 			m[nrow * (4 + j) + n + 2] = p3f_get<1>(xj);
 			m[nrow * (4 + j) + n + 3] = p3f_get<2>(xj);
+		}
+	}
+
+	void tps3::init_m(float* m, const float* src, int n, const int* ctl_idx, int nctl, int nallow, const void* allow, bool neg_allow)
+	{
+		// Note that this is not directly applicable to fit(..., idx) because it requires an indirection for both i,j. Here we do the indirection for j only.
+		int nrow = 4 + nallow;
+		int ncol = 4 + nctl;
+
+		const int32_t* allow_mask = (const int32_t*)allow;
+		uint32_t toggle = neg_allow ? 0xffffffff : 0x0;
+		int rowidx = 0;
+
+		// TODO: flip the i, j loops to get rid of the strided writes
+		memset(m, 0, sizeof(float) * nrow * ncol);
+		for (int i = 0; i < n; i++) {
+			if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
+				p3f xi = p3f_set(src + Dim * i);
+
+				m[rowidx] = 1.0f;
+				m[1 * nrow + rowidx] = p3f_get<0>(xi);
+				m[2 * nrow + rowidx] = p3f_get<1>(xi);
+				m[3 * nrow + rowidx] = p3f_get<2>(xi);
+
+				for (int j = 0; j < nctl; j++) {
+					p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+					float u = p3f_dist(xi, xi);
+					m[nrow * (4 + j) + rowidx] = u * u * u;
+				}
+
+				rowidx++;
+			}
+		}
+
+		for (int j = 0; j < nctl; j++) {
+			p3f xj = p3f_set(src + Dim * ctl_idx[j]);
+			m[nrow * (4 + j) + nallow] = 1.0f;
+			m[nrow * (4 + j) + nallow + 1] = p3f_get<0>(xj);
+			m[nrow * (4 + j) + nallow + 2] = p3f_get<1>(xj);
+			m[nrow * (4 + j) + nallow + 3] = p3f_get<2>(xj);
 		}
 	}
 };
