@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
@@ -47,7 +48,8 @@ namespace Warp9.Model
         public ProjectSettings Settings => settings;
         public IReadOnlyDictionary<long, ProjectEntry> Entries => entries;
         public IReadOnlyDictionary<long, SnapshotInfo> Snapshots => snapshots;
-
+        public int ProjectVersion { get; private set; } = ProjectManifest.CurrentVersion;
+   
         public bool TryGetReference<T>(long index, [MaybeNullWhen(false)] out T value)
         {
             if (!references.TryGetValue(index, out ProjectReference? reference))
@@ -158,6 +160,12 @@ namespace Warp9.Model
             return info;
         }
 
+        public void MakeReferenceStatistics(out int numRefs, out int numExtRefsIncl)
+        {
+            numRefs = references.Count;
+            numExtRefsIncl = references.Select((t) => !t.Value.Info.IsInternal).Count();
+        }
+
         private void LoadManifest()
         {
             if (archive is null || !archive.ContainsFile(ManifestFileName))
@@ -194,6 +202,8 @@ namespace Warp9.Model
                 snapshotIdGen = igsnap;
             else
                 snapshotIdGen = new UniqueIdGenerator();
+
+            ProjectVersion = manifest.Version;
         }
 
         public void MakeManifest(Stream s, Dictionary<long, ProjectReferenceInfo> refs)

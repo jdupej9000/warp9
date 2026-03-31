@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Warp9Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "-o \"C:\\Users\\Saruman\\Documents\\mydlova-dca-pca-dm.w9\" -l"
+    }
+  }
+}

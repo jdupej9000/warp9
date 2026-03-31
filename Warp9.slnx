@@ -4,12 +4,24 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/Test/">
-    <Project Path="src/WarpProcessingTest/WarpProcessingTest.csproj" />    
-    <Project Path="src/WarpViewerTest/WarpViewerTest.csproj" />
+    <Project Path="src/WarpProcessingTest/WarpProcessingTest.csproj">
+      <Platform Solution="Release|x64" Project="x64" />
+    </Project>    
+    <Project Path="src/WarpViewerTest/WarpViewerTest.csproj">
+      <Platform Solution="Release|x64" Project="x64" />
+    </Project>
   </Folder>
-  <Project Path="src/Warp9/Warp9.csproj" />
+  <Project Path="src/Warp9/Warp9.csproj">
+    <Platform Solution="Release|x64" Project="x64" />
+  </Project>
   <Project Path="src/WarpCore/WarpCore.vcxproj" Id="30b9bed9-afaf-4d12-9425-3b293d889a9f" />
-  <Project Path="src/WarpProcessing/WarpProcessing.csproj" />
-  <Project Path="src/WarpViewer/WarpViewer.csproj" />
-  <Project Path="src/Warp9Cli/Warp9Cli.csproj" Id="bbdf0d9e-a961-491b-a555-71cf42cdff66" />
+  <Project Path="src/WarpProcessing/WarpProcessing.csproj">
+    <Platform Solution="Release|x64" Project="x64" />
+  </Project>
+  <Project Path="src/WarpViewer/WarpViewer.csproj">
+    <Platform Solution="Release|x64" Project="x64" />
+  </Project>
+  <Project Path="src/Warp9Cli/Warp9Cli.csproj" Id="bbdf0d9e-a961-491b-a555-71cf42cdff66">
+    <Platform Solution="Release|x64" Project="x64" />
+  </Project>
 </Solution>
