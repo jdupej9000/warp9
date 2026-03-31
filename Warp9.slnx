@@ -11,4 +11,5 @@
   <Project Path="src/WarpCore/WarpCore.vcxproj" Id="30b9bed9-afaf-4d12-9425-3b293d889a9f" />
   <Project Path="src/WarpProcessing/WarpProcessing.csproj" />
   <Project Path="src/WarpViewer/WarpViewer.csproj" />
+  <Project Path="src/Warp9Cli/Warp9Cli.csproj" Id="bbdf0d9e-a961-491b-a555-71cf42cdff66" />
 </Solution>
