@@ -288,7 +288,7 @@ namespace warpcore::impl
         reduce = _mm_min_ps(reduce, _mm_movehl_ps(reduce, reduce));
         reduce = _mm_min_ps(reduce, _mm_movehdup_ps(reduce));
 
-        __m256 minsel = _mm256_cmp_ps(v, _mm256_broadcastss_ps(reduce), _CMP_EQ_OQ);
+        __m256 minsel = _mm256_cmp_ps(v, _mm256_broadcastss_ps(reduce), _CMP_EQ_OQ);        
         return _tzcnt_u32(_mm256_movemask_ps(minsel));
     }
 
