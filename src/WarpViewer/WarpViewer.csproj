@@ -12,6 +12,15 @@
     <Platforms>Any CPU;x64</Platforms>
 	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	<PublishAot>true</PublishAot>
+	<Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|Any CPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

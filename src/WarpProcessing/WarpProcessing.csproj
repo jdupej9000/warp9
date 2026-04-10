@@ -12,13 +12,22 @@
     <PackageId>Warp9.Processing</PackageId>
 	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	<PublishAot>true</PublishAot>
+	<Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Any CPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|Any CPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'">
     <Optimize>True</Optimize>
   </PropertyGroup>
 

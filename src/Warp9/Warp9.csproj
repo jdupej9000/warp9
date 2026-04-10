@@ -9,6 +9,15 @@
     <Platforms>AnyCPU;x64</Platforms>
 	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

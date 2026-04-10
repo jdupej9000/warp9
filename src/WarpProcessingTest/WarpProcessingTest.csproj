@@ -11,6 +11,7 @@
     <Platforms>AnyCPU;x64</Platforms>
 	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	  <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	  <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
