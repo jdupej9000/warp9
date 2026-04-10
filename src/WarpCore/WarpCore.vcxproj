@@ -125,7 +125,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseDynamicDebugging>false</UseDynamicDebugging>
@@ -188,7 +188,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseDynamicDebugging>false</UseDynamicDebugging>
@@ -199,8 +199,6 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>libomp.lib;libopenblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -208,7 +206,8 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
+      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)
+</Command>
     </PostBuildEvent>
     <CudaLink>
       <GPUDebugInfo>false</GPUDebugInfo>
