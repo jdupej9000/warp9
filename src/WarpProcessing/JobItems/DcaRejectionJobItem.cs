@@ -62,15 +62,17 @@ namespace Warp9.JobItems
             {
                 ctx.WriteLog(ItemIndex, MessageKind.Information, $"Imputing vertices using TPS fitted to correctly registered points.");
 
-                for (int i = 0; i < corrPcls.Count; i++)
+                //for (int i = 0; i < corrPcls.Count; i++)
+                Parallel.For(0, corrPcls.Count, (i) =>
                 {
-                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i), 
-                        16, true, PCL_IMPUTE_METHOD.TPS_GRIDSEL);
+                    PointCloud? imputed = MeshImputation.ImputePositions(dcaBaseMesh, corrPcls[i], rejection.ModelRejectionMask(i),
+                        8, true, PCL_IMPUTE_METHOD.TPS_GRIDSEL);
+
                     if (imputed is not null)
                         corrPcls[i] = imputed;
                     else
                         ctx.WriteLog(ItemIndex, MessageKind.Warning, $"Imputation failed on model {i}.");
-                }
+                });
             }
 
             return true;

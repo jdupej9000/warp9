@@ -10,12 +10,10 @@
     <Project Path="src/WarpProcessingTest/WarpProcessingTest.csproj">
       <Platform Solution="Release|x64" Project="x64" />
       <Platform Solution="Test|x64" Project="x64" />
-      <Build Solution="Release|x64" Project="false" />
     </Project>    
     <Project Path="src/WarpViewerTest/WarpViewerTest.csproj">
       <Platform Solution="Release|x64" Project="x64" />
       <Platform Solution="Test|x64" Project="x64" />
-      <Build Solution="Release|x64" Project="false" />
     </Project>
   </Folder>
   <Project Path="src/Warp9/Warp9.csproj">

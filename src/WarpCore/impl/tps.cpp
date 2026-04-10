@@ -5,6 +5,7 @@
 #include <cblas.h>
 #include "utils.h"
 #include "vec_math.h"
+#include <iostream>
 
 namespace warpcore::impl
 {
@@ -189,6 +190,8 @@ namespace warpcore::impl
 
 		if (allow != nullptr) {
 			num_allowed = reduce_add_i1(allow, n);
+			if (neg_allow) num_allowed = n - num_allowed;
+
 			nrow = 4 + num_allowed;
 		}
 
@@ -211,6 +214,7 @@ namespace warpcore::impl
 		// Solve for B.
 		float* b = new float[ncol * Dim];
 		if (!solve_ls_qr(b, m, t, nrow, ncol, Dim, true)) {
+			std::cerr << "LS-TPS solve failed." << std::endl;
 			//throw std::exception{};
 		}
 

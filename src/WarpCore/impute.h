@@ -9,7 +9,8 @@ enum class PCL_IMPUTE_METHOD : int32_t {
 };
 
 enum PCL_IMPUTE_FLAGS {
-	PCL_IMPUTE_NEGATE_MASK = 1
+	PCL_IMPUTE_NEGATE_MASK = 1,
+	PCL_IMPUTE_ALL = 2
 };
 
 enum class TRANSFORM_KIND : int32_t {

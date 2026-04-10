@@ -17,7 +17,7 @@
     for (size_t __ib = 0; __ib < __mb; __ib += __bs) { \
         int32_t __mask = *(__am) ^ __mmod; \
         __am += __mask_inc; \
-        const size_t __ibs = std::min(__bs, __mb - __ib); \
+        const size_t __ibs = std::min(__bs, (m) - __ib); \
         for (size_t __i = 0; __i < __ibs; __i++) { \
             if ((__mask >> __i) & 0x1) { \
                 size_t i = __ib + __i; \

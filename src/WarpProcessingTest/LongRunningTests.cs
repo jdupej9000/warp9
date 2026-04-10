@@ -32,7 +32,7 @@ namespace Warp9.Test
             cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
             cfg.RigidPreregistrationSubset = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.ClosestPoint;
+            cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
             cfg.RejectImputation = DcaImputationKind.None;
             cfg.RejectExpandedHighThreshold = 5.0f;

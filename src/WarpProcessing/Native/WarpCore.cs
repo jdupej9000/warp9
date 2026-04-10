@@ -111,7 +111,8 @@ namespace Warp9.Native
     [Flags]
     public enum PCL_IMPUTE_FLAGS : int
     {
-        PCL_IMPUTE_NEGATE_MASK = 1
+        PCL_IMPUTE_NEGATE_MASK = 1,
+        PCL_IMPUTE_ALL = 2
     };
 
     public enum TRANSFORM_KIND : int

@@ -22,6 +22,7 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 
 	int ret = WCORE_INVALID_ARGUMENT;
 	bool negate_mask = (info->flags & PCL_IMPUTE_NEGATE_MASK) != 0;
+	bool impute_all = (info->flags & PCL_IMPUTE_ALL) != 0;
 
 	switch (info->method) {
 	case PCL_IMPUTE_METHOD::TPS_GRIDSEL:
@@ -45,7 +46,7 @@ extern "C" WCEXPORT int pcl_impute(const impute_info* info, void* data, const vo
 		else
 			tps.fit_ls((const float*)templ, fdata, info->n, controlpts.data(), valid_mask, negate_mask);
 
-		tps.apply((float*)data, (const float*)templ, info->n, valid_mask, false, !negate_mask);
+		tps.apply((float*)data, (const float*)templ, info->n, impute_all ? nullptr : valid_mask, false, !negate_mask);
 		break;
 	}
 

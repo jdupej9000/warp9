@@ -225,13 +225,10 @@ namespace warpcore::impl
 			a2, nrow,
 			y2, nrow);
 
-		// Extract the solutions.
-		//if (info == 0) {			
-		{
-			for (int i = 0; i < nrhs; i++)
-				memcpy(b + i * ncol, y2 + i * nrow, sizeof(float) * ncol);
-		}
-
+		// Extract the solutions.		
+		for (int i = 0; i < nrhs; i++)
+			memcpy(b + i * ncol, y2 + i * nrow, sizeof(float) * ncol);
+		
 		delete[] a2;
 		delete[] y2;
 

@@ -34,21 +34,26 @@ namespace Warp9.Utils
             return ret;
         }
 
-        public static void MakeBitMask(Span<int> mask, ReadOnlySpan<bool> data, int repeat = 1)
+        public static int MakeBitMask(Span<int> mask, ReadOnlySpan<bool> data, int repeat = 1)
         {
+            int ret = 0;
+
             if (repeat < 1 || repeat > 32)
                 throw new ArgumentOutOfRangeException();
 
-            long accum = 0;
-            long one = (1L << repeat) - 1;
+            ulong accum = 0;
+            ulong one = (1UL << repeat) - 1;
             int n = data.Length;
             int cached = 0;
             int ptr = 0;
 
             for (int i = 0; i < n; i++)
             {
-                if(data[i])
+                if (data[i])
+                {
                     accum |= one << cached;
+                    ret++;
+                }
 
                 cached += repeat;
 
@@ -63,6 +68,8 @@ namespace Warp9.Utils
 
             if(cached != 0)
                 mask[ptr] = (int)(accum & 0xffffffff);
+
+            return ret; 
         }
     }
 }

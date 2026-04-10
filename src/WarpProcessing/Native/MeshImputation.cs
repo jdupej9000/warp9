@@ -16,7 +16,7 @@ namespace Warp9.Native
         /// The resulting point cloud is returned, while destination is left unspoilt. Allow mask is bit-packed
         /// into a span of ints. If a particular bit is 1, the vertex is considered allowed. If negate_mask is
         /// true, than the assignment is reversed.
-        public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int quality=6, bool negate_mask = false, PCL_IMPUTE_METHOD method=PCL_IMPUTE_METHOD.TPS_GRIDSEL)
+        public static PointCloud? ImputePositions(PointCloud template, PointCloud destination, ReadOnlySpan<int> allowMask, int quality = 6, bool negate_mask = false, PCL_IMPUTE_METHOD method = PCL_IMPUTE_METHOD.TPS_GRIDSEL, bool impute_all = false)
         {
             if (!template.TryGetRawData(MeshSegmentSemantic.Position, out ReadOnlySpan<byte> templPos, out MeshSegmentFormat templFmt) ||
                 templFmt != MeshSegmentFormat.Float32x3 ||
@@ -32,6 +32,7 @@ namespace Warp9.Native
 
             PCL_IMPUTE_FLAGS flags = default;
             if (negate_mask) flags |= PCL_IMPUTE_FLAGS.PCL_IMPUTE_NEGATE_MASK;
+            if (impute_all) flags |= PCL_IMPUTE_FLAGS.PCL_IMPUTE_ALL;
 
             ImputeInfo info = new ImputeInfo()
             {

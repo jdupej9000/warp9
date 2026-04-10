@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Warp9.Data;
 using Warp9.Utils;
 
@@ -63,16 +64,21 @@ namespace Warp9.Processing
             int nv = baseMesh.VertexCount;
             int[] numRejections = new int[nv];
             bool[] currentRejection = new bool[nv];
+            bool[] tempRejection = new bool[nv];
             int nmask = BitMask.GetArraySize(nv);
             int[] allMasks = new int[floating.Count * nmask];
             List<int> numRejectionsPerMesh = new List<int>();
             float[] work = new float[nv];
-            
+
+            Array.Fill(numRejections, 0);
+
             if(!baseMesh.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> vertBase))
                 throw new InvalidOperationException("Cannot make vertex view in the base mesh.");
 
             if (!baseMesh.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
                 throw new InvalidOperationException("Base mesh must be indexed.");
+
+            //MeshAdjacency adj = MeshAdjacency.Create(baseMesh.VertexCount, faces);
 
             int idx = 0;
             foreach (PointCloud pcl in floating)
@@ -90,14 +96,36 @@ namespace Warp9.Processing
 
                 //ApplyFaceDisplacementRejection(currentRejection, faces, vertBase, vertFloat);
 
+                //for(int i = 0; i < 3; i++)
+                //    GrowRejection(currentRejection, tempRejection, adj);
+
                 AccumulateRejection(numRejections.AsSpan(), currentRejection.AsSpan());
-                BitMask.MakeBitMask(allMasks.AsSpan().Slice(idx * nmask, nmask), currentRejection);
+                int numRejected = BitMask.MakeBitMask(allMasks.AsSpan().Slice(idx * nmask, nmask), currentRejection);
+
+                if (numRejected >= nv)
+                    throw new InvalidOperationException("All vertices rejected.");
 
                 numRejectionsPerMesh.Add(currentRejection.Count((t) => t));
                 idx++;
             }
 
             return new DcaVertexRejection(nv, numRejectionsPerMesh.Count, numRejections, numRejectionsPerMesh.ToArray(), allMasks);
+        }
+
+        private static void GrowRejection(bool[] rej, bool[] temp, MeshAdjacency adj)
+        {
+            int nv = rej.Length;
+            Array.Copy(rej, temp, nv);
+
+            for (int i = 0; i < nv; i++) 
+            {
+                if (temp[i])
+                {
+                    ReadOnlySpan<int> ring0 = adj.GetRing0Vertices(i);
+                    for (int j = 0; j < ring0.Length; j++)
+                        rej[ring0[j]] = true;
+                }
+            }
         }
 
         private static void AccumulateRejection(Span<int> numRejections, ReadOnlySpan<bool> currentRejection)
@@ -112,6 +140,8 @@ namespace Warp9.Processing
 
         private static void ApplyFaceScalingRejection(Span<bool> reject, ReadOnlySpan<FaceIndices> faces, ReadOnlySpan<Vector3> vertBase, ReadOnlySpan<Vector3> vertFloating, float minTriScale = 0.1f, float maxTriScale = 10.0f)
         {
+            const float tol = 1e-10f;
+
             for (int i = 0; i < faces.Length; i++)
             {
                 FaceIndices f = faces[i];
@@ -122,7 +152,7 @@ namespace Warp9.Processing
                 float areaFloating = MeshUtils.TriangleAreaCross(vertFloating[f.I0], vertFloating[f.I1], vertFloating[f.I2]);
 
                 float r = areaFloating / areaBase;
-                if (float.IsNaN(r) || r < minTriScale || r > maxTriScale)
+                if (areaBase < tol || areaFloating < tol || !float.IsFinite(r) || float.IsNaN(r) || r < minTriScale || r > maxTriScale)
                 {
                     reject[f.I0] = true;
                     reject[f.I1] = true;
