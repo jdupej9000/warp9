@@ -302,9 +302,11 @@ namespace warpcore::impl
             if (idx[i] != -1)
                 unique.insert(idx[i]);
         }
-
+        
         for (int x : unique)
             indices.push_back(x);
+
+        sort(indices.begin(), indices.end());
 
         delete[] err;
         delete[] idx;

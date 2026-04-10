@@ -137,7 +137,7 @@ namespace warpcore::impl
 		memset(m, 0, sizeof(float) * n4 * n4);
 		memset(b, 0, sizeof(float) * 3 * n4);
 
-		init_m(m, src, n, idx, n);
+		//init_m(m, src, n, idx, n);
 		for (int i = 0; i < n; i++) {
 			int ii = idx[i];
 			assert(ii < src_len);
@@ -211,7 +211,7 @@ namespace warpcore::impl
 		// Solve for B.
 		float* b = new float[ncol * Dim];
 		if (!solve_ls_qr(b, m, t, nrow, ncol, Dim, true)) {
-			throw std::exception{};
+			//throw std::exception{};
 		}
 
 		// Copy results to the TPS structure.
@@ -282,7 +282,7 @@ namespace warpcore::impl
 	}
 
 	void tps3::init_m(float* m, const float* src, int n, const int* ctl_idx, int nctl, int nallow, const void* allow, bool neg_allow)
-	{
+	{	
 		// Note that this is not directly applicable to fit(..., idx) because it requires an indirection for both i,j. Here we do the indirection for j only.
 		int nrow = 4 + nallow;
 		int ncol = 4 + nctl;
@@ -293,7 +293,7 @@ namespace warpcore::impl
 
 		// TODO: flip the i, j loops to get rid of the strided writes
 		memset(m, 0, sizeof(float) * nrow * ncol);
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {			
 			if (((allow_mask[i >> 5] ^ toggle) >> (i & 0x1f)) & 0x1) {
 				p3f xi = p3f_set(src + Dim * i);
 
@@ -304,7 +304,7 @@ namespace warpcore::impl
 
 				for (int j = 0; j < nctl; j++) {
 					p3f xj = p3f_set(src + Dim * ctl_idx[j]);
-					float u = p3f_dist(xi, xi);
+					float u = p3f_dist(xi, xj);
 					m[nrow * (4 + j) + rowidx] = u * u * u;
 				}
 

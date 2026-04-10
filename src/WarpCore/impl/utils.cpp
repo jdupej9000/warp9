@@ -215,10 +215,6 @@ namespace warpcore::impl
 		if (yrowmajor) {
 			assert(nrhs == 3);
 			aos_to_soa<float, 3>(y, nrow, y2);
-			/*cblas_somatcopy(CblasColMajor, CblasTrans, nrhs, nrow,
-				1.0f, y, nrhs,
-				y2, nrow);*/
-
 		} else {
 			memcpy(y2, y, sizeof(float) * nrow * nrhs);
 		}
@@ -230,7 +226,8 @@ namespace warpcore::impl
 			y2, nrow);
 
 		// Extract the solutions.
-		if (info == 0) {			
+		//if (info == 0) {			
+		{
 			for (int i = 0; i < nrhs; i++)
 				memcpy(b + i * ncol, y2 + i * nrow, sizeof(float) * ncol);
 		}
