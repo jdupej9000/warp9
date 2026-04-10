@@ -34,7 +34,7 @@ namespace Warp9.Test
             cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
             cfg.SurfaceProjection = DcaSurfaceProjectionKind.ClosestPoint;
             cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
-            cfg.RejectImputation = DcaImputationKind.Tps;
+            cfg.RejectImputation = DcaImputationKind.None;
             cfg.RejectExpandedHighThreshold = 5.0f;
             cfg.RejectExpandedLowThreshold = 0.2f;
             cfg.RejectDistanceThreshold = 1.5f;

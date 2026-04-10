@@ -86,10 +86,8 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
             } else if (index == WCINFO_CUDA_DEVICE_SM_COUNT) {
                 ss << props.multiProcessorCount;
             } else if (index == WCINFO_CUDA_DEVICE_MEMORY) {
-                ss << props.totalGlobalMem / 1048576 << " MB RAM, " <<
-                    props.memoryClockRate / 1000 << " MHz @ " <<
-                    props.memoryBusWidth << " bits , " <<
-                    ((size_t)props.memoryBusWidth / 8 * props.memoryClockRate * 1000) / 1048576 / 1024 << " GB/s" <<
+                ss << props.totalGlobalMem / 1048576 << " MB RAM, @ " <<
+                    props.memoryBusWidth << " bits " << 
                     (props.ECCEnabled ? " ECC" : "");
             } else if (index == WCINFO_CUDA_DEVICE_COMPUTE_CAP) {
                 ss << props.major << "." << props.minor;

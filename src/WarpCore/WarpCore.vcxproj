@@ -47,7 +47,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.9.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 13.2.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -67,7 +67,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <OpenMP>GenerateParallelCode</OpenMP>
       <CCppSupport>Cpp20Support</CCppSupport>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -104,6 +104,7 @@
       <Warning>InheritFromHost</Warning>
       <CodeGeneration>compute_75,sm_75</CodeGeneration>
       <FastMath>true</FastMath>
+      <CudaRuntime>Shared</CudaRuntime>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -118,7 +119,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <CCppSupport>Cpp20Support</CCppSupport>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <UseProcessorExtensions>ALDERLAKE</UseProcessorExtensions>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FloatingPointModel>Precise</FloatingPointModel>
@@ -130,7 +131,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseDynamicDebugging>false</UseDynamicDebugging>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -162,8 +163,8 @@
       <Defines>__NV_NO_HOST_COMPILER_CHECK=1</Defines>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
-      <FastMath>true</FastMath>
-      <AdditionalOptions>-ftz=true -allow-unsupported-compiler %(AdditionalOptions)</AdditionalOptions>
+      <FastMath>false</FastMath>
+      <AdditionalOptions>-ftz=true -allow-unsupported-compiler --verbose %(AdditionalOptions)</AdditionalOptions>
       <CudaRuntime>Shared</CudaRuntime>
       <NvccCompilation>compile</NvccCompilation>
       <CodeGeneration>compute_75,sm_75</CodeGeneration>
@@ -181,7 +182,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <CCppSupport>Cpp20Support</CCppSupport>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <UseProcessorExtensions>ALDERLAKE</UseProcessorExtensions>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FloatingPointModel>Precise</FloatingPointModel>
@@ -193,7 +194,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseDynamicDebugging>false</UseDynamicDebugging>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -288,7 +289,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.9.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 13.2.targets" />
   </ImportGroup>
   <Import Project="WarpCore.targets" />
 </Project>
