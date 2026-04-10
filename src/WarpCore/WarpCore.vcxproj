@@ -56,8 +56,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(ProjectDir)..\..\thirdparty\openblas\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)..\..\thirdparty\openblas\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VCInstallDir)Auxiliary\VS\UnitTest\include;$(ProjectDir)..\..\thirdparty\openblas\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VCInstallDir)Auxiliary\VS\UnitTest\lib;$(ProjectDir)..\..\thirdparty\openblas\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -175,7 +175,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;WARPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WARPCORE_EXPORTS;WARPCORE_TEST;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -255,6 +255,7 @@
     <ClInclude Include="p3f.h" />
     <ClInclude Include="pca.h" />
     <ClInclude Include="search.h" />
+    <ClInclude Include="test\test_utils.h" />
     <ClInclude Include="warpcore.h" />
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +279,8 @@
     <ClCompile Include="p3f.cpp" />
     <ClCompile Include="pca.cpp" />
     <ClCompile Include="search.cpp" />
+    <ClCompile Include="test\p3f_test.cpp" />
+    <ClCompile Include="test\test_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="impl\cpd_cuda.cu" />
