@@ -12,11 +12,12 @@ Its features include registration algorithms, spatial searching structures, data
 - **WarpViewer** is a .NET library that provides 3D rendering capabilities over Direct3D 11, as well as data structures for holding meshes and similar data.
 - **WarpProcessing** has native imports from WarpCore and uses them to perform mesh processing, DCA, Procrustes transform etc.
 - **Warp9** is finally the application that users can interact with. Written over WPF with a customizable theme.
+- **Warp9Cli** is a command-line tool that has a subset of Warp9 capabilities
 
 ## Build instructions
 Ensure you have the following dependencies installed:
 - Visual Studio 2026
-- CUDA Toolkit 12.9 with VS integration
+- CUDA Toolkit 13.2 with VS integration
 
 **1. Install OpenBLAS**<br>
 Use the script `tools\Install-Deps.ps1` to download and install OpenBLAS. You should see it appear in the `thirdparty` directory.
@@ -30,6 +31,5 @@ Certain tests will not run and will report as inconclusive because they depend o
 If replacement data become available in public domain, we are open to using those instead.
 Some unit tests generate bitmaps, these can be found in `bin\testresults`.
 
-### Note on CUDA 
-CUDA 12.9 does not support VS2026.
-To work around this problem, you need to copy the MSBuild customizations from VS2022 to VS2026.
+Note that there are also native unit tests. 
+These can be run by switching to `Test` configuration.
