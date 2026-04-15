@@ -1,10 +1,11 @@
 # warp9
+This is a toolkit primarily intended for dense geometric morphometry.
+
+![Screenshot.](/doc/screenshot.png)
 
 > [!WARNING]
 > Warp9 is very much work in progress. Proceed with caution. There might also be dragons.
 
-
-This is a toolkit primarily intended for dense geometric morphometry.
 The toolkit can be broken down to these parts:
 - **WarpCore** is a native library that concentrates all the performance-intensive code. 
 Its features include registration algorithms, spatial searching structures, data conversion etc.
