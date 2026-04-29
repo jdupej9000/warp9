@@ -83,10 +83,11 @@ namespace Warp9.Processing
                 {
                     float ray0 = (hitIndexRay0[i] >= 0) ? projRay0[i] : float.MaxValue;
                     float ray1 = (hitIndexRay1[i] >= 0) ? projRay1[i] : float.MaxValue;
+                    float nn = projNN[i].d;
                     float bestRay = MathF.Min(ray0, ray1);
 
                     Vector3 pt;
-                    if (bestRay > 3 * projNN[i].d)
+                    if (bestRay > 3 * nn)
                     {
                         pt = new Vector3(projNN[i].x, projNN[i].y, projNN[i].z);
                     }
