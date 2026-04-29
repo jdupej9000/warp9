@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpDX.Diagnostics;
+using SharpDX.Mathematics.Interop;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -220,6 +221,42 @@ namespace Warp9.Test
                             float r = (rraw - min) / (max - min);
                             ptrSpan[i] = lut.Sample(r).ToArgb();
                         }
+                    }
+                }
+
+                bmp.UnlockBits(bmpData);
+            }
+
+            return bmp;
+        }
+
+        static int Float3ToColor(Vector3 v)
+        {
+            int r = (int)Math.Clamp(v.X * 255.0f, 0, 255);
+            int g = (int)Math.Clamp(v.Y * 255.0f, 0, 255);
+            int b = (int)Math.Clamp(v.Z * 255.0f, 0, 255);
+            return Color.FromArgb(r, g, b).ToArgb();
+        }
+
+        public static Bitmap RenderAsColors(int width, int height, Func<int, int, Vector3> fun)
+        {
+            Bitmap bmp = new Bitmap(width, height);
+
+            unsafe
+            {
+                BitmapData bmpData = bmp.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.ReadWrite, PixelFormat.Format32bppRgb);
+
+                for (int j = 0; j < height; j++)
+                {
+                    nint ptr = bmpData.Scan0 + j * bmpData.Stride;
+                    Span<int> ptrSpan = new Span<int>((void*)ptr, bmpData.Stride);
+
+                    for (int i = 0; i < width; i++)
+                    {
+                        Vector3 rraw = fun(i, j);                       
+                        ptrSpan[i] = Float3ToColor(rraw);                       
                     }
                 }
 

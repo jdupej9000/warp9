@@ -568,11 +568,7 @@ namespace Warp9.Test
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
-           // Parallel.For(0, bitmapSize, (i) =>
-           // {
-            //    ctx.NearestAos(pts.AsSpan(i * bitmapSize), bitmapSize, 1.0f, hit.AsSpan(i * bitmapSize), res.AsSpan(i * bitmapSize));
-            //});
+            ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());           
             sw.Stop();
 
             Console.WriteLine("{0:F1} queries per second",
@@ -601,6 +597,106 @@ namespace Warp9.Test
         public void Trigrid1NnTest()
         {
             TrigridNnTestCase("Trigrid1NnTest_0.png", 1, 128);
+        }
+
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(12)]
+        public void TrigridNnBaryTest(int gridSize)
+        {
+            const int gridCells = 12;
+            const int bitmapSize = 512;         
+
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
+            Assert.IsNotNull(ctx);
+
+            Aabb bbox = ctx.GetSpan();
+            Assert.IsFalse(bbox.IsInvalid);
+            Console.WriteLine(bbox.ToString());
+
+            // x0=<-3, 0, -2>, x1=<3.434, 3.15, 2>, center=<0.053937342, 1.7241387, -0.00024491842>, cs=2.0256174
+            TestUtils.GenerateGrid(bitmapSize, bitmapSize,
+                new Vector3(-3.5f, 5.2f, 0f), new Vector3(3.5f, 5.2f, 0f), new Vector3(-3.5f, -1.8f, 0f),
+                out Vector3[] pts);
+
+            int[] hit = new int[bitmapSize * bitmapSize];
+            ResultInfoDPtBary[] res = new ResultInfoDPtBary[bitmapSize * bitmapSize];
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
+            sw.Stop();
+
+            Console.WriteLine("{0:F1} queries per second",
+                bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds);
+
+            Bitmap bmp = TestUtils.RenderAsColors(bitmapSize, bitmapSize,
+                (i, j) =>
+                {
+                    int idx = i + j * bitmapSize;
+                    if (res[idx].u < 0 || res[idx].u > 1 || res[idx].v < 0 || res[idx].v > 1)
+                        return new Vector3(1, 1, 1);
+
+                    return new Vector3(res[idx].u, res[idx].v, 0);
+                });
+
+            BitmapAsserts.AssertEqual($"TrigridNnBaryTest_{gridSize}.png", bmp);
+
+            ctx.Dispose();
+        }
+
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(12)]
+        public void TrigridRaycastBaryTest(int gridSize)
+        {
+            const int gridCells = 12;
+            const int bitmapSize = 512;
+                       
+            Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
+            Assert.IsNotNull(ctx);
+
+            Vector3 camera = new Vector3(2.0f, 3.5f, 0.5f);
+
+            TestUtils.GenerateRays(camera, bitmapSize, bitmapSize, out Vector3[] p0, out Vector3[] d);
+            int n = bitmapSize * bitmapSize;
+            int[] hit = new int[n];
+            ResultInfoTBary[] t = new ResultInfoTBary[n];
+
+            for (int i = 0; i < n; i++)
+                p0[i] += 1.5f * camera;
+
+            DateTime t0 = DateTime.Now;
+            ctx.Raycast(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
+            DateTime t1 = DateTime.Now;
+            double seconds = (t1 - t0).TotalSeconds;
+
+            Console.WriteLine(string.Format("{0} rays in {1:F3} seconds, {2:F1} rays per second",
+                bitmapSize * bitmapSize, seconds, bitmapSize * bitmapSize / seconds));
+
+            Bitmap bmp = TestUtils.RenderAsColors(bitmapSize, bitmapSize,
+                 (i, j) =>
+                 {
+                     int idx = i + j * bitmapSize;
+                     if (hit[idx] >= 0)
+                     {
+                         if (t[idx].u < 0 || t[idx].u > 1 || t[idx].v < 0 || t[idx].v > 1)
+                             return new Vector3(1, 1, 1);
+                         
+                         return new Vector3(t[idx].u, t[idx].v, 0);
+                     }
+                     else
+                     {
+                         return Vector3.UnitZ;
+                     }
+                 });
+
+            BitmapAsserts.AssertEqual($"TrigridRaycastBaryTest_{gridSize}.png", bmp);
+
+            ctx.Dispose();
+            ctx.Dispose();
         }
 
         [TestMethod]

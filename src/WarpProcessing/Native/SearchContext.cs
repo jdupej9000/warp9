@@ -83,6 +83,30 @@ namespace Warp9.Native
             }
         }
 
+        public bool Raycast(ReadOnlySpan<Vector3> src, ReadOnlySpan<Vector3> srcDir, int n, Span<int> hitIndex, Span<ResultInfoTBary> hitT, bool invertDir = false)
+        {
+            if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
+                return false;
+
+            SearchQueryConfig cfg = new SearchQueryConfig();
+            int kind = invertDir ?
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_TBARY | SEARCH_KIND.SEARCH_INVERT_DIRECTION) :
+               (int)(SEARCH_KIND.SEARCH_RAYCAST_TBARY);
+
+            unsafe
+            {
+                fixed (Vector3* srcSoaPtr = &MemoryMarshal.GetReference(src))
+                fixed (Vector3* srcDirSoaPtr = &MemoryMarshal.GetReference(srcDir))
+                fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
+                fixed (ResultInfoTBary* hitTPtr = &MemoryMarshal.GetReference(hitT))
+                {
+                    return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
+                        nativeContext, kind, ref cfg,
+                        (nint)srcSoaPtr, (nint)srcDirSoaPtr, n, (nint)hitIndexPtr, (nint)hitTPtr);
+                }
+            }
+        }
+
         public override string ToString()
         {
             return structKind.ToString();
