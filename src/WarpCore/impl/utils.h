@@ -34,7 +34,7 @@ namespace warpcore::impl
     int round_up(int x, int blk);
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
-    void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   
+    int WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
     void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
     void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);

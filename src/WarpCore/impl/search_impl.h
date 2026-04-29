@@ -26,15 +26,15 @@ namespace warpcore::impl
         {
             int ret = -1;
             float t = FLT_MAX;
-            reduce_idxmin(bestt, besti, t, ret);
+            int bestLane = reduce_idxmin(bestt, besti, t, ret);
 
             alignas(32) float uu[8], vv[8];
             _mm256_store_ps(uu, u);
             _mm256_store_ps(vv, v);
             result[0] = t;
-            result[1] = uu[ret];
-            result[2] = vv[ret];
-            result[3] = 1.0f - uu[ret] - vv[ret];
+            result[1] = uu[bestLane];
+            result[2] = vv[bestLane];
+            result[3] = 1.0f - uu[bestLane] - vv[bestLane];
 
             return ret;
         }

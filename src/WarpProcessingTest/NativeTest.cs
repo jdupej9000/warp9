@@ -602,9 +602,8 @@ namespace Warp9.Test
         [TestMethod]
         [DataRow(1)]
         [DataRow(12)]
-        public void TrigridNnBaryTest(int gridSize)
+        public void TrigridNnBaryTest(int gridCells)
         {
-            const int gridCells = 12;
             const int bitmapSize = 512;         
 
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
@@ -641,17 +640,17 @@ namespace Warp9.Test
                     return new Vector3(res[idx].u, res[idx].v, 0);
                 });
 
-            BitmapAsserts.AssertEqual($"TrigridNnBaryTest_{gridSize}.png", bmp);
+            BitmapAsserts.AssertEqual($"TrigridNnBaryTest_{gridCells}.png", bmp);
 
             ctx.Dispose();
         }
 
         [TestMethod]
         [DataRow(1)]
+        [DataRow(2)]
         [DataRow(12)]
-        public void TrigridRaycastBaryTest(int gridSize)
+        public void TrigridRaycastBaryTest(int gridCells)
         {
-            const int gridCells = 12;
             const int bitmapSize = 512;
                        
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
@@ -693,7 +692,7 @@ namespace Warp9.Test
                      }
                  });
 
-            BitmapAsserts.AssertEqual($"TrigridRaycastBaryTest_{gridSize}.png", bmp);
+            BitmapAsserts.AssertEqual($"TrigridRaycastBaryTest_{gridCells}.png", bmp);
 
             ctx.Dispose();
             ctx.Dispose();

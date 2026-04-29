@@ -45,11 +45,11 @@ namespace warpcore::impl
 		return sum;
 	}
 
-	void WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx)
+	int WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx)
 	{
 		__m128 m = _mm_min_ps(_mm256_extractf128_ps(d, 0), _mm256_extractf128_ps(d, 1));
 		m = _mm_min_ps(m, _mm_movehl_ps(m, m));
-		m = _mm_min_ss(m, _mm_movehdup_ps(m));
+		m = _mm_min_ps(m, _mm_movehdup_ps(m));
 		float newBestDist = _mm_cvtss_f32(m);
 
 		if (newBestDist < bestDist) {
@@ -61,8 +61,11 @@ namespace warpcore::impl
 				_mm256_storeu_si256((__m256i*)idxSpill, idx);
 				bestIdx = idxSpill[bestPos];
 				bestDist = newBestDist;
-			}
+				return bestPos;
+			}			
 		}
+
+		return 0;
 	}
 
 	
