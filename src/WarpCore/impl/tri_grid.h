@@ -143,6 +143,118 @@ namespace warpcore::impl
     }
 
     template<typename TPtTriTraits>
+    void nn2(const trigrid* grid, const float* pt, float clamp, float* proj)
+    {
+        struct nnctx {
+            int cx0, cx1, cy0, cy1, cz0, cz1;
+            bool is_leaf(void) const noexcept {
+                return (cx0 + 1) == cx1 && (cy0 + 1) == cy1 && (cz0 + 1) == cz1;
+            }
+        };
+
+        float best_dist = clamp;        
+
+        int ctx_index = 0;
+        constexpr int MaxDepth = 128;
+        nnctx ctx[MaxDepth];
+        
+        ctx[0] = nnctx{
+            .cx0 = 0, .cx1 = grid->ncell[0],
+            .cy0 = 0, .cy1 = grid->ncell[1],
+            .cz0 = 0, .cz1 = grid->ncell[2],
+            .depth = 0
+        };
+
+        while(ctx_index >= 0) {
+            nnctx& c = ctx[ctx_index];
+
+            p3f box0; // TODO
+            p3f box1; // TODO
+            float dist_from_box = 0; // TODO;
+
+            if (dist_from_box < best_dist) {
+                if (c.is_leaf()) {
+                    int cell_idx = c.cx0 + grid->ncell[0] * c.cy0 + grid->ncell[0] * grid->ncell[1] * c.cz0;
+                    const trigrid_cell* cell = grid->cells + cell_idx;
+                    
+                    if (cell->n > 0) {
+                        float d2 = FLT_MAX;
+                        alignas(32) float cellResult[TPtTriTraits::ResultSize];
+                        const int hitIdx = pttri<TPtTriTraits>(pt, cell->vert, cell->n, cell->n, cellResult, &d2);
+
+                        if (d2 < best_dist) {
+                            best_dist = d2;
+                            // TODO
+                        }
+                    }
+
+                    ctx_index--;
+
+                } else {
+                    int axis = c.depth % 3;
+                    int depth = c.depth + 1;
+                    int r0, r1;
+
+                    switch (axis) {
+                    case 0:
+                        r0 = c.cx0;
+                        r1 = c.cx1;
+                        ctx[ctx_index] = nnctx{
+                            .cx0 = r0, .cx1 = (r0 + r1) >> 2,
+                            .cy0 = c.cy0, .cy1 = c.cy1,
+                            .cz0 = c.cz0, .cz1 = c.cz1,
+                            .depth = depth
+                        };
+                        ctx[ctx_index + 1] = nnctx{
+                            .cx0 = (r0 + r1) >> 2, .cx1 = (r0 + r1) >> 2,
+                            .cy0 = c.cy0, .cy1 = c.cy1,
+                            .cz0 = c.cz0, .cz1 = c.cz1,
+                            .depth = depth
+                        };
+                        break;
+
+                    case 1:
+                        r0 = c.cy0;
+                        r1 = c.cy1;
+                        ctx[ctx_index] = nnctx{                            
+                            .cx0 = c.cx0, .cx1 = c.cx1,
+                            .cy0 = r0, .cy1 = (r0 + r1) >> 2,
+                            .cz0 = c.cz0, .cz1 = c.cz1,
+                            .depth = depth
+                        };
+                        ctx[ctx_index + 1] = nnctx{                            
+                            .cx0 = c.cx0, .cx1 = c.cx1,
+                            .cy0 = (r0 + r1) >> 2, .cy1 = (r0 + r1) >> 2,
+                            .cz0 = c.cz0, .cz1 = c.cz1,
+                            .depth = depth
+                        };
+                        break;
+
+                    case 2:
+                        r0 = c.cz0;
+                        r1 = c.cz1;
+                        ctx[ctx_index] = nnctx{
+                            .cx0 = c.cx0, .cx1 = c.cx1,                            
+                            .cy0 = c.cy0, .cy1 = c.cy1,
+                            .cz0 = r0, .cz1 = (r0 + r1) >> 2,
+                            .depth = depth
+                        };
+                        ctx[ctx_index + 1] = nnctx{
+                            .cx0 = c.cx0, .cx1 = c.cx1,                            
+                            .cy0 = c.cy0, .cy1 = c.cy1,
+                            .cz0 = (r0 + r1) >> 2, .cz1 = (r0 + r1) >> 2,
+                            .depth = depth
+                        };
+                        break;
+                    }
+
+                    ctx_index += 2;
+                }
+            }
+        }
+    }
+
+    template<typename TPtTriTraits>
     int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
     {
         struct trigrid_nn_ctx {
