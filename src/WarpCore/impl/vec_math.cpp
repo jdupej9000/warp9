@@ -265,6 +265,22 @@ namespace warpcore::impl
                 _mm256_mul_ps(az, bz)));
     }
 
+    __m256 WCORE_VECCALL mask_positive(__m256 x) noexcept
+    {
+        // Extend sign bit across the lane.
+        return _mm256_castsi256_ps(
+            _mm256_xor_si256(_mm256_set1_epi32(-1),
+                _mm256_srai_epi32(_mm256_castps_si256(x), 31)));
+        //return _mm256_cmp_ps(x, _mm256_setzero_ps(), _CMP_GE_OQ);
+    }
+
+    __m256 WCORE_VECCALL mask_negative(__m256 x) noexcept
+    {
+        // Extend sign bit across the lane.
+        return _mm256_castsi256_ps(_mm256_srai_epi32(_mm256_castps_si256(x), 31));
+        //return _mm256_cmp_ps(x, _mm256_setzero_ps(), _CMP_LE_OQ);
+    }
+
     __m256 WCORE_VECCALL blend_in(__m256 x, __m256 y, __m256 mask) noexcept
     {
         return _mm256_blendv_ps(x, y, mask);

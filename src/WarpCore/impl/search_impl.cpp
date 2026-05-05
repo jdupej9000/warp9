@@ -57,7 +57,7 @@ namespace warpcore::impl
 
             __m256 u = _mm256_mul_ps(dot(sx, sy, sz, px, py, pz), inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_setzero_ps(), _CMP_GE_OQ));
+            mask = _mm256_and_ps(mask, mask_positive(u));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(1), _CMP_LE_OQ));
 
             if(_mm256_movemask_ps(mask) == 0)
@@ -69,7 +69,7 @@ namespace warpcore::impl
             __m256 v = dot(_mm256_permute_ps(d, 0b00000000), _mm256_permute_ps(d, 0b01010101), _mm256_permute_ps(d, 0b10101010), qx, qy, qz);
             v = _mm256_mul_ps(v, inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(v, _mm256_setzero_ps(), _CMP_GE_OQ));
+            mask = _mm256_and_ps(mask, mask_positive(v));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(_mm256_add_ps(u, v), _mm256_set1_ps(1), _CMP_LE_OQ));
 
             if(_mm256_movemask_ps(mask) == 0)
@@ -78,7 +78,7 @@ namespace warpcore::impl
             __m256 tt = dot(e2x, e2y, e2z, qx, qy, qz);
             tt = _mm256_mul_ps(tt, inv_det);
 
-            mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, _mm256_setzero_ps(), _CMP_GT_OQ));
+            mask = _mm256_and_ps(mask, mask_positive(tt));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(tt, bestt, _CMP_LT_OQ));
 
             bestt = _mm256_blendv_ps(bestt, tt, mask);
@@ -136,8 +136,8 @@ namespace warpcore::impl
             __m256 d2 = dot(acx, acy, acz, apx, apy, apz);
 
             // if (d1 <= 0.f && d2 <= 0.f) return a;
-            __m256 m1 = _mm256_and_ps(_mm256_cmp_ps(d1, _mm256_setzero_ps(), _CMP_LE_OQ),
-                _mm256_cmp_ps(d2, _mm256_setzero_ps(), _CMP_LE_OQ));
+            __m256 m1 = _mm256_and_ps(mask_negative(d1), mask_negative(d2));
+            __m256 m123456 = m1;
             //u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m1); // these lanes are already zero
             //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m1);
 
@@ -151,8 +151,8 @@ namespace warpcore::impl
             __m256 d4 = dot(acx, acy, acz, bpx, bpy, bpz);
 
             // if (d3 >= 0.f && d4 <= d3) return b;
-            __m256 m2 = _mm256_and_ps(_mm256_cmp_ps(d3, _mm256_setzero_ps(), _CMP_GE_OQ),
-                _mm256_cmp_ps(d4, d3, _CMP_LE_OQ));
+            __m256 m2 = _mm256_and_ps(mask_positive(d3), _mm256_cmp_ps(d4, d3, _CMP_LE_OQ));
+            m123456 = _mm256_or_ps(m123456, m2);
             u = blend_in(u, _mm256_set1_ps(1.0f), m2);
             //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m2); // these lanes are already zero
 
@@ -166,8 +166,8 @@ namespace warpcore::impl
             __m256 d6 = dot(acx, acy, acz, cpx, cpy, cpz);
 
             // if (d6 >= 0.f && d5 <= d6) return c;
-            __m256 m3 = _mm256_and_ps(_mm256_cmp_ps(d6, _mm256_setzero_ps(), _CMP_GE_OQ),
-                _mm256_cmp_ps(d5, d6, _CMP_LE_OQ));
+            __m256 m3 = _mm256_and_ps(mask_positive(d6), _mm256_cmp_ps(d5, d6, _CMP_LE_OQ));
+            m123456 = _mm256_or_ps(m123456, m3);
             v = blend_in(v, _mm256_set1_ps(1.0f), m3);
             u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m3); 
 
@@ -175,9 +175,10 @@ namespace warpcore::impl
             __m256 vc = _mm256_sub_ps(_mm256_mul_ps(d1, d4), _mm256_mul_ps(d3, d2));
 
             // if (vc <= 0.f && d1 >= 0.f && d3 <= 0.f) {...
-            __m256 m4 = _mm256_and_ps(  _mm256_cmp_ps(vc, _mm256_setzero_ps(), _CMP_LE_OQ),
-                        _mm256_and_ps(  _mm256_cmp_ps(d1, _mm256_setzero_ps(), _CMP_GE_OQ),
-                                        _mm256_cmp_ps(d3, _mm256_setzero_ps(), _CMP_LE_OQ)));
+            __m256 m4 = _mm256_and_ps(mask_negative(vc),
+                _mm256_and_ps(mask_positive(d1), mask_negative(d3)));
+                                        
+            m123456 = _mm256_or_ps(m123456, m4);
             if (!_mm256_testz_ps(m4, mask)) {
                 __m256 t = _mm256_div_ps(d1, _mm256_sub_ps(d1, d3));
                 u = blend_in(u, t, m4);
@@ -188,9 +189,9 @@ namespace warpcore::impl
             __m256 vb = _mm256_sub_ps(_mm256_mul_ps(d5, d2), _mm256_mul_ps(d1, d6));
 
             // if (vb <= 0.f && d2 >= 0.f && d6 <= 0.f) { ...
-            __m256 m5 = _mm256_and_ps(  _mm256_cmp_ps(vb, _mm256_setzero_ps(), _CMP_LE_OQ),
-                        _mm256_and_ps(  _mm256_cmp_ps(d2, _mm256_setzero_ps(), _CMP_GE_OQ),
-                                        _mm256_cmp_ps(d6, _mm256_setzero_ps(), _CMP_LE_OQ)));
+            __m256 m5 = _mm256_and_ps(mask_negative(vb),
+                _mm256_and_ps(mask_positive(d2), mask_negative(d6)));
+            m123456 = _mm256_or_ps(m123456, m5);
             if (!_mm256_testz_ps(m5, mask)) {
                 __m256 t = _mm256_div_ps(d2, _mm256_sub_ps(d2, d6));
                 v = blend_in(v, t, m5);
@@ -201,9 +202,10 @@ namespace warpcore::impl
             __m256 va = _mm256_sub_ps(_mm256_mul_ps(d3, d6), _mm256_mul_ps(d5, d4));
             
             //if (va <= 0.f && (d4 - d3) >= 0.f && (d5 - d6) >= 0.f) { ...
-            __m256 m6 = _mm256_and_ps(  _mm256_cmp_ps(va, _mm256_setzero_ps(), _CMP_LE_OQ),
+            __m256 m6 = _mm256_and_ps(  mask_negative(va),
                         _mm256_and_ps(  _mm256_cmp_ps(d4, d3, _CMP_GE_OQ),
                                         _mm256_cmp_ps(d5, d6, _CMP_GE_OQ)));
+            m123456 = _mm256_or_ps(m123456, m6);
             if (!_mm256_testz_ps(m6, mask)) {
                 // const float v = (d4 - d3) / ((d4 - d3) + (d5 - d6));
                 // return b + v * (c - b);
@@ -214,9 +216,7 @@ namespace warpcore::impl
                 v = blend_in(v, t, m6);
             }
 
-            // m7 = mask & ~(m1 | m2 | ... | m6)
-            __m256 m123456 = _mm256_or_ps(_mm256_or_ps(m1, m2), _mm256_or_ps(m3, m4));
-            m123456 = _mm256_or_ps(m123456, _mm256_or_ps(m5, m6));
+            // m7 = mask & ~(m1 | m2 | ... | m6)           
             __m256 m7 = _mm256_andnot_ps(mask, m123456);
 
             // const float denom = 1.f / (va + vb + vc);

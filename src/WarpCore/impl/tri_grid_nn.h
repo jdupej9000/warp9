@@ -10,15 +10,16 @@ namespace warpcore::impl
         _nncell(void) {}
 
         _nncell(const trigrid* g) :
-            cx0(0), cy0(0), cz0(0), depth(0), _dummy(0)
+            cx0(0), cy0(0), cz0(0), depth(0)
         {
             cx1 = g->ncell[0];
             cy1 = g->ncell[1];
             cz1 = g->ncell[2];
         }
 
-        int cx0, cx1, cy0, cy1, cz0, cz1;
-        int depth, _dummy;
+        int cx0, cy0, cz0;
+        int cx1, cy1, cz1;
+        int depth;
 
         bool is_leaf(void) const noexcept
         {
@@ -27,7 +28,7 @@ namespace warpcore::impl
 
         bool is_degenerate(void) const noexcept
         {
-            return (cx0 >= cx1) || (cy0 >= cy1) || (cz0 >= cz1);
+            return (cx0 == cx1) || (cy0 == cy1) || (cz0 == cz1);
         }
 
         p3f c0(void) const noexcept { return p3i_to_p3f(p3i_set(cx0, cy0, cz0)); }
@@ -105,24 +106,24 @@ namespace warpcore::impl
         if (p3f_distsq(task.pt, closest_aabb) > task.bestDist)
             return;
 
+        alignas(32) float t[std::max(TPtTriTraits::ResultSize, 4ULL)];
+
         if (ctx.is_leaf()) {
             int cell_idx = ctx.cx0 +
                 task.grid->ncell[0] * ctx.cy0 +
                 task.grid->ncell[0] * task.grid->ncell[1] * ctx.cz0;
 
             const trigrid_cell* cell = task.grid->cells + cell_idx;
+            _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
 
             if (cell->n > 0) {
-                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
-
                 float hitDist = FLT_MAX;
-                alignas(32) float cellResult[TPtTriTraits::ResultSize];
-                const int hitIdx = pttri<TPtTriTraits>(task.pt, cell->vert, cell->n, cell->n, cellResult, &hitDist);
+                const int hitIdx = pttri<TPtTriTraits>(task.pt, cell->vert, cell->n, cell->n, t, &hitDist);
 
                 if (hitDist < task.bestDist) {
                     task.bestDist = hitDist;
                     task.bestIdx = hitIdx;
-                    memcpy(task.result, cellResult, sizeof(float) * TPtTriTraits::ResultSize);
+                    memcpy(task.result, t, sizeof(float) * TPtTriTraits::ResultSize);
                 }
             }
         } else {
@@ -134,16 +135,21 @@ namespace warpcore::impl
             case 2: ctx.split_z(left, right); break;
             }
 
-            p3f half_diff = p3f_sub(task.pt, p3f_fma(task.gd, left.c1(), task.g0));
-            alignas(32) float half_diff_arr[4];
-            p3f_store(half_diff_arr, half_diff);
+            p3f half_diff = p3f_sub(task.pt, p3f_fma(task.gd, left.c1(), task.g0));           
+            p3f_store(t, half_diff);
+            float da = t[axis];
 
-            if (half_diff_arr[axis] <= 0) {
+            if (da <= 0) {
                 nn_inner<TPtTriTraits>(task, left);
-                nn_inner<TPtTriTraits>(task, right);
+
+                if(da * da < task.bestDist)
+                    nn_inner<TPtTriTraits>(task, right);
+
             } else {
                 nn_inner<TPtTriTraits>(task, right);
-                nn_inner<TPtTriTraits>(task, left);
+
+                if (da * da < task.bestDist)
+                    nn_inner<TPtTriTraits>(task, left);
             }
         }
     }
@@ -151,7 +157,7 @@ namespace warpcore::impl
     template<typename TPtTriTraits>
     int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
     {
-        _nntask task{ grid, pt, clamp, proj };
+        alignas(32) _nntask task{ grid, pt, clamp, proj };
         _nncell cell{ grid };
 
         nn_inner<TPtTriTraits>(task, cell);
