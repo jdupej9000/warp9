@@ -47,8 +47,56 @@ namespace Warp9Cli
             }
         }
 
+        public static void GenerateRays(Vector3 camera, int nx, int ny, out Vector3[] p0, out Vector3[] d)
+        {
+            // TODO: make the constants more global
+            // https://www.mvps.org/directx/articles/rayproj.htm
+            p0 = new Vector3[nx * ny];
+            d = new Vector3[nx * ny];
+
+            const float Fov = MathF.PI * 0.95f;
+            const float Aspect = 1;
+            const float Far = 100.0f;
+            const float Near = 0.01f;
+            //Vector3 camera = new Vector3(0.75f, 2.0f, 2.5f);
+            //Vector3 camera = new Vector3(1.0f, 2.0f, -3.0f);
+            Vector3 at = new Vector3(0, 0, 0);
+            Vector3 up = new Vector3(0, 1, 0);
+
+            Matrix4x4 viewProj = Matrix4x4.CreateLookAtLeftHanded(camera, at, up) *
+               Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(Fov, Aspect, Near, Far);
+
+            //Matrix4x4 viewProj = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(Fov, Aspect, Near, Far) * Matrix4x4.CreateLookAtLeftHanded(camera, at, up);
+
+            Matrix4x4.Invert(viewProj, out Matrix4x4 viewProjInv);
+
+            float wd2r = 1.0f / (nx / 2.0f);
+            float hd2r = 1.0f / (ny / 2.0f);
+
+            for (int j = 0; j < ny; j++)
+            {
+                float dy = MathF.Tan(Fov * 0.5f) * (1.0f - j * hd2r);
+
+                for (int i = 0; i < nx; i++)
+                {
+                    float dx = MathF.Tan(Fov * 0.5f) * (i * wd2r - 1.0f) / Aspect;
+
+                    Vector3 pp1 = Vector3.Transform(new Vector3(dx * Near, dy * Near, Near), viewProjInv);
+                    Vector3 pp2 = Vector3.Transform(new Vector3(dx * Far, dy * Far, Far), viewProjInv);
+
+                    int idx = j * nx + i;
+                    p0[idx] = camera;
+                    d[idx] = Vector3.Normalize(pp2 - pp1);
+                }
+            }
+        }
+
         public static void TrigridNnSearch(int bitmapSize, int gridCells)
         {
+            Console.WriteLine($"trigrid-nn");
+            Console.WriteLine($"  size   : {bitmapSize}x{bitmapSize}");
+            Console.WriteLine($"  cells  : {gridCells}^3");
+
             Mesh mesh = LoadObjAsset("teapot.obj", Warp9.IO.ObjImportMode.PositionsOnly);
             SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);   
             Aabb bbox = ctx.GetSpan();
@@ -66,9 +114,41 @@ namespace Warp9Cli
             ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
             sw.Stop();
 
-            Console.WriteLine($"trigrid-nn: size={bitmapSize}, cells={gridCells}, time={sw.Elapsed.TotalSeconds}s");
+            Console.WriteLine($"  size   : {sw.Elapsed.TotalSeconds:F3} s");
+            Console.WriteLine($"  time   : {bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds / 1e6f:F3} Mqps");
 
             ctx.Dispose();
         }
+
+        public static void TrigridRaycast(int bitmapSize, int gridCells)
+        {
+            Console.WriteLine($"trigrid-raycast");
+            Console.WriteLine($"  size   : {bitmapSize}x{bitmapSize}");
+            Console.WriteLine($"  cells  : {gridCells}^3");
+
+            Mesh mesh = LoadObjAsset("teapot.obj", Warp9.IO.ObjImportMode.PositionsOnly);
+            SearchContext.TryInitTrigrid(mesh, gridCells, out SearchContext? ctx);
+
+            Vector3 camera = new Vector3(2.0f, 3.5f, 0.5f);
+
+            GenerateRays(camera, bitmapSize, bitmapSize, out Vector3[] p0, out Vector3[] d);
+            int n = bitmapSize * bitmapSize;
+            int[] hit = new int[n];
+            float[] t = new float[n];
+
+            for (int i = 0; i < n; i++)
+                p0[i] += 1.5f * camera;
+
+            DateTime t0 = DateTime.Now;
+            ctx.Raycast(p0.AsSpan(), d.AsSpan(), n, hit.AsSpan(), t.AsSpan());
+            DateTime t1 = DateTime.Now;
+            double seconds = (t1 - t0).TotalSeconds;
+
+            Console.WriteLine($"  size   : {seconds:F3} s");
+            Console.WriteLine($"  time   : {bitmapSize * bitmapSize / seconds / 1e6f:F3} Mqps");
+
+            ctx.Dispose();
+        }
+
     }
 }

@@ -32,6 +32,8 @@ namespace Warp9Cli.Cli
         {
             if (ExperimentKind == "trigrid-nn")
                 Experiments.TrigridNnSearch(2048, 16);
+            else if (ExperimentKind == "trigrid-raycast")
+                Experiments.TrigridRaycast(2048, 16);
         }
     }
 }
