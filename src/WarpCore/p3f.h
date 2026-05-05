@@ -15,6 +15,7 @@ namespace warpcore
     p3i p3i_set(int x) noexcept;
     p3i p3i_set(int x, int y, int z) noexcept;
     p3i p3i_set(const int* x) noexcept;
+    p3f p3f_set(p3f p) noexcept; // this merely clears the 4th lane to zero
     void p3f_store(float* x, p3f pt);
     p3i p3f_to_p3i(const p3f a) noexcept;
     p3f p3i_to_p3f(const p3i a) noexcept;
@@ -50,6 +51,7 @@ namespace warpcore
     p3f p3f_lerp(p3f a, p3f b, float t) noexcept;
     p3f p3f_lerp(p3f a, p3f b, p3f t) noexcept;
     bool p3f_in_aabb(p3f x, p3f box0, p3f box1) noexcept;
+    p3f p3f_proj_to_aabb(p3f x, p3f box0, p3f box1) noexcept;
     p3f p3f_mask_is_almost_zero(p3f x) noexcept;
     p3f p3f_switch(p3f zero, p3f one, p3f mask) noexcept;
     p3i p3i_in_range(p3i x, p3i box0, p3i box1) noexcept;

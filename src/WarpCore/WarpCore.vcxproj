@@ -248,6 +248,8 @@
     <ClInclude Include="impl\search_impl.h" />
     <ClInclude Include="impl\tps.h" />
     <ClInclude Include="impl\tri_grid.h" />
+    <ClInclude Include="impl\tri_grid_nn.h" />
+    <ClInclude Include="impl\tri_grid_raycast.h" />
     <ClInclude Include="impl\utils.h" />
     <ClInclude Include="impl\vec_math.h" />
     <ClInclude Include="impute.h" />

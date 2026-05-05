@@ -99,6 +99,12 @@
     <ClInclude Include="test\test_utils.h">
       <Filter>Header Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="impl\tri_grid_nn.h">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\tri_grid_raycast.h">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

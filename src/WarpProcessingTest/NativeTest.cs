@@ -602,6 +602,7 @@ namespace Warp9.Test
         [TestMethod]
         [DataRow(1)]
         [DataRow(12)]
+        [DataRow(16)]
         public void TrigridNnBaryTest(int gridCells)
         {
             const int bitmapSize = 512;         

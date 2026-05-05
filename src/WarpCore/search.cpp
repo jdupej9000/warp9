@@ -1,5 +1,6 @@
 #include "search.h"
-#include "impl/tri_grid.h"
+#include "impl/tri_grid_nn.h"
+#include "impl/tri_grid_raycast.h"
 #include "impl/vec_math.h"
 #include "impl/utils.h"
 #include "impl/search_impl.h"

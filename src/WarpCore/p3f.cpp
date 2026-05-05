@@ -39,6 +39,11 @@ namespace warpcore
         return _mm_loadu_si128((const __m128i*)x);
     }
 
+    p3f p3f_set(p3f p) noexcept
+    {
+        return _mm_blend_ps(p, _mm_setzero_ps(), 0b1000);
+    }
+
     void p3f_store(float* x, p3f pt)
     {
         int* xi = (int*)x;
@@ -259,6 +264,11 @@ namespace warpcore
         __m128 mask = _mm_and_ps(_mm_cmp_ps(x, box0, _CMP_GE_OQ),
             _mm_cmp_ps(x, box1, _CMP_LE_OQ));
         return (_mm_movemask_ps(mask) & 0x7) == 0x7;
+    }
+
+    p3f p3f_proj_to_aabb(p3f x, p3f box0, p3f box1) noexcept
+    {
+        return _mm_max_ps(_mm_min_ps(x, box1), box0);
     }
 
     p3f p3f_mask_is_almost_zero(p3f x) noexcept
