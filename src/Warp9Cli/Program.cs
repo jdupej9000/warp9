@@ -30,6 +30,7 @@ namespace Warp9Cli
             parser.AddSpec(new InfoCommandSpec());
             parser.AddSpec(new LoadProjectCommandSpec());
             parser.AddSpec(new ProjectListingCommandSpec());
+            parser.AddSpec(new ExperimentCommandSpec());
             return parser;
         }
     }
