@@ -79,7 +79,7 @@ namespace warpcore::impl
     struct _nntask
     {
         _nntask(const trigrid* g, const float* p, float clamp, float* proj) :
-            grid(g), bestDist(clamp), result(proj), bestIdx(-1)
+            grid(g), bestDist(clamp * clamp), result(proj), bestIdx(-1)
         {
             pt = p3f_set(p);
             g0 = p3f_set(g->x0);
@@ -102,7 +102,7 @@ namespace warpcore::impl
         p3f box1 = p3f_fma(task.gd, ctx.c1(), task.g0);
         p3f closest_aabb = p3f_proj_to_aabb(task.pt, box0, box1);
 
-        if (p3f_dist(task.pt, closest_aabb) > task.bestDist)
+        if (p3f_distsq(task.pt, closest_aabb) > task.bestDist)
             return;
 
         if (ctx.is_leaf()) {
@@ -113,6 +113,8 @@ namespace warpcore::impl
             const trigrid_cell* cell = task.grid->cells + cell_idx;
 
             if (cell->n > 0) {
+                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
+
                 float hitDist = FLT_MAX;
                 alignas(32) float cellResult[TPtTriTraits::ResultSize];
                 const int hitIdx = pttri<TPtTriTraits>(task.pt, cell->vert, cell->n, cell->n, cellResult, &hitDist);
