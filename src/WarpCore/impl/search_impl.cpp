@@ -46,11 +46,10 @@ namespace warpcore::impl
             __m256 det = dot(e1x, e1y, e1z, px, py, pz);
             
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(_mm256_abs_ps(det), _mm256_set1_ps(EPS), _CMP_GT_OQ));
-            if(_mm256_movemask_ps(mask) == 0)
+            if(_mm256_testz_ps(mask, mask))
                 continue;
 
             __m256 inv_det = _mm256_rcp_ps(det);
-            //__m256 inv_det = _mm256_rcp_ps(_mm256_blendv_ps(_mm256_set1_ps(1), det, mask)); // prevent NaNs
             __m256 sx = _mm256_sub_ps(_mm256_permute_ps(o, 0b00000000), ax);
             __m256 sy = _mm256_sub_ps(_mm256_permute_ps(o, 0b01010101), ay);
             __m256 sz = _mm256_sub_ps(_mm256_permute_ps(o, 0b10101010), az);
@@ -59,9 +58,6 @@ namespace warpcore::impl
 
             mask = _mm256_and_ps(mask, mask_positive(u));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(u, _mm256_set1_ps(1), _CMP_LE_OQ));
-
-            if(_mm256_movemask_ps(mask) == 0)
-                continue;
 
             __m256 qx = _mm256_undefined_ps(), qy = _mm256_undefined_ps(), qz = _mm256_undefined_ps();
             cross(sx, sy, sz, e1x, e1y, e1z, qx, qy, qz);
@@ -72,7 +68,7 @@ namespace warpcore::impl
             mask = _mm256_and_ps(mask, mask_positive(v));
             mask = _mm256_and_ps(mask, _mm256_cmp_ps(_mm256_add_ps(u, v), _mm256_set1_ps(1), _CMP_LE_OQ));
 
-            if(_mm256_movemask_ps(mask) == 0)
+            if (_mm256_testz_ps(mask, mask))
                 continue;
 
             __m256 tt = dot(e2x, e2y, e2z, qx, qy, qz);
