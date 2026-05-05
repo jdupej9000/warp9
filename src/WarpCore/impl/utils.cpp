@@ -132,35 +132,6 @@ namespace warpcore::impl
 			idx[j] = -1;
 	}
 
-	void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz)
-	{
-		int index = 0;
-		for (int i = 0; i < nx; i++) {
-			for (int j = 0; j < ny; j++) {
-				for (int k = 0; k < nz; k++) {
-					pat[index] = i | (j << 10) | (k << 20);
-					index++;
-				}
-			}
-		}
-
-		int size = nx * ny * nz;
-
-		std::sort(pat, pat + size, [](int a, int b) -> bool {
-			int ax, ay, az, bx, by, bz;
-			expand_search_pattern_index(a, ax, ay, az);
-			expand_search_pattern_index(b, bx, by, bz);			
-			return (ax * ax + ay * ay + az * az) < (bx * bx + by * by + bz * bz);
-			});
-	}
-
-	void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz)
-	{
-		dx = idx & 0x3ff; 
-		dy = (idx >> 10) & 0x3ff; 
-		dz = (idx >> 20) & 0x3ff;
-	}
-
 	bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
 	{
 		assert(y != nullptr);

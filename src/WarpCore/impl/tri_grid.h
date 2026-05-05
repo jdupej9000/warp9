@@ -21,9 +21,6 @@ namespace warpcore::impl
 
         float* buff_vert;
         int* buff_idx;
-
-        int* search_pat;
-        int search_pat_len;
     };
 
     void trigrid_build(trigrid* grid, const float* vert, const int* idx, int nv, int nt, int k);

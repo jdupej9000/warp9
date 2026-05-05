@@ -36,14 +36,11 @@ namespace warpcore::impl
     float cumsum(const float* x, int n, float* sums);
     int WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   
     void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
-    void prepare_search_pattern_uniform(int* pat, int nx, int ny, int nz);
-    void expand_search_pattern_index(int idx, int& dx, int& dy, int& dz);
-
+ 
     // Solve an overdetermined system of linear equations Ax=b when A is nrow x ncol and column-major.
     // Y is column-major or row-major (yrowmajor==true) nrow x nrhs. The resulting matrix must be ncol x nrhs. 
     // Returns true when successful, false when the system is rank-deficient. In either case, b is modified.
-    bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor=false);
-  
+    bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor=false);  
     bool solve_ls_qr(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor=false);
 
     template<typename T>
@@ -140,58 +137,6 @@ namespace warpcore::impl
             get_row<T, NDim>(x, n, i, r1);
             get_row<T, NDim>(y, n, i, r2);
             fun(r1, r2, i, aux);
-        }
-    }
-
-    template<typename TCtx>
-    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, TCtx ctx, bool (*fun)(int x, int y, int z, int r, TCtx ctx))
-    {
-		#define FUN(x,y,z,l) if((x) >= 0 && (x) < maxx && (y) >= 0 && (y) < maxy && (z) >= 0 && (z) < maxz) if(!fun((x), (y), (z), (l), ctx)) return;
-    	FUN(cx, cy, cz, 0);
-
-		// TODO: this order could still be more optimal
-		for (int r = 1; r < radius; r++) {
-			for(int i = 0; i < 2 * r - 1; i++) {
-				int du = decode_zigzag(i);
-				for(int j = 0; j < 2 * r - 1; j++) {
-					int dv = decode_zigzag(j);
-					FUN(cx + du, cy + dv, cz + r, r);
-                    FUN(cx - du, cy - dv, cz - r, r);
-                    FUN(cx + du, cy + r, cz + dv, r);
-                    FUN(cx - du, cy - r, cz - dv, r);
-                    FUN(cx + r, cy + du, cz + dv, r);
-                    FUN(cx - r, cy - du, cz - dv, r);
-				}
-			}
-		}
-    }
-
-    template<typename TCtx>
-    void foreach_voxel_central(int radius, int cx, int cy, int cz, int maxx, int maxy, int maxz, const int* pattern, int pat_len, TCtx ctx, bool (*fun)(int x, int y, int z, int r, TCtx ctx))
-    {
-        #define FUN(x,y,z,l) if((x) >= 0 && (x) < maxx && (y) >= 0 && (y) < maxy && (z) >= 0 && (z) < maxz) if(!fun((x), (y), (z), (l), ctx)) return;
-        //FUN(cx, cy, cz, 0);
-        
-        int r2 = radius * radius;
-
-        for (int i = 0; i < pat_len; i++) {
-            int dx, dy, dz;
-            expand_search_pattern_index(pattern[i], dx, dy, dz);
-
-            if (dx * dx + dy * dy + dz * dz > r2) 
-                break;
-
-            int coarse_radius = std::max(dx, std::max(dy, dz));
-
-            FUN(cx - dx, cy - dy, cz - dz, coarse_radius);
-            FUN(cx + dx, cy - dy, cz - dz, coarse_radius);
-            FUN(cx - dx, cy + dy, cz - dz, coarse_radius);
-            FUN(cx + dx, cy + dy, cz - dz, coarse_radius);
-
-            FUN(cx - dx, cy - dy, cz + dz, coarse_radius);
-            FUN(cx + dx, cy - dy, cz + dz, coarse_radius);
-            FUN(cx - dx, cy + dy, cz + dz, coarse_radius);
-            FUN(cx + dx, cy + dy, cz + dz, coarse_radius);
         }
     }
 
