@@ -23,17 +23,20 @@ namespace Warp9Cli.Cli
     {
         public ExperimentCommandCommand(string ek)
         {
-            ExperimentKind = ek;
+            ExperimentKinds = ek.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
 
-        public string ExperimentKind { get; init; }
+        public string[] ExperimentKinds { get; init; }
 
         public void Execute(CommandExecutionContext ctx)
         {
-            if (ExperimentKind == "trigrid-nn")
-                Experiments.TrigridNnSearch(2048, 16);
-            else if (ExperimentKind == "trigrid-raycast")
-                Experiments.TrigridRaycast(2048, 16);
+            foreach (string k in ExperimentKinds)
+            {
+                if (k == "trigrid-nn")
+                    Experiments.TrigridNnSearch(2048, 16);
+                else if (k == "trigrid-raycast")
+                    Experiments.TrigridRaycast(2048, 16);
+            }
         }
     }
 }
