@@ -61,6 +61,8 @@ namespace warpcore::impl
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res);
 
     float dot(const float* x, const float* y, int n);
+    __m256 WCORE_VECCALL mask_positive(__m256 x) noexcept;
+    __m256 WCORE_VECCALL mask_negative(__m256 x) noexcept;
     void scale(float* x, float f, int n);
     void add(float* x, float f, int n);
     void normalize_columns(float* mat, int rows, int cols);

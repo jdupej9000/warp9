@@ -129,8 +129,8 @@ namespace Warp9Cli
             ctx.Nearest(pts.AsSpan(), bitmapSize * bitmapSize, 1.0f, hit.AsSpan(), res.AsSpan());
             sw.Stop();
 
-            Console.WriteLine($"  size   : {sw.Elapsed.TotalSeconds:F3} s");
-            Console.WriteLine($"  time   : {bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds / 1e6f:F3} Mqps");
+            Console.WriteLine($"  time   : {sw.Elapsed.TotalSeconds:F3} s");
+            Console.WriteLine($"  score  : {bitmapSize * bitmapSize / sw.Elapsed.TotalSeconds / 1e6f:F3} Mqps");
 
             ctx.Dispose();
         }
@@ -159,8 +159,8 @@ namespace Warp9Cli
             DateTime t1 = DateTime.Now;
             double seconds = (t1 - t0).TotalSeconds;
 
-            Console.WriteLine($"  size   : {seconds:F3} s");
-            Console.WriteLine($"  time   : {bitmapSize * bitmapSize / seconds / 1e6f:F3} Mqps");
+            Console.WriteLine($"  time   : {seconds:F3} s");
+            Console.WriteLine($"  score  : {bitmapSize * bitmapSize / seconds / 1e6f:F3} Mqps");
 
             ctx.Dispose();
         }
