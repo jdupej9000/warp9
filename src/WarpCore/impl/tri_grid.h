@@ -2,6 +2,13 @@
 
 namespace warpcore::impl
 {
+    // Cells contain unshared vertex data in AoSoA ordering. The stride is set to 
+    // one AVX register worth: ceil(N/8) * {8*x0, 8*y0,...8*z2}. Primitive indices
+    // map to the AoSoA blocks. The pointers vert, idx point to locations in
+    // trigrid::buff_vert, buff_idx and are aligned to AVX register size (32B). If
+    // the number of vertices in a cell (trigrid_cell::n) is not divisible by 8, the
+    // upper parts of each register in an AoSoA block must be masked away.
+    // trigrid_cell::nalign is merely trigrid_cell::n rounded up to multiples of 8.
     struct trigrid_cell {
         int n, nalign;
         float* vert;

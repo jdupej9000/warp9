@@ -51,7 +51,7 @@ namespace warpcore::impl
              
         int* hist = new int[num_cells];
         make_cell_histogram(grid, idx_range, nt, hist);
-        const int ng = round_down(reduce_add_i32(hist, num_cells), VectorSize) + VectorSize * k * k * k;
+        const int ng = reduce_roundup_add_i32(hist, num_cells, 8);
 
         grid->buff_vert = (float*)_aligned_malloc(ng * 9 * sizeof(float), VectorSize * sizeof(float));
         grid->buff_idx = (int*)_aligned_malloc(ng * sizeof(int), VectorSize * sizeof(float));
@@ -60,7 +60,7 @@ namespace warpcore::impl
         int* idx_base = grid->buff_idx;
         int offs = 0;
         for(int i = 0; i < num_cells; i++) {
-            int na = round_down(hist[i], VectorSize) + VectorSize;
+            int na = round_up(hist[i], VectorSize);
             grid->cells[i].n = hist[i];
             grid->cells[i].nalign = na;
             grid->cells[i].vert = vert_base + 9 * offs;

@@ -38,6 +38,7 @@ namespace warpcore::impl
 
     float reduce_add(const float* x, int n);
     int reduce_add_i32(const int* x, int n);
+    int reduce_roundup_add_i32(const int* x, int n, int r);
     int64_t reduce_add_i1(const void* x, int n);
 
     __m256i WCORE_VECCALL clamp(__m256i x, __m256i x0, __m256i x1);

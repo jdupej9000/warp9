@@ -176,6 +176,15 @@ namespace warpcore::impl
         return reduce_add_i32(sum) + ret;
     }
 
+    int reduce_roundup_add_i32(const int* x, int n, int r)
+    {
+        int ret = 0;
+        for (int i = 0; i < n; i++)
+            ret += round_up(x[i], r);
+
+        return ret;
+    }
+
     int64_t reduce_add_i1(const void* x, int n)
     {
         const uint64_t* xx = (const uint64_t*)x;
