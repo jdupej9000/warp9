@@ -94,7 +94,7 @@ namespace warpcore::impl
 
                 ctx.ntested += ne;
 
-                int collision = raytri<TRayTriTraits>(ctx.o, ctx.d, cell->vert, ne, ne, ctx.t);
+                int collision = raytri<TRayTriTraits>(ctx.o, ctx.d, cell->vert, ne, ctx.t);
                 if (collision >= 0) {
                     ctx.idx = cell->idx[collision];
                     ctx.t[0] += ctx.toffs;

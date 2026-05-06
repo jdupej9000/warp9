@@ -79,6 +79,8 @@ namespace warpcore::impl
 
     struct _nntask
     {
+        constexpr static size_t MaxScratchpad = 12;
+
         _nntask(const trigrid* g, const float* p, float clamp, float* proj) :
             grid(g), bestDist(clamp * clamp), result(proj), bestIdx(-1)
         {
@@ -90,7 +92,8 @@ namespace warpcore::impl
         float* result;
         float bestDist;
         int bestIdx;
-        p3f pt, g0, gd;        
+        p3f pt, g0, gd;
+        float buff[MaxScratchpad];
     };
 
     template<typename TPtTriTraits>
@@ -106,7 +109,7 @@ namespace warpcore::impl
         if (p3f_distsq(task.pt, closest_aabb) > task.bestDist)
             return;
 
-        alignas(32) float t[std::max(TPtTriTraits::ResultSize, 4ULL)];
+        float* t = task.buff;
 
         if (ctx.is_leaf()) {
             int cell_idx = ctx.cx0 +
@@ -118,7 +121,7 @@ namespace warpcore::impl
 
             if (cell->n > 0) {
                 float hitDist = FLT_MAX;
-                const int hitIdx = pttri<TPtTriTraits>(task.pt, cell->vert, cell->n, cell->n, t, &hitDist);
+                const int hitIdx = pttri<TPtTriTraits>(task.pt, cell->vert, cell->n, t, &hitDist);
 
                 if (hitDist < task.bestDist) {
                     task.bestDist = hitDist;
@@ -157,6 +160,7 @@ namespace warpcore::impl
     template<typename TPtTriTraits>
     int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
     {
+        static_assert(TPtTriTraits::ResultSize <= _nntask::MaxScratchpad);
         alignas(32) _nntask task{ grid, pt, clamp, proj };
         _nncell cell{ grid };
 

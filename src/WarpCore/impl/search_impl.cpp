@@ -10,7 +10,7 @@ namespace warpcore::impl
     // partially filled, where each of the x0..z2 elements only has valid data in its lower k lanes. The
     // content of the other lanes does not matter. It is advisable though to fill that with valid data
     // (e.g. repeated lower lanes) so that the arithmetic does not generate expensive NaNs.
-    void _raytri(p3f orig, p3f dir, const float* vert, int n, int stride, __m256& bestu, __m256& bestv, __m256& bestt, __m256i& besti) noexcept
+    void _raytri(p3f orig, p3f dir, const float* vert, int n, __m256& bestu, __m256& bestv, __m256& bestt, __m256i& besti) noexcept
     {
         constexpr int VectorSize = 8;
 
@@ -87,7 +87,7 @@ namespace warpcore::impl
     }
 
     // For the layout of vert, see _raytri.
-    int _pttri(p3f orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist)
+    int _pttri(p3f orig, const float* vert, int n, p3f& retBary, p3f& retPt, float& retDist)
     {
         constexpr int VectorSize = 8;
 

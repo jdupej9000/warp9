@@ -136,10 +136,10 @@ extern "C" int search_direct(int kind, const float* orig, const float* dir, cons
         return nearest<3>(vert, n, orig);
 
     case SEARCHD_RAYCAST_TRISOUP_3:
-        return raytri<RayTri_T>(warpcore::p3f_set(orig), warpcore::p3f_set(dir), vert, n, n, &t);
+        return raytri<RayTri_T>(warpcore::p3f_set(orig), warpcore::p3f_set(dir), vert, n, &t);
 
     case SEARCHD_NN_TRISOUP_3:
-        return pttri<PtTri_Blank>(warpcore::p3f_set(orig), vert, n, n, nullptr, &t);
+        return pttri<PtTri_Blank>(warpcore::p3f_set(orig), vert, n, nullptr, &t);
     }
 
     return -1;

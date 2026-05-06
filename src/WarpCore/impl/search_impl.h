@@ -41,15 +41,15 @@ namespace warpcore::impl
     };
    
 
-    void _raytri(p3f orig, p3f dir, const float* vert, int n, int stride, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept;
+    void _raytri(p3f orig, p3f dir, const float* vert, int n, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept;
 
     template<typename TTraits>
-    int raytri(p3f orig, p3f dir, const float* vert, int n, int stride, float* result) noexcept
+    int raytri(p3f orig, p3f dir, const float* vert, int n, float* result) noexcept
     {
         __m256 bestt = _mm256_set1_ps(1e30f);
         __m256i besti = _mm256_set1_epi32(-1);
         __m256 u, v;
-        _raytri(orig, dir, vert, n, stride, u, v, bestt, besti);
+        _raytri(orig, dir, vert, n, u, v, bestt, besti);
         return TTraits::store(bestt, besti, u, v, result);
     }
 
@@ -74,16 +74,16 @@ namespace warpcore::impl
     };
   
 
-    int _pttri(p3f orig, const float* vert, int n, int stride, p3f& retBary, p3f& retPt, float& retDist);
+    int _pttri(p3f orig, const float* vert, int n, p3f& retBary, p3f& retPt, float& retDist);
 
     template<typename TTraits>
-    int pttri(p3f orig, const float* vert, int n, int stride, float* result, float* pdist) noexcept
+    int pttri(p3f orig, const float* vert, int n, float* result, float* pdist) noexcept
     {
         float dist = FLT_MAX;
         p3f bary = p3f_zero();
         p3f pt = p3f_zero();
 
-        int ret = _pttri(orig, vert, n, stride, bary, pt, dist);
+        int ret = _pttri(orig, vert, n, bary, pt, dist);
         TTraits::store(pt, bary, dist, result);
         *pdist = dist;
         return ret;
