@@ -91,6 +91,21 @@ namespace Warp9Cli
             }
         }
 
+        private static PointCloud DistortPcl(PointCloud pcl, Vector3 t, float scale, float noise)
+        {
+            MeshBuilder mb = pcl.ToBuilder();
+            List<Vector3> pos = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, true).Data;
+
+            Random rand = new Random(74656);
+            for (int i = 0; i < pos.Count; i++)
+            {
+                Vector3 gn = new Vector3(rand.NextSingle() * noise, rand.NextSingle() * noise, rand.NextSingle() * noise);
+                pos[i] = scale * pos[i] + t + gn;
+            }
+
+            return mb.ToPointCloud();
+        }
+
         public static void TrigridNnSearch(int bitmapSize, int gridCells)
         {
             Console.WriteLine($"trigrid-nn");
@@ -150,5 +165,19 @@ namespace Warp9Cli
             ctx.Dispose();
         }
 
+        public static void Cpd(bool gpu)
+        {
+            Console.WriteLine($"cpd");
+            Console.WriteLine($"  gpu    : {gpu}");
+
+            Mesh pcl = LoadObjAsset("teapot.obj", Warp9.IO.ObjImportMode.PositionsOnly);
+            PointCloud pclTarget = DistortPcl(pcl, Vector3.Zero, 1.10f, 0.25f);
+
+            CpdConfiguration cpdCfg = new CpdConfiguration();
+            cpdCfg.UseGpu = gpu;
+            WarpCoreStatus stat = CpdContext.TryInitNonrigidCpd(out CpdContext? ctx, pcl, cpdCfg);
+            WarpCoreStatus regStat = ctx.Register(pclTarget, out PointCloud? pclBent, out CpdResult result);
+            Console.WriteLine($"  result : {result}");
+        }
     }
 }

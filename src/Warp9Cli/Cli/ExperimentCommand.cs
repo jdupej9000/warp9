@@ -34,6 +34,10 @@ namespace Warp9Cli.Cli
                 Experiments.TrigridNnSearch(2048, 16);
             else if (ExperimentKind == "trigrid-raycast")
                 Experiments.TrigridRaycast(2048, 16);
+            else if (ExperimentKind == "cpd-cpu")
+                Experiments.Cpd(false);
+            else if (ExperimentKind == "cpd-gpu")
+                Experiments.Cpd(true);
         }
     }
 }
