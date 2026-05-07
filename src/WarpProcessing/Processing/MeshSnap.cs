@@ -78,6 +78,7 @@ namespace Warp9.Processing
 
                 MeshBuilder mb = new MeshBuilder();
                 List<Vector3> posProj = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+                // TODO: resize once
 
                 for (int i = 0; i < nv; i++)
                 {

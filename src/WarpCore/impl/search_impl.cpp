@@ -148,7 +148,8 @@ namespace warpcore::impl
 
             // if (d3 >= 0.f && d4 <= d3) return b;
             __m256 m2 = _mm256_and_ps(mask_positive(d3), _mm256_cmp_ps(d4, d3, _CMP_LE_OQ));
-            m123456 = _mm256_or_ps(m123456, m2);
+           // m2 = _mm256_andnot_ps(m123456, m2);
+            m123456 = _mm256_or_ps(m123456, m2);            
             u = blend_in(u, _mm256_set1_ps(1.0f), m2);
             //v = _mm256_blendv_ps(v, _mm256_setzero_ps(), m2); // these lanes are already zero
 
@@ -163,7 +164,8 @@ namespace warpcore::impl
 
             // if (d6 >= 0.f && d5 <= d6) return c;
             __m256 m3 = _mm256_and_ps(mask_positive(d6), _mm256_cmp_ps(d5, d6, _CMP_LE_OQ));
-            m123456 = _mm256_or_ps(m123456, m3);
+            //m3 = _mm256_andnot_ps(m123456, m3);
+            m123456 = _mm256_or_ps(m123456, m3);            
             v = blend_in(v, _mm256_set1_ps(1.0f), m3);
             u = _mm256_blendv_ps(u, _mm256_setzero_ps(), m3); 
 
@@ -172,9 +174,9 @@ namespace warpcore::impl
 
             // if (vc <= 0.f && d1 >= 0.f && d3 <= 0.f) {...
             __m256 m4 = _mm256_and_ps(mask_negative(vc),
-                _mm256_and_ps(mask_positive(d1), mask_negative(d3)));
-                                        
-            m123456 = _mm256_or_ps(m123456, m4);
+                _mm256_and_ps(mask_positive(d1), mask_negative(d3)));                                        
+            //m4 = _mm256_andnot_ps(m123456, m4);
+            m123456 = _mm256_or_ps(m123456, m4);            
             if (!_mm256_testz_ps(m4, mask)) {
                 __m256 t = _mm256_div_ps(d1, _mm256_sub_ps(d1, d3));
                 u = blend_in(u, t, m4);
@@ -187,7 +189,8 @@ namespace warpcore::impl
             // if (vb <= 0.f && d2 >= 0.f && d6 <= 0.f) { ...
             __m256 m5 = _mm256_and_ps(mask_negative(vb),
                 _mm256_and_ps(mask_positive(d2), mask_negative(d6)));
-            m123456 = _mm256_or_ps(m123456, m5);
+            //m5 = _mm256_andnot_ps(m123456, m5);
+            m123456 = _mm256_or_ps(m123456, m5);            
             if (!_mm256_testz_ps(m5, mask)) {
                 __m256 t = _mm256_div_ps(d2, _mm256_sub_ps(d2, d6));
                 v = blend_in(v, t, m5);
@@ -201,7 +204,8 @@ namespace warpcore::impl
             __m256 m6 = _mm256_and_ps(  mask_negative(va),
                         _mm256_and_ps(  _mm256_cmp_ps(d4, d3, _CMP_GE_OQ),
                                         _mm256_cmp_ps(d5, d6, _CMP_GE_OQ)));
-            m123456 = _mm256_or_ps(m123456, m6);
+            //m6 = _mm256_andnot_ps(m123456, m6);
+            m123456 = _mm256_or_ps(m123456, m6);            
             if (!_mm256_testz_ps(m6, mask)) {
                 // const float v = (d4 - d3) / ((d4 - d3) + (d5 - d6));
                 // return b + v * (c - b);

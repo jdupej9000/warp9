@@ -38,7 +38,7 @@ namespace Warp9.Native
             return new Aabb();
         }
 
-        public bool Nearest(ReadOnlySpan<Vector3> srcSoa, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
+        public bool Nearest(ReadOnlySpan<Vector3> src, int n, float maxDist, Span<int> hitIndex, Span<ResultInfoDPtBary> result)
         {
             if (structKind != SEARCH_STRUCTURE.SEARCH_TRIGRID3)
                 return false;
@@ -48,13 +48,13 @@ namespace Warp9.Native
 
             unsafe
             {
-                fixed (Vector3* srcSoaPtr = &MemoryMarshal.GetReference(srcSoa))
+                fixed (Vector3* srcPtr = &MemoryMarshal.GetReference(src))
                 fixed (int* hitIndexPtr = &MemoryMarshal.GetReference(hitIndex))
                 fixed (ResultInfoDPtBary* hitDistPtr = &MemoryMarshal.GetReference(result))
                 {
                     return WarpCoreStatus.WCORE_OK == (WarpCoreStatus)WarpCore.search_query(
                         nativeContext, (int)SEARCH_KIND.SEARCH_NN_DPTBARY, ref cfg,
-                        (nint)srcSoaPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
+                        (nint)srcPtr, nint.Zero, n, (nint)hitIndexPtr, (nint)hitDistPtr);
                 }
             }
         }
