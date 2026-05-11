@@ -109,9 +109,9 @@ namespace warpcore::impl
                 int z0 = idx_range_chunk[4 * VectorSize + j];
                 int z1 = idx_range_chunk[5 * VectorSize + j];
     
-                for (int z = z0; z <= z1; z++)
-                for (int y = y0; y <= y1; y++)
-                for (int x = x0; x <= x1; x++) {
+                for (int z = z0; z < z1; z++)
+                for (int y = y0; y < y1; y++)
+                for (int x = x0; x < x1; x++) {
                     const int idx = get_trigrid_cell_idx(grid, x, y, z);
                     grid->cells[idx].idx[counter[idx]] = i + j;
                     counter[idx]++;
@@ -136,9 +136,9 @@ namespace warpcore::impl
                 int z0 = idx_range_chunk[4 * VectorSize + j];
                 int z1 = idx_range_chunk[5 * VectorSize + j];
 
-                for (int z = z0; z <= z1; z++)
-                for (int y = y0; y <= y1; y++)
-                for (int x = x0; x <= x1; x++) {
+                for (int z = z0; z < z1; z++)
+                for (int y = y0; y < y1; y++)
+                for (int x = x0; x < x1; x++) {
                     const int idx = get_trigrid_cell_idx(grid, x, y, z);
                     hist[idx] ++;
                 }
@@ -212,7 +212,7 @@ namespace warpcore::impl
     void make_cellidx_ranges_aosoa(const trigrid* grid, const float* vert, const int* idx, int nv, int nt, int* range)
     {
         constexpr int ROUND_FLOOR = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
-        constexpr int ROUND_CEIL = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC;
+        constexpr int ROUND_CEIL = _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC;
         const __m256i seq = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         const __m256i three = _mm256_set1_epi32(3);
 
