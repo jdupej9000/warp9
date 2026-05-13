@@ -7,6 +7,7 @@
 
 namespace warpcore::impl
 {
+    void atdba_scalar(const float* a, int n, int m, const float* b, float alpha, float* y);
     void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y);
     void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y);
 
@@ -131,8 +132,8 @@ namespace warpcore::impl
 
     float WCORE_VECCALL reduce_add(__m512 v)
     {
-        __m128 reduce = _mm_add_ps(_mm512_extractf32x4_ps(v, 0), _mm512_extractf32x4_ps(v, 1));
-        reduce = _mm_add_ps(reduce, _mm_add_ps(_mm512_extractf32x4_ps(v, 2), _mm512_extractf32x4_ps(v, 3)));
+        __m128 reduce = _mm_add_ps(_mm512_extractf32x4_ps(v, 0), _mm512_extractf32x4_ps(v, 2));
+        reduce = _mm_add_ps(reduce, _mm_add_ps(_mm512_extractf32x4_ps(v, 1), _mm512_extractf32x4_ps(v, 3)));
         reduce = _mm_hadd_ps(reduce, reduce);
         reduce = _mm_hadd_ps(reduce, reduce);
         return _mm_cvtss_f32(reduce);
@@ -410,10 +411,30 @@ namespace warpcore::impl
 
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
+        //atdba_scalar(a, n, m, b, alpha, y);
+        //return;
+        // FIXME: discrepancy between avx2 and avx512 paths
         if (has_feature(WCORE_OPTPATH::AVX512))
             atdba_avx512(a, n, m, b, alpha, y);
         else
             atdba_avx2(a, n, m, b, alpha, y);
+    }
+
+    void atdba_scalar(const float* a, int n, int m, const float* b, float alpha, float* y)
+    {
+        // alpha * A' * diag(B) * A       
+        for (int i = 0; i < m; i++) {                     
+            for (int j = 0; j < m; j++) {               
+                double aa0 = 0;
+                for (int k = 0; k < n; k++) {
+                    const double aai = a[k + i * n] * b[k];
+                    aa0 += aai * a[k + j * n];
+                }
+
+                aa0 = aa0 * alpha;
+                y[i * m + j] = aa0;
+            }
+        }
     }
 
     void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
