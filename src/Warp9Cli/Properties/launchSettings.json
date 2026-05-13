@@ -2,7 +2,7 @@
   "profiles": {
     "Warp9Cli": {
       "commandName": "Project",
-      "commandLineArgs": "--experiment trigrid-nn --experiment trigrid-raycast"
+      "commandLineArgs": "--experiment trigrid-nn,trigrid-raycast,cpd-cpu,cpd-gpu"
     }
   }
 }

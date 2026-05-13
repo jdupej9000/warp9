@@ -23,7 +23,6 @@ namespace warpcore
     int p3f_min_mask(p3f x) noexcept;
     p3f p3f_min_mask_full(p3f x) noexcept;
     float p3f_max(p3f a) noexcept;
-    float p3f_min_removenan(p3f a) noexcept;
     p3f p3f_abs(p3f x) noexcept;
     p3f p3f_sign(p3f x) noexcept;
     p3i p3f_isign(p3f x) noexcept;
@@ -66,24 +65,12 @@ namespace warpcore
     int p3i_sum(p3i x) noexcept;
     bool p3i_equal(p3i x, p3i y) noexcept;
 
-   // p3f p3f_to_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
-    p3f p3f_from_bary(p3f a, p3f b, p3f c, p3f p) noexcept;
-
-    p3f p3f_proj_to_plane(planef plane, p3f pt) noexcept;
-    planef planef_from_center_normal(p3f c, p3f n) noexcept;
-    planef planef_from_center_normaldir(p3f c, p3f nd) noexcept;
-
     float intersect_ray_aabb(p3f o, p3f d, p3f box0, p3f box1) noexcept;
     bool intersect_ray_aabb(p3f o, p3f d, p3f box0, p3f box1, float& t0, float& t1) noexcept;
 
-    bool intersect_tri_aabb(p3f box0, p3f box1, p3f t0, p3f t1, p3f t2) noexcept;
     bool intersect_aabb_aabb(p3f a0, p3f a1, p3f b0, p3f b1) noexcept;
-    void aabb_from_tri(p3f t0, p3f t1, p3f t2, p3f& box0, p3f& box1) noexcept; 
-    p3f normal_from_tri(p3f a, p3f b, p3f c) noexcept;
     void tri_transpose_inplace(p3f& a, p3f& b, p3f& c) noexcept;
 
-    p3f p3f_proj_to_tri_bary(p3f aa, p3f bb, p3f cc, p3f pt) noexcept;
-    
     template<int K>
     p3f p3f_broadcast(p3f a) noexcept
     {
