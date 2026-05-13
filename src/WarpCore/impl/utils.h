@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory.h>
 
+// Equals to for(i=0, i < m; i++) if(allowed(i)) { fun; }
 #define FOR_MASKED(i,m,allow,nallow,neg_allow,fun) { \
     constexpr size_t __bs = 32; \
     size_t __mb = round_up((int)(m), (int)(__bs)); \
