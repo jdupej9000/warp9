@@ -150,7 +150,9 @@ namespace warpcore
 
     float p3f_dot(p3f a, p3f b) noexcept
     {
-        return _mm_cvtss_f32(_mm_dp_ps(a, b, 0x71));
+        __m128 ab = _mm_mul_ps(a, b);
+        return _mm_cvtss_f32(_mm_add_ps(ab, _mm_add_ps(_mm_permute_ps(ab, 1), _mm_permute_ps(ab, 2))));
+        //return _mm_cvtss_f32(_mm_dp_ps(a, b, 0x71));
     }
 
     float p3f_lensq(p3f a) noexcept
@@ -181,7 +183,14 @@ namespace warpcore
 
     p3f p3f_normalize(p3f a) noexcept
     {
-        return _mm_mul_ps(a, _mm_rsqrt_ps(_mm_dp_ps(a, a, 0x7F)));
+        __m128 aa = _mm_mul_ps(a, a);
+
+        // the first permute is only to set the upper lane and prevent NaNs when doing rsqrt.
+        aa = _mm_add_ps(_mm_permute_ps(aa, 0b00100100), _mm_add_ps(
+            _mm_permute_ps(aa, 0b00001001),
+            _mm_permute_ps(aa, 0b00010010)));
+
+        return _mm_mul_ps(a, _mm_rsqrt_ps(aa));
     }
 
     p3f p3f_sub(p3f a, p3f b) noexcept
