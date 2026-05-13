@@ -119,7 +119,7 @@ namespace warpcore
     }
 
    
-    p3f p3f_abs(p3f x) noexceptFss
+    p3f p3f_abs(p3f x) noexcept
     {
         // clear the sign bit
         return _mm_andnot_ps(_mm_set1_ps(-0.0f), x);
