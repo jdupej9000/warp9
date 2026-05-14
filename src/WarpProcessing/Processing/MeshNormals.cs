@@ -19,21 +19,25 @@ namespace Warp9.Processing
     {
         public static Mesh MakeNormals(Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
         {
-            return MakeNormals(m, m, algo).ToMesh();
+            return MakeNormals(m.ToBuilder(), m, m, algo).ToMesh();
         }
 
-        public static MeshBuilder MakeNormals(PointCloud? pcl, Mesh m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
+        public static MeshBuilder MakeNormals(PointCloud? pcl, IFaceCollection m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
         {
             if (pcl is null)
                 return new MeshBuilder();
 
+            return MakeNormals(pcl.ToBuilder(), pcl, m, algo);
+        }
+
+        public static MeshBuilder MakeNormals(MeshBuilder mb, PointCloud pcl, IFaceCollection m, NormalsAlgorithm algo = NormalsAlgorithm.FastRobust)
+        {
             if(!pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posData))
                 throw new InvalidOperationException();
 
             if (!m.TryGetIndexData(out ReadOnlySpan<FaceIndices> faces))
                 throw new InvalidOperationException();
 
-            MeshBuilder mb = pcl.ToBuilder();
             int nv = pcl.VertexCount;
 
             List<Vector3> normalsSeg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Normal, false).Data;

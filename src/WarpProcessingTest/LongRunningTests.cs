@@ -80,7 +80,7 @@ namespace Warp9.Test
 
             HeadlessRenderer rend = TestUtils.CreateRenderer();
             rend.RasterFormat = new RasterInfo(1024, 1024);
-            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);
+            Matrix4x4 modelMat = Matrix4x4.CreateTranslation(-0.75f, -1.0f, -1.0f);            
             for (int i = 0; i < corrPcls.Count; i++)
             {
                 MeshBuilder mb = Mesh.FromPointCloud(corrPcls[i], baseMesh).ToBuilder();
@@ -91,9 +91,13 @@ namespace Warp9.Test
                 colorSeg.Data.Clear();
                 colorSeg.Data.AddRange(colors);
 
+                //MeshNormals.MakeNormals(mb, corrPcls[i], baseMesh);
+                Mesh m = mb.ToMesh();
+
                 TestUtils.Render(rend, $"FacesCpdDcaTest_{i}.png", modelMat,
                     //new TestRenderItem(TriStyle.MeshFilled, rigidPcls[i], Color.DodgerBlue),
-                    new TestRenderItem(TriStyle.MeshFilledVertexColor, mb.ToMesh()));
+                    new TestRenderItem(TriStyle.MeshFilledVertexColor, m));
+                    //new TestRenderItem(TriStyle.LineSegments, TestUtils.PositionNormalToLineSegments(m, 0.1f), wireCol: Color.LightGreen));
             }
 
             TestUtils.Render(rend, $"FacesCpdDcaTest_base.png", modelMat,
