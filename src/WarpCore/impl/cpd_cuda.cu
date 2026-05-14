@@ -50,7 +50,7 @@ void cpd_deinit_cuda(void* pDevCtx, void* pStream)
     cudaStreamDestroy((cudaStream_t)pStream);
 }
 
-float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n)
+double cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n)
 {
     cudaStream_t stream = (cudaStream_t)pStream;
     float* dx = (float*)pDevCtx;
@@ -75,7 +75,7 @@ float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, cons
 
     delete[] sumpart;
 
-    return (float)sum / (3 * m * n);
+    return sum / (3 * m * n);
 }
 
 float cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px)

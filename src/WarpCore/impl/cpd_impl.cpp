@@ -77,13 +77,13 @@ namespace warpcore::impl
         delete[] tau;
     }
 
-    float cpd_estimate_sigma(const float* x, const float* y, int m, int n, float* tmp)
+    double cpd_estimate_sigma(const float* x, const float* y, int m, int n, float* tmp)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         cpd_sigmapart(m, n, x, y, tmp);
-        return reduce_add(tmp, n) / (3 * m * n);
+        return reduce_add2(tmp, n) / (3 * m * n);
     }
 
     double cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
@@ -516,9 +516,11 @@ namespace warpcore::impl
         constexpr int BlockSize = 8;        
         const int nb = round_down(n, BlockSize);
 
+        __m256 one = _mm256_set1_ps(1);
+
         for (int i = 0; i < nb; i += BlockSize) {            
             const __m256 xx = _mm256_loadu_ps(x + i);
-            _mm256_storeu_ps(x + i, _mm256_rcp_ps(xx));
+            _mm256_storeu_ps(x + i, _mm256_div_ps(one, xx));
         }
 
         for (int i = nb; i < n; i++)

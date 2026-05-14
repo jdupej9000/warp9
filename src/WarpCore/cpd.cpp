@@ -11,7 +11,7 @@
 extern bool cpd_init_cuda(int m, int n, const void* x, void** ppDevCtx, void** ppStream);
 extern void cpd_deinit_cuda(void* pDevCtx, void* pStream);
 extern float cpd_estep_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* pt1p1px);
-extern float cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n);
+extern double cpd_estimate_sigma_cuda(void* pDevCtx, void* pStream, const float* x, const float* t, int m, int n);
 int cpd_get_convergence(const cpdinfo* cpd, int it, float sigma2, float sigma2_old, float err, float err_old);
 
 constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
@@ -102,7 +102,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         }
     }
 
-    float sigma2 = cpd->sigma2init;
+    double sigma2 = cpd->sigma2init;
 
     if (cpd->sigma2init <= 0.0f) {
         if (use_cuda)
@@ -122,7 +122,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
     int conv = 0;
     double l0 = 0;
-    float tol = FLT_MAX, tol_old = FLT_MAX;
+    double tol = FLT_MAX, tol_old = FLT_MAX;
     int it = 0;
     int64_t etime = 0;
 
@@ -162,8 +162,8 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             break;
         }
         
-        tol = (float)abs((l0 - l0_old) / l0);
-        const float sigma2_old = sigma2;
+        tol = abs((l0 - l0_old) / l0);
+        const double sigma2_old = sigma2;
         sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
