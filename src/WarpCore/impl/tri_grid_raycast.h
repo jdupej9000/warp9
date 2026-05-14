@@ -5,6 +5,10 @@
 
 namespace warpcore::impl
 {
+    // Traverse a regular grid of dimensions dim along the ray p0,p1. These coordinates are
+    // in grid index dimensions. 3D-DDA algorithm is used. For each visited cell, fun is called.
+    // If fun returns false at any cell, the traversal is stopped and this call returns true.
+    // If fun never signals termination by returning false, false is returned here.
     template<typename TCtx>
     bool WCORE_VECCALL traverse_3ddda(p3f p0, p3f p1, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
     {

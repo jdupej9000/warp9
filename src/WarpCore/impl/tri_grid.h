@@ -7,7 +7,7 @@ namespace warpcore::impl
     // map to the AoSoA blocks. The pointers vert, idx point to locations in
     // trigrid::buff_vert, buff_idx and are aligned to AVX register size (32B). If
     // the number of vertices in a cell (trigrid_cell::n) is not divisible by 8, the
-    // upper parts of each register in an AoSoA block must be masked away.
+    // upper parts of each register in an AoSoA block must be masked away when read.
     // trigrid_cell::nalign is merely trigrid_cell::n rounded up to multiples of 8.
     struct trigrid_cell {
         int n, nalign;
@@ -32,7 +32,6 @@ namespace warpcore::impl
 
     void trigrid_build(trigrid* grid, const float* vert, const int* idx, int nv, int nt, int k);
     void trigrid_destroy(trigrid* grid);
-    int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj);
     const trigrid_cell* get_trigrid_cell(const trigrid* g, int x, int y, int z) noexcept;
     int get_trigrid_cell_idx(const trigrid* g, int x, int y, int z) noexcept;
     bool is_cell_in_grid(const trigrid* g, int x, int y, int z) noexcept;

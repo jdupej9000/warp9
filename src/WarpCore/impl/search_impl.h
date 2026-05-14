@@ -7,6 +7,7 @@
 
 namespace warpcore::impl
 {
+    // Traits for raytri that store the distance to hit for each query.
     struct RayTri_T
     {
         static inline int WCORE_VECCALL store(__m256 bestt, __m256i besti, __m256, __m256, float* result) noexcept
@@ -20,6 +21,7 @@ namespace warpcore::impl
         }
     };
 
+    // Traits for raytri that store {distance, u, v, w} for each query.
     struct RayTri_TBary
     {
         static inline int WCORE_VECCALL store(__m256 bestt, __m256i besti, __m256 u, __m256 v, float* result) noexcept
@@ -43,6 +45,9 @@ namespace warpcore::impl
 
     void _raytri(p3f orig, p3f dir, const float* vert, int n, __m256& u, __m256& v, __m256& bestt, __m256i& besti) noexcept;
 
+    // Cast a ray from orig along dir and intersect triangles in the AoSoA-ordered array vert (containing n triangles).
+    // For the closest hit (if any), return the index of hit triangle and write intersection data to result according
+    // to TTraits. If there is no hit, -1 is reutrned and result is left unmodified.
     template<typename TTraits>
     int raytri(p3f orig, p3f dir, const float* vert, int n, float* result) noexcept
     {
@@ -53,6 +58,7 @@ namespace warpcore::impl
         return TTraits::store(bestt, besti, u, v, result);
     }
 
+    // Traits for pttri that stores nothing for queries.
     struct PtTri_Blank
     {
         constexpr static size_t ResultSize = 1;
@@ -61,6 +67,7 @@ namespace warpcore::impl
         }
     };
 
+    // Traits for pttri that stores for each query: {distance, hit.x, hit.y, hit.z, hit.u, hit.v, undefined, undefined}
     struct PtTri_DPtBary
     {
         constexpr static size_t ResultSize = 8;
@@ -76,6 +83,10 @@ namespace warpcore::impl
 
     int _pttri(p3f orig, const float* vert, int n, p3f& retBary, p3f& retPt, float& retDist);
 
+    // Find the closest triangle to orig in the AoSoA-ordered array vert that contains n triangles. Store
+    // the result according to TTraits into result and return the index of the hit. pdist is read to clamp
+    // the maximum search distance and written to indicate the new hit distance. pdist is squared distance.
+    // If there is no hit closer than pdist, returns -1.
     template<typename TTraits>
     int pttri(p3f orig, const float* vert, int n, float* result, float* pdist) noexcept
     {
@@ -89,6 +100,8 @@ namespace warpcore::impl
         return ret;
     }
 
+    // Assuming vert is an array that stores unshared triangles in AoSoA ordering {ax0..ax7,ay0..ay7,az0..az7..cz7}+,
+    // extract the vertex coordinates for idx-th triangle and store into a,b,c.
     template<int NRegSize>
     void extract_aosoa_triangle(const float* vert, int idx, p3f& a, p3f& b, p3f& c)
     {
