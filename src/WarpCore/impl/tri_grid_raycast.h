@@ -10,7 +10,7 @@ namespace warpcore::impl
     // If fun returns false at any cell, the traversal is stopped and this call returns true.
     // If fun never signals termination by returning false, false is returned here.
     template<typename TCtx>
-    bool WCORE_VECCALL traverse_3ddda(p3f p0, p3f p1, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
+    __declspec(noalias) bool WCORE_VECCALL traverse_3ddda(p3f p0, p3f p1, p3i dim, TCtx ctx, bool (*fun)(p3i pt, TCtx ctx))
     {
         p3i dimm1 = _mm_sub_epi32(dim, p3i_set(1));
         p3f d = p3f_sub(p1, p0);
@@ -50,7 +50,7 @@ namespace warpcore::impl
     }
 
     template<typename TRayTriTraits>
-    int trigrid_raycast(const trigrid* grid, const float* orig, const float* dir, float* t)
+    __declspec(noalias) int trigrid_raycast(const trigrid* grid, const float* orig, const float* dir, float* t)
     {
         using namespace warpcore;
 
@@ -85,7 +85,7 @@ namespace warpcore::impl
             p3f_mul(p3f_sub(e, grid0), gridd),
             p3i_set(grid->ncell),
             ctx,
-            [](p3i c, raycast_ctx& ctx) -> bool {
+            [](p3i c, raycast_ctx& ctx) __declspec(noalias) -> bool {
                 alignas(16) int cidx[4];
                 _mm_store_si128((__m128i*)cidx, c);
                 const trigrid_cell* cell = get_trigrid_cell(ctx.g, cidx[0], cidx[1], cidx[2]);

@@ -97,7 +97,7 @@ namespace warpcore::impl
     };
 
     template<typename TPtTriTraits>
-    void nn_inner(_nntask& task, const _nncell& ctx)
+    __declspec(noalias) void nn_inner(_nntask& task, const _nncell& ctx)
     {
         if (ctx.is_degenerate())
             return;
@@ -158,7 +158,7 @@ namespace warpcore::impl
     }
 
     template<typename TPtTriTraits>
-    int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
+    __declspec(noalias) int trigrid_nn(const trigrid* grid, const float* pt, float clamp, float* proj)
     {
         static_assert(TPtTriTraits::ResultSize <= _nntask::MaxScratchpad);
         alignas(32) _nntask task{ grid, pt, clamp, proj };
