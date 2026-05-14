@@ -217,7 +217,7 @@ namespace warpcore::impl
             }
 
             // m7 = mask & ~(m1 | m2 | ... | m6)           
-            __m256 m7 = _mm256_andnot_ps(mask, m123456);
+            __m256 m7 = _mm256_andnot_ps(m123456, mask);
 
             // const float denom = 1.f / (va + vb + vc);
             // const float v = vb * denom;
