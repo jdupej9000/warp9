@@ -282,6 +282,7 @@
     <ClCompile Include="pca.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="test\p3f_test.cpp" />
+    <ClCompile Include="test\test_geom.cpp" />
     <ClCompile Include="test\test_utils.cpp" />
     <ClCompile Include="test\utils_test.cpp" />
     <ClCompile Include="test\vec_math_test.cpp" />
