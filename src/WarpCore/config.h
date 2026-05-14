@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include <assert.h>
 
+// Set to have CDP use double accumulators in some cases, instead of float. This should
+// address some numerical stability issues.
+#define WCORE_CPD_DOUBLE_ACCUM
+
 #ifdef _MSC_VER
 
     #define STACK_ALLOC(T,N) (T*)_malloca((N) * sizeof(T))
@@ -24,7 +28,7 @@
 
 #endif
 
-#define WCORE_VER (0001)
+#define WCORE_VER (0002)
 
 #define WCORE_ASSERT(x) assert(x)
 

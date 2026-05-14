@@ -16,7 +16,7 @@ namespace warpcore::impl
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
-    float cpd_error(int n, const float* psum, float sigma2);
+    double cpd_error(int n, const float* psum, float sigma2);
     void cpd_recip(int n, float* x);
 
     void cpd_psumpt1(int i0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
@@ -86,7 +86,7 @@ namespace warpcore::impl
         return reduce_add(tmp, n) / (3 * m * n);
     }
 
-    float cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
+    double cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -101,7 +101,7 @@ namespace warpcore::impl
         else
             cpd_psumpt1_avx2(m, n, thresh, factor, denom, x, t, psum, pt1);
        
-        float tol = cpd_error(n, psum, sigma2);
+        double tol = cpd_error(n, psum, sigma2);
         cpd_recip(n, psum);
 
         if (has_feature(WCORE_OPTPATH::AVX512))          
@@ -112,7 +112,7 @@ namespace warpcore::impl
         return tol;
     }
 
-    float cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
+    double cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
     {
         float* _p0 = tmp;
         float* _p1 = _p0 + m * k;
@@ -176,7 +176,11 @@ namespace warpcore::impl
 
         replace_nan(_p3, k * 3, 0);
 
-        const float ret = lambda / 2 * tratdba(_p3, k, 3, l);
+#if defined(WCORE_CPD_DOUBLE_ACCUM)
+        const double ret = lambda / 2 * tratdba2(_p3, k, 3, l);
+#else
+        const double ret = lambda / 2 * tratdba(_p3, k, 3, l);
+#endif
 
         dxa(_p3, l, k, 3, _p0);
         // _p0 (k,3): diag(l) * q^T * w
@@ -188,14 +192,21 @@ namespace warpcore::impl
         return ret;
     }
 
-    float cpd_update_sigma2(const float* x, const float* t, const float* pt1, const float* p1, const float* px, int m, int n)
+    double cpd_update_sigma2(const float* x, const float* t, const float* pt1, const float* p1, const float* px, int m, int n)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
+#if defined(WCORE_CPD_DOUBLE_ACCUM)
+        double ret = tratdba2(x, n, 3, pt1) + tratdba2(t, m, 3, p1);
+        //ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
+        ret -= 2 * dot2(px, t, m * 3); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
+        return ret / (3 * reduce_add2(p1, m));
+#else
         double ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
-        ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
+        ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);       
         return (float)ret / (3 * reduce_add(p1, m));
+#endif
     }
 
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi)
@@ -464,13 +475,28 @@ namespace warpcore::impl
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
     }
 
-    float cpd_error(int n, const float* psum, float sigma2)
+    double cpd_error(int n, const float* psum, float sigma2)
     {
         constexpr int BlockSize = 8;
         const int nb = round_down(n, BlockSize);
 
-        __m256 err8 = _mm256_setzero_ps();
+#if defined(WCORE_CPD_DOUBLE_ACCUM)
+        __m256d err4 = _mm256_setzero_pd();
+        for (int i = 0; i < nb; i += BlockSize) {
+            __m256 logx = _mm256_log_ps(_mm256_loadu_ps(psum + i));
+            err4 = _mm256_add_pd(err4,
+                _mm256_add_pd(
+                    _mm256_cvtps_pd(_mm256_extractf128_ps(logx, 0)), 
+                    _mm256_cvtps_pd(_mm256_extractf128_ps(logx, 1))));
+        }
 
+        double err = 0;
+        for (int i = nb; i < n; i++)
+            err += logf(psum[i]);
+
+        err += reduce_add(err4);
+#else
+        __m256 err8 = _mm256_setzero_ps();
         for (int i = 0; i < nb; i += BlockSize) {
             const __m256 x = _mm256_loadu_ps(psum + i);
             err8 = _mm256_add_ps(err8, _mm256_log_ps(x));
@@ -481,8 +507,8 @@ namespace warpcore::impl
             err += logf(psum[i]);
 
         err += reduce_add(err8);
-
-        return -err + 3 * n * logf(sigma2) / 2;
+#endif
+        return -err + 3 * n * log(sigma2) / 2;
     }
 
     void cpd_recip(int n, float* x)

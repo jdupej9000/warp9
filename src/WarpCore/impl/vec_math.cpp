@@ -162,6 +162,25 @@ namespace warpcore::impl
         return reduce_add(sum) + ret;
     }
 
+    double reduce_add2(const float* x, int n)
+    {
+        __m256d sum = _mm256_setzero_pd();
+
+        int n8 = round_down(n, 8);
+        for (int i = 0; i < n8; i += 8) {
+            __m256 xi = _mm256_loadu_ps(x + i);
+            sum = _mm256_add_pd(sum, _mm256_add_pd(
+                _mm256_cvtps_pd(_mm256_extractf128_ps(xi, 0)), 
+                _mm256_cvtps_pd(_mm256_extractf128_ps(xi, 1))));
+        }
+
+        double ret = 0;
+        for (int i = n8; i < n; i++)
+            ret += x[i];
+
+        return reduce_add(sum) + ret;
+    }
+
     int reduce_add_i32(const int* x, int n)
     {
         __m256i sum = _mm256_setzero_si256();
@@ -411,32 +430,13 @@ namespace warpcore::impl
 
     void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
-        //atdba_scalar(a, n, m, b, alpha, y);
-        //return;
         // FIXME: discrepancy between avx2 and avx512 paths
         if (has_feature(WCORE_OPTPATH::AVX512))
             atdba_avx512(a, n, m, b, alpha, y);
         else
             atdba_avx2(a, n, m, b, alpha, y);
     }
-
-    void atdba_scalar(const float* a, int n, int m, const float* b, float alpha, float* y)
-    {
-        // alpha * A' * diag(B) * A       
-        for (int i = 0; i < m; i++) {                     
-            for (int j = 0; j < m; j++) {               
-                double aa0 = 0;
-                for (int k = 0; k < n; k++) {
-                    const double aai = a[k + i * n] * b[k];
-                    aa0 += aai * a[k + j * n];
-                }
-
-                aa0 = aa0 * alpha;
-                y[i * m + j] = aa0;
-            }
-        }
-    }
-
+     
     void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A
@@ -495,29 +495,35 @@ namespace warpcore::impl
     {
         // alpha * A' * diag(B) * A
         int m2 = round_down(m, 2);
-        int n8 = round_down(n, 8);
+        int n16 = round_down(n, 16);
 
         for (int i = 0; i < m; i++) {
             int m2i = ((i & 0x1) == 0) ? m2 : (m2 - 1);
             for (int j = i; j < m2i; j += 2) {
-                __m256 a0 = _mm256_setzero_ps();
-                __m256 a1 = _mm256_setzero_ps();
-                for (int k = 0; k < n8; k += 8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
-                    a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
-                    a1 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + (j + 1) * n), a1);
+                // we double up here to maintain the numerical profile of the avx512 path, but stil no gouda
+                __m256 a0a = _mm256_setzero_ps(), a0b = _mm256_setzero_ps();
+                __m256 a1a = _mm256_setzero_ps(), a1b = _mm256_setzero_ps();
+                for (int k = 0; k < n16; k += 16) {
+                    const __m256 aai0 = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
+                    const __m256 aai1 = _mm256_mul_ps(_mm256_loadu_ps(a + k + 8 + i * n), _mm256_loadu_ps(b + k + 8));
+
+                    a0a = _mm256_fmadd_ps(aai0, _mm256_loadu_ps(a + k + j * n), a0a);
+                    a0b = _mm256_fmadd_ps(aai1, _mm256_loadu_ps(a + k + 8 + j * n), a0b);
+
+                    a1a = _mm256_fmadd_ps(aai0, _mm256_loadu_ps(a + k + (j + 1) * n), a1a);
+                    a1b = _mm256_fmadd_ps(aai1, _mm256_loadu_ps(a + k + 8 + (j + 1) * n), a1b);
                 }
 
                 float aa0 = 0;
                 float aa1 = 0;
-                for (int k = n8; k < n; k++) {
+                for (int k = n16; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
-                aa0 = (reduce_add(a0) + aa0) * alpha;
-                aa1 = (reduce_add(a1) + aa1) * alpha;
+                aa0 = (reduce_add(a0a) + reduce_add(a0b) + aa0) * alpha;
+                aa1 = (reduce_add(a1a) + reduce_add(a1b) + aa1) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
                 y[i * m + j + 1] = aa1;
@@ -525,19 +531,21 @@ namespace warpcore::impl
             }
 
             for (int j = m2i; j < m; j++) {
-                __m256 a0 = _mm256_setzero_ps();
-                for (int k = 0; k < n8; k += 8) {
-                    const __m256 aai = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
-                    a0 = _mm256_fmadd_ps(aai, _mm256_loadu_ps(a + k + j * n), a0);
+                __m256 a0a = _mm256_setzero_ps(), a0b = _mm256_setzero_ps();
+                for (int k = 0; k < n16; k += 16) {
+                    const __m256 aai0 = _mm256_mul_ps(_mm256_loadu_ps(a + k + i * n), _mm256_loadu_ps(b + k));
+                    const __m256 aai1 = _mm256_mul_ps(_mm256_loadu_ps(a + k + 8 + i * n), _mm256_loadu_ps(b + k + 8));
+                    a0a = _mm256_fmadd_ps(aai0, _mm256_loadu_ps(a + k + j * n), a0a);
+                    a0b = _mm256_fmadd_ps(aai1, _mm256_loadu_ps(a + k + 8 + j * n), a0b);
                 }
 
                 float aa0 = 0;
-                for (int k = n8; k < n; k++) {
+                for (int k = n16; k < n; k++) {
                     const float aai = a[k + i * n] * b[k];
                     aa0 += aai * a[k + j * n];
                 }
 
-                aa0 = (reduce_add(a0) + aa0) * alpha;
+                aa0 = (reduce_add(a0a) + reduce_add(a0b) + aa0) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }
@@ -588,6 +596,52 @@ namespace warpcore::impl
         return reduce_add(ret8) + ret;
     }
 
+    double tratdba2(const float* a, int n, int m, const float* b)
+    {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
+        // trace(A' * diag(B) * A)
+
+        __m256d ret4 = _mm256_setzero_pd();
+        float ret = 0;
+
+        int n16 = round_down(n, 16);
+        for (int i = 0; i < m; i++) {
+            const float* ai = a + i * n;
+            __m256d accum = _mm256_setzero_pd(),
+                accum2 = _mm256_setzero_pd();
+
+            for (int j = 0; j < n16; j += 16) {
+                const __m256 aj0 = _mm256_loadu_ps(ai + j);
+                const __m256 aj1 = _mm256_loadu_ps(ai + j + 8);
+
+                const __m256 bj0 = _mm256_loadu_ps(b + j);
+                const __m256 bj1 = _mm256_loadu_ps(b + j + 8);
+
+                const __m256 p0 = _mm256_mul_ps(_mm256_mul_ps(aj0, aj0), bj0);
+                const __m256 p1 = _mm256_mul_ps(_mm256_mul_ps(aj1, aj1), bj1);
+
+                accum = _mm256_add_pd(accum,
+                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(p0, 0)), _mm256_cvtps_pd(_mm256_extractf128_ps(p0, 1))));
+                accum2 = _mm256_add_pd(accum2,
+                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(p1, 0)), _mm256_cvtps_pd(_mm256_extractf128_ps(p1, 1))));
+            }
+
+            ret4 = _mm256_add_pd(ret4, _mm256_add_pd(accum, accum2));
+
+            double part = 0;
+            for (int j = n16; j < n; j++) {
+                const double aj = ai[j];
+                part += aj * aj * b[j];
+            }
+
+            ret += part;
+        }
+
+        return reduce_add(ret4) + ret;
+    }
+
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res)
     {
         constexpr int BlockSize = 8;
@@ -621,6 +675,28 @@ namespace warpcore::impl
         }
 
         float sum = 0;
+        for (int i = nb; i < n; i++) {
+            sum += x[i] * y[i];
+        }
+
+        return reduce_add(sumb) + sum;
+    }
+
+    double dot2(const float* x, const float* y, int n)
+    {
+        const int BlockSize = 8;
+        const int nb = round_down(n, BlockSize);
+
+        __m256d sumb = _mm256_setzero_pd();
+        for (int i = 0; i < nb; i += BlockSize) {
+            __m256 xyi = _mm256_mul_ps(_mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i));
+
+            sumb = _mm256_add_pd(sumb, _mm256_add_pd(
+                _mm256_cvtps_pd(_mm256_extractf128_ps(xyi, 0)),
+                _mm256_cvtps_pd(_mm256_extractf128_ps(xyi, 1))));
+        }
+
+        double sum = 0;
         for (int i = nb; i < n; i++) {
             sum += x[i] * y[i];
         }

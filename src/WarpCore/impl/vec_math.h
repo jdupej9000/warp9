@@ -37,6 +37,7 @@ namespace warpcore::impl
     void reduce_minmax(const float* x, int n, float* xmin, float* xmax);
 
     float reduce_add(const float* x, int n);
+    double reduce_add2(const float* x, int n);
     int reduce_add_i32(const int* x, int n);
     int reduce_roundup_add_i32(const int* x, int n, int r);
     int64_t reduce_add_i1(const void* x, int n);
@@ -57,11 +58,13 @@ namespace warpcore::impl
 
     // trace(A^T * diag(b) * A)
     float tratdba(const float* a, int n, int m, const float* b);
+    double tratdba2(const float* a, int n, int m, const float* b);
 
     // res = sum_i((cols_i-center) * weights_i)
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res);
 
     float dot(const float* x, const float* y, int n);
+    double dot2(const float* x, const float* y, int n);
     __m256 WCORE_VECCALL mask_positive(__m256 x) noexcept;
     __m256 WCORE_VECCALL mask_negative(__m256 x) noexcept;
     void scale(float* x, float f, int n);
