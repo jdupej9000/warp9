@@ -362,13 +362,16 @@ namespace Warp9.Test
             {
                 RenderItemBase rib = i.ToRenderItem();
                 if (rib is RenderItemMesh rim)
+                {
                     rim.ModelMatrix = modelMat;
+                    rim.RenderCull = false;
+                }
                 else if (rib is RenderItemInstancedMesh riim)
                     riim.BaseModelMatrix = modelMat;
                
                 rend.AddRenderItem(rib);
             }
-
+            
             rend.CanvasColor = Color.Black;
             rend.Present();
 
@@ -379,6 +382,28 @@ namespace Warp9.Test
                 bmp.Save(fullPath);
                 Console.WriteLine("Saved " + fullPath);
             }
+        }
+
+        public static PointCloud PositionNormalToLineSegments(PointCloud pcl, float scale = 1)
+        {
+            int n = pcl.VertexCount;
+            if (!pcl.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3> posSeg) ||
+                !pcl.TryGetData(MeshSegmentSemantic.Normal, out BufferSegment<Vector3> normSeg))
+                throw new InvalidOperationException();
+
+            ReadOnlySpan<Vector3> pos = posSeg.Data;
+            ReadOnlySpan<Vector3> norm = normSeg.Data;
+
+            MeshBuilder mb = new MeshBuilder();
+            List<Vector3> seg = mb.GetSegmentForEditing<Vector3>(MeshSegmentSemantic.Position, false).Data;
+
+            for (int i = 0; i < n; i++)
+            {
+                seg.Add(pos[i]);
+                seg.Add(pos[i] + scale * norm[i]);
+            }
+
+            return mb.ToPointCloud();
         }
 
         public static void GenerateGrid(int nx, int ny, Vector3 p00, Vector3 p01, Vector3 p10, out Vector3[] p)

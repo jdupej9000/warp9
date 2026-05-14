@@ -30,6 +30,10 @@ namespace Warp9.Test
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "WithNormalsTest_0.png", TeapotModelMatrix,
                 new TestRenderItem(TriStyle.MeshFilled, teapotNorm, mrs: MeshRenderStyle.PhongBlinn));
+
+            TestUtils.Render(rend, "WithNormalsTest_1.png", TeapotModelMatrix,
+               new TestRenderItem(TriStyle.MeshFilled, teapotNorm, mrs: MeshRenderStyle.PhongBlinn),
+               new TestRenderItem(TriStyle.LineSegments, TestUtils.PositionNormalToLineSegments(teapotNorm, 0.25f), wireCol: Color.LightGreen));
         }
 
         [TestMethod]
@@ -48,6 +52,10 @@ namespace Warp9.Test
             HeadlessRenderer rend = TestUtils.CreateRenderer(false);
             TestUtils.Render(rend, "VertexSharingTest_0.png", TeapotModelMatrix,
                 new TestRenderItem(TriStyle.MeshFilled, teapotNorm, mrs: MeshRenderStyle.PhongBlinn));
+
+            TestUtils.Render(rend, "VertexSharingTest_1.png", TeapotModelMatrix,
+               new TestRenderItem(TriStyle.MeshFilled, teapotNorm, mrs: MeshRenderStyle.PhongBlinn),
+               new TestRenderItem(TriStyle.LineSegments, TestUtils.PositionNormalToLineSegments(teapotNorm, 0.25f), wireCol: Color.LightGreen));
         }
 
         [TestMethod]
