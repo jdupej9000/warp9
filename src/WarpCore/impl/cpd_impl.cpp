@@ -16,7 +16,7 @@ namespace warpcore::impl
     void cpd_sample_g(const float* y, int m, int col, float beta, float* gi);
     void cpd_make_lambda(const float* y, int m, int k, float beta, const float* q, float* lambda);
     void cpd_sigmapart(int m, int n, const float* x, const float* t, float* si2partial);
-    float cpd_error(int n, const float* psum, float sigma2);
+    double cpd_error(int n, const float* psum, double sigma2);
     void cpd_recip(int n, float* x);
 
     void cpd_psumpt1(int i0, int m, int n, float thresh, float expFactor, float denomAdd, const float* x, const float* t, float* psum, float* pt1);
@@ -86,7 +86,7 @@ namespace warpcore::impl
         return reduce_add(tmp, n) / (3 * m * n);
     }
 
-    float cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
+    double cpd_estep(const float* x, const float* t, int m, int n, float w, float sigma2, float denom, float* psum, float* pt1, float* p1, float* px)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -101,7 +101,7 @@ namespace warpcore::impl
         else
             cpd_psumpt1_avx2(m, n, thresh, factor, denom, x, t, psum, pt1);
        
-        float tol = cpd_error(n, psum, sigma2);
+        double tol = cpd_error(n, psum, sigma2);
         cpd_recip(n, psum);
 
         if (has_feature(WCORE_OPTPATH::AVX512))          
@@ -112,78 +112,97 @@ namespace warpcore::impl
         return tol;
     }
 
-    float cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
+    double cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, double sigma2, double lambda, float* t, float* tmp_unused)
     {
-        float* _p0 = tmp;
-        float* _p1 = _p0 + m * k;
-        float* _p2 = _p1 + m * k;
-        float* _p3 = _p2 + m * k;
+        double* tmp = new double[6 * m * k];
+
+        double* _p0 = tmp;
+        double* _p1 = _p0 + m * k;
+        double* _p2 = _p1 + m * k;
+        double* _p3 = _p2 + m * k;
+        double* _p4 = _p3 + m * k;
+        double* _p5 = _p4 + m * k;
 
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
         
-        dxinva(px, p1, m, 3, _p0);
+        convert_f32_f64(_p2, px, 3 * m);
+        convert_f32_f64(_p3, p1, m);
+        // _p2 (m, 3): px
+        // _p3 (m, 1): p1
 
-        // saxpy is very slow here
-        //cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1));
-        axpy(_p0, y, -1.0f, m * 3);
+        dxinva_f64(_p2, _p3, m, 3, _p0);
+                
+        convert_f32_f64(_p2, y, m * 3);
+        // _p2 (m,3): y
+
+        axpy_f64(_p0, _p2, -1.0f, m * 3);
         // _p0 (m,3): diag(p1)^-1 * px - y [right]
 
-        const float tf = 1.0f / (sigma2 * lambda);
-        atdba(q, m, k, p1, tf, _p1); // 15.3 %
-        cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
+        // _p4 (m,k): q
+        convert_f32_f64(_p4, q, k * m);
+
+        const double tf = 1.0 / (sigma2 * lambda);
+        atdba_f64(_p4, m, k, _p3, tf, _p1); 
+        convert_f32_f64(_p5, linv, k);
+        cblas_daxpy(k, 1.0f, _p5, 1, _p1, k + 1);
         int* piv = (int*)_p2;
         std::memset(piv, 0, k * sizeof(int));
-        LAPACKE_sgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
-        LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv);
+        LAPACKE_dgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
+        LAPACKE_dgetri(LAPACK_COL_MAJOR, k, _p1, k, piv);
         // _p1 (k,k): ( tf * q^T * diag(p1) * q + l^-1)^-1  [inner]
         // _p2 (k,1): destroyed
 
-        dxa(_p0, p1, m, 3, _p2);
+        dxa_f64(_p0, _p3, m, 3, _p2);
         std::memcpy(_p3, _p2, m * 3 * sizeof(float)); 
-        cblas_sscal(m*3, tf, _p2, 1);
+        cblas_dscal(m*3, tf, _p2, 1);
         // _p2 (m,3): tf * diag(p1) * right [w]
         // _p3 (m,3): diag(p1) * right
 
-        replace_nan(_p0, m * 3, 0); // 15.5 %
-        replace_nan(_p3, m * 3, 0); // 15.1 %
+        replace_nan_f64(_p0, m * 3, 0); // 15.5 %
+        replace_nan_f64(_p3, m * 3, 0); // 15.1 %
        
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k); // 12.7 %
+        cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, _p4, m, _p3, m, 0.0f, _p0, k); // 12.7 %
         // _p0 (k,3): q^T * diag(p1) * right
 
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, 3, k, 1.0f, _p1, k, _p0, k, 0.0f, _p3, k);
+        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, 3, k, 1.0f, _p1, k, _p0, k, 0.0f, _p3, k);
         // _p3 (k,3): [inner] * q^T * diag(p1) * right
 
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 0.0f, _p0, m);
+        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, _p4, m, _p3, k, 0.0f, _p0, m);
         // _p0 (m,3): q * [inner] * q^T * diag(p1) * right
 
-        cblas_sscal(m * 3, tf * tf, _p0, 1);
+        cblas_dscal(m * 3, tf * tf, _p0, 1);
         // _p0 (m,3): tf^2 * q * [inner] * q^T * diag(p1) * right
 
-        dxa(_p0, p1, m, 3, _p3);
+        convert_f32_f64(_p5, p1, m);
+        dxa_f64(_p0, _p5, m, 3, _p3);
         // _p3 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
 
         memcpy(_p0, _p2, m * 3 * sizeof(float));
         // _p0 (m,3): [w]
 
-        // saxpy is very slow here
-        //cblas_saxpy(m*3, -1.0f, _p3, 1, _p2, 1));
-        axpy(_p2, _p3, -1.0f, m * 3);
+        // saxpy_f32 is very slow here
+        //cblas_saxpy_f32(m*3, -1.0f, _p3, 1, _p2, 1));
+        axpy_f64(_p2, _p3, -1.0f, m * 3);
         // _p2 (m,3): [w] - [solve1]
 
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k);
+        cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, _p4, m, _p2, m, 0.0f, _p3, k);
         // _p3 (k,3): q^T * w
 
-        replace_nan(_p3, k * 3, 0);
+        replace_nan_f64(_p3, k * 3, 0);
 
-        const float ret = lambda / 2 * tratdba(_p3, k, 3, l);
-
-        dxa(_p3, l, k, 3, _p0);
+        convert_f32_f64(_p5, l, k);
+        const double ret = lambda / 2 * tratdba_f64(_p3, k, 3, _p5);        
+        dxa_f64(_p3, _p5, k, 3, _p0);
         // _p0 (k,3): diag(l) * q^T * w
 
-        std::memcpy(t, y, m * 3 * sizeof(float));
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p0, k, 1.0f, t, m);
+        convert_f32_f64(_p1, y, m * 3);
+        //std::memcpy(t, y, m * 3 * sizeof(float));
+        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, _p4, m, _p0, k, 1.0f, _p1, m);
         // T (m,3): q * diag(l) * q^t * w + y
+        convert_f64_f32(t, _p1, m * 3);
+
+        delete[] tmp;
 
         return ret;
     }
@@ -193,7 +212,7 @@ namespace warpcore::impl
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-        double ret = tratdba(x, n, 3, pt1) + tratdba(t, m, 3, p1);
+        double ret = tratdba_f32(x, n, 3, pt1) + tratdba_f32(t, m, 3, p1);
         ret -= 2 * cblas_sdot(m * 3, px, 1, t, 1); // -= 2 * Matrix.TraceOfProduct(PX, T, true);
         return (float)ret / (3 * reduce_add(p1, m));
     }
@@ -464,25 +483,26 @@ namespace warpcore::impl
         cpd_psumpt1(nb, m, n, thresh, expFactor, denomAdd, x, t, psum, pt1);
     }
 
-    float cpd_error(int n, const float* psum, float sigma2)
+    double cpd_error(int n, const float* psum, double sigma2)
     {
         constexpr int BlockSize = 8;
         const int nb = round_down(n, BlockSize);
 
-        __m256 err8 = _mm256_setzero_ps();
+        __m256d err4 = _mm256_setzero_pd();
 
         for (int i = 0; i < nb; i += BlockSize) {
             const __m256 x = _mm256_loadu_ps(psum + i);
-            err8 = _mm256_add_ps(err8, _mm256_log_ps(x));
+            err4 = _mm256_add_pd(err4, _mm256_log_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(x, 0))));
+            err4 = _mm256_add_pd(err4, _mm256_log_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(x, 1))));
         }
 
-        float err = 0;
+        double err = 0;
         for (int i = nb; i < n; i++)
-            err += logf(psum[i]);
+            err += log(psum[i]);
 
-        err += reduce_add(err8);
+        err += reduce_add(err4);
 
-        return -err + 3 * n * logf(sigma2) / 2;
+        return -err + 3 * n * log(sigma2) / 2;
     }
 
     void cpd_recip(int n, float* x)

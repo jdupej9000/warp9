@@ -7,16 +7,17 @@
 
 namespace warpcore::impl
 {
-    void atdba_scalar(const float* a, int n, int m, const float* b, float alpha, float* y);
-    void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y);
-    void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_f32_scalar(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_f64_scalar(const double* a, int n, int m, const double* b, double alpha, double* y);
+    void atdba_f32_avx2(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_f32_avx512(const float* a, int n, int m, const float* b, float alpha, float* y);
 
     __m256 _mm256_abs_ps(__m256 x)
     {
         return _mm256_andnot_ps(_mm256_set1_ps(-0.0f), x);
     }
 
-    __m256 replace_nan_inf(__m256 x, __m256 replacement)
+    __m256 replace_nan_f32_inf(__m256 x, __m256 replacement)
     {
         __m256 t = _mm256_sub_ps(x, x); // turns +/- Inf into NaN
         return _mm256_blendv_ps(replacement, x, _mm256_cmp_ps(t, t, _CMP_EQ_OQ)); // NaN != NaN
@@ -348,7 +349,7 @@ namespace warpcore::impl
         return _mm256_max_epi32(x0, _mm256_min_epi32(x1, x));
     }
 
-    void axpy(float* y, const float* x, float alpha, int n)
+    void axpy_f32(float* y, const float* x, float alpha, int n)
     {
         const int n16 = round_down(n, 16);
         __m256 a = _mm256_broadcast_ss(&alpha);
@@ -365,7 +366,24 @@ namespace warpcore::impl
         }
     }
 
-    void dxa(const float* x, const float* v, int n, int m, float* y)
+    void axpy_f64(double* y, const double* x, double alpha, int n)
+    {
+        const int n8 = round_down(n, 8);
+        __m256d a = _mm256_broadcast_sd(&alpha);
+
+        for (int i = 0; i < n8; i += 8) {
+            __m256d t0 = _mm256_fmadd_pd(a, _mm256_loadu_pd(x + i), _mm256_loadu_pd(y + i));
+            __m256d t1 = _mm256_fmadd_pd(a, _mm256_loadu_pd(x + i + 4), _mm256_loadu_pd(y + i + 4));
+            _mm256_storeu_pd(y + i, t0);
+            _mm256_storeu_pd(y + i + 4, t1);
+        }
+
+        for (int i = n8; i < n; i++) {
+            y[i] += alpha * x[i];
+        }
+    }
+
+    void dxa_f32(const float* x, const float* v, int n, int m, float* y)
     {
         // diag(V) * X
         //   X is n x m (col. major)
@@ -386,7 +404,28 @@ namespace warpcore::impl
         }
     }
 
-    void dxinva(const float* x, const float* v, int n, int m, float* y)
+    void dxa_f64(const double* x, const double* v, int n, int m, double* y)
+    {
+        // diag(V) * X
+        //   X is n x m (col. major)
+        //   V is n
+        const int n8 = round_down(n, 8);
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n8; j += 8) {
+                int xyoffs = i * n + j;
+                __m256d t0 = _mm256_mul_pd(_mm256_loadu_pd(x + xyoffs), _mm256_loadu_pd(v + j));
+                __m256d t1 = _mm256_mul_pd(_mm256_loadu_pd(x + xyoffs + 4), _mm256_loadu_pd(v + j + 4));
+                _mm256_storeu_pd(y + xyoffs, t0);
+                _mm256_storeu_pd(y + xyoffs + 4, t1);
+            }
+
+            for (int j = n8; j < n; j++)
+                y[i * n + j] = x[i * n + j] * v[j];
+        }
+    }
+
+    void dxinva_f32(const float* x, const float* v, int n, int m, float* y)
     {
         // diag(V)^-1 * X
         const int n16 = round_down(n, 16);
@@ -401,7 +440,7 @@ namespace warpcore::impl
             }
 
             for (int j = n16; j < n; j++) {
-                if (fabs(v[j]) > 1e-6f)
+                if (fabsf(v[j]) > 1e-6f)
                     y[i * n + j] = x[i * n + j] / v[j];
                 else
                     y[i * n + j] = 0;
@@ -409,18 +448,46 @@ namespace warpcore::impl
         }
     }
 
-    void atdba(const float* a, int n, int m, const float* b, float alpha, float* y)
+    void dxinva_f64(const double* x, const double* v, int n, int m, double* y)
     {
-        //atdba_scalar(a, n, m, b, alpha, y);
+        // diag(V)^-1 * X
+        const int n8 = round_down(n, 8);
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n8; j += 8) {
+                int xyoffs = i * n + j;
+                __m256d t0 = _mm256_div_pd(_mm256_loadu_pd(x + xyoffs), _mm256_loadu_pd(v + j));
+                __m256d t1 = _mm256_div_pd(_mm256_loadu_pd(x + xyoffs + 4), _mm256_loadu_pd(v + j + 4));
+                _mm256_storeu_pd(y + xyoffs, t0);
+                _mm256_storeu_pd(y + xyoffs + 4, t1);
+            }
+
+            for (int j = n8; j < n; j++) {
+                if (fabs(v[j]) > 1e-16)
+                    y[i * n + j] = x[i * n + j] / v[j];
+                else
+                    y[i * n + j] = 0;
+            }
+        }
+    }
+
+    void atdba_f32(const float* a, int n, int m, const float* b, float alpha, float* y)
+    {
+        //atdba_f32_scalar(a, n, m, b, alpha, y);
         //return;
         // FIXME: discrepancy between avx2 and avx512 paths
         if (has_feature(WCORE_OPTPATH::AVX512))
-            atdba_avx512(a, n, m, b, alpha, y);
+            atdba_f32_avx512(a, n, m, b, alpha, y);
         else
-            atdba_avx2(a, n, m, b, alpha, y);
+            atdba_f32_avx2(a, n, m, b, alpha, y);
     }
 
-    void atdba_scalar(const float* a, int n, int m, const float* b, float alpha, float* y)
+    void atdba_f64(const double* a, int n, int m, const double* b, double alpha, double* y)
+    {
+        atdba_f64_scalar(a, n, m, b, alpha, y);        
+    }
+
+    void atdba_f32_scalar(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A       
         for (int i = 0; i < m; i++) {                     
@@ -437,7 +504,24 @@ namespace warpcore::impl
         }
     }
 
-    void atdba_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
+    void atdba_f64_scalar(const double* a, int n, int m, const double* b, double alpha, double* y)
+    {
+        // alpha * A' * diag(B) * A       
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < m; j++) {
+                double aa0 = 0;
+                for (int k = 0; k < n; k++) {
+                    const double aai = a[k + i * n] * b[k];
+                    aa0 += aai * a[k + j * n];
+                }
+
+                aa0 = aa0 * alpha;
+                y[i * m + j] = aa0;
+            }
+        }
+    }
+
+    void atdba_f32_avx512(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A
         constexpr int BlockSize = 16;
@@ -491,7 +575,7 @@ namespace warpcore::impl
         }
     }
 
-    void atdba_avx2(const float* a, int n, int m, const float* b, float alpha, float* y)
+    void atdba_f32_avx2(const float* a, int n, int m, const float* b, float alpha, float* y)
     {
         // alpha * A' * diag(B) * A
         int m2 = round_down(m, 2);
@@ -544,7 +628,7 @@ namespace warpcore::impl
         }
     }
 
-    float tratdba(const float* a, int n, int m, const float* b)
+    float tratdba_f32(const float* a, int n, int m, const float* b)
     {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -588,6 +672,50 @@ namespace warpcore::impl
         return reduce_add(ret8) + ret;
     }
 
+    double tratdba_f64(const double* a, int n, int m, const double* b)
+    {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
+        // trace(A' * diag(B) * A)
+
+        __m256d ret4 = _mm256_setzero_pd();
+        double ret = 0;
+
+        int n8 = round_down(n, 8);
+        for (int i = 0; i < m; i++) {
+            const double* ai = a + i * n;
+            __m256d accum = _mm256_setzero_pd(),
+                accum2 = _mm256_setzero_pd();
+
+            for (int j = 0; j < n8; j += 8) {
+                const __m256d aj0 = _mm256_loadu_pd(ai + j);
+                const __m256d aj1 = _mm256_loadu_pd(ai + j + 4);
+
+                const __m256d bj0 = _mm256_loadu_pd(b + j);
+                const __m256d bj1 = _mm256_loadu_pd(b + j + 4);
+
+                const __m256d p0 = _mm256_mul_pd(_mm256_mul_pd(aj0, aj0), bj0);
+                const __m256d p1 = _mm256_mul_pd(_mm256_mul_pd(aj1, aj1), bj1);
+
+                accum = _mm256_add_pd(accum, p0);
+                accum2 = _mm256_add_pd(accum2, p1);
+            }
+
+            ret4 = _mm256_add_pd(ret4, _mm256_add_pd(accum, accum2));
+
+            double part = 0;
+            for (int j = n8; j < n; j++) {
+                const double aj = ai[j];
+                part += aj * aj * b[j];
+            }
+
+            ret += part;
+        }
+
+        return reduce_add(ret4) + ret;
+    }
+
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res)
     {
         constexpr int BlockSize = 8;
@@ -608,6 +736,18 @@ namespace warpcore::impl
             for (int j = mb; j < m; j++)
                 res[j] += (coli[j] - center[j]) * ws;
         }
+    }
+
+    void convert_f32_f64(double* dest, const float* src, int n)
+    {
+        for (int i = 0; i < n; i++)
+            dest[i] = src[i];
+    }
+
+    void convert_f64_f32(float* dest, const double* src, int n)
+    {
+        for (int i = 0; i < n; i++)
+            dest[i] = (float)src[i];
     }
 
     float dot(const float* x, const float* y, int n)
@@ -679,7 +819,7 @@ namespace warpcore::impl
         }
     }
 
-    void replace_nan(float* x, size_t len, float repl)
+    void replace_nan_f32(float* x, size_t len, float repl)
     {
         constexpr int BLK_SIZE = 8;
 
@@ -695,6 +835,16 @@ namespace warpcore::impl
         }
     
         for (size_t i = nb; i < len; i++) {
+            if (!std::_Is_finite(x[i]) || isnan(x[i]))
+                x[i] = repl;
+        }
+    }
+
+    void replace_nan_f64(double* x, size_t len, double repl)
+    {
+        constexpr int BLK_SIZE = 4;
+
+        for (size_t i = 0; i < len; i++) {
             if (!std::_Is_finite(x[i]) || isnan(x[i]))
                 x[i] = repl;
         }

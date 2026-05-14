@@ -102,7 +102,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         }
     }
 
-    float sigma2 = cpd->sigma2init;
+    double sigma2 = cpd->sigma2init;
 
     if (cpd->sigma2init <= 0.0f) {
         if (use_cuda)
@@ -122,7 +122,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
     int conv = 0;
     double l0 = 0;
-    float tol = FLT_MAX, tol_old = FLT_MAX;
+    double tol = DBL_MAX, tol_old = DBL_MAX;
     int it = 0;
     int64_t etime = 0;
 
@@ -130,7 +130,7 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
     while (!conv) {
         double l0_old = l0;
-        float denom = cpd->w / (1.0f - cpd->w) * powf(2.0f * (float)M_PI * sigma2, 1.5f) * (float)m / (float)n;
+        double denom = cpd->w / (1.0 - cpd->w) * pow(2.0 * M_PI * sigma2, 1.5) * (float)m / (float)n;
 
         auto te0 = std::chrono::high_resolution_clock::now();
         if (use_cuda) {
@@ -162,8 +162,8 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             break;
         }
         
-        tol = (float)abs((l0 - l0_old) / l0);
-        const float sigma2_old = sigma2;
+        tol = abs((l0 - l0_old) / l0);
+        const double sigma2_old = sigma2;
         sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
         if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;

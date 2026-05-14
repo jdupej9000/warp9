@@ -44,22 +44,30 @@ namespace warpcore::impl
     __m256i WCORE_VECCALL clamp(__m256i x, __m256i x0, __m256i x1);
 
     // Y = diag(x) * A
-    void dxa(const float* x, const float* v, int n, int m, float* y); 
+    void dxa_f32(const float* x, const float* v, int n, int m, float* y); 
+    void dxa_f64(const double* x, const double* v, int n, int m, double* y);
 
     // Y += alpha * X
-    void axpy(float* y, const float* x, float alpha, int n);
+    void axpy_f32(float* y, const float* x, float alpha, int n);
+    void axpy_f64(double* y, const double* x, double alpha, int n);
 
     // Y = diag(x)^-1 * A
-    void dxinva(const float* x, const float* v, int n, int m, float* y);
+    void dxinva_f32(const float* x, const float* v, int n, int m, float* y);
+    void dxinva_f64(const double* x, const double* v, int n, int m, double* y);
 
     // Y = alpha * A^T * diag(b) * A (Y is m*m)
-    void atdba(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_f32(const float* a, int n, int m, const float* b, float alpha, float* y);
+    void atdba_f64(const double* a, int n, int m, const double* b, double alpha, double* y);
 
     // trace(A^T * diag(b) * A)
-    float tratdba(const float* a, int n, int m, const float* b);
+    float tratdba_f32(const float* a, int n, int m, const float* b);
+    double tratdba_f64(const double* a, int n, int m, const double* b);
 
     // res = sum_i((cols_i-center) * weights_i)
     void wsumc(const float** cols, const float* center, const float* weights, int n, int m, float* res);
+
+    void convert_f32_f64(double* dest, const float* src, int n);
+    void convert_f64_f32(float* dest, const double* src, int n);
 
     float dot(const float* x, const float* y, int n);
     __m256 WCORE_VECCALL mask_positive(__m256 x) noexcept;
@@ -69,7 +77,8 @@ namespace warpcore::impl
     void normalize_columns(float* mat, int rows, int cols);
 
     void check_finite(const float* x, size_t len);
-    void replace_nan(float* x, size_t len, float repl);
+    void replace_nan_f32(float* x, size_t len, float repl);
+    void replace_nan_f64(double* x, size_t len, double repl);
 
     #define ASSERT_NORMAL(x) { if(is_corrupted(x)) __debugbreak(); }
 };
