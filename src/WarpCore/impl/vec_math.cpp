@@ -124,7 +124,7 @@ namespace warpcore::impl
 
     float WCORE_VECCALL reduce_add(__m256 v)
     {
-        __m128 reduce = _mm_add_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        __m128 reduce = _mm_add_ps(_mm256_castps256_ps128(v), _mm256_extractf128_ps(v, 1));
         reduce = _mm_hadd_ps(reduce, reduce);
         reduce = _mm_hadd_ps(reduce, reduce);
         return _mm_cvtss_f32(reduce);
@@ -141,7 +141,7 @@ namespace warpcore::impl
 
     int WCORE_VECCALL reduce_add_i32(__m256i v)
     {
-        __m128i reduce = _mm_add_epi32(_mm256_extracti128_si256(v, 0), _mm256_extracti128_si256(v, 1));
+        __m128i reduce = _mm_add_epi32(_mm256_castsi256_si128(v), _mm256_extracti128_si256(v, 1));
         reduce = _mm_hadd_epi32(reduce, reduce);
         reduce = _mm_hadd_epi32(reduce, reduce);
         return _mm_cvtsi128_si32(reduce);
@@ -170,7 +170,7 @@ namespace warpcore::impl
         for (int i = 0; i < n8; i += 8) {
             __m256 xi = _mm256_loadu_ps(x + i);
             sum = _mm256_add_pd(sum, _mm256_add_pd(
-                _mm256_cvtps_pd(_mm256_extractf128_ps(xi, 0)), 
+                _mm256_cvtps_pd(_mm256_castps256_ps128(xi)),
                 _mm256_cvtps_pd(_mm256_extractf128_ps(xi, 1))));
         }
 
@@ -224,7 +224,7 @@ namespace warpcore::impl
 
     float WCORE_VECCALL reduce_min(__m256 v)
     {
-        __m128 reduce = _mm_min_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        __m128 reduce = _mm_min_ps(_mm256_castps256_ps128(v), _mm256_extractf128_ps(v, 1));
         reduce = _mm_min_ps(reduce, _mm_movehl_ps(reduce, reduce));
         reduce = _mm_min_ps(reduce, _mm_movehdup_ps(reduce));
         return _mm_cvtss_f32(reduce);
@@ -232,7 +232,7 @@ namespace warpcore::impl
 
     float WCORE_VECCALL reduce_max(__m256 v)
     {
-        __m128 reduce = _mm_max_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        __m128 reduce = _mm_max_ps(_mm256_castps256_ps128(v), _mm256_extractf128_ps(v, 1));
         reduce = _mm_max_ps(reduce, _mm_movehl_ps(reduce, reduce));
         reduce = _mm_max_ps(reduce, _mm_movehdup_ps(reduce));
         return _mm_cvtss_f32(reduce);
@@ -331,7 +331,7 @@ namespace warpcore::impl
 
     int WCORE_VECCALL find_min_index(__m256 v)
     {
-        __m128 reduce = _mm_min_ps(_mm256_extractf128_ps(v, 0), _mm256_extractf128_ps(v, 1));
+        __m128 reduce = _mm_min_ps(_mm256_castps256_ps128(v), _mm256_extractf128_ps(v, 1));
         reduce = _mm_min_ps(reduce, _mm_movehl_ps(reduce, reduce));
         reduce = _mm_min_ps(reduce, _mm_movehdup_ps(reduce));
 
@@ -623,9 +623,9 @@ namespace warpcore::impl
                 const __m256 p1 = _mm256_mul_ps(_mm256_mul_ps(aj1, aj1), bj1);
 
                 accum = _mm256_add_pd(accum,
-                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(p0, 0)), _mm256_cvtps_pd(_mm256_extractf128_ps(p0, 1))));
+                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_castps256_ps128(p0)), _mm256_cvtps_pd(_mm256_extractf128_ps(p0, 1))));
                 accum2 = _mm256_add_pd(accum2,
-                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_extractf128_ps(p1, 0)), _mm256_cvtps_pd(_mm256_extractf128_ps(p1, 1))));
+                    _mm256_add_pd(_mm256_cvtps_pd(_mm256_castps256_ps128(p1)), _mm256_cvtps_pd(_mm256_extractf128_ps(p1, 1))));
             }
 
             ret4 = _mm256_add_pd(ret4, _mm256_add_pd(accum, accum2));
@@ -692,7 +692,7 @@ namespace warpcore::impl
             __m256 xyi = _mm256_mul_ps(_mm256_loadu_ps(x + i), _mm256_loadu_ps(y + i));
 
             sumb = _mm256_add_pd(sumb, _mm256_add_pd(
-                _mm256_cvtps_pd(_mm256_extractf128_ps(xyi, 0)),
+                _mm256_cvtps_pd(_mm256_castps256_ps128(xyi)),
                 _mm256_cvtps_pd(_mm256_extractf128_ps(xyi, 1))));
         }
 
