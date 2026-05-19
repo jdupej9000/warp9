@@ -81,9 +81,18 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-                <DockPanel Background="{DynamicResource Brush.BackgroundDark}" >
-                    <TextBlock Text="PROJECT EXPLORER" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}" Padding="8"/>
-                    <TreeView Name="treeProject" Margin="4"  SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
+                <DockPanel Background="{DynamicResource Brush.BackgroundDark}">
+                    <!--<TextBlock Text="PROJECT EXPLORER" DockPanel.Dock="Top" Style="{DynamicResource TextBlockTitle}" Padding="8"/>-->
+                    <DockPanel Height="28" DockPanel.Dock="Top" Margin="4,4,4,4">
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                            <!--<Button Width="28" Height="28" Content="{DynamicResource ImportTable}" Style="{DynamicResource HeaderButton}"/>-->
+                        </StackPanel>
+
+                        <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button Width="28" Height="28" Content="{DynamicResource Delete}" Style="{DynamicResource HeaderButton}"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <TreeView Name="treeProject" Margin="4" SelectedItemChanged="treeProject_SelectedItemChanged" ItemsSource="{Binding Items}">
                         <TreeView.ItemTemplate>                           
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">

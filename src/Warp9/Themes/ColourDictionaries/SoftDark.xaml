@@ -4,11 +4,11 @@
     <Color x:Key="ThemeColor.BackgroundDark" R="24" G="24" B="24" A="255" />
     <Color x:Key="ThemeColor.Background" R="31" G="31" B="31" A="255" />
     <Color x:Key="ThemeColor.BackgroundLight" R="48" G="48" B="48" A="255" />
-    <Color x:Key="ThemeColor.BackgroundHot" R="51" G="118" B="205" A="255" />
+    <Color x:Key="ThemeColor.BackgroundHot" R="37" G="101" B="148" A="255" />
 
     <Color x:Key="ThemeColor.BorderDark" R="43" G="43" B="43" A="255" />
     <Color x:Key="ThemeColor.Border" R="64" G="64" B="64" A="255" />
-    <Color x:Key="ThemeColor.BorderHot" R="65" G="128" B="209" A="255" />
+    <Color x:Key="ThemeColor.BorderHot" R="37" G="101" B="148" A="255" />
 
     <Color x:Key="ThemeColor.ForegroundDark" R="133" G="133" B="133" A="255" />
     <Color x:Key="ThemeColor.Foreground" R="199" G="199" B="199" A="255" />
