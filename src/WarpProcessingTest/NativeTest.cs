@@ -20,15 +20,15 @@ namespace Warp9.Test
     {
         private static void SetOptPath(WarpCoreOptimizationPath p)
         {
-            int ret = WarpCore.set_optpath((int)p);
+            WarpCoreOptimizationPath ret = WarpCore.LimitOptimizationPath(p);
 
-            if (p != WarpCoreOptimizationPath.Maximum && ((ret & (int)p) != (int)p))
+            if (p != WarpCoreOptimizationPath.Maximum && (((int)ret & (int)p) != (int)p))
                 Assert.Inconclusive("This platform is incapable of executing the optimization path " + p.ToString());
         }
 
         private static void RestoreOptPath()
         {
-            WarpCore.set_optpath((int)WarpCoreOptimizationPath.Maximum);
+            WarpCore.LimitOptimizationPath();
         }
 
         private static void AssertMatrixEqual(Matrix4x4 expected, Matrix4x4 got, float tol = 1e-6f)
@@ -108,12 +108,11 @@ namespace Warp9.Test
         public void InfoTest()
         {
             const int MaxDataLen = 1024;
-            StringBuilder sb = new StringBuilder(MaxDataLen);
-
+            Span<byte> sb = stackalloc byte[MaxDataLen];
+            
             foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
             {
-                int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
-                Console.WriteLine(idx.ToString() + ": " + sb.ToString());
+                Console.WriteLine(idx.ToString() + ": " + WarpCore.GetInfoString(idx));
             }
         }
 
@@ -721,10 +720,10 @@ namespace Warp9.Test
         {
             AssertMatrixEqual(Matrix4x4.Identity, Rigid3.Identity.ToMatrix());
 
-            Rigid3 scale2 = new Rigid3() { offset = Vector3.Zero, cs = 0.5f, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
+            Rigid3 scale2 = new Rigid3(Vector3.Zero, 0.5f, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
             AssertMatrixEqual(Matrix4x4.CreateScale(2.0f), scale2.ToMatrix());
 
-            Rigid3 shift124 = new Rigid3() { offset = new Vector3(-1,-2,-4), cs = 1, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
+            Rigid3 shift124 = new Rigid3(new Vector3(-1, -2, -4), 1, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
             AssertMatrixEqual(Matrix4x4.CreateTranslation(1,2,4), shift124.ToMatrix());
 
             // TODO: more complex cases

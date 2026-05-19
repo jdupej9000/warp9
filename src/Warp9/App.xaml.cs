@@ -39,13 +39,11 @@ namespace Warp9
             sb.AppendLine("---------------------------");
             try
             {
-                const int MaxDataLen = 1024;
-                StringBuilder sbwcore = new StringBuilder(MaxDataLen);
                 foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
                 {
-                    int len = WarpCore.wcore_get_info((int)idx, sbwcore, MaxDataLen);
                     string sidx = idx.ToString();
-                    sb.AppendLine(sidx.PadRight(25) + ": " + sbwcore.ToString());
+                    string svalue = WarpCore.GetInfoString(idx);
+                    sb.AppendLine(sidx.PadRight(25) + ": " + svalue.ToString());
                 }
             }
             catch (DllNotFoundException)

@@ -29,9 +29,7 @@ namespace Warp9
         private void PopulateDebugItems()
         {
             // Force WarpCore.dll to be loaded.
-            const int MaxDataLen = 1024;
-            StringBuilder sb = new StringBuilder(MaxDataLen);
-            WarpCore.wcore_get_info((int)WarpCoreInfoIndex.VERSION, sb, MaxDataLen);
+            WarpCore.GetInfoString(WarpCoreInfoIndex.VERSION);
 
             Dispatcher.Invoke(() =>
             {
@@ -44,9 +42,9 @@ namespace Warp9
 
                 foreach (WarpCoreInfoIndex idx in Enum.GetValues<WarpCoreInfoIndex>())
                 {
-                    int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
+                  
                     listDebug.Items.Add(new WarpCoreDebugItem(
-                        idx.ToString(), sb.ToString()));
+                        idx.ToString(), WarpCore.GetInfoString(idx)));
                 }
             });
         }

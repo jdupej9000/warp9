@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -168,106 +169,117 @@ namespace Warp9.Native
         }
     }
 
+    [InlineArray(3)]
+    public struct BlitVec3
+    {
+        private float _elem0;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct Rigid3
     {
-        public Vector3 offset;
+        public Rigid3(Vector3 o, float cs, Vector3 r0, Vector3 r1, Vector3 r2)
+        {
+            Offset = o;
+            this.cs = cs;
+            Rot0 = r0;
+            Rot1 = r1;
+            Rot2 = r2;
+        }
+
+        public BlitVec3 _offset;
         public float cs;
-        public Vector3 rot0, rot1, rot2;
+        public BlitVec3 _rot0, _rot1, _rot2;
+
+        public Vector3 Offset
+        {
+            readonly get { return new Vector3(_offset); }
+            set { _offset[0] = value.X; _offset[1] = value.Y; _offset[2] = value.Z; }
+        }
+
+        public Vector3 Rot0
+        {
+            readonly get { return new Vector3(_rot0); }
+            set { _rot0[0] = value.X; _rot0[1] = value.Y; _rot0[2] = value.Z; }
+        }
+
+        public Vector3 Rot1
+        {
+            readonly get { return new Vector3(_rot1); }
+            set { _rot1[0] = value.X; _rot1[1] = value.Y; _rot1[2] = value.Z; }
+        }
+
+        public Vector3 Rot2
+        {
+            readonly get { return new Vector3(_rot2); }
+            set { _rot2[0] = value.X; _rot2[1] = value.Y; _rot2[2] = value.Z; }
+        }
+
+        public readonly Matrix4x4 Rotation => new Matrix4x4(_rot0[0], _rot0[1], _rot0[2], 0,
+                _rot1[0], _rot1[1], _rot1[2], 0,
+                _rot2[0], _rot2[1], _rot2[2], 0,
+                0, 0, 0, 1);
 
         public readonly Matrix4x4 ToMatrix()
         {
             float csr = 1.0f / cs;
-            return new Matrix4x4(csr * rot0.X, csr * rot0.Y, csr * rot0.Z, 0,
-               csr * rot1.X, csr * rot1.Y, csr * rot1.Z, 0,
-               csr * rot2.X, csr * rot2.Y, csr * rot2.Z, 0,
-               0, 0, 0, 1) * Matrix4x4.CreateTranslation(-offset);
+            return Matrix4x4.CreateScale(csr) * Rotation * Matrix4x4.CreateTranslation(-Offset);
         }
         
         public readonly Rigid3 Invert()
         {
-            Rigid3 ret = new Rigid3
-            {
-                cs = 1.0f / cs,
-                rot0 = new Vector3(rot0.X, rot1.X, rot2.X),
-                rot1 = new Vector3(rot0.Y, rot1.Y, rot2.Y),
-                rot2 = new Vector3(rot0.Z, rot1.Z, rot2.Z)
-            };
+            Vector3 r0 = new Vector3(Rot0.X, Rot1.X, Rot2.X);
+            Vector3 r1 = new Vector3(Rot0.Y, Rot1.Y, Rot2.Y);
+            Vector3 r2 = new Vector3(Rot0.Z, Rot1.Z, Rot2.Z);
+            Vector3 o = new Vector3(
+                -cs * Vector3.Dot(r0, Offset),
+                -cs * Vector3.Dot(r1, Offset),
+                -cs * Vector3.Dot(r2, Offset));
 
-            float c = 1/ cs;
-            ret.offset = new Vector3(
-                -cs * Vector3.Dot(ret.rot0, offset),
-                -cs * Vector3.Dot(ret.rot1, offset),
-                -cs * Vector3.Dot(ret.rot2, offset));
-
-            return ret;
+            return new Rigid3(o, 1.0f / cs, r0, r1, r2);
         }
 
         public readonly Vector3 Unrotate(Vector3 v)
         {
-            return new Vector3(Vector3.Dot(rot0, v), Vector3.Dot(rot1, v), Vector3.Dot(rot2, v));
+            return new Vector3(Vector3.Dot(Rot0, v), Vector3.Dot(Rot1, v), Vector3.Dot(Rot2, v));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Vector3 Rotate(Vector3 v)
         {
-            return rot0 * v.X + rot1 * v.Y + rot2 * v.Z;
+            return Rot0 * v.X + Rot1 * v.Y + Rot2 * v.Z;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Vector3 Transform(Vector3 v)
         {
-            return Rotate(v - offset) / cs;
+            return Rotate(v - Offset) / cs;
         }
 
         public static Rigid3 operator* (float left, Rigid3 right)
         {
-            return new Rigid3
-            {
-                offset = right.offset,
-                cs = right.cs / left,
-                rot0 = right.rot0,
-                rot1 = right.rot1,
-                rot2 = right.rot2
-            };
+            return new Rigid3(right.Offset, right.cs / left,
+                right.Rot0, right.Rot1, right.Rot2);
         }
 
         public static Rigid3 Translation(Vector3 negOffs)
         {
-            return new Rigid3
-            {
-                cs = 1,
-                offset = negOffs,
-                rot0 = Vector3.UnitX,
-                rot1 = Vector3.UnitY,
-                rot2 = Vector3.UnitZ
-            };
+            return new Rigid3(negOffs, 1,
+                Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
         }
 
         public static Rigid3 Scale(float scale)
         {
-            return new Rigid3
-            {
-                cs = 1 / scale,
-                offset = Vector3.Zero,
-                rot0 = Vector3.UnitX,
-                rot1 = Vector3.UnitY,
-                rot2 = Vector3.UnitZ
-            };
+            return new Rigid3(Vector3.Zero, 1 / scale,
+               Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);          
         }
 
         public static Rigid3 RotateAboutZ(float angleRad)
         {
             (float s, float c) = MathF.SinCos(angleRad);
 
-            return new Rigid3
-            {
-                cs = 1,
-                offset = Vector3.Zero,
-                rot0 = new Vector3(c, -s, 0),
-                rot1 = new Vector3(s, c, 0),
-                rot2 = Vector3.UnitZ
-            };
+            return new Rigid3(Vector3.Zero, 1,
+               new Vector3(c, -s, 0), new Vector3(s, c, 0), Vector3.UnitZ);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -283,34 +295,23 @@ namespace Warp9.Native
             // H,g = left
             // R,f = right
             float csr = left.cs * right.cs;
-            return new Rigid3
-            {
-                offset = right.offset + csr * right.Unrotate(left.offset),
-                cs = csr,
-                rot0 = left.Rotate(right.rot0),
-                rot1 = left.Rotate(right.rot1),
-                rot2 = left.Rotate(right.rot2)
-            };
+            return new Rigid3(right.Offset + csr * right.Unrotate(left.Offset), csr,
+              left.Rotate(right.Rot0), left.Rotate(right.Rot1), left.Rotate(right.Rot2));
         }
 
         public override readonly string ToString()
         {
-            Matrix4x4 m = new Matrix4x4(rot0.X, rot0.Y, rot0.Z, 0,
-                rot1.X, rot1.Y, rot1.Z, 0,
-                rot2.X, rot2.Y, rot2.Z, 0,
-                0, 0, 0, 1);
-
-            Matrix4x4.Decompose(m, out Vector3 msc, out Quaternion mrot, out _);
+            Matrix4x4.Decompose(Rotation, out Vector3 msc, out Quaternion mrot, out _);
             mrot.Decompose(out Vector3 rotAxis, out float deg);
 
             return string.Format("offs=({0},{1},{2}), cs={3}, rot=({4} deg about ({5},{6},{7}), scale=({8},{9},{10}))",
-                offset.X, offset.Y, offset.Z,
+                Offset.X, Offset.Y, Offset.Z,
                 cs, deg,
                 rotAxis.X, rotAxis.Y, rotAxis.Z,
                 msc.X, msc.Y, msc.Z);
         }
 
-        public static Rigid3 Identity = new Rigid3() { offset = Vector3.Zero, cs = 1, rot0 = Vector3.UnitX, rot1 = Vector3.UnitY, rot2 = Vector3.UnitZ };
+        public static Rigid3 Identity = new Rigid3(Vector3.Zero, 1, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -377,12 +378,13 @@ namespace Warp9.Native
 
     public static partial class WarpCore
     {
-        //[LibraryImport("WarpCore")]
+        #region Private
         [LibraryImport("WarpCore")]
-        public static partial int set_optpath(int path);
+        private static partial int set_optpath(int path);
 
-        [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
-        public static extern int wcore_get_info(int index, StringBuilder buffer, int bufferSize);
+        [LibraryImport("WarpCore")]
+        private static partial int wcore_get_info(int index, Span<byte> utf8buffer, int bufferSizeBytes);
+        #endregion
 
         [LibraryImport("WarpCore")]
         public static partial int cpd_init(ref CpdInfo info, int method, nint y, nint init);
@@ -399,8 +401,8 @@ namespace Warp9.Native
         [LibraryImport("WarpCore")]
         public static partial int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int opa_fit(nint t, nint x, nint allow, int d, int m, ref Rigid3 xform);
+        [LibraryImport("WarpCore")]
+        public static partial int opa_fit(nint t, nint x, nint allow, int d, int m, ref Rigid3 xform);
 
         [LibraryImport("WarpCore")]
         public static partial int search_build(int structure, nint vert, nint idx, int nv, int nt, nint config, ref nint ctx);
@@ -440,5 +442,19 @@ namespace Warp9.Native
 
         [LibraryImport("WarpCore")]
         public static partial int transform_destroy(nint ctx);
+
+
+        public static string GetInfoString(WarpCoreInfoIndex wcii)
+        {
+            const int MaxDataLen = 1024;
+            Span<byte> sb = stackalloc byte[MaxDataLen];
+            int len = wcore_get_info((int)wcii, sb, MaxDataLen);
+            return Encoding.UTF8.GetString(sb.Slice(0, len));
+        }
+
+        public static WarpCoreOptimizationPath LimitOptimizationPath(WarpCoreOptimizationPath op = WarpCoreOptimizationPath.Maximum)
+        {
+            return (WarpCoreOptimizationPath)set_optpath((int)op);
+        }
     }
 }

@@ -25,8 +25,7 @@ namespace Warp9Cli.Cli
 
             foreach (WarpCoreInfoIndex idx in Enum.GetValues(typeof(WarpCoreInfoIndex)))
             {
-                int len = WarpCore.wcore_get_info((int)idx, sb, MaxDataLen);
-                Console.WriteLine(idx.ToString() + ": " + sb.ToString());
+                Console.WriteLine(idx.ToString() + ": " + WarpCore.GetInfoString(idx));
             }
         }
     }

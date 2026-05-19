@@ -17,10 +17,10 @@ namespace Warp9.Test
             bool fail = false;
 
             fail |= (MathF.Abs(want.cs - got.cs) > 1e-4f);
-            fail |= (Vector3.Distance(want.offset, got.offset) > 1e-4f);
-            fail |= (Vector3.Dot(want.rot0, got.rot0) < 0.99f);
-            fail |= (Vector3.Dot(want.rot1, got.rot1) < 0.99f);
-            fail |= (Vector3.Dot(want.rot2, got.rot2) < 0.99f);
+            fail |= (Vector3.Distance(want.Offset, got.Offset) > 1e-4f);
+            fail |= (Vector3.Dot(want.Rot0, got.Rot0) < 0.99f);
+            fail |= (Vector3.Dot(want.Rot1, got.Rot1) < 0.99f);
+            fail |= (Vector3.Dot(want.Rot2, got.Rot2) < 0.99f);
 
             if (fail)
             {
