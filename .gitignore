@@ -41,3 +41,4 @@
 thirdparty/
 publish/
 /src/Warp9/Properties/PublishProfiles/FolderProfile.pubxml.user
+/src/Warp9/Warp9.csproj.user
