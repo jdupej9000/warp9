@@ -47,19 +47,13 @@ namespace warpcore::impl
 
 	int WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx)
 	{
-		__m128 m = _mm_min_ps(_mm256_extractf128_ps(d, 0), _mm256_extractf128_ps(d, 1));
-		m = _mm_min_ps(m, _mm_movehl_ps(m, m));
-		m = _mm_min_ps(m, _mm_movehdup_ps(m));
-		float newBestDist = _mm_cvtss_f32(m);
-
+		float newBestDist = reduce_min(d);
 		if (newBestDist < bestDist) {
-			__m256 bestMask = _mm256_cmp_ps(d, _mm256_broadcastss_ps(m), _CMP_EQ_OQ);
+			__m256 bestMask = _mm256_cmp_ps(d, _mm256_broadcast_ss(&newBestDist), _CMP_EQ_OQ);
 			int bestPos = _tzcnt_u32(_mm256_movemask_ps(bestMask));
 
 			if (bestPos < 8) {
-				alignas(32) int idxSpill[8];
-				_mm256_storeu_si256((__m256i*)idxSpill, idx);
-				bestIdx = idxSpill[bestPos];
+				bestIdx = extract(idx, bestPos);
 				bestDist = newBestDist;
 				return bestPos;
 			}			
@@ -67,71 +61,7 @@ namespace warpcore::impl
 
 		return 0;
 	}
-
-	
-	void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg)
-	{
-		// replace each idx with the index of the idx'th allowed bit
-		// idx must be sorted
-
-		// example: 
-		//            1:v  3:v    5:not found
-		// allow = 000011001010001
-		// idx   = 1,3,5
-		// idx  <- 5,10,-1
-
-		const uint32_t* allow_mask = (const uint32_t*)allow;
-		int num_allowed = 0;
-		int32_t mask_mod = neg ? 0xffffffff : 0x0;
-
-		constexpr int BLK = 32;
-		int max_idx_b = max_idx / BLK;
-		int allow_idx = 0;
-		int j = 0;
-		for (int i = 0; i < max_idx_b; i++) {
-			int32_t m = allow_mask[i] ^ mask_mod;
-			int nab = _mm_popcnt_u32(m);
-			
-			if (num_allowed + nab >= idx[j]) {
-				// one or more mappings occur in this BLK-sized range
-				int sumw = num_allowed;				
-				for (int k = 0; k < BLK; k++) {
-					if ((m >> k) & 0x1) {
-						sumw++;
-						if (sumw == idx[j]) {
-							idx[j] = BLK * i + k;
-							j++;
-							if (j >= num_idx) 
-								return;
-						}
-					}
-				}
-			}
-
-			num_allowed += nab;			
-		}
-
-		// finish off the last incomplete DWORD
-		int32_t mask_last = allow_mask[max_idx_b] ^ mask_mod;
-		int blk_left = std::min(BLK, max_idx - max_idx_b);
-		int sumw = 0;
-		for (int k = 0; k < BLK; k++) {
-			if ((mask_last >> k) & 0x1) {
-				sumw++;
-				if (sumw == idx[j]) {
-					idx[j] = BLK * max_idx_b + k;
-					j++;
-					if (j >= num_idx)
-						return;
-				}
-			}
-		}
-
-		// mark unmatched indices
-		for (; j < num_idx; j++)
-			idx[j] = -1;
-	}
-
+		
 	bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
 	{
 		assert(y != nullptr);

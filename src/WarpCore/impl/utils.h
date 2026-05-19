@@ -35,8 +35,9 @@ namespace warpcore::impl
     int round_up(int x, int blk);
 	bool is_power_of_two(size_t x);
     float cumsum(const float* x, int n, float* sums);
+
+    // Find the first lane i in d that contains min(d). Then bestDist=d[i], bestIdx=idx[i], return i.
     int WCORE_VECCALL reduce_idxmin(const __m256 d, const __m256i idx, float& bestDist, int& bestIdx);   
-    void expand_indices(int* idx, const void* allow, size_t num_idx, int max_idx, bool neg);
  
     // Solve an overdetermined system of linear equations Ax=b when A is nrow x ncol and column-major.
     // Y is column-major or row-major (yrowmajor==true) nrow x nrhs. The resulting matrix must be ncol x nrhs. 
