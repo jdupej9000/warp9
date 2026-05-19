@@ -88,6 +88,12 @@ namespace warpcore
     }
 
     template<int ISrc>
+    float p3i_get(p3i x) noexcept
+    {
+        return _mm_extract_epi32(x, ISrc);
+    }
+
+    template<int ISrc>
     float p3f_get(p3f x) noexcept
     {
         return _mm_cvtss_f32(_mm_permute_ps(x, ISrc));

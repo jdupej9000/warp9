@@ -86,17 +86,17 @@ namespace warpcore::impl
             p3i_set(grid->ncell),
             ctx,
             [](p3i c, raycast_ctx& ctx) __declspec(noalias) -> bool {
-                alignas(16) int cidx[4];
-                _mm_store_si128((__m128i*)cidx, c);
-                const trigrid_cell* cell = get_trigrid_cell(ctx.g, cidx[0], cidx[1], cidx[2]);
+                alignas(16) int ci[4];
+                _mm_store_si128((__m128i*)ci, c);             
+                const trigrid_cell* cell = get_trigrid_cell(ctx.g, ci[0], ci[1], ci[2]);
+                                
+                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
 
                 int ne = cell->n;
                 if (ne == 0)
                     return true; // continue along the ray, this cell is just empty
 
-                _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
-
-                ctx.ntested += ne;
+                //ctx.ntested += ne;
 
                 int collision = raytri<TRayTriTraits>(ctx.o, ctx.d, cell->vert, ne, ctx.t);
                 if (collision >= 0) {
