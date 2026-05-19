@@ -311,7 +311,7 @@ namespace Warp9.Native
                 msc.X, msc.Y, msc.Z);
         }
 
-        public static Rigid3 Identity = new Rigid3(Vector3.Zero, 1, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
+        public static readonly Rigid3 Identity = new Rigid3(Vector3.Zero, 1, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ);
     }
 
     [StructLayout(LayoutKind.Sequential)]
