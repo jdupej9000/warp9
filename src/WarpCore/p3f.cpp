@@ -47,8 +47,9 @@ namespace warpcore
     void p3f_store(float* x, p3f pt)
     {
         int* xi = (int*)x;
-        xi[0] = _mm_extract_ps(pt, 0);
-        xi[1] = _mm_extract_ps(pt, 1);
+        ((int64_t*)xi)[0] = _mm_extract_epi64(_mm_castps_si128(pt), 0);
+        //xi[0] = _mm_extract_ps(pt, 0);
+        //xi[1] = _mm_extract_ps(pt, 1);
         xi[2] = _mm_extract_ps(pt, 2);
     }
 
@@ -65,19 +66,25 @@ namespace warpcore
 
     void p3f_to_int(const p3f a, int& x, int& y, int& z) noexcept
     {
-        alignas(16) int xi[4];
-        _mm_store_si128((__m128i*)xi, _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC))));
+        __m128i rounded = _mm_cvtps_epi32(_mm_round_ps(a, (_MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC)));
+        x = _mm_extract_epi32(rounded, 0);
+        y = _mm_extract_epi32(rounded, 1);
+        z = _mm_extract_epi32(rounded, 2);
+        /*alignas(16) int xi[4];
+        _mm_store_si128((__m128i*)xi, rounded);
         x = xi[0];
         y = xi[1];
-        z = xi[2];
+        z = xi[2];*/
     }
 
     int p3i_get(p3i x, int i) noexcept
     {
-        alignas(16) int xi[4];
-        _mm_store_si128((__m128i*)xi, x);
+        //alignas(16) int xi[4];
+        //_mm_store_si128((__m128i*)xi, x);
+        //return xi[i];
 
-        return xi[i];
+        return _mm_extract_epi32(_mm_castps_si128(_mm_permutevar_ps(_mm_castsi128_ps(x),
+            _mm_cvtsi32_si128(i))), 0);
     }
 
     int p3i_sum(p3i x) noexcept

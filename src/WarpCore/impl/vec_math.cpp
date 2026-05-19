@@ -317,16 +317,20 @@ namespace warpcore::impl
 
     float WCORE_VECCALL extract(__m256 v, int index)
     {
-        alignas(32) float vv[8];
-        _mm256_store_ps(vv, v);
-        return vv[index];
+        //alignas(32) float vv[8];
+        //_mm256_store_ps(vv, v);
+        //return vv[index];
+        return _mm256_cvtss_f32(_mm256_permutevar8x32_ps(v, 
+            _mm256_castsi128_si256(_mm_cvtsi32_si128(index))));
     }
 
     int WCORE_VECCALL extract(__m256i v, int index)
     {
-        alignas(32) int vv[8];
-        _mm256_store_si256((__m256i*)vv, v);
-        return vv[index];
+        //alignas(32) int vv[8];
+        //_mm256_store_si256((__m256i*)vv, v);
+        //return vv[index];
+        return _mm256_extract_epi32(_mm256_permutevar8x32_epi32(v, 
+            _mm256_castsi128_si256(_mm_cvtsi32_si128(index))), 0);
     }
 
     int WCORE_VECCALL find_min_index(__m256 v)
@@ -522,8 +526,8 @@ namespace warpcore::impl
                     aa1 += aai * a[k + (j + 1) * n];
                 }
 
-                aa0 = (reduce_add(a0a) + reduce_add(a0b) + aa0) * alpha;
-                aa1 = (reduce_add(a1a) + reduce_add(a1b) + aa1) * alpha;
+                aa0 = (reduce_add(_mm256_add_ps(a0a, a0b)) + aa0) * alpha;
+                aa1 = (reduce_add(_mm256_add_ps(a1a, a1b)) + aa1) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
                 y[i * m + j + 1] = aa1;
@@ -545,7 +549,7 @@ namespace warpcore::impl
                     aa0 += aai * a[k + j * n];
                 }
 
-                aa0 = (reduce_add(a0a) + reduce_add(a0b) + aa0) * alpha;
+                aa0 = (reduce_add(_mm256_add_ps(a0a, a0b)) + aa0) * alpha;
                 y[i * m + j] = aa0;
                 y[j * m + i] = aa0;
             }

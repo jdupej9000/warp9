@@ -240,12 +240,12 @@ namespace warpcore::impl
             dist_best = _mm256_blendv_ps(dist_best, dist2, mm);
             u_best = _mm256_blendv_ps(u_best, u, mm);
             v_best = _mm256_blendv_ps(v_best, v, mm);
-            i_best = _mm256_blendv_epi8(i_best, _mm256_add_epi32(rng, _mm256_set1_epi32(i)), _mm256_castps_si256(mm));
+            i_best = _mm256_blendv_epi8(i_best, _mm256_set1_epi32(i), _mm256_castps_si256(mm));
         }
 
         int i = find_min_index(dist_best);
         //p3f& retBary, p3f& retPt, float& retDist
-        int j = extract(i_best, i);
+        int j = extract(i_best, i) + i;
         retDist = extract(dist_best, i);
         retBary = p3f_set(extract(u_best, i), extract(v_best, i), 0);
         
