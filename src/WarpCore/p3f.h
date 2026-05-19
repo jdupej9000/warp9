@@ -61,6 +61,7 @@ namespace warpcore
     p3f p3f_clamp(p3f x, float x0, float x1) noexcept;
     p3f p3f_xy(p3f x) noexcept;
     float p3f_addxy(p3f x) noexcept;
+    float p3f_get(p3f x, int i) noexcept;
     int p3i_get(p3i x, int i) noexcept;
     int p3i_sum(p3i x) noexcept;
     bool p3i_equal(p3i x, p3i y) noexcept;

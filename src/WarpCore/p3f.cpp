@@ -77,6 +77,11 @@ namespace warpcore
         z = xi[2];*/
     }
 
+    float p3f_get(p3f x, int i) noexcept
+    {
+        return _mm_cvtss_f32(_mm_permutevar_ps(x, _mm_cvtsi32_si128(i)));
+    }
+
     int p3i_get(p3i x, int i) noexcept
     {
         //alignas(16) int xi[4];

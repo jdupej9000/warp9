@@ -10,7 +10,7 @@ namespace warpcore::impl
         _nncell(void) {}
 
         _nncell(const trigrid* g) :
-            cx0(0), cy0(0), cz0(0), depth(0)
+            cx0(0), cy0(0), cz0(0), depth(0), _dummy(0)
         {
             cx1 = g->ncell[0];
             cy1 = g->ncell[1];
@@ -19,7 +19,7 @@ namespace warpcore::impl
 
         int cx0, cy0, cz0;
         int cx1, cy1, cz1;
-        int depth;
+        int depth, _dummy;
 
         bool is_leaf(void) const noexcept
         {
@@ -79,7 +79,7 @@ namespace warpcore::impl
 
     struct _nntask
     {
-        constexpr static size_t MaxScratchpad = 12;
+        constexpr static size_t MaxScratchpad = 16;
 
         _nntask(const trigrid* g, const float* p, float clamp, float* proj) :
             grid(g), bestDist(clamp * clamp), result(proj), bestIdx(-1)
@@ -90,10 +90,10 @@ namespace warpcore::impl
         }
         const trigrid* grid;
         float* result;
+        float buff[MaxScratchpad];
         float bestDist;
         int bestIdx;
-        p3f pt, g0, gd;
-        float buff[MaxScratchpad];
+        p3f pt, g0, gd;        
     };
 
     template<typename TPtTriTraits>
@@ -112,11 +112,7 @@ namespace warpcore::impl
         float* t = task.buff;
 
         if (ctx.is_leaf()) {
-            int cell_idx = ctx.cx0 +
-                task.grid->ncell[0] * ctx.cy0 +
-                task.grid->ncell[0] * task.grid->ncell[1] * ctx.cz0;
-
-            const trigrid_cell* cell = task.grid->cells + cell_idx;
+            const trigrid_cell* cell = get_trigrid_cell(task.grid, ctx.cx0, ctx.cy0, ctx.cz0);           
             _mm_prefetch((const char*)cell->vert, _MM_HINT_T0);
 
             if (cell->n > 0) {
@@ -138,9 +134,8 @@ namespace warpcore::impl
             case 2: ctx.split_z(left, right); break;
             }
 
-            p3f half_diff = p3f_sub(task.pt, p3f_fma(task.gd, left.c1(), task.g0));           
-            p3f_store(t, half_diff);
-            float da = t[axis];
+            p3f half_diff = p3f_sub(task.pt, p3f_fma(task.gd, left.c1(), task.g0));
+            float da = p3f_get(half_diff, axis);// t[axis];
 
             if (da <= 0) {
                 nn_inner<TPtTriTraits>(task, left);

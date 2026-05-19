@@ -24,6 +24,7 @@ namespace warpcore::impl
         grid->ncell[0] = k;
         grid->ncell[1] = k;
         grid->ncell[2] = k;
+        grid->ncell[3] = k * k; // cache the product since we have the room
         grid->nt = nt;
 
         const int num_cells = grid->ncell[0] * grid->ncell[1] * grid->ncell[2];
@@ -295,9 +296,10 @@ namespace warpcore::impl
 
     int get_trigrid_cell_idx(const trigrid* g, int x, int y, int z) noexcept
     {
-        return x + 
-            g->ncell[0] * y + 
-            g->ncell[0] * g->ncell[1] * z;
+        return x +
+            g->ncell[0] * y +
+            //g->ncell[0] * g->ncell[1] * z;
+            g->ncell[3] * z;
     }
 
     bool is_cell_in_grid(const trigrid* g, int x, int y, int z) noexcept
