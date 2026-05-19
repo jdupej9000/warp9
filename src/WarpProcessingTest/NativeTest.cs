@@ -302,11 +302,11 @@ namespace Warp9.Test
             
             PclStat3 stat1 = RigidTransform.MakePclStats(pcl2);
             Console.WriteLine(string.Format("Target: x0={0}, x1={1}, center={2}, cs={3}",
-                stat1.x0.ToString(), stat1.x1.ToString(), stat1.center.ToString(), stat1.size));
+                stat1.x0.ToString(), stat1.x1.ToString(), stat1.Center.ToString(), stat1.size));
             
             PclStat3 stat2a = RigidTransform.MakePclStats(pcl2a);
             Console.WriteLine(string.Format("Result: x0={0}, x1={1}, center={2}, cs={3}",
-                stat2a.x0.ToString(), stat2a.x1.ToString(), stat2a.center.ToString(), stat2a.size));
+                stat2a.x0.ToString(), stat2a.x1.ToString(), stat2a.Center.ToString(), stat2a.size));
 
 
             ComparePcls(pcl2a, pcl2);
@@ -706,14 +706,14 @@ namespace Warp9.Test
             Mesh mesh = TestUtils.LoadObjAsset("teapot.obj", IO.ObjImportMode.PositionsOnly);
             PclStat3 stat = RigidTransform.MakePclStats(mesh);
 
-            Aabb aabb = new Aabb(stat.x0, stat.x1);
+            Aabb aabb = new Aabb(stat.Min, stat.Max);
             mesh.TryGetData(MeshSegmentSemantic.Position, out BufferSegment<Vector3>? seg);
             Assert.IsNotNull(seg);
             for (int i = 0; i < seg.Count; i++)
                 Assert.IsTrue(aabb.Contains(seg[i]));
 
             Console.WriteLine(string.Format("x0={0}, x1={1}, center={2}, cs={3}",
-                stat.x0.ToString(), stat.x1.ToString(), stat.center.ToString(), stat.size));
+                stat.x0.ToString(), stat.x1.ToString(), stat.Center.ToString(), stat.size));
         }
 
         [TestMethod]

@@ -22,8 +22,8 @@ namespace Warp9.Processing
         public static Mesh ShareVerticesByPosition(Mesh m)
         {
             PclStat3 stat = RigidTransform.MakePclStats(m);
-            Vector3 x0 = stat.x0;
-            Vector3 sc = Vector3.One / (stat.x1 - stat.x0);
+            Vector3 x0 = stat.Min;
+            Vector3 sc = Vector3.One / (stat.Max - stat.Min);
 
             if(!m.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
                 throw new InvalidOperationException();

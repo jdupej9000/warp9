@@ -316,8 +316,13 @@ namespace Warp9.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct PclStat3
     {
-        public Vector3 x0, x1, center;
+        public float x0, y0, z0, x1, y1, z1;
+        public float xc, yc, zc;
         public float size;
+
+        public Vector3 Min => new Vector3(x0, y0, z0);
+        public Vector3 Max => new Vector3(x1, y1, z1);
+        public Vector3 Center => new Vector3(xc, yc, zc);
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -370,69 +375,70 @@ namespace Warp9.Native
         public nint ctl_idx;
     };
 
-    public static class WarpCore
+    public static partial class WarpCore
     {
-        [DllImport("WarpCore.dll")]
-        public static extern int set_optpath(int path);
+        //[LibraryImport("WarpCore")]
+        [LibraryImport("WarpCore")]
+        public static partial int set_optpath(int path);
 
         [DllImport("WarpCore.dll", CharSet = CharSet.Ansi)]
         public static extern int wcore_get_info(int index, StringBuilder buffer, int bufferSize);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int cpd_init(ref CpdInfo info, int method, nint y, nint init);
+        [LibraryImport("WarpCore")]
+        public static partial int cpd_init(ref CpdInfo info, int method, nint y, nint init);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int cpd_process(ref CpdInfo cpd, nint x, nint y, nint init, nint t, ref CpdResult result);
+        [LibraryImport("WarpCore")]
+        public static partial int cpd_process(ref CpdInfo cpd, nint x, nint y, nint init, nint t, ref CpdResult result);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int gpa_fit(nint ppdata, nint pallow, int d, int n, int m, nint xforms, nint mean, ref GpaResult result);
+        [LibraryImport("WarpCore")]
+        public static partial int gpa_fit(nint ppdata, nint pallow, int d, int n, int m, nint xforms, nint mean, ref GpaResult result);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int rigid_transform(nint data, int d, int m, nint xforms, nint result);
+        [LibraryImport("WarpCore")]
+        public static partial int rigid_transform(nint data, int d, int m, nint xforms, nint result);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
+        [LibraryImport("WarpCore")]
+        public static partial int pcl_stat(nint x, int d, int m, ref PclStat3 stat);
 
         [DllImport("WarpCore.dll")]
         public static extern int opa_fit(nint t, nint x, nint allow, int d, int m, ref Rigid3 xform);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int search_build(int structure, nint vert, nint idx, int nv, int nt, nint config, ref nint ctx);
+        [LibraryImport("WarpCore")]
+        public static partial int search_build(int structure, nint vert, nint idx, int nv, int nt, nint config, ref nint ctx);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int search_free(nint ctx);
+        [LibraryImport("WarpCore")]
+        public static partial int search_free(nint ctx);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int search_direct(int kind, nint orig, nint dir, nint vert, int n);
+        [LibraryImport("WarpCore")]
+        public static partial int search_direct(int kind, nint orig, nint dir, nint vert, int n);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int search_query(nint ctx, int kind, ref SearchQueryConfig cfg, nint orig, nint dir, int n, nint hit, nint info);
+        [LibraryImport("WarpCore")]
+        public static partial int search_query(nint ctx, int kind, ref SearchQueryConfig cfg, nint orig, nint dir, int n, nint hit, nint info);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int search_info(nint ctx, int kind, int param, nint res, int ressize);
+        [LibraryImport("WarpCore")]
+        public static partial int search_info(nint ctx, int kind, int param, nint res, int ressize);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int clust_fit(nint x, int d, int n, int k, nint cent, nint label, int method);
+        [LibraryImport("WarpCore")]
+        public static partial int clust_fit(nint x, int d, int n, int k, nint cent, nint label, int method);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int pca_fit(ref PcaInfo pca, nint ppdata, nint allow, nint pcs, nint lambda);
+        [LibraryImport("WarpCore")]
+        public static partial int pca_fit(ref PcaInfo pca, nint ppdata, nint allow, nint pcs, nint lambda);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int pca_data_to_scores(ref PcaInfo pca, nint data, nint pcs, nint allow, nint scores);
+        [LibraryImport("WarpCore")]
+        public static partial int pca_data_to_scores(ref PcaInfo pca, nint data, nint pcs, nint allow, nint scores);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int pca_scores_to_data(ref PcaInfo pca, nint scores, nint pcs, nint data);
+        [LibraryImport("WarpCore")]
+        public static partial int pca_scores_to_data(ref PcaInfo pca, nint scores, nint pcs, nint data);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int pcl_impute(ref ImputeInfo info, nint data, nint templ, nint valid_mask);
+        [LibraryImport("WarpCore")]
+        public static partial int pcl_impute(ref ImputeInfo info, nint data, nint templ, nint valid_mask);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int transform_fit(ref FitTransformInfo info, int m, nint src, nint dest, ref nint ctx);
+        [LibraryImport("WarpCore")]
+        public static partial int transform_fit(ref FitTransformInfo info, int m, nint src, nint dest, ref nint ctx);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int transform_apply(nint ctx, int m, nint x, nint y);
+        [LibraryImport("WarpCore")]
+        public static partial int transform_apply(nint ctx, int m, nint x, nint y);
 
-        [DllImport("WarpCore.dll")]
-        public static extern int transform_destroy(nint ctx);
+        [LibraryImport("WarpCore")]
+        public static partial int transform_destroy(nint ctx);
     }
 }
