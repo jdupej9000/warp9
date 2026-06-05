@@ -18,10 +18,13 @@ namespace Warp9.Viewer
             base(proj, dcaEntityKey, name)
         {
             sidebar = new RepeatedMeasurementsSideBar(this);
+            seriesA = new SpecimenTableSeriesSelection(specTableEntry.Payload.Table);
+            seriesB = new SpecimenTableSeriesSelection(specTableEntry.Payload.Table);
         }
 
         RepeatedMeasurementsSideBar sidebar;
         int sourceOperationIndex = 0;
+        SpecimenTableSeriesSelection seriesA, seriesB;
                
         static readonly List<string> sourceOperationList = new List<string>
         {
@@ -59,16 +62,20 @@ namespace Warp9.Viewer
                 throw new ArgumentException();
 
             RepeatedMeasurementsConfigWindow wnd = new RepeatedMeasurementsConfigWindow();
-            wnd.ShowDialog();
+            wnd.Table = specTableEntry.Payload.Table;
+            wnd.Series = group == 0 ? seriesA : seriesB;
+            if (wnd.ShowDialog() ?? false)
+            {
+                UpdateGroups(group == 0, group == 1);
+            }
         }
 
         public void SwapGroups()
         {
-            throw new NotImplementedException();
-            /*SpecimenTableSelection selT = selectionA;
-            selectionA = selectionB;
-            selectionB = selT;
-            UpdateGroups(true, true);*/
+            SpecimenTableSeriesSelection seriesT = seriesA;
+            seriesA = seriesB;
+            seriesB = seriesT;
+            UpdateGroups(true, true);
         }
 
         public override void UpdateGroups(bool a, bool b)

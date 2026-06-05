@@ -37,6 +37,8 @@ namespace Warp9.Forms
 
         public int SeriesColumnIndex { get; set; }
         public int OrderColumnIndex { get; set; }
+        public int OrderFirstIndex { get; set; }
+        public int OrderSecondIndex { get; set; }
 
         public ObservableCollection<SpecimenTableColumnTextInfo> SearchableColumns { get; } = new ObservableCollection<SpecimenTableColumnTextInfo>();
         public ObservableCollection<string> OrderValueLevels { get; set; }
@@ -68,6 +70,24 @@ namespace Warp9.Forms
             OrderValueLevels.Clear();
             foreach(string val in SpecimenTableUtils.FindUniqueValuesAsString(Table, SearchableColumns[OrderColumnIndex].Name))
                 OrderValueLevels.Add(val);
+        }
+
+        private void btnOK_Click(object sender, RoutedEventArgs e)
+        {
+            string seriesColName = SearchableColumns[SeriesColumnIndex].Name;
+            if (Operation == RepeatedMeasurementsOperation.TwoPointDifference)
+            {
+                string orderColName = Table.Columns.Keys.Take(OrderColumnIndex).First();
+                string firstValue = OrderValueLevels[OrderFirstIndex];
+                string secondValue = OrderValueLevels[OrderSecondIndex];
+                Series.InitToPairs(seriesColName, orderColName, firstValue, secondValue);
+            }
+            else if (Operation == RepeatedMeasurementsOperation.LinearRegression)
+            {
+                Series.InitToSeries(seriesColName, 1);
+            }
+
+            DialogResult = true;
         }
     }
 }

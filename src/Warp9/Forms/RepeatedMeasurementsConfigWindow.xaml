@@ -16,7 +16,7 @@
     
     <DockPanel Margin="4">
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="28" Margin="4" HorizontalAlignment="Right">
-            <Button x:Name="btnOK" Content="OK" Width="100" Style="{DynamicResource ControlButton}"/>
+            <Button x:Name="btnOK" Content="OK" Width="100" Style="{DynamicResource ControlButton}" Click="btnOK_Click"/>
             <Label Width="4" />
             <Button x:Name="btnCancel" Content="Cancel" Width="100" Style="{DynamicResource ControlButton}"/>
         </StackPanel>
@@ -67,10 +67,12 @@
 
                 <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">First</TextBlock>
                 <ComboBox Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"
+                          SelectedIndex="{Binding OrderFirstIndex, Mode=TwoWay}"
                           ItemsSource="{Binding OrderValueLevels, UpdateSourceTrigger=PropertyChanged}" />
 
                 <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">Second</TextBlock>
                 <ComboBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
+                          SelectedIndex="{Binding OrderSecondIndex, Mode=TwoWay}"
                           ItemsSource="{Binding OrderValueLevels, UpdateSourceTrigger=PropertyChanged}" />
 
             </Grid>

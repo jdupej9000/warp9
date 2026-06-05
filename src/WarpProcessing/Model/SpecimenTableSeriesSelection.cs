@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Policy;
 using System.Text;
+using Warp9.Data;
 
 namespace Warp9.Model
 {
@@ -35,31 +36,37 @@ namespace Warp9.Model
         private readonly SpecimenTable specTable;
         private List<SpecimenTableSeries> series = new List<SpecimenTableSeries>();
 
+        public string IdColumn { get; private set; } = string.Empty;
+        public string? OrderColumn { get; private set; }
+        public string? FirstValue { get; private set; }
+        public string? SecondValue { get; private set; }
+
         public IReadOnlyList<SpecimenTableSeries> Series => series;
+
+        public void InitToPairs(string seriesIdColumn, string seriesOrderColumn, string orderFirstValue, string orderSecondValue)
+        {
+            series.Clear();
+            foreach ((int a, int b) in SpecimenTableUtils.FindPairs(specTable, seriesIdColumn, seriesOrderColumn, orderFirstValue, orderSecondValue))
+                AddSeries(a, b);
+
+            IdColumn = seriesIdColumn;
+            OrderColumn = seriesOrderColumn;
+            FirstValue = orderFirstValue;
+            SecondValue = orderSecondValue;
+        }
+
+        public void InitToSeries(string seriesIdColumn, int minDataPoints = 1)
+        {
+            series.Clear();
+            foreach (int[] idx in SpecimenTableUtils.FindSeries(specTable, seriesIdColumn))
+                AddSeries(idx);
+
+            IdColumn = seriesIdColumn;            
+        }
 
         private void AddSeries(params int[] indices)
         {
             series.Add(new SpecimenTableSeries(specTable, indices));
-        }
-
-        public static SpecimenTableSeriesSelection MakePairs(SpecimenTable table, string seriesIdColumn, string seriesOrderColumn, string orderFirstValue, string orderSecondValue)
-        {
-            SpecimenTableSeriesSelection ret = new SpecimenTableSeriesSelection(table);
-
-            foreach ((int a, int b) in SpecimenTableUtils.FindPairs(table, seriesIdColumn, seriesOrderColumn, orderFirstValue, orderSecondValue))
-                ret.AddSeries(a, b);
-
-            return ret;
-        }
-
-        public static SpecimenTableSeriesSelection MakeSeries(SpecimenTable table, string seriesIdColumn, int minDataPoints = 1)
-        {
-            SpecimenTableSeriesSelection ret = new SpecimenTableSeriesSelection(table);
-
-            foreach (int[] idx in SpecimenTableUtils.FindSeries(table, seriesIdColumn))
-                ret.AddSeries(idx);
-
-            return ret;
         }
     }
 }
