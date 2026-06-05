@@ -19,12 +19,7 @@ namespace Warp9.Model
         NotIn
     }
 
-    public enum RepeatedMeasurementsOperation
-    {
-        TwoPointDifference,
-        LinearRegression
-    }
-
+   
     public static class SpecimenTableUtils
     {
         public static bool TestPredicate(SpecimenTableRow row, string column, SpecimenTableValuePredicate predicate, string? value = null, string[]? values = null)
@@ -119,7 +114,7 @@ namespace Warp9.Model
             foreach (string lvl in levels)
             {
                 int a = -1, b = -1;
-                foreach (SpecimenTableRow rows in SelectRows(table, seriesIdColumn, SpecimenTableValuePredicate.Equals, lvl))
+                foreach (SpecimenTableRow rows in SelectRows(table.GetRows(), seriesIdColumn, SpecimenTableValuePredicate.Equals, lvl))
                 {
                     if (rows.IsInSet(seriesOrderColumn, orderFirstValue))
                         a = rows.RowIndex;
@@ -138,7 +133,7 @@ namespace Warp9.Model
             IReadOnlyList<string> levels = FindUniqueValuesAsString(table, seriesIdColumn);
             foreach (string lvl in levels)
             {
-                int[] ret = SelectRows(table, seriesIdColumn, SpecimenTableValuePredicate.Equals, lvl)
+                int[] ret = SelectRows(table.GetRows(), seriesIdColumn, SpecimenTableValuePredicate.Equals, lvl)
                     .Select(t => t.RowIndex)
                     .ToArray();
                

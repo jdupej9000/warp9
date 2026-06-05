@@ -61,9 +61,8 @@ namespace Warp9.Viewer
             if (group != 0 && group != 1)
                 throw new ArgumentException();
 
-            RepeatedMeasurementsConfigWindow wnd = new RepeatedMeasurementsConfigWindow();
-            wnd.Table = specTableEntry.Payload.Table;
-            wnd.Series = group == 0 ? seriesA : seriesB;
+            RepeatedMeasurementsCfg cfg = new RepeatedMeasurementsCfg(group == 0 ? seriesA : seriesB);
+            RepeatedMeasurementsConfigWindow wnd = new RepeatedMeasurementsConfigWindow(cfg);
             if (wnd.ShowDialog() ?? false)
             {
                 UpdateGroups(group == 0, group == 1);

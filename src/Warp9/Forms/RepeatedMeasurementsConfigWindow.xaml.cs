@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using Warp9.Model;
 using Warp9.Processing;
 using Warp9.Themes;
+using Warp9.Viewer;
 
 namespace Warp9.Forms
 {
@@ -26,68 +27,18 @@ namespace Warp9.Forms
     /// </summary>
     public partial class RepeatedMeasurementsConfigWindow : Window
     {
-        public RepeatedMeasurementsConfigWindow()
+        public RepeatedMeasurementsConfigWindow(RepeatedMeasurementsCfg cfg)
         {
             InitializeComponent();
+            DataContext = cfg;
+            config = cfg;
         }
 
-        public SpecimenTable Table { get; set; }
-        public SpecimenTableSeriesSelection Series { get; set; }
-        public RepeatedMeasurementsOperation Operation { get; set; } = RepeatedMeasurementsOperation.TwoPointDifference;
-
-        public int SeriesColumnIndex { get; set; }
-        public int OrderColumnIndex { get; set; }
-        public int OrderFirstIndex { get; set; }
-        public int OrderSecondIndex { get; set; }
-
-        public ObservableCollection<SpecimenTableColumnTextInfo> SearchableColumns { get; } = new ObservableCollection<SpecimenTableColumnTextInfo>();
-        public ObservableCollection<string> OrderValueLevels { get; set; } = new ObservableCollection<string>();
-
-        private void InitSearchableColumns()
-        {
-            SearchableColumns.Clear();
-            foreach (var col in Table.Columns)
-            {
-                if (col.Value.ColumnType == SpecimenTableColumnType.Integer ||
-                    col.Value.ColumnType == SpecimenTableColumnType.Real ||
-                    col.Value.ColumnType == SpecimenTableColumnType.String ||
-                    col.Value.ColumnType == SpecimenTableColumnType.Factor ||
-                    col.Value.ColumnType == SpecimenTableColumnType.Boolean)
-                {
-                    SearchableColumns.Add(new SpecimenTableColumnTextInfo(
-                        col.Key, col.Value.ColumnType.ToString()));
-                }               
-            }
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            InitSearchableColumns();
-            DataContext = this;
-        }
-              
-        private void OrderColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            OrderValueLevels.Clear();
-            foreach(string val in SpecimenTableUtils.FindUniqueValuesAsString(Table, SearchableColumns[OrderColumnIndex].Name))
-                OrderValueLevels.Add(val);
-        }
+        RepeatedMeasurementsCfg config;
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            string seriesColName = SearchableColumns[SeriesColumnIndex].Name;
-            if (Operation == RepeatedMeasurementsOperation.TwoPointDifference)
-            {
-                string orderColName = Table.Columns.Keys.Take(OrderColumnIndex).First();
-                string firstValue = OrderValueLevels[OrderFirstIndex];
-                string secondValue = OrderValueLevels[OrderSecondIndex];
-                Series.InitToPairs(seriesColName, orderColName, firstValue, secondValue);
-            }
-            else if (Operation == RepeatedMeasurementsOperation.LinearRegression)
-            {
-                Series.InitToSeries(seriesColName, 1);
-            }
-
+            config.UpdateSelection();
             DialogResult = true;
         }
     }

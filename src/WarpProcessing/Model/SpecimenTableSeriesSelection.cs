@@ -24,7 +24,12 @@ namespace Warp9.Model
                 yield return Table[i];
         }
     };
-  
+
+    public enum RepeatedMeasurementsOperation
+    {
+        TwoPointDifference = 0,
+        LinearRegression
+    }
 
     public class SpecimenTableSeriesSelection
     {
@@ -40,8 +45,10 @@ namespace Warp9.Model
         public string? OrderColumn { get; private set; }
         public string? FirstValue { get; private set; }
         public string? SecondValue { get; private set; }
+        public RepeatedMeasurementsOperation Operation { get; set; } = RepeatedMeasurementsOperation.TwoPointDifference;
 
         public IReadOnlyList<SpecimenTableSeries> Series => series;
+        public SpecimenTable Table => specTable;
 
         public void InitToPairs(string seriesIdColumn, string seriesOrderColumn, string orderFirstValue, string orderSecondValue)
         {
@@ -62,6 +69,11 @@ namespace Warp9.Model
                 AddSeries(idx);
 
             IdColumn = seriesIdColumn;            
+        }
+
+        public void Clear()
+        {
+            series.Clear();
         }
 
         private void AddSeries(params int[] indices)
