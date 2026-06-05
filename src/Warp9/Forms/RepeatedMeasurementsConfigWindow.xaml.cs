@@ -41,7 +41,7 @@ namespace Warp9.Forms
         public int OrderSecondIndex { get; set; }
 
         public ObservableCollection<SpecimenTableColumnTextInfo> SearchableColumns { get; } = new ObservableCollection<SpecimenTableColumnTextInfo>();
-        public ObservableCollection<string> OrderValueLevels { get; set; }
+        public ObservableCollection<string> OrderValueLevels { get; set; } = new ObservableCollection<string>();
 
         private void InitSearchableColumns()
         {
@@ -63,6 +63,7 @@ namespace Warp9.Forms
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             InitSearchableColumns();
+            DataContext = this;
         }
               
         private void OrderColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
