@@ -48,7 +48,7 @@
         </Border>
 
         <Grid ColumnDefinitions="250,*" RowDefinitions="*">
-            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}">
+            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}" SelectionChanged="trvProject_SelectionChanged">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="local:ProjectItem">
                         <TextBlock Text="{Binding Name}"/>
