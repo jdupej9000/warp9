@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using Warp9.Avalonia.Navigation;
 using Warp9.Model;
 using static System.Windows.Forms.Design.AxImporter;
 
@@ -12,9 +14,13 @@ namespace Warp9.Avalonia
         public MainWindow()
         {
             InitializeComponent();
+
+            pages.Add(typeof(MainLandingPage), new MainLandingPage());
+            pages.Add(typeof(TextEditorPage), new TextEditorPage());
+            pages.Add(typeof(ProjectSettingsPage), new ProjectSettingsPage());
         }
 
-        Navigation.MainLandingPage pageLanding = new Navigation.MainLandingPage();
+        Dictionary<Type, ContentPage> pages = new Dictionary<Type, ContentPage>();
         Warp9ProjectModel? Model = null;
 
         private void HelpAbout_Click(object? sender, RoutedEventArgs e)
@@ -25,7 +31,7 @@ namespace Warp9.Avalonia
 
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
-            frameMain.Content = pageLanding;
+            frameMain.Content = pages[typeof(MainLandingPage)];
         }
 
         private void FileOpen_Click(object? sender, RoutedEventArgs e)
@@ -46,6 +52,25 @@ namespace Warp9.Avalonia
                 catch (Exception ex)
                 {
                     //System.Windows.MessageBox.Show("Failed to load project: " + ex.Message, "Warp9 - Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void trvProject_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && 
+                e.AddedItems[0] is ProjectItem pi)
+            {
+                if (pi.PagePresenterType is not null &&
+                    pages.TryGetValue(pi.PagePresenterType, out ContentPage? page) &&
+                    page is not null)
+                {
+                    pi.ConfigurePresenter(page);
+                    frameMain.Content = page;                    
+                }
+                else
+                {
+                    frameMain.Content = pages[typeof(MainLandingPage)];
                 }
             }
         }
