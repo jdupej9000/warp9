@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="using:Warp9.Avalonia"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Warp9.Avalonia.MainWindow"
+        Loaded="Window_Loaded"
+        Title="Warp9.Avalonia"
+        x:DataType="local:Warp9ProjectModel">
+    
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="_New" />
+                <MenuItem Header="_Open..." Click="FileOpen_Click" />
+                <MenuItem Header="_Save" />
+                <MenuItem Header="Save _As..." />
+                <Separator />
+                <MenuItem Header="Close" />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+
+            <MenuItem Header="Project">
+                <MenuItem Header="Add new specimen table" />
+                <MenuItem Header="Import specimen table..." />
+                <Separator />
+                <MenuItem Header="Compute">
+                    <MenuItem Header="Mesh homology (DCA)" />
+                    <MenuItem Header="Principal component analysis" />
+                    <MenuItem Header="Point cloud distance matrix" />
+                    <MenuItem Header="Landmark diagnostics" />
+                </MenuItem>
+            </MenuItem>
+
+            <MenuItem Header="Tools">
+                <MenuItem Header="Options" />
+            </MenuItem>
+
+            <MenuItem Header="Help">
+                <MenuItem Header="_About..." Click="HelpAbout_Click" />
+            </MenuItem>
+        </Menu>
+
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SystemChromeLowColor}" Padding="8,4">
+            <TextBlock Text="Ready" />
+        </Border>
+
+        <Grid ColumnDefinitions="250,*" RowDefinitions="*">
+            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="local:ProjectItem">
+                        <TextBlock Text="{Binding Name}"/>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <ContentControl Grid.Row="0" Grid.Column="1" x:Name="frameMain">               
+            </ContentControl>
+        </Grid>
+    </DockPanel>
+
+</Window>
