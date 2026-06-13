@@ -50,7 +50,7 @@
         </Border>
 
         <Grid ColumnDefinitions="250,*" RowDefinitions="*">
-            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}">
+            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}" SelectionChanged="trvProject_SelectionChanged" Margin="4,4,4,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="local:ProjectItem">
                         <TextBlock Text="{Binding Name}"/>
@@ -58,7 +58,7 @@
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <ContentControl Grid.Row="0" Grid.Column="1" x:Name="frameMain">               
+            <ContentControl Grid.Row="0" Grid.Column="1" x:Name="frameMain" Margin="4,4,4,4">               
             </ContentControl>
         </Grid>
     </DockPanel>
