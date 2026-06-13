@@ -10,6 +10,7 @@
                 <!--<ColorPaletteResources x:Key="Light"  Accent="Green" RegionColor="White" ErrorText="Red" />-->
                 <ColorPaletteResources x:Key="Dark" 
                                        RegionColor="#191A1B"
+                                       BaseHigh="#C0C0C0"
                                        Accent="#2D536A"                                         
                                        ErrorText="DarkRed" />
                 </FluentTheme.Palettes>

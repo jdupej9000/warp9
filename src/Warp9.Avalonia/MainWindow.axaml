@@ -46,12 +46,12 @@
             </MenuItem>
         </Menu>
 
-        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SystemChromeLowColor}" Padding="8,4">
-            <TextBlock Text="Ready" />
+        <Border DockPanel.Dock="Bottom" Background="Transparent" BorderThickness="0,1,0,0" BorderBrush="#303030" Padding="8,4" Height="28">
+            <TextBlock Text="Ready" VerticalAlignment="Center" />
         </Border>
 
         <Grid ColumnDefinitions="250,*" RowDefinitions="*">
-            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}" SelectionChanged="trvProject_SelectionChanged" Margin="4,4,4,4">
+            <TreeView Grid.Row="0" Grid.Column="0" x:Name="trvProject" x:DataType="local:Warp9ProjectModel" ItemsSource="{Binding ProjectItems}" SelectionChanged="trvProject_SelectionChanged" Margin="4,4,4,4">                                
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="local:ProjectItem">
                         <TextBlock Text="{Binding Name}"/>
@@ -59,7 +59,7 @@
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8,0,0,8" BorderThickness="1" BorderBrush="#303030" Padding="4">
+            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8,0,0,0" BorderThickness="1,1,0,0" BorderBrush="#303030" Padding="4">
                 <ContentControl x:Name="frameMain" Margin="4,4,4,4" />            
             </Border>            
         </Grid>
