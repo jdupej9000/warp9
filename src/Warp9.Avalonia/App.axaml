@@ -5,10 +5,23 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
    <Application.Styles>
-        <FluentTheme />
+        <FluentTheme DensityStyle="Normal">
+             <FluentTheme.Palettes>        
+                <!--<ColorPaletteResources x:Key="Light"  Accent="Green" RegionColor="White" ErrorText="Red" />-->
+                <ColorPaletteResources x:Key="Dark" 
+                                       RegionColor="#191A1B"
+                                       Accent="#2D536A"                                         
+                                       ErrorText="DarkRed" />
+                </FluentTheme.Palettes>
+        </FluentTheme>
+
 	    <Style Selector=":is(TopLevel)">
 		    <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="12" />
 	    </Style>
+
+       <Style Selector="ContentPage">
+           <Setter Property="Background" Value="{DynamicResource ResourceKey=SystemRegionColor}" />           
+       </Style>
     </Application.Styles>
 </Application>

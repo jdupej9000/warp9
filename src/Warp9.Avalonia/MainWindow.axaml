@@ -9,6 +9,7 @@
         Title="Warp9.Avalonia"
         TextOptions.TextRenderingMode="SubpixelAntialias"
         TextOptions.TextHintingMode="Strong"
+        TextOptions.BaselinePixelAlignment="Aligned"
         x:DataType="local:Warp9ProjectModel">
     
     <DockPanel>
@@ -58,8 +59,9 @@
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <ContentControl Grid.Row="0" Grid.Column="1" x:Name="frameMain" Margin="4,4,4,4">               
-            </ContentControl>
+            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8,0,0,8" BorderThickness="1" BorderBrush="#303030" Padding="4">
+                <ContentControl x:Name="frameMain" Margin="4,4,4,4" />            
+            </Border>            
         </Grid>
     </DockPanel>
 
