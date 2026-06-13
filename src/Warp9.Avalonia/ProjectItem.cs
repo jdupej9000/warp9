@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Avalonia.VisualTree;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
-using Avalonia.VisualTree;
+using Warp9.Model;
 using static System.Windows.Forms.Design.AxImporter;
 
 namespace Warp9.Avalonia
@@ -58,6 +60,7 @@ namespace Warp9.Avalonia
         }
     }
 
+    #region General
     public class GeneralProjectItem : ProjectItem
     {
         public GeneralProjectItem(Warp9ProjectModel vm)
@@ -83,8 +86,6 @@ namespace Warp9.Avalonia
         {
             if (pres is not TextEditorPage page)
                 throw new ArgumentException();
-
-            page.AttachProject(ParentModel.Project);
         }
     }
 
@@ -102,4 +103,69 @@ namespace Warp9.Avalonia
                 throw new ArgumentException();
         }
     }
+    #endregion
+
+    #region Datasets
+    public class DatasetsProjectItem : ProjectItem
+    {
+        public DatasetsProjectItem(Warp9ProjectModel vm) :
+            base(vm, null)
+        {
+            Name = "Datasets";
+            Update();
+        }
+
+        public override void Update()
+        {
+            List<SpecimenTableInfo> tables = ModelUtils.EnumerateSpecimenTables(ParentModel.Project).ToList();
+
+            // TODO: do not remove items that were not changed
+            Children.Clear();
+            foreach (SpecimenTableInfo sti in tables)
+                Children.Add(new SpecimenTableProjectItem(ParentModel, sti.SpecTableId));
+
+            base.Update();
+        }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Folder;
+    }
+
+    public class SpecimenTableProjectItem : ProjectItem
+    {
+        public SpecimenTableProjectItem(Warp9ProjectModel vm, long key, string? explicitName = null, bool fullResolve = false) :
+            base(vm, typeof(SpecimenTablePage))
+        {
+            Key = key;
+            ExplicitName = explicitName;
+            FullResolve = fullResolve;
+        }
+
+        public long Key { get; init; }
+        public string? ExplicitName { get; init; }
+        public bool FullResolve { get; init; }
+
+        protected override string? GetAdvancedNamePart()
+        {
+            return string.Format("#{0}", Key);
+        }
+
+        public override void ConfigurePresenter(object pres)
+        {
+            if (pres is not SpecimenTablePage page)
+                throw new ArgumentException();
+
+            page.ShowEntry(Key, FullResolve);
+        }
+
+        public override void Update()
+        {
+            if (ParentModel.Project.Entries.TryGetValue(Key, out ProjectEntry? entry) && entry is not null)
+                Name = ExplicitName ?? entry.Name;
+            else
+                Name = "(error)";
+        }
+
+        protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
+    }
+    #endregion
 }
