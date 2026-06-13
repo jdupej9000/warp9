@@ -7,6 +7,8 @@
         x:Class="Warp9.Avalonia.MainWindow"
         Loaded="Window_Loaded"
         Title="Warp9.Avalonia"
+        TextOptions.TextRenderingMode="SubpixelAntialias"
+        TextOptions.TextHintingMode="Strong"
         x:DataType="local:Warp9ProjectModel">
     
     <DockPanel>
