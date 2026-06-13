@@ -18,10 +18,44 @@ namespace Warp9.Avalonia
             pages.Add(typeof(MainLandingPage), new MainLandingPage());
             pages.Add(typeof(TextEditorPage), new TextEditorPage());
             pages.Add(typeof(ProjectSettingsPage), new ProjectSettingsPage());
+            pages.Add(typeof(SpecimenTablePage), new SpecimenTablePage());
         }
 
         Dictionary<Type, ContentPage> pages = new Dictionary<Type, ContentPage>();
         Warp9ProjectModel? Model = null;
+        ContentPage? ActivePage = null;
+
+        private void SetPage(Type? pageType, ProjectItem? pi = null)
+        {
+            if (pageType is not null &&
+                pages.TryGetValue(pageType, out ContentPage? page) && page is not null)
+            {
+                if (ActivePage is not null &&
+                    ActivePage != page &&
+                    ActivePage is IWarp9View oldView)
+                {
+                    oldView.DetachViewModel();
+                }
+
+                if (page is IWarp9View pageView && Model is not null)
+                    pageView.AttachViewModel(Model);
+
+                pi?.ConfigurePresenter(page);
+                ActivePage = page;
+            }
+            else
+            {
+                if (ActivePage is not null &&
+                    ActivePage is IWarp9View oldView)
+                {
+                    oldView.DetachViewModel();
+                }
+
+                ActivePage = pages[typeof(MainLandingPage)];
+            }
+
+            frameMain.Content = ActivePage;
+        }
 
         private void HelpAbout_Click(object? sender, RoutedEventArgs e)
         {
@@ -31,7 +65,7 @@ namespace Warp9.Avalonia
 
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
-            frameMain.Content = pages[typeof(MainLandingPage)];
+            SetPage(null);
         }
 
         private void FileOpen_Click(object? sender, RoutedEventArgs e)
@@ -61,17 +95,7 @@ namespace Warp9.Avalonia
             if (e.AddedItems.Count > 0 && 
                 e.AddedItems[0] is ProjectItem pi)
             {
-                if (pi.PagePresenterType is not null &&
-                    pages.TryGetValue(pi.PagePresenterType, out ContentPage? page) &&
-                    page is not null)
-                {
-                    pi.ConfigurePresenter(page);
-                    frameMain.Content = page;                    
-                }
-                else
-                {
-                    frameMain.Content = pages[typeof(MainLandingPage)];
-                }
+                SetPage(pi.PagePresenterType, pi); 
             }
         }
     }
