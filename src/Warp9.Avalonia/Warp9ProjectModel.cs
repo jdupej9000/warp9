@@ -16,6 +16,7 @@ namespace Warp9.Avalonia
             ProjectItems.Add(new GeneralProjectItem(this));
             ProjectItems.Add(new DatasetsProjectItem(this));
             ProjectItems.Add(new ResultsProjectItem(this));
+            ProjectItems.Add(new GalleryProjectItem(this));
         }
 
         public Project Project { get; init; }
