@@ -19,6 +19,7 @@ namespace Warp9.Avalonia
             pages.Add(typeof(TextEditorPage), new TextEditorPage());
             pages.Add(typeof(ProjectSettingsPage), new ProjectSettingsPage());
             pages.Add(typeof(SpecimenTablePage), new SpecimenTablePage());
+            pages.Add(typeof(SummaryPage), new SummaryPage());
         }
 
         Dictionary<Type, ContentPage> pages = new Dictionary<Type, ContentPage>();
