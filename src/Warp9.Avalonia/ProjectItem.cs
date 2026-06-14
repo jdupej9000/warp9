@@ -255,7 +255,7 @@ namespace Warp9.Avalonia
     public class MeshCorrespondenceViewerProjectItem : ProjectItem
     {
         public MeshCorrespondenceViewerProjectItem(Warp9ProjectModel vm, long key, string name) :
-            base(vm, typeof(MainLandingPage))
+            base(vm, typeof(ViewerPage))
         {
             Name = name;
             Key = key;
@@ -267,9 +267,9 @@ namespace Warp9.Avalonia
         {
             base.ConfigurePresenter(pres);
 
-           /* if (pres is not ViewerPage page)
+            if (pres is not ViewerPage page)
                 throw new ArgumentException();
-
+           /*
             Project proj = ParentViewModel.Project;
             page.SetContent(
                 new CorrMeshViewerContent(proj, Key, "Correspondence meshes"),

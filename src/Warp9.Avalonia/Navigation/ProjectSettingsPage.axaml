@@ -8,7 +8,7 @@
         TextOptions.BaselinePixelAlignment="Aligned"
         x:Class="Warp9.Avalonia.ProjectSettingsPage">
 
-<Grid ColumnDefinitions="250,*" RowDefinitions="30,30">
+<Grid ColumnDefinitions="250,*" RowDefinitions="30,30" Margin="8">
     <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center">External references policy</TextBlock>
     <ComboBox Grid.Column="1" Grid.Row="0" Width="200">
         <ComboBoxItem>Use absolute paths</ComboBoxItem>

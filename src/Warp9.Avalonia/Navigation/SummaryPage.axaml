@@ -16,7 +16,7 @@
                  Background="Transparent"        
                  IsReadOnly="True"
                  Margin="0"
-                 Padding="0">
+                 Padding="8">
             <TextBox.Styles>        
                 <Style Selector="TextBox:pointerover">
                     <Style Selector="^ /template/ Border#PART_BorderElement">
