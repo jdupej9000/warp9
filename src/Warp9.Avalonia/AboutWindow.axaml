@@ -12,7 +12,7 @@
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Margin="8">
-            <Button Content="Close" HorizontalAlignment="Right" />
+            <Button Content="Close" HorizontalAlignment="Right" Click="Close_Click" />
         </StackPanel>
 
         <Grid ColumnDefinitions="200,*" RowDefinitions="100,*">
@@ -24,7 +24,7 @@
                 <TextBlock>www.github.com/jdupej9000/warp9</TextBlock>
             </StackPanel>
 
-             <TextBox x:Name="txtInfo" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Consolas" IsReadOnly="True" BorderThickness="0" Background="Transparent">
+             <TextBox x:Name="txtInfo" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Consolas" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="8">
                   <TextBox.Styles>        
                 <Style Selector="TextBox:pointerover">
                     <Style Selector="^ /template/ Border#PART_BorderElement">

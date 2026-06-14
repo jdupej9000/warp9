@@ -29,14 +29,14 @@ public partial class AboutWindow : Window
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("[ Environment ]");
+            sb.AppendLine("---===[ ENVIRONMENT ]===---");
             sb.AppendLine(".NET version     : " + Environment.Version.ToString());
             sb.AppendLine("OS version       : " + Environment.OSVersion.ToString());
             sb.AppendLine("Machine name     : " + Environment.MachineName);
             sb.AppendLine("Avalonia version : " + typeof(AvaloniaObject).Assembly.GetName().Version.ToString());
 
             sb.AppendLine();
-            sb.AppendLine("[ Warp9 ]");
+            sb.AppendLine("---===[ WARP9 ]===---");
             foreach (WarpCoreInfoIndex idx in Enum.GetValues<WarpCoreInfoIndex>())
             {
                 sb.AppendLine(idx.ToString() + " : " + WarpCore.GetInfoString(idx));
@@ -44,5 +44,10 @@ public partial class AboutWindow : Window
 
             txtInfo.Text = sb.ToString();
         });
+    }
+
+    private void Close_Click(object? sender, RoutedEventArgs e)
+    {
+        Close();
     }
 }

@@ -23,7 +23,7 @@
                  AcceptsReturn="True" 
                  Background="Transparent"        
                  Margin="0"
-                 Padding="0"
+                 Padding="8"
                  Text="{Binding Path=Settings.Comment, Mode=OneWay}">
             <TextBox.Styles>        
                 <Style Selector="TextBox:pointerover">

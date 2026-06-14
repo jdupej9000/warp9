@@ -20,6 +20,7 @@ namespace Warp9.Avalonia
             pages.Add(typeof(ProjectSettingsPage), new ProjectSettingsPage());
             pages.Add(typeof(SpecimenTablePage), new SpecimenTablePage());
             pages.Add(typeof(SummaryPage), new SummaryPage());
+            pages.Add(typeof(ViewerPage), new ViewerPage());
         }
 
         Dictionary<Type, ContentPage> pages = new Dictionary<Type, ContentPage>();
@@ -93,11 +94,15 @@ namespace Warp9.Avalonia
 
         private void trvProject_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count > 0 && 
+            if (e.AddedItems.Count > 0 &&
                 e.AddedItems[0] is ProjectItem pi)
             {
-                SetPage(pi.PagePresenterType, pi); 
+                SetPage(pi.PagePresenterType, pi);
             }
+        }
+
+        private void Log_Click(object? sender, RoutedEventArgs e)
+        {
         }
     }
 }

@@ -7,5 +7,8 @@
         TextOptions.TextRenderingMode="SubpixelAntialias"
         x:Class="Warp9.Avalonia.Navigation.MainLandingPage">
 
-    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center">Warp9.Avalonia<LineBreak/>Landing page</TextBlock>  
+    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+        <Image Grid.Column="0" Grid.Row="0" Source="\Assets\warp9-logo-softdark.png" Height="56" HorizontalAlignment="Center"/>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Margin="0,16,0,0">Warp9.Avalonia<LineBreak/>Landing page</TextBlock>  
+    </StackPanel>
 </ContentPage>
