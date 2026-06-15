@@ -18,6 +18,11 @@ namespace Warp9.ViewerOgl
 
         readonly Dictionary<RenderItemBase, RenderJob?> renderItems = new Dictionary<RenderItemBase, RenderJob?>();
 
+        public string DeviceInfo => gl.GetStringS(StringName.Renderer);
+        public string DeviceVendor => gl.GetStringS(StringName.Vendor);
+        public string DeviceVersion => gl.GetStringS(StringName.Version);
+        public string DeviceGlslVersion => gl.GetStringS(StringName.ShadingLanguageVersion);
+
         public void Render()
         {
             PreRender();
