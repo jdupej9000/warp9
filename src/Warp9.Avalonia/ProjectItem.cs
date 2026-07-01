@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Avalonia.VisualTree;
 using static System.Windows.Forms.Design.AxImporter;
 
 namespace Warp9.Avalonia
@@ -83,8 +82,6 @@ namespace Warp9.Avalonia
         {
             if (pres is not TextEditorPage page)
                 throw new ArgumentException();
-
-            page.AttachProject(ParentModel.Project);
         }
     }
 
