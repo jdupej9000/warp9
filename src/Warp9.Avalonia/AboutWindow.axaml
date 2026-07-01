@@ -7,7 +7,6 @@
         Loaded="Window_Loaded"
         TextOptions.TextRenderingMode="SubpixelAntialias"
         TextOptions.TextHintingMode="Strong"
-        TextOptions.BaselinePixelAlignment="Aligned"
         Title="About Warp9">
 
     <DockPanel>
@@ -24,25 +23,7 @@
                 <TextBlock>www.github.com/jdupej9000/warp9</TextBlock>
             </StackPanel>
 
-             <TextBox x:Name="txtInfo" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Consolas" IsReadOnly="True" BorderThickness="0" Background="Transparent">
-                  <TextBox.Styles>        
-                <Style Selector="TextBox:pointerover">
-                    <Style Selector="^ /template/ Border#PART_BorderElement">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderBrush" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0" />                        
-                    </Style>
-                 </Style>
-                 <Style Selector="TextBox:focus">                            
-                    <Style Selector="^ /template/ Border#PART_BorderElement">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderBrush" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0" />                        
-                    </Style>
-                
-                </Style>
-            </TextBox.Styles>
-             </TextBox>
+             <TextBox x:Name="txtInfo" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Consolas" IsReadOnly="True" BorderThickness="0" />
         </Grid>
 
     </DockPanel>
