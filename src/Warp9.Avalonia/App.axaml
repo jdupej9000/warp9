@@ -5,7 +5,7 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
    <Application.Styles>
-        <FluentTheme DensityStyle="Compact">
+        <FluentTheme DensityStyle="Normal">
              <FluentTheme.Palettes>        
                 <!--<ColorPaletteResources x:Key="Light"  Accent="Green" RegionColor="White" ErrorText="Red" />-->
                 <ColorPaletteResources x:Key="Dark" 

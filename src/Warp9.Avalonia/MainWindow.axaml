@@ -13,8 +13,7 @@
         x:DataType="local:Warp9ProjectModel">
     
     <DockPanel>
-         <Border DockPanel.Dock="Top" CornerRadius="0" BorderThickness="0,0,0,1" BorderBrush="#303030" Padding="4,0,0,0">
-        <Menu>
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Header="_New" />
                 <MenuItem Header="_Open..." Click="FileOpen_Click" />
@@ -46,7 +45,6 @@
                 <MenuItem Header="_About..." Click="HelpAbout_Click" />
             </MenuItem>
         </Menu>
-        </Border>
 
         <Border DockPanel.Dock="Bottom" Background="Transparent" BorderThickness="0,1,0,0" BorderBrush="#303030" Padding="8,4" Height="28">
             <TextBlock Text="Ready" VerticalAlignment="Center" />
@@ -61,7 +59,7 @@
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <Border Grid.Row="0" Grid.Column="1" BorderThickness="1,0,0,0" BorderBrush="#303030" Padding="4">
+            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8,0,0,0" BorderThickness="1,1,0,0" BorderBrush="#303030" Padding="4">
                 <ContentControl x:Name="frameMain" Margin="4,4,4,4" />            
             </Border>            
         </Grid>
