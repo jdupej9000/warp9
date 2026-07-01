@@ -6,12 +6,6 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Warp9.Avalonia.TextEditorPage"
         x:DataType="w9mdl:Project">
-    
-    <DockPanel>
-        <StackPanel Height="48" DockPanel.Dock="Top">
-            <TextBlock FontSize="20">Comment</TextBlock>
-        </StackPanel>
-        
-        <TextBox x:Name="txtEdit" BorderThickness="0" BorderBrush="Transparent" FontFamily="Consolas" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding Path=Settings.Comment, Mode=OneWay}" />
-    </DockPanel>
+
+    <TextBox x:Name="txtEdit" FontFamily="Consolas" Padding="8" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding Path=Settings.Comment, Mode=OneWay}"/>
 </ContentPage>
