@@ -20,19 +20,9 @@ namespace Warp9.ViewerOgl
 
         public void Render()
         {
-            PreRender();
-
             gl.ClearColor(CanvasColor);
             gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             gl.Enable(EnableCap.DepthTest);
-        }
-
-        public virtual void Resize(int width, int height)
-        {
-        }
-
-        protected virtual void PreRender()
-        {
         }
     }
 }
