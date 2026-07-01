@@ -45,12 +45,6 @@ namespace Warp9.Test
         {
             OffscreenRenderer rend = OffscreenRenderer.Create();
             rend.Resize(Width, Height);
-
-            Console.WriteLine("Vendor   : " + rend.DeviceVendor);
-            Console.WriteLine("Renderer : " + rend.DeviceInfo);
-            Console.WriteLine("Version  : " + rend.DeviceVersion);
-            Console.WriteLine("GLSL     : " + rend.DeviceGlslVersion);
-
             return rend;
         }
 
