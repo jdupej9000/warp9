@@ -42,8 +42,4 @@
     <Platform Solution="Release|x64" Project="x64" />
     <Platform Solution="Test|x64" Project="x64" />
   </Project>
-  <Project Path="src/Warp9.Avalonia/Warp9.Avalonia.csproj" Id="929be07d-85cb-487a-b03b-fa717ef1aa82">
-    <Platform Solution="Release|x64" Project="x64" />
-    <Platform Solution="Test|x64" Project="x64" />
-  </Project>
 </Solution>
