@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Warp9.Processing
+namespace Warp9.ViewerOgl
 {
-    internal class HomoMeshRepeated
+    public class RenderJob
     {
     }
 }
