@@ -1,25 +1,19 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Warp9.Avalonia.Navigation;
 using Warp9.Model;
 
 namespace Warp9.Avalonia;
 
-public partial class TextEditorPage : ContentPage, IWarp9View
+public partial class TextEditorPage : ContentPage
 {
     public TextEditorPage()
     {
         InitializeComponent();
     }
 
-    public void AttachViewModel(Warp9ProjectModel vm)
+    public void AttachProject(Project p)
     {
-        DataContext = vm.Project;
-     
-    }
-
-    public void DetachViewModel()
-    {        
+        DataContext = p;
     }
 }

@@ -92,7 +92,6 @@ namespace Warp9.ProjectExplorer
         {
             if (pres is not TextEditorPage page)
                 throw new ArgumentException();
-
         }
     }
 
