@@ -21,8 +21,6 @@ namespace Warp9.Model
         {
             get
             {
-                if (rowIndex >= parent.Columns.First().Value.NumRows) return null;
-
                 if (column == ModelConstants.IndexColumnName) return rowIndex.ToString();
 
                 // This is a hack to obtain column names with spaces. Avalonia does not tolerate
@@ -32,6 +30,8 @@ namespace Warp9.Model
 
                 if (!parent.Columns.TryGetValue(column, out SpecimenTableColumn? col))
                     return null;
+
+                //if(rowIndex >= parent.Columns.Count) return null;
 
                 object? val = col.GetAt(rowIndex);
 
