@@ -26,7 +26,7 @@ namespace Warp9.Data
         Float32x4,
         Float32x16,
         Int8x4,
-        
+
         Unknown
     }
 
