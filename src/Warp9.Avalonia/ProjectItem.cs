@@ -425,25 +425,4 @@ namespace Warp9.Avalonia
         protected override ProjectItemKind GetKind() => ProjectItemKind.Table;
     }
     #endregion
-
-    #region Gallery
-    public class GalleryProjectItem : ProjectItem
-    {
-        public GalleryProjectItem(Warp9ProjectModel vm) :
-            base(vm, typeof(MainLandingPage))
-        {
-            Name = "Gallery";
-        }
-
-        public override void ConfigurePresenter(object pres)
-        {
-            /*if (pres is not GalleryPage page)
-                throw new ArgumentException();
-
-            page.UpdateGallery();*/
-        }
-
-        protected override ProjectItemKind GetKind() => ProjectItemKind.Gallery;
-    }
-    #endregion
 }
