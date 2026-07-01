@@ -5,8 +5,6 @@
         mc:Ignorable="d" Width="500" Height="450" CanResize="False"        
         x:Class="Warp9.Avalonia.AboutWindow"
         Loaded="Window_Loaded"
-        TextOptions.TextRenderingMode="SubpixelAntialias"
-        TextOptions.TextHintingMode="Strong"
         Title="About Warp9">
 
     <DockPanel>
