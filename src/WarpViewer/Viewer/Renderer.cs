@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
-using System.Windows.Forms;
 
-namespace Warp9.ViewerOgl
+namespace Warp9.Viewer
 {
     public class Renderer
     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if OLD
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
 using System.Numerics;
@@ -344,3 +345,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

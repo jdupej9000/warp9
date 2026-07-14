@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if OLD
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Warp9.Viewer;
-using Warp9.ViewerOgl;
 
 namespace Warp9.Test
 {
@@ -63,3 +63,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

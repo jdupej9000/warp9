@@ -79,11 +79,11 @@ namespace Warp9.Data
                 return stopColors[idx0];
 
             float t = (pos - stopPos[idx0]) / (stopPos[idx1] - stopPos[idx0]);
-            Vector4 color0 = RenderUtils.ToNumColor(stopColors[idx0]);
-            Vector4 color1 = RenderUtils.ToNumColor(stopColors[idx1]);
+            Vector4 color0 = stopColors[idx0].ToVector();
+            Vector4 color1 = stopColors[idx1].ToVector();
             Vector4 colort = Vector4.Lerp(color0, color1, t);
 
-            return RenderUtils.ToColor(colort);
+            return Color.FromVector(colort);
         }
 
         public LutSpec WithSteps(int numSteps)
@@ -107,9 +107,7 @@ namespace Warp9.Data
                 if (j1 > width) j1 = width;
 
                 float segt = (i + 0.5f) / numSegments;
-                int segc = Sample(segt).ToArgb();
-
-                Console.WriteLine($"{j0} - {j1} @{segt} = {segc:X}");
+                int segc = unchecked((int)Sample(segt).Raw);
 
                 for (int j = j0; j < j1; j++) 
                     colors[j] = segc;            
@@ -129,13 +127,13 @@ namespace Warp9.Data
                 int i0 = (int)(width * f0);
                 int i1 = (int)(width * f1);
 
-                Vector4 color0 = RenderUtils.ToNumColor(c0);
-                Vector4 color1 = RenderUtils.ToNumColor(c1);
+                Vector4 color0 = c0.ToVector();
+                Vector4 color1 = c1.ToVector();
 
                 for (int i = i0; i < Math.Min(width, i1); i++)
                 {
                     Vector4 color = Vector4.Lerp(color0, color1, (float)(i - i0) / (i1 - i0));
-                    colors[i] = RenderUtils.ToColor(color).ToArgb();
+                    colors[i] = unchecked((int)Color.FromVector(color).Raw);
                 }
             }
 
@@ -144,7 +142,7 @@ namespace Warp9.Data
             int ilast = (int)(width * flast);
             if (ilast >= width) ilast = width - 1;
             for (int i = ilast; i < width; i++)
-                colors[i] = clast.ToArgb();
+                colors[i] = unchecked((int)clast.Raw);
         }
     }
 }

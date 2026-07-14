@@ -4,7 +4,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Warp9.ViewerOgl
+namespace Warp9.Viewer
 {
     public class Fbo : IDisposable
     {

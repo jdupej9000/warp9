@@ -1,4 +1,4 @@
-﻿using SharpDX.Direct3D11;
+﻿#if OLD
 using System.Drawing;
 using System.Text.Json.Serialization;
 using Warp9.Data;
@@ -360,3 +360,5 @@ void main(triangle GsInput input[3], inout TriangleStream<GsOutput> outStream)
 
     }
 }
+
+#endif

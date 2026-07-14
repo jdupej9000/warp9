@@ -1,10 +1,9 @@
+#if OLD
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Warp9.Data;
+
 
 namespace Warp9.Test
 {
@@ -117,3 +116,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

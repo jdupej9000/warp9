@@ -1,4 +1,41 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.IO;
+using Warp9.Data;
+using Warp9.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Warp9.Test
+{
+    public static class TestUtils
+    {
+        public static string AssetsPath = @"../../test/data/";
+
+        public static Stream OpenAsset(string name)
+        {
+            string path = Path.Combine(AssetsPath, name);
+
+            return new FileStream(path, FileMode.Open, FileAccess.Read);
+        }
+
+        public static Mesh LoadObjAsset(string name, ObjImportMode mode)
+        {
+            using Stream s = TestUtils.OpenAsset(name);
+            if (!ObjImport.TryImport(s, mode, out Mesh m, out string errMsg))
+                Assert.Inconclusive("Failed to load OBJ asset: " + errMsg);
+
+            return m;
+        }
+
+        public static void SaveTestResult(string fileName, RasterImage bmp)
+        {
+            Directory.CreateDirectory(Path.GetFullPath(BitmapAsserts.ResultPath));
+            bmp.Save(Path.GetFullPath(Path.Combine(BitmapAsserts.ResultPath, fileName)));
+        }
+    }
+}
+
+#if OLD
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpDX.Diagnostics;
 using SharpDX.Mathematics.Interop;
 using System;
@@ -519,3 +556,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

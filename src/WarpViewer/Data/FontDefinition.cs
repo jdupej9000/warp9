@@ -25,12 +25,12 @@ namespace Warp9.Data
     {
         private FontDefinition()
         {
-            bitmap = new Lazy<Bitmap>(LoadBitmap);
+            bitmap = new Lazy<RasterImage>(LoadBitmap);
         }
 
         private Dictionary<char, FontSymbol> symbols = new Dictionary<char, FontSymbol>();
         private Dictionary<int, float> kerning = new Dictionary<int, float>();
-        private Lazy<Bitmap> bitmap;
+        private Lazy<RasterImage> bitmap;
 
         public string FaceName { get; private set; } = string.Empty;
         public float FontSize { get; private set; } = -1;
@@ -40,7 +40,7 @@ namespace Warp9.Data
         public string? DependenciesRoot { get; private set; } = null;
         public int BitmapWidth { get; private set; } = -1;
         public int BitmapHeight { get; private set; } = -1;
-        public Bitmap Bitmap => bitmap.Value;
+        public RasterImage Bitmap => bitmap.Value;
 
         public FontSymbol GetSymbol(char ch)
         {
@@ -100,12 +100,12 @@ namespace Warp9.Data
             return ret;
         }
 
-        private Bitmap LoadBitmap()
+        private RasterImage LoadBitmap()
         {
             if (DependenciesRoot is not null)
-                return new Bitmap(Image.FromFile(Path.Combine(DependenciesRoot, BitmapFileName)));
+                return RasterImage.FromFile(Path.Combine(DependenciesRoot, BitmapFileName));
 
-            return new Bitmap(Image.FromFile(BitmapFileName));
+            return RasterImage.FromFile(BitmapFileName);
         }
 
         private static bool ParseInfo(FontDefinition def, KeyValueLineParser parser)

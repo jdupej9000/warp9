@@ -1,49 +1,28 @@
-﻿using SharpDX.Direct3D11;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Warp9.Viewer
 {
-    public abstract class RenderItemBase
+    public class RenderItemBase
     {
-        public RenderItemBase()
+        public long Version { get; private set; } = 0;        
+
+        public void Commit()
         {
+            Version++;
         }
 
-        public RenderItemVersion Version { get; } = new RenderItemVersion(1);
-        public bool AutoCommit { get; set; } = true;
-        public int Order { get; set; } = 0;
-
-        public RenderItemDelta UpdateRenderJob(ref RenderJob? job, DeviceContext ctx, ShaderRegistry shaders, ConstantBufferManager constBuffers)
+        public bool ProjectToTask(RenderTask task)
         {
-            bool jobCreated = job is null;
+            bool mustUpdate = task.TryUpdate(Version);
+            if (mustUpdate) UpdateTask(task);
 
-            if(job is null)
-                job = new RenderJob(shaders, constBuffers);
-
-            RenderItemDelta ret = job.Version.Upgrade(Version);
-
-            if (ret == RenderItemDelta.Full || jobCreated)
-                UpdateJobInternal(job, ctx);
-            
-            if (ret != RenderItemDelta.None)
-                PartialUpdateJobInternal(ret, job, ctx);
-            
-            return ret;
+            return mustUpdate;
         }
 
-        public virtual void UpdateConstantBuffers(RenderJob job, IRendererViewport vport)
+        protected virtual void UpdateTask(RenderTask task)
         {
         }
-
-        protected abstract bool UpdateJobInternal(RenderJob job, DeviceContext ctx);
-        protected virtual void PartialUpdateJobInternal(RenderItemDelta kind, RenderJob job, DeviceContext ctx)
-        {
-        }
-
-        protected void Commit(RenderItemDelta delta = RenderItemDelta.Full)
-        {
-            if(AutoCommit)
-                Version.Commit(delta);
-        }
-    }
+}
 }

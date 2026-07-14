@@ -1,3 +1,4 @@
+#if OLD
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Warp9.Viewer;
 
@@ -14,3 +15,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

@@ -1,106 +1,93 @@
-﻿using SharpDX;
-using SharpDX.Direct3D11;
+﻿using Silk.NET.OpenGL;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using Warp9.Data;
+using Warp9.Utils;
 
 namespace Warp9.Viewer
 {
-    internal class Buffer : IDisposable
+    public enum BufferKind
     {
-        private Buffer(SharpDX.Direct3D11.Buffer buff, int elemSize)
+        Vertex,
+        Index
+    }
+
+    public class Buffer : IDisposable
+    {
+        private Buffer(GL gl, BufferKind k, MeshSegmentFormat f, int count, bool dynamic)
         {
-            buffer = buff;
-            elementSize = elemSize;
-            itemCount = 1;
+            this.gl = gl;
+            handle = gl.GenBuffer();
+
+            if (k == BufferKind.Index)
+            {
+                bufferSize = 12 * count;
+            }
+            else
+            {
+                bufferSize = MiscUtils.GetStructElemSize(f) * MiscUtils.GetNumStructElems(f) * count; 
+            }
+
+            Kind = k;
+            IsDynamic = dynamic;
         }
 
-        private Buffer(SharpDX.Direct3D11.Buffer buff, BindFlags bind, SharpDX.DXGI.Format fmt, int cnt, int elemSize, bool dyn)
-        {
-            buffer = buff;
-            bindFlags = bind;
-            format = fmt;
-            itemCount = cnt;
-            elementSize = elemSize;
-            isDynamic = dyn;
+        GL gl;
+        uint handle;
+        int bufferSize;
+        bool isDataSet = false;
+        
+        public bool IsDynamic {get; private init; }
+        public BufferKind Kind { get; private init; }
 
-            if(bindFlags == BindFlags.VertexBuffer)
-                binding = new VertexBufferBinding(buffer, elemSize, 0);
+        private GLEnum GlKind => Kind switch 
+        { 
+            BufferKind.Vertex => GLEnum.ArrayBuffer, 
+            BufferKind.Index => GLEnum.ElementArrayBuffer,
+            _ => throw new InvalidOperationException()
+        };
+
+        public void Bind()
+        {
+            gl.BindBuffer(GlKind, handle);
         }
 
-        SharpDX.Direct3D11.Buffer buffer;
-        VertexBufferBinding binding;
-        BindFlags bindFlags;
-        SharpDX.DXGI.Format format;
-        int itemCount;
-        int elementSize;
-        bool isDynamic;
-
-        public VertexBufferBinding Binding => binding;
-        public SharpDX.Direct3D11.Buffer NativeBuffer => buffer;
-        public SharpDX.DXGI.Format Format => format;
-
-        public VertexDataLayout? Layout { get; set; }
-
-        public void UpdateConstant(DeviceContext ctx, byte[] payload)
+        public void Unbind()
         {
-            ctx.UpdateSubresource(payload, buffer);
+            gl.BindBuffer(GlKind, 0);
         }
 
-        internal bool TryUpdateDynamic(DeviceContext ctx, ReadOnlySpan<byte> data)
+        public void SetData(ReadOnlySpan<byte> data, bool forceDynamicResize = false)
         {
-            if (!isDynamic || data.Length != itemCount * elementSize) return false;
+            Bind();
 
-            ctx.MapSubresource(buffer, MapMode.WriteDiscard, MapFlags.None, out DataStream ds);
-            (ds as System.IO.Stream).Write(data);
-            ctx.UnmapSubresource(buffer, 0);
-            Utilities.Dispose(ref ds);
+            if (isDataSet && IsDynamic && !forceDynamicResize)
+            {
+                gl.BufferSubData(GlKind, 0, data);
+            }
+            else
+            {
+                gl.BufferData(GlKind, data, IsDynamic ? BufferUsageARB.DynamicDraw : BufferUsageARB.StaticDraw);
+            }
+            Unbind();
 
-            return false;
+            isDataSet = true;
         }
 
-        internal static Buffer Create(Device device, ReadOnlySpan<byte> d, BindFlags bindFlags, SharpDX.DXGI.Format fmt, int itemCount, int elemSize, bool dyn)
+        public static Buffer CreateVb(GL gl, MeshSegmentFormat fmt, int count, bool dynamic=false)
         {
-            int dataSize = elemSize * itemCount;
-
-            using DataStream ds = new DataStream(dataSize, true, true);
-            if(!d.IsEmpty)
-                (ds as System.IO.Stream).Write(d);
-
-            ds.Position = 0;
-
-            SharpDX.Direct3D11.Buffer buff = new SharpDX.Direct3D11.Buffer(
-                device, ds, dataSize,
-                dyn ? ResourceUsage.Dynamic : ResourceUsage.Default,
-                bindFlags,
-                dyn ? CpuAccessFlags.Write : CpuAccessFlags.None,
-                ResourceOptionFlags.None, 0); 
-            
-           return new Buffer(buff, bindFlags, fmt, itemCount, elemSize, dyn);
+            return new Buffer(gl, BufferKind.Vertex, fmt, count, dynamic);
         }
 
-        internal static Buffer CreateConstant(Device device, byte[] data)
+        public static Buffer CreateIb(GL gl, int faceCount)
         {
-            int length = data.Length;
-
-            using DataStream ds = new DataStream(length, true, true);
-         
-            ds.WriteRange(data);
-            ds.Position = 0;
-
-            SharpDX.Direct3D11.Buffer buff = new SharpDX.Direct3D11.Buffer(
-                device, ds, length,
-                ResourceUsage.Default,
-                BindFlags.ConstantBuffer,
-                CpuAccessFlags.None,
-                ResourceOptionFlags.None, 0);
-
-           return new Buffer(buff, length);
+            return new Buffer(gl, BufferKind.Index, MeshSegmentFormat.Unknown, faceCount, false);
         }
 
         public void Dispose()
         {
-            Utilities.Dispose(ref buffer);
+            gl.DeleteBuffer(handle);
         }
     }
-
-
 }
