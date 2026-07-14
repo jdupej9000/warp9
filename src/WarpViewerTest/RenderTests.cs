@@ -31,6 +31,20 @@ namespace Warp9.Test
             RasterImage ri1 = rend.ExtractColor();
             BitmapAsserts.AssertEqual("BlankCanvasTest_1.png", ri1);
         }
+
+
+        [TestMethod]
+        public void ColorCubeOneVbuffTest()
+        {
+            OffscreenRenderer rend = CreateRenderer();
+            RenderItemTestCube cube = new  RenderItemTestCube();
+            rend.AddRenderItem(cube);
+
+            rend.Render();
+
+            RasterImage ri = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("ColorCubeOneVbuffTest_0.png", ri);
+        }
     }
 }
 

@@ -24,6 +24,16 @@ namespace Warp9.Viewer
         public string DeviceVersion => gl.GetStringS(StringName.Version);
         public string DeviceGlslVersion => gl.GetStringS(StringName.ShadingLanguageVersion);
 
+        public void ClearRenderItems()
+        {
+            renderItems.Clear();
+        }
+
+        public void AddRenderItem(RenderItemBase ri)
+        {
+            renderItems[ri] = null;
+        }
+
         public void Render()
         {
             List<(RenderItemBase, RenderTask)> updates = new List<(RenderItemBase, RenderTask)>();

@@ -17,6 +17,11 @@ namespace Warp9.Viewer
         {
             gl.DrawArrays(primitiveKind, vertexStart, (uint)vertexCount);
         }
+
+        public static DrawCall CreateTriangleList(GL gl, int vertexCount)
+        {
+            return new DrawCall(gl) { primitiveKind = GLEnum.Triangles, vertexStart = 0, vertexCount = vertexCount};
+        }
     }
 }
 

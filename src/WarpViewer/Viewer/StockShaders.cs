@@ -7,15 +7,15 @@ namespace Warp9.Viewer
         public static readonly ShaderSpec VsSimple = new ShaderSpec(
             kind: ShaderKind.Vertex,
             input: [
-                (ShaderDataType.Float3, "pos"),
-                (ShaderDataType.Float3, "normal")
+                (DataType.Float3, "pos"),
+                (DataType.Float3, "normal")
             ],
             output: [
-                (ShaderDataType.Float3, "frag_pos"),
-                (ShaderDataType.Float3, "frag_normal")
+                (DataType.Float3, "frag_pos"),
+                (DataType.Float3, "frag_normal")
             ],
             uniform: [
-                (ShaderDataType.Float4x4, "viewproj")
+                (DataType.Float4x4, "viewproj")
             ],
             code: """
                 void main() {
@@ -29,41 +29,42 @@ namespace Warp9.Viewer
         public static readonly ShaderSpec PsSimple = new ShaderSpec(
             kind: ShaderKind.Pixel,
             input: [
-                (ShaderDataType.Float3, "frag_pos"),
-                (ShaderDataType.Float3, "frag_normal")
+                (DataType.Float3, "frag_pos"),
+                (DataType.Float3, "frag_normal")
             ],
             output: [
-                (ShaderDataType.Float4, "frag_color")
+                (DataType.Float4, "frag_color")
             ],
             uniform: [
-                (ShaderDataType.Float3, "light_pos"),
-                (ShaderDataType.Float3, "camera_pos"),
-                (ShaderDataType.Int, "flags"),
-                (ShaderDataType.Float4, "color"),
+                (DataType.Float3, "light_pos"),
+                (DataType.Float3, "camera_pos"),
+                (DataType.Int, "flags"),
+                (DataType.Float4, "color"),
             ],
             code: """
             void main() {
                 vec3 ret = vec3(0,0,0);
-                vec3 col = color;
-                
-                if((mode & 0x3u) == 0x1u) {
+                vec3 n = frag_normal;
+                vec4 col = color;
+
+                if((flags & 0x3) == 0x1) {
                     //col = frag_col;
                 }
-                else if((mode & 0x3u) == 0x2u) {
+                else if((flags & 0x3) == 0x2) {
                     //col = texture(texture_color, frag_tex0).rgba;
                 }
-                else if((mode & 0x3u) == 0x3u) {
+                else if((flags & 0x3) == 0x3) {
                     //col = vec4(color.rgb * frag_value, 1);
                     //col = texture(lut_color, frag_value).rgba;
                 }
 
-                if((mode & 0x40u) == 0x40u) {
+                if((flags & 0x40) == 0x40) {
                     vec3 ddx = dFdx(frag_pos);
                     vec3 ddy = dFdy(frag_pos);
                     n = normalize(cross(ddx, ddy));
                 }
             
-                if((mode & 0xcu) == 0x0u) {
+                if((flags & 0xc) == 0x0) {
                     ret = col.xyz;
                 }
                 else {
@@ -73,7 +74,7 @@ namespace Warp9.Viewer
                     vec3 dif = diff * col.xyz;
                     ret = (amb + dif);
 
-                    if((mode & 0xcu) == 0x4u) {
+                    if((flags & 0xc) == 0x4) {
                         // TODO: specular
                     }
                 }

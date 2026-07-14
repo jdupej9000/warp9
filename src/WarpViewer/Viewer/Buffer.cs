@@ -20,16 +20,32 @@ namespace Warp9.Viewer
             this.gl = gl;
             handle = gl.GenBuffer();
 
+            Count = count;
             if (k == BufferKind.Index)
             {
+                StructSize = 12;
                 bufferSize = 12 * count;
             }
             else
             {
-                bufferSize = MiscUtils.GetStructElemSize(f) * MiscUtils.GetNumStructElems(f) * count; 
+                StructSize = MiscUtils.GetStructElemSize(f) * MiscUtils.GetNumStructElems(f);
+                bufferSize =  StructSize * count; 
             }
 
             Kind = k;
+            IsDynamic = dynamic;
+        }
+
+        private Buffer(GL gl, int structSize, int count, bool dynamic)
+        {
+            this.gl = gl;
+            handle = gl.GenBuffer();
+
+            Count= count;
+            StructSize = structSize;
+            bufferSize = StructSize * Count;            
+
+            Kind = BufferKind.Vertex;
             IsDynamic = dynamic;
         }
 
@@ -40,6 +56,8 @@ namespace Warp9.Viewer
         
         public bool IsDynamic {get; private init; }
         public BufferKind Kind { get; private init; }
+        public int StructSize { get; private init; }
+        public int Count {get; private init;}
 
         private GLEnum GlKind => Kind switch 
         { 
@@ -84,6 +102,11 @@ namespace Warp9.Viewer
         public static Buffer CreateVb(GL gl, MeshSegmentFormat fmt, int count, bool dynamic=false)
         {
             return new Buffer(gl, BufferKind.Vertex, fmt, count, dynamic);
+        }
+
+        public static Buffer CreateVbPacked(GL gl, int structSize, int count, bool dynamic=false)
+        {
+            return new Buffer(gl, structSize, count, dynamic);
         }
 
         public static Buffer CreateIb(GL gl, int faceCount)

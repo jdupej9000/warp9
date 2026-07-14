@@ -1,6 +1,7 @@
 ﻿using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Warp9.Viewer
@@ -12,20 +13,26 @@ namespace Warp9.Viewer
             this.gl = gl;
         }
 
+        const int MaxVertexBuffers = 8;
+
         GL gl;
         ShaderProgram? program;    
-        Buffer?[] vertexBuffers;
+        Buffer?[] vertexBuffers = new Buffer?[MaxVertexBuffers];
         Buffer? indexBuffer;
         uint vao; // GenVertexArrays
         List<DrawCall> drawCalls = new List<DrawCall>();
+        List<VertexDataMapping> vbuffMappings = new List<VertexDataMapping>();
 
+        public GL GL => gl;
         public long Version { get; private set; } = 0;
+        public List<DrawCall> DrawCalls => drawCalls;
+        
 
-        public ShaderProgram Program
+        public ShaderProgram? Program
         {
             get 
             { 
-                return program ?? throw new NullReferenceException(); 
+                return program;
             }
             set
             {
@@ -59,9 +66,48 @@ namespace Warp9.Viewer
             gl.BindVertexArray(0);            
         }
 
+        public void SetIndexBuffer(Buffer b)
+        {
+            indexBuffer = b;
+        }
+
+        public bool TryGetIndexBuffer(out Buffer? b)
+        {
+            if(indexBuffer is not null)
+            {
+                b = indexBuffer;
+                return true;
+            }
+
+            b = null;
+            return false;
+        }
+
+        public void SetVertexBuffer(int slot, Buffer b)
+        {
+            if(slot < 0 || slot >= MaxVertexBuffers)
+                throw new IndexOutOfRangeException();
+
+            if(vertexBuffers[slot] is not null)    
+                vertexBuffers[slot]!.Dispose();
+
+            vertexBuffers[slot] = b;
+        }
+
+        public bool TryGetVertexBuffer(int slot, out Buffer? b)
+        {
+            if(slot < 0 || slot >= MaxVertexBuffers)
+            {
+                b = null;
+                return false;
+            }
+
+            b = vertexBuffers[slot];
+            return b is not null;
+        }
 
         // call this when the buffer layout is changed
-        private void UpdateVertexBuffers()
+        public void UpdateVertexBuffers()
         {
             if(vao == uint.MaxValue)
                 vao = gl.GenVertexArray();
@@ -76,8 +122,19 @@ namespace Warp9.Viewer
                 if(vertexBuffers[i] is not null)
                 {
                     gl.EnableVertexAttribArray(i);
-                    gl.VertexAttribFormat(i, 3, GLEnum.Float, false, 0);
-                    gl.VertexAttribBinding(i, i);
+                    vertexBuffers[i]!.Bind((int)i);
+
+                    foreach(VertexDataMapping vdm in vbuffMappings)
+                    {
+                        if(vdm.Slot == (int)i && 
+                            program is not null &&
+                            program.TryFindAttrib(vdm.AttribName, out DataType shtype, out int handle))
+                        {
+                            var dt = ViewerUtils.DataTypeToGLEnumAndCount(vdm.DataType);
+                            gl.VertexAttribFormat((uint)handle, dt.Count, dt.Kind, false, (uint)vdm.Offset);
+                            gl.VertexAttribBinding((uint)handle, i);
+                        }
+                    }
                 }
                 else
                 {

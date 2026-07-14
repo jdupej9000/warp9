@@ -1,12 +1,84 @@
-﻿using Warp9.Viewer;
+﻿using System.Runtime.InteropServices;
+using Warp9.Viewer;
 
 namespace Warp9.Test
 {
     class RenderItemTestCube : RenderItemBase
     {
-        protected virtual void UpdateTask(RenderTask task)
+        public RenderItemTestCube()
         {
-            
+            Commit();
+        }
+        
+        static readonly float[] CubeVertices = new float[] {
+            -1.0f,1.0f,-1.0f,
+            -1.0f,-1.0f,-1.0f,
+            1.0f,-1.0f,-1.0f,
+            1.0f,1.0f,-1.0f,
+
+            -1.0f,1.0f,1.0f,
+            -1.0f,-1.0f,1.0f,
+            1.0f,-1.0f,1.0f,
+            1.0f,1.0f,1.0f,
+
+            1.0f,1.0f,-1.0f,
+            1.0f,-1.0f,-1.0f,
+            1.0f,-1.0f,1.0f,
+            1.0f,1.0f,1.0f,
+
+            -1.0f,1.0f,-1.0f,
+            -1.0f,-1.0f,-1.0f,
+            -1.0f,-1.0f,1.0f,
+            -1.0f,1.0f,1.0f,
+
+            -1.0f,1.0f,1.0f,
+            -1.0f,1.0f,-1.0f,
+            1.0f,1.0f,-1.0f,
+            1.0f,1.0f,1.0f,
+
+            -1.0f,-1.0f,1.0f,
+            -1.0f,-1.0f,-1.0f,
+            1.0f,-1.0f,-1.0f,
+            1.0f,-1.0f,1.0f
+        };
+
+         static readonly int[] CubeIndices = new int[]{
+            0,1,3,
+            3,1,2,
+            4,5,7,
+            7,5,6,
+            8,9,11,
+            11,9,10,
+            12,13,15,
+            15,13,14,
+            16,17,19,
+            19,17,18,
+            20,21,23,
+            23,21,22
+        };
+
+        protected override void UpdateTask(RenderTask task)
+        {
+            if(task.Program is null)
+                task.Program = ShaderProgram.Create(task.GL, StockShaders.VsSimple, StockShaders.PsSimple);
+
+            if(!task.TryGetVertexBuffer(0, out _))
+            {
+                Buffer vb = Buffer.CreateVb(task.GL, Data.MeshSegmentFormat.Float32x3, 24, false);
+                vb.SetData(MemoryMarshal.AsBytes(CubeVertices));
+                task.SetVertexBuffer(0, vb);
+                task.UpdateVertexBuffers();
+            }
+
+            if(!task.TryGetIndexBuffer(out _))
+            {
+                Buffer ib = Buffer.CreateIb(task.GL, 12);
+                ib.SetData(MemoryMarshal.AsBytes(CubeIndices));
+                task.SetIndexBuffer(ib);
+            }
+
+            task.DrawCalls.Clear();
+            task.DrawCalls.Add(DrawCall.CreateTriangleList(task.GL, 36));
         }
     }
 }
