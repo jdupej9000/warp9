@@ -55,6 +55,8 @@ namespace Warp9.Viewer
 
             foreach(DrawCall dc in drawCalls)
                 dc.Execute();
+            
+            gl.BindVertexArray(0);            
         }
 
 
