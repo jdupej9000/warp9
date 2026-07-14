@@ -121,7 +121,7 @@ namespace Warp9.Data
         public int Stride => stride;
         public PixelFormat PixelFormat => fmt;
 
-        public ReadOnlySpan<byte> GetRawData()
+        public Span<byte> GetRawData()
         {
             return data.AsSpan();
         }
@@ -162,7 +162,7 @@ namespace Warp9.Data
         private void Save(SKEncodedImageFormat imageFormat, int imageQ, Action<SKData> validDataProc)
         {
             SKImageInfo inf = new SKImageInfo(width, height, MapToSkiaFormat(fmt));
-            using SKBitmap bmp = new SKBitmap();
+            using SKBitmap bmp = new SKBitmap(inf);
             GCHandle pinned = GCHandle.Alloc(data, GCHandleType.Pinned);
             try
             {

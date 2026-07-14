@@ -24,6 +24,11 @@ namespace Warp9.Data
         public int B => unchecked((int)((raw >> 16) & 0xff));
         public int A => unchecked((int)((raw >> 24) & 0xff));
 
+        public float RNorm => unchecked((int)(raw & 0xff)) / 255.0f;
+        public float GNorm => unchecked((int)((raw >> 8) & 0xff)) / 255.0f;
+        public float BNorm => unchecked((int)((raw >> 16) & 0xff)) / 255.0f;
+        public float ANorm => unchecked((int)((raw >> 24) & 0xff)) / 255.0f;
+
         public uint Raw => raw;
 
         public Vector4 ToVector()

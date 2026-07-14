@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug One Test",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",            
+            "args": [
+                "test", "${workspaceFolder}/Warp9.slnx",
+                "--filter", "FullyQualifiedName~Warp9.Test.RenderTests.BlankCanvasTest",
+                "--no-build"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "justMyCode": true
+        }
+    ]
+}

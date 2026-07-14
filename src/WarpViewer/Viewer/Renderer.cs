@@ -1,8 +1,9 @@
 ﻿using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Net;
 using System.Text;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -14,7 +15,7 @@ namespace Warp9.Viewer
         }
 
         GL gl;
-        public Color CanvasColor { get; set; } = Color.Firebrick;
+        public Color CanvasColor { get; set; } =  new Color(0, 0, 0);
 
         readonly Dictionary<RenderItemBase, RenderTask?> renderItems = new Dictionary<RenderItemBase, RenderTask?>();
 
@@ -49,7 +50,7 @@ namespace Warp9.Viewer
 
             PreRender();
 
-            gl.ClearColor(CanvasColor);
+            gl.ClearColor(CanvasColor.RNorm, CanvasColor.GNorm, CanvasColor.BNorm, CanvasColor.ANorm);
             gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             gl.Enable(EnableCap.DepthTest);
 

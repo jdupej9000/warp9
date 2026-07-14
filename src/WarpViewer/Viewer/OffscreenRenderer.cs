@@ -2,7 +2,9 @@
 using Silk.NET.Windowing;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using Warp9.Data;
 
 namespace Warp9.Viewer
 {
@@ -28,6 +30,13 @@ namespace Warp9.Viewer
                 throw new InvalidOperationException();
 
             fbo.Read(dest, true);
+        }
+
+        public RasterImage ExtractColor()
+        {
+            RasterImage ri = new  RasterImage(fbo.Height, fbo.Width, Data.PixelFormat.Rgba8);
+            fbo.Read(ri.GetRawData(), true);
+            return ri;
         }
 
         public void Dispose()

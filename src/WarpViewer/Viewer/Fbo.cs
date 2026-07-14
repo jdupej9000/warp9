@@ -22,6 +22,8 @@ namespace Warp9.Viewer
         int fboWidth, fboHeight;
 
         public int ColorBitmapSizeBytes => fboWidth * fboHeight * 4;
+        public int Width => fboWidth;
+        public int Height => fboHeight;
 
         public void Resize(int width, int height)
         {

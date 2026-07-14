@@ -1,4 +1,41 @@
-﻿#if OLD
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using Warp9.Data;
+using Warp9.Viewer;
+
+namespace Warp9.Test
+{
+    [TestClass]
+    public class RenderTests
+    {
+        static OffscreenRenderer CreateRenderer()
+        {
+            OffscreenRenderer rend = OffscreenRenderer.Create();
+            rend.Resize(128, 128);
+            return rend;
+        }
+
+        [TestMethod]
+        public void BlankCanvasTest()
+        {
+            OffscreenRenderer rend = CreateRenderer();
+            rend.CanvasColor = new Color(0, 137, 137);
+
+            rend.Render();
+
+            RasterImage ri0 = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("BlankCanvasTest_0.png", ri0);
+
+            rend.CanvasColor = new Color(139, 0, 0);
+            rend.Render();
+
+            RasterImage ri1 = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("BlankCanvasTest_1.png", ri1);
+        }
+    }
+}
+
+#if OLD
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
