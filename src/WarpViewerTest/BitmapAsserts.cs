@@ -30,7 +30,7 @@ namespace Warp9.Test
                     case PixelFormat.Rgba8:
                     case PixelFormat.Bgra8:
                     case PixelFormat.Bgrx8:
-                        AssertEqualGray8(refBitmap.GetRawData(), testBitmap.GetRawData(), refBitmap.Width, refBitmap.Stride, refBitmap.Height, 0);
+                        AssertEqualRgba8(refBitmap.GetRawData(), testBitmap.GetRawData(), refBitmap.Width, refBitmap.Stride, refBitmap.Height, MustFlipBgra(testBitmap, refBitmap), 0);
                         break;
 
                      default:
@@ -71,7 +71,14 @@ namespace Warp9.Test
             Assert.AreEqual(0, numTolExceeded);
         }
 
-        private static unsafe void AssertEqualRgba8(ReadOnlySpan<byte> ptrRef, ReadOnlySpan<byte> ptrTest, int width, int stride, int height, int tol = 16)
+        private static bool MustFlipBgra(RasterImage ri0, RasterImage ri1)
+        {
+            PixelFormatInfo pfi0 = RasterImage.GetPixelFormatInfo(ri0.PixelFormat);
+            PixelFormatInfo pfi1 = RasterImage.GetPixelFormatInfo(ri1.PixelFormat);
+            return pfi0.RedOffsetBit == pfi1.BlueOffsetBit;
+        }
+
+        private static void AssertEqualRgba8(ReadOnlySpan<byte> ptrRef, ReadOnlySpan<byte> ptrTest, int width, int stride, int height, bool flipBgra, int tol = 16)
         {
             int maxError = 0;
             int numTolExceeded = 0;
@@ -83,11 +90,20 @@ namespace Warp9.Test
 
                 for (int x = 0; x < width; x++)
                 {
-                    int e0 = (sRef[x] & 0xff) - (sTest[x] & 0xff);
-                    int e1 = ((sRef[x] >> 8) & 0xff) - ((sTest[x] >> 8) & 0xff);
-                    int e2 = ((sRef[x] >> 16) & 0xff) - ((sTest[x] >> 16) & 0xff);
+                    int e0, e1, e2;
+                    if(flipBgra)
+                    {
+                        e0 = ((sRef[x] >> 16) & 0xff) - (sTest[x] & 0xff);
+                        e1 = ((sRef[x] >> 8) & 0xff) - ((sTest[x] >> 8) & 0xff);
+                        e2 = (sRef[x] & 0xff) - ((sTest[x] >> 16) & 0xff);
+                    }
+                    else
+                    {
+                        e0 = (sRef[x] & 0xff) - (sTest[x] & 0xff);
+                        e1 = ((sRef[x] >> 8) & 0xff) - ((sTest[x] >> 8) & 0xff);
+                        e2 = ((sRef[x] >> 16) & 0xff) - ((sTest[x] >> 16) & 0xff);                        
+                    }
                     int e = Math.Max(e0, Math.Max(e1, e2));
-
                     if (e > tol) numTolExceeded++;
                     if (e > maxError) maxError = e;
                 }

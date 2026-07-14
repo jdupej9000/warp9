@@ -78,7 +78,7 @@ namespace Warp9.Viewer
         {
             Bind();
             gl.PixelStore(GLEnum.PackAlignment, 1);
-            gl.ReadPixels(0, 0, (uint)fboWidth, (uint)fboHeight, PixelFormat.Bgra, PixelType.UnsignedByte, destination);
+            gl.ReadPixels(0, 0, (uint)fboWidth, (uint)fboHeight, PixelFormat.Rgba, PixelType.UnsignedByte, destination);
             Unbind();
 
             if (flip)

@@ -20,7 +20,6 @@ namespace Warp9.Test
         {
             OffscreenRenderer rend = CreateRenderer();
             rend.CanvasColor = new Color(0, 137, 137);
-
             rend.Render();
 
             RasterImage ri0 = rend.ExtractColor();
