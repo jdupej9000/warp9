@@ -1,4 +1,18 @@
-﻿#if OLD
+﻿using Warp9.Viewer;
+
+namespace Warp9.Test
+{
+    class RenderItemTestCube : RenderItemBase
+    {
+        protected virtual void UpdateTask(RenderTask task)
+        {
+            
+        }
+    }
+}
+
+
+#if OLD
 using System.Drawing;
 using System.Text.Json.Serialization;
 using Warp9.Data;
