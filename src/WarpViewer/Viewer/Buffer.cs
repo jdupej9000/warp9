@@ -48,14 +48,20 @@ namespace Warp9.Viewer
             _ => throw new InvalidOperationException()
         };
 
-        public void Bind()
+        public void Bind(int slot = 0)
         {
-            gl.BindBuffer(GlKind, handle);
+            if(Kind == BufferKind.Vertex)
+                gl.BindVertexBuffer((uint)slot, handle, 0, 0);
+            else
+                gl.BindBuffer(GLEnum.ElementArrayBuffer, handle);
         }
 
-        public void Unbind()
+        public void Unbind(int slot = 0)
         {
-            gl.BindBuffer(GlKind, 0);
+             if(Kind == BufferKind.Vertex)
+                gl.BindVertexBuffer((uint)slot, 0, 0, 0);
+            else
+                gl.BindBuffer(GLEnum.ElementArrayBuffer, handle);
         }
 
         public void SetData(ReadOnlySpan<byte> data, bool forceDynamicResize = false)

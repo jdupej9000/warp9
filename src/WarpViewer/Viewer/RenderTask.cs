@@ -13,7 +13,12 @@ namespace Warp9.Viewer
         }
 
         GL gl;
-        ShaderProgram? program;
+        ShaderProgram? program;    
+        Buffer?[] vertexBuffers;
+        Buffer? indexBuffer;
+        uint vao; // GenVertexArrays
+        List<DrawCall> drawCalls = new List<DrawCall>();
+
         public long Version { get; private set; } = 0;
 
         public ShaderProgram Program
@@ -44,7 +49,40 @@ namespace Warp9.Viewer
 
         public void Execute()
         {
+            gl.BindVertexArray(vao);
+            indexBuffer?.Bind();
             Program.Bind();
+
+            foreach(DrawCall dc in drawCalls)
+                dc.Execute();
+        }
+
+
+        // call this when the buffer layout is changed
+        private void UpdateVertexBuffers()
+        {
+            if(vao == uint.MaxValue)
+                vao = gl.GenVertexArray();
+
+            if(vertexBuffers is null)
+                return;
+
+            gl.BindVertexArray(vao);
+
+            for(uint i = 0; i < vertexBuffers.Length; i++)
+            {
+                if(vertexBuffers[i] is not null)
+                {
+                    gl.EnableVertexAttribArray(i);
+                    gl.VertexAttribFormat(i, 3, GLEnum.Float, false, 0);
+                    gl.VertexAttribBinding(i, i);
+                }
+                else
+                {
+                    gl.DisableVertexAttribArray(i);
+                }
+            }
+
         }
     }
 }
