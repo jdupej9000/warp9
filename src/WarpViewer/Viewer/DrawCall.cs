@@ -1,100 +1,27 @@
-﻿using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
-using System.Collections.Generic;
+using Silk.NET.OpenGL;
 
 namespace Warp9.Viewer
 {
     public class DrawCall
     {
-        public DrawCall()
+        public DrawCall(GL gl)
         {
+            this.gl = gl;
         }
 
-        Dictionary<int, ConstantBufferPayload> cbuffPayloads = new Dictionary<int, ConstantBufferPayload>();
+        GL gl;
+        GLEnum primitiveKind;
+        int vertexStart, vertexCount;
 
-        public bool Enabled { get; set; } = true;
-        public bool IsIndexed { get; set; }
-        public bool IsInstanced { get; set; } = false;
-        public PrimitiveTopology Topology { get; set; }
-        public RasterizerMode RastMode { get; set; } = RasterizerMode.Solid | RasterizerMode.CullBack;
-        public BlendMode BlendMode { get; set; } = BlendMode.NoBlend;
-        public DepthMode DepthMode { get; set; } = DepthMode.UseDepth;
-        public int FirstElem { get; set; }
-        public int NumElems { get; set; }
-        public int FirstInstance { get; set; } = 0;
-        public int NumInstances { get; set; } = 0;
-        public int FirstVertexIdx { get; set; }
-        public Dictionary<int, ConstantBufferPayload> ConstBuffPayloads => cbuffPayloads;
-
-        public void Execute(DeviceContext ctx, StateCache stateCache)
+        public void Execute()
         {
-            if (!Enabled) return;
-
-            ctx.InputAssembler.PrimitiveTopology = Topology;
-        
-            if (stateCache.RasterizerStateCache.LastState != RastMode)
-                ctx.Rasterizer.State = stateCache.RasterizerStateCache.Get(RastMode);
-
-            if (stateCache.BlendStateCache.LastState != BlendMode)
-                ctx.OutputMerger.SetBlendState(stateCache.BlendStateCache.Get(BlendMode));
-
-            if (stateCache.DepthStateCache.LastState != DepthMode)
-                ctx.OutputMerger.DepthStencilState = stateCache.DepthStateCache.Get(DepthMode);
-            
-            if (IsInstanced)
-            {
-                if (IsIndexed)
-                    ctx.DrawIndexedInstanced(NumElems, NumInstances, 0, FirstVertexIdx, FirstInstance);
-                else
-                    ctx.DrawInstanced(NumElems, NumInstances, FirstVertexIdx, FirstInstance);
-            }
-            else
-            {
-                if (IsIndexed)
-                    ctx.DrawIndexed(NumElems, FirstElem, FirstVertexIdx);
-                else
-                    ctx.Draw(NumElems, FirstVertexIdx);
-            }
+            gl.DrawArrays(primitiveKind, vertexStart, (uint)vertexCount);
         }
 
-        public static DrawCall CreateIndexed(PrimitiveTopology topo, int first, int num, int offs = 0)
+        public static DrawCall CreateTriangleList(GL gl, int vertexCount)
         {
-            return new DrawCall { IsIndexed = true, Topology = topo, FirstElem = first, NumElems = num, FirstVertexIdx = offs };
-        }
-
-        public static DrawCall Create(PrimitiveTopology topo, int first, int num)
-        {
-            return new DrawCall { IsIndexed = false, Topology = topo, FirstElem = first, NumElems = num, FirstVertexIdx = 0 };
-        }
-
-        public static DrawCall CreateInstanced(PrimitiveTopology topo, int firstInst, int numInst, int numElems)
-        {
-            return new DrawCall
-            {
-                IsIndexed = false,
-                IsInstanced = true,
-                Topology = topo,
-                FirstElem = 0,
-                NumElems = numElems,
-                FirstVertexIdx = 0,
-                FirstInstance = firstInst,
-                NumInstances = numInst
-            };
-        }
-
-        public static DrawCall CreateIndexedInstanced(PrimitiveTopology topo, int firstInst, int numInst, int numElems)
-        {
-            return new DrawCall
-            {
-                IsIndexed = true,
-                IsInstanced = true,
-                Topology = topo,
-                FirstElem = 0,
-                NumElems = numElems,
-                FirstVertexIdx = 0,
-                FirstInstance = firstInst,
-                NumInstances = numInst
-            };
+            return new DrawCall(gl) { primitiveKind = GLEnum.Triangles, vertexStart = 0, vertexCount = vertexCount};
         }
     }
 }
+

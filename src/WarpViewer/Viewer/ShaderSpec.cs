@@ -1,63 +1,61 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
+using Silk.NET.GLFW;
 
 namespace Warp9.Viewer
 {
-    public struct ConstBuffAssgn(int slot, int buff)
-    {
-        public int Slot = slot;
-        public int BufferName = buff;
-    }
-
-    public struct SemanticAssgn(string semantic, int slot, SharpDX.DXGI.Format fmt)
-    {
-        public string Semantic = semantic;
-        public int Slot = slot;
-        public SharpDX.DXGI.Format Format = fmt;
-    }
-
-    public enum ShaderType
+    public enum ShaderKind
     {
         Vertex,
         Pixel,
         Geometry
     }
 
-    public class ShaderSpec
+    public record ShaderSpec
     {
-        private ShaderSpec(string name, ConstBuffAssgn[] cba, string code, ShaderType type)
+        public ShaderSpec(ShaderKind kind, (DataType, string)[] input, (DataType, string)[] output, (DataType, string)[] uniform, string code)
         {
-            Name = name;
-            Code = code;
-            Type = type;
-            ConstantBuffers = cba;
+            Kind = kind;
+            Input = input;
+            Output = output;
+            Uniform = uniform;
+            ShaderCode = code;
         }
 
-        public string Name;
-        public ConstBuffAssgn[] ConstantBuffers { get; private set; }
-        public string Code {get; private set;}
-        public ShaderType Type {get; private set;}
-        public SemanticAssgn[]? Semantics {get; private set;}
+        public ShaderKind Kind {get; init;}
+        public (DataType, string)[] Input {get; init;}
+        public (DataType, string)[] Output {get; init;}
+        public (DataType, string)[] Uniform {get; init;}
+        public string ShaderCode {get; init;}
 
-
-        public static ShaderSpec Create(string name, ShaderType sht, IEnumerable<ConstBuffAssgn> constantBuffers, string code)
+        static readonly Dictionary<DataType, string> DataTypeString = new Dictionary<DataType, string>()
         {
-            if (sht == ShaderType.Vertex)
-                throw new NotSupportedException("Vertex buffers must specify input semantics.");
+            {DataType.Float, "float"},
+            {DataType.Float2, "vec2"},
+            {DataType.Float3, "vec3"},
+            {DataType.Float4, "vec4"},
+            {DataType.Float4x4, "mat4"},
+            {DataType.Int, "int"},
+        };
 
-            ShaderSpec ret = new ShaderSpec(name, constantBuffers.ToArray(), code, sht);
-            return ret;
-        }
-
-        public static ShaderSpec Create(string name, ShaderType sht, IEnumerable<ConstBuffAssgn> constantBuffers, IEnumerable<SemanticAssgn> semantics, string code)
+        public string GetFullShaderCode()
         {
-            if (sht != ShaderType.Vertex)
-                throw new NotSupportedException("Only vertex buffers can specify input semantics.");
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("#version 330 core");
+            foreach(var x in Input)
+                sb.AppendLine($"in {DataTypeString[x.Item1]} {x.Item2};");
 
-            ShaderSpec ret = new ShaderSpec(name, constantBuffers.ToArray(), code, sht);
-            ret.Semantics = semantics.ToArray();
-            return ret;
+            foreach(var x in Output)
+                sb.AppendLine($"out {DataTypeString[x.Item1]} {x.Item2};");
+
+            foreach(var x in Uniform)
+                sb.AppendLine($"uniform {DataTypeString[x.Item1]} {x.Item2};");
+
+            sb.AppendLine();
+            sb.AppendLine(ShaderCode);
+
+            return sb.ToString();
         }
     }
 }

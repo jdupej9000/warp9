@@ -1,5 +1,56 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Warp9.Data;
+using Warp9.Viewer;
+
+namespace Warp9.Test
+{
+    [TestClass]
+    public class RenderTests
+    {
+        static OffscreenRenderer CreateRenderer()
+        {
+            OffscreenRenderer rend = OffscreenRenderer.Create();
+            rend.Resize(128, 128);
+            return rend;
+        }
+
+        [TestMethod]
+        public void BlankCanvasTest()
+        {
+            OffscreenRenderer rend = CreateRenderer();
+            rend.CanvasColor = new Color(0, 137, 137);
+            rend.Render();
+
+            RasterImage ri0 = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("BlankCanvasTest_0.png", ri0);
+
+            rend.CanvasColor = new Color(139, 0, 0);
+            rend.Render();
+
+            RasterImage ri1 = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("BlankCanvasTest_1.png", ri1);
+        }
+
+
+        [TestMethod]
+        public void ColorCubeOneVbuffTest()
+        {
+            OffscreenRenderer rend = CreateRenderer();
+            RenderItemTestCube cube = new  RenderItemTestCube();
+            rend.AddRenderItem(cube);
+
+            rend.Render();
+
+            RasterImage ri = rend.ExtractColor();
+            BitmapAsserts.AssertEqual("ColorCubeOneVbuffTest_0.png", ri);
+        }
+    }
+}
+
+#if OLD
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Drawing;
 using System.Numerics;
 using System.Security.Cryptography;
@@ -61,24 +112,7 @@ namespace Warp9.Test
 
             return (r, cube);
         }
-
-        [TestMethod]
-        public void BlankCanvasTest()
-        {
-            (HeadlessRenderer rend, _) = CreateRenderer(false);
-
-            rend.CanvasColor = Color.DarkCyan;
-            rend.Present();
-
-            using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("BlankCanvasTest_0.png", bmp);
-
-            rend.CanvasColor = Color.DarkRed;
-            rend.Present();
-
-            using (Bitmap bmp = rend.ExtractColorAsBitmap())
-                BitmapAsserts.AssertEqual("BlankCanvasTest_1.png", bmp);
-        }
+     
 
         [TestMethod]
         public void ColorCubeOneVbuffTest()
@@ -344,3 +378,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif
