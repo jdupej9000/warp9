@@ -11,6 +11,7 @@
 #include "impl/cpu_info.h"
 #include "defs.h"
 #include "git_version.g.h"
+#include <Core>
 
 using namespace std;
 using namespace warpcore::impl;
@@ -69,6 +70,28 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 
     case WCINFO_OPENBLAS_CONFIG:
         ss << openblas_get_config();
+        break;
+
+    case WCINFO_EIGEN_VERSION:
+        ss << EIGEN_VERSION_STRING;
+        #if defined(EIGEN_VECTORIZE_SSE)
+                ss << " sse";
+        #endif
+        #if defined(EIGEN_VECTORIZE_AVX)
+                ss << " avx";
+        #endif
+        #if defined(EIGEN_VECTORIZE_AVX512)
+                ss << " avx512";
+        #endif        
+        #if defined(EIGEN_VECTORIZE_NEON)
+                ss << " neon";
+        #endif
+        #if defined(EIGEN_VECTORIZE_SVE)
+                ss << " sve";
+        #endif
+        #if defined(EIGEN_HAS_OPENMP)
+                ss << " openmp";
+        #endif         
         break;
 
     case WCINFO_CUDA_DEVICE: 

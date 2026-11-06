@@ -29,6 +29,7 @@ namespace Warp9.Native
         OPENMP_THREADS = 6,
         OPENBLAS_VERSION = 1000,
         OPENBLAS_CONFIG = 1001,
+        EIGEN_VERSION = 1100,
         CUDA_DEVICE = 2000,
         CUDA_DEVICE_SM_COUNT = 2001,
         CUDA_DEVICE_MEMORY = 2002,
