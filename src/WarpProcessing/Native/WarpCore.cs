@@ -101,7 +101,7 @@ namespace Warp9.Native
     [Flags]
     public enum PCA_FLAGS : int
     {
-        PCA_SCALE_TO_UNITY = 1
+        PCA_SCALE_TO_UNITY = 1        
     };
 
     public enum PCL_IMPUTE_METHOD : int

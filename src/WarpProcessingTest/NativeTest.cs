@@ -787,10 +787,14 @@ namespace Warp9.Test
           
 
             TestUtils.SaveTestResult("PcaTest_1.png",
-                RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 1000));
+                RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 100));
 
             TestUtils.SaveTestResult("PcaTest_2.png",
-                RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 16));
+                RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, 10));
+
+            //for(int i = 2; i < 150; i++)
+            //    TestUtils.SaveTestResult($"PcaTest_X{i:D3}.png",
+             //   RoundtripPcaTrim(pca, bmpData, bmpHeight, bmpWidth, i));
 
             BitmapAsserts.AssertEqual("PcaTest_0.png", bmpPcs);
         }

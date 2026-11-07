@@ -6,6 +6,9 @@
 #include "utils.h"
 #include "math.h"
 #include <algorithm>
+#include <Eigen>
+
+using namespace Eigen;
 
 namespace warpcore::impl
 {
@@ -149,17 +152,21 @@ namespace warpcore::impl
 
     void pca_make_pcs(const float** data, const float* mean, float* cov, int n, int m, int npcs, float* var, float* pcs)
     {
-        float* evals = new float[n];
-        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals);
+        Map<MatrixXf> covm{cov, n, n};
+        SelfAdjointEigenSolver<MatrixXf> eigs{ covm };
+        covm = eigs.eigenvectors();
+        const float* evals = eigs.eigenvalues().data();
+
+        /*float* evals = new float[n];
+        LAPACKE_ssyev(LAPACK_COL_MAJOR, 'V', 'U', n, cov, n, evals);*/
         
         // Find the order that sorts the eigenvalues in a descending order of magnitude.
         int* order = new int[n];
         for (int i = 0; i < n; i++)
             order[i] = i;
 
-        // Absolute values for eigenvalues are ommitted as the matrix should be positive-semidefinite.
         std::sort(order, order + n,
-            [evals](int a, int b) { return evals[a] > evals[b]; });
+            [evals](int a, int b) { return fabs(evals[a]) > fabs(evals[b]); });
 
         // Use the eigenvectors corresponding to 'npcs' eigenvalues with the largest magnitude
         // and transform centered data with these weights to get the principal vectors.
@@ -172,20 +179,20 @@ namespace warpcore::impl
 
         // Calculate proportion of explained variance if desired.
         if (var != nullptr) {
+            float sumev = 0;
             for (int i = 0; i < n; i++) {
-                evals[i] = sqrtf(evals[i]);
+                float evi = sqrtf(evals[i]);
 
-                if (!isnormal(evals[i]))
-                    evals[i] = 0;
+                if (isnormal(evi))
+                    sumev += evi;
             }
 
-            float sumev = reduce_add(evals, n);
             for (int i = 0; i < std::min(npcs, n); i++)
                 var[i] = evals[order[i]] / sumev;
         }
 
+        //delete[] evals;
         delete[] order;
-        delete[] evals;
     }
 
     float dot_centered_pred(const float* x, const float* y, const float* x0, const void* allow, int n)
@@ -211,7 +218,13 @@ namespace warpcore::impl
     void pca_predict(const float* scores, const float* mean, const float* pcs, int n, int m, float* x)
     {
         // x := scores * pcs + mean
-        memcpy(x, mean, sizeof(float) * m);
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, m, scores, n, 1.0f, x, m);
+        Map<const MatrixXf> P{pcs, m, n}; // m*n (col-major)
+        Map<const VectorXf> s{ scores, n };
+        Map<const VectorXf> mu{ mean, m };
+        Map<VectorXf> out{ x, m };
+        out.noalias() = P * s + mu;
+               
+        //memcpy(x, mean, sizeof(float) * m);
+        //cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 1, n, 1.0f, pcs, m, scores, n, 1.0f, x, m);
     }
 };
