@@ -151,15 +151,17 @@ namespace Warp9.Test
         public static Bitmap VisualizeEigenvectors(Mesh m, Size frameSize, int neigs, ReadOnlySpan<float> d)
         {
             HeadlessRenderer rend = ComplexTests.CreateRenderer();
-            RenderItemMesh rim = new RenderItemMesh();
-            rim.Mesh = m;
-            rim.Lut = Lut.Create(256, Lut.JetColors);
-            rim.Style = MeshRenderStyle.ColorLut;// | MeshRenderStyle.ShowValueLevel;
-            rim.ModelMatrix = Matrix4x4.CreateTranslation(-1.4f, -2.0f, -2.0f);
-            rim.ValueMax = 0.02f;
-            rim.ValueMin = -0.02f;
-            rim.LevelValue = 0;
-            rim.FillColor = Color.Black;
+            RenderItemMesh rim = new RenderItemMesh
+            {
+                Mesh = m,
+                Lut = Lut.Create(256, Lut.JetColors),
+                Style = MeshRenderStyle.ColorLut,// | MeshRenderStyle.ShowValueLevel;
+                ModelMatrix = Matrix4x4.CreateTranslation(-1.4f, -2.0f, -2.0f),
+                ValueMax = 0.02f,
+                ValueMin = -0.02f,
+                LevelValue = 0,
+                FillColor = Color.Black
+            };
             rend.AddRenderItem(rim);
 
             int nv = m.VertexCount;
@@ -426,7 +428,7 @@ namespace Warp9.Test
             for (int i = 0; i < pclFrom.VertexCount; i++)
             {
                 float d = Vector3.Distance(pos0[i], pos1[i]);
-                Assert.IsTrue(d < 1e-5f);
+                Assert.IsLessThan(1e-5f, d);
             }
         }
 
