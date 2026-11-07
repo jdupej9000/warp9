@@ -2,14 +2,14 @@
 #include "vec_math.h"
 #include "kmeans.h"
 #include "utils.h"
-#include <lapacke.h>
-#include <cblas.h>
 #include <algorithm>
 #include <immintrin.h>
 #include "cpu_info.h"
 #include <omp.h>
+#include <Eigen>
 #include "debug.h"
 
+using namespace Eigen;
 
 namespace warpcore::impl
 {
@@ -64,9 +64,11 @@ namespace warpcore::impl
         for(int i = 0; i < kextra; i++)
             cpd_sample_g(y, m, centerIdx[i], beta, q + i * m);
 
-        // Orthogonalize q with a QR decomposition.
-        LAPACKE_sgeqrf(LAPACK_COL_MAJOR, m, kextra, q, m, tau);
-        LAPACKE_sorgqr(LAPACK_COL_MAJOR, m, kextra, kextra, q, m, tau);
+        // Orthogonalize Q
+        Map<MatrixXf> Q{ q, m, kextra };
+        HouseholderQR<MatrixXf> qr(Q);
+        MatrixXf Qortho = qr.householderQ();
+        Q.noalias() = Qortho;
 
         // Compute lambda (eigenvalues).
         std::memset(lambda, 0, k * sizeof(float));
@@ -114,80 +116,73 @@ namespace warpcore::impl
 
     double cpd_mstep(const float* y, const float* pt1, const float* p1, const float* px, const float* q, const float* l, const float* linv, int m, int n, int k, float sigma2, float lambda, float* t, float* tmp)
     {
+        using MapMf = Map<Matrix<float, Dynamic, Dynamic, ColMajor>>;
+        using CMapMf = Map<const Matrix<float, Dynamic, Dynamic, ColMajor>>;
+        using MapVf = Map<Matrix<float, Dynamic, 1>>;
+        using CMapVf = Map<const Matrix<float, Dynamic, 1>>;
+
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+
         float* _p0 = tmp;
         float* _p1 = _p0 + m * k;
         float* _p2 = _p1 + m * k;
         float* _p3 = _p2 + m * k;
+        MapMf P0_m3(_p0, m, 3);
+        MapMf P2_m3(_p2, m, 3);
+        MapMf P3_m3(_p3, m, 3);
+                
+        CMapMf Y(y, m, 3);
+        CMapMf PX(px, m, 3);
+        CMapVf P1(p1, m);
+        CMapMf Q(q, m, k);
+        CMapVf L(l, k);
+        CMapVf Linv(linv, k);
 
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        
-        dxinva(px, p1, m, 3, _p0);
-
-        // saxpy is very slow here
-        //cblas_saxpy(m * 3, -1.0f, y, 1, _p0, 1));
-        axpy(_p0, y, -1.0f, m * 3);
-        // _p0 (m,3): diag(p1)^-1 * px - y [right]
+        P0_m3.noalias() = P1.cwiseInverse().asDiagonal() * PX;
+        P0_m3.noalias() -= Y;
 
         const float tf = 1.0f / (sigma2 * lambda);
-        atdba(q, m, k, p1, tf, _p1); // 15.3 %
-        cblas_saxpy(k, 1.0f, linv, 1, _p1, k + 1);
-        int* piv = (int*)_p2;
-        std::memset(piv, 0, k * sizeof(int));
-        LAPACKE_sgetrf(LAPACK_COL_MAJOR, k, k, _p1, k, piv);
-        LAPACKE_sgetri(LAPACK_COL_MAJOR, k, _p1, k, piv);
-        // _p1 (k,k): ( tf * q^T * diag(p1) * q + l^-1)^-1  [inner]
-        // _p2 (k,1): destroyed
 
-        dxa(_p0, p1, m, 3, _p2);
-        std::memcpy(_p3, _p2, m * 3 * sizeof(float)); 
-        cblas_sscal(m*3, tf, _p2, 1);
-        // _p2 (m,3): tf * diag(p1) * right [w]
-        // _p3 (m,3): diag(p1) * right
+        MapMf P1k(_p1, k, k);
+        P1k.noalias() = tf * (Q.transpose() * P1.asDiagonal() * Q);
+        P1k.diagonal() += Linv;
 
-        replace_nan(_p0, m * 3, 0); // 15.5 %
-        replace_nan(_p3, m * 3, 0); // 15.1 %
-       
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p3, m, 0.0f, _p0, k); // 12.7 %
-        // _p0 (k,3): q^T * diag(p1) * right
+        auto lu = P1k.partialPivLu();
 
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, 3, k, 1.0f, _p1, k, _p0, k, 0.0f, _p3, k);
-        // _p3 (k,3): [inner] * q^T * diag(p1) * right
+        P3_m3.noalias() = P1.asDiagonal() * P0_m3;  
+        P2_m3 = tf * P3_m3;          
 
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p3, k, 0.0f, _p0, m);
-        // _p0 (m,3): q * [inner] * q^T * diag(p1) * right
+        P0_m3 = P0_m3.array().isNaN().select(0.0f, P0_m3);
+        P3_m3 = P3_m3.array().isNaN().select(0.0f, P3_m3);
 
-        cblas_sscal(m * 3, tf * tf, _p0, 1);
-        // _p0 (m,3): tf^2 * q * [inner] * q^T * diag(p1) * right
+        MapMf P0_k3(_p0, k, 3);
+        P0_k3.noalias() = Q.transpose() * P3_m3;
 
-        dxa(_p0, p1, m, 3, _p3);
-        // _p3 (m,3): diag(p1) * q * [inner] * tf^2 * q^T * diag(p1) * right  [solve1]
-
-        memcpy(_p0, _p2, m * 3 * sizeof(float));
-        // _p0 (m,3): [w]
-
-        // saxpy is very slow here
-        //cblas_saxpy(m*3, -1.0f, _p3, 1, _p2, 1));
-        axpy(_p2, _p3, -1.0f, m * 3);
-        // _p2 (m,3): [w] - [solve1]
-
-        cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 3, m, 1.0f, q, m, _p2, m, 0.0f, _p3, k);
-        // _p3 (k,3): q^T * w
-
-        replace_nan(_p3, k * 3, 0);
+        MapMf P3_k3(_p3, k, 3);
+        P3_k3.noalias() = lu.solve(P0_k3);
+        P0_m3.noalias() = (tf * tf) * (Q * P3_k3);
+        P3_m3.noalias() = P1.asDiagonal() * P0_m3;
+        P0_m3 = P2_m3;
+        P2_m3 -= P3_m3;
+        P3_k3.noalias() = Q.transpose() * P2_m3;
+        P3_k3 = P3_k3.array().isNaN().select(0.0f, P3_k3);
 
 #if defined(WCORE_CPD_DOUBLE_ACCUM)
-        const double ret = lambda / 2 * tratdba2(_p3, k, 3, l);
+        const double quad =
+            (P3_k3.cast<double>().array().square().rowwise().sum()
+                * L.cast<double>().array()).sum();
 #else
-        const double ret = lambda / 2 * tratdba(_p3, k, 3, l);
+        const float quadf =
+            (P3_k3.array().square().rowwise().sum() * L.array()).sum();
+        const double quad = static_cast<double>(quadf);
 #endif
+        const double ret = 0.5 * static_cast<double>(lambda) * quad;
 
-        dxa(_p3, l, k, 3, _p0);
-        // _p0 (k,3): diag(l) * q^T * w
-
-        std::memcpy(t, y, m * 3 * sizeof(float));
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, 3, k, 1.0f, q, m, _p0, k, 1.0f, t, m);
-        // T (m,3): q * diag(l) * q^t * w + y
+        P0_k3.noalias() = L.asDiagonal() * P3_k3;
+        MapMf T(t, m, 3);
+        T = Y;
+        T.noalias() += Q * P0_k3;
 
         return ret;
     }
