@@ -96,7 +96,7 @@ namespace Warp9.Utils
 
             return a + u * ba + v * ca;
         }
-
+      
         public static MeshSegmentFormat TypeComposition<T>()
             where T : struct
         {
@@ -144,7 +144,7 @@ namespace Warp9.Utils
             };
         }
 
-        public static SharpDX.DXGI.Format GetDxgiFormat(MeshSegmentFormat fmt)
+        /*public static SharpDX.DXGI.Format GetDxgiFormat(MeshSegmentFormat fmt)
         {
             return fmt switch
             {
@@ -155,6 +155,6 @@ namespace Warp9.Utils
                 MeshSegmentFormat.Int8x4 => SharpDX.DXGI.Format.R8G8B8A8_UNorm,
                 _ => SharpDX.DXGI.Format.Unknown
             };
-        }
+        }*/
     }
 }

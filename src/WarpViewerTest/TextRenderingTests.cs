@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if OLD
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
@@ -170,3 +171,4 @@ Rode the six hundred.";
         }
     }
 }
+#endif

@@ -1,0 +1,34 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Warp9.Avalonia.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+   <Application.Styles>
+        <FluentTheme DensityStyle="Compact">
+             <FluentTheme.Palettes>        
+                <!--<ColorPaletteResources x:Key="Light"  Accent="Green" RegionColor="White" ErrorText="Red" />-->
+                <ColorPaletteResources x:Key="Dark" 
+                                       RegionColor="#191A1B"
+                                       Accent="#2D536A"                                         
+                                       ErrorText="DarkRed" />
+                </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+	    <Style Selector=":is(TopLevel)">
+		    <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12" />
+	    </Style>
+
+       <Style Selector="DataGrid">
+		    <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12" />
+	    </Style>
+
+       <Style Selector="ContentPage">
+           <Setter Property="Background" Value="{DynamicResource ResourceKey=SystemRegionColor}" />           
+       </Style>
+    </Application.Styles>
+</Application>

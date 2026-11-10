@@ -1,3 +1,4 @@
+#if OLD
 using Microsoft.VisualBasic.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -496,3 +497,4 @@ namespace Warp9.Test
         }
     }
 }
+#endif

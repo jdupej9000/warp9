@@ -1,0 +1,33 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:w9mdl="using:Warp9.Model"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        TextOptions.TextRenderingMode="SubpixelAntialias"
+        TextOptions.TextHintingMode="Strong"
+        TextOptions.BaselinePixelAlignment="Aligned"
+        x:Class="Warp9.Avalonia.SpecimenTablePage">
+
+<DataGrid x:Name="dataMain" IsReadOnly="True" 
+          GridLinesVisibility="All"
+          BorderThickness="0" Padding="0" Margin="0">
+        
+     <!--<DataGrid.Resources>         
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <StackPanel Margin="4">
+                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Brush.Foreground}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Type}" Foreground="{DynamicResource Brush.ForegroundDark}"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </DataGrid.Resources>-->
+</DataGrid>
+
+</ContentPage>
