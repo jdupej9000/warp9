@@ -63,19 +63,7 @@ namespace warpcore::impl
 
     // Clamp packed integers vertically.
     __m256i WCORE_VECCALL clamp(__m256i x, __m256i x0, __m256i x1);
-
-    // Y = diag(x) * A
-    void dxa(const float* x, const float* v, int n, int m, float* y); 
-
-    // Y += alpha * X
-    void axpy(float* y, const float* x, float alpha, int n);
-
-    // Y = diag(x)^-1 * A
-    void dxinva(const float* x, const float* v, int n, int m, float* y);
-
-    // Y = alpha * A^T * diag(b) * A (Y is m*m)
-    void atdba(const float* a, int n, int m, const float* b, float alpha, float* y);
-
+      
     // trace(A^T * diag(b) * A)
     float tratdba(const float* a, int n, int m, const float* b);
     double tratdba2(const float* a, int n, int m, const float* b);
