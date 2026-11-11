@@ -8,10 +8,10 @@ namespace Warp9.Native
     public class CpdConfiguration
     {
         [JsonPropertyName("beta")]
-        public float Beta { get; set; } = 2.0f;
+        public float Beta { get; set; } = 1.0f;
 
         [JsonPropertyName("lambda")]
-        public float Lambda { get; set; } = 2.0f;
+        public float Lambda { get; set; } = 1.0f;
 
         [JsonPropertyName("w")]
         public float W { get; set; } = 0.1f;
@@ -20,7 +20,7 @@ namespace Warp9.Native
         public int MaxIterations { get; set; } = 200;
 
         [JsonPropertyName("tol")]
-        public float Tolerance { get; set; } = 5e-3f;
+        public float Tolerance { get; set; } = 1e-3f;
 
         [JsonPropertyName("init-method")]
         public CpdInitMethod InitMethod { get; set; } = CpdInitMethod.CPD_INIT_CLUSTERED;

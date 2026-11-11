@@ -91,7 +91,8 @@
       <Command>copy $(SolutionDir)thirdparty\openblas\bin\*.* $(OutputPath)</Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CudaCompile>
       <Optimization>O2</Optimization>
@@ -146,7 +147,8 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CudaLink>
       <GPUDebugInfo>false</GPUDebugInfo>
@@ -207,8 +209,8 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\thirdparty\openblas\bin\*.* $(OutputPath)
-</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CudaLink>
       <GPUDebugInfo>false</GPUDebugInfo>

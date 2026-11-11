@@ -67,7 +67,8 @@ namespace Warp9.Native
         CPD_CONV_SIGMA = 4,
         CPD_CONV_DSIGMA = 8,
         CPD_CONV_RTOL = 16,
-        CPD_CONV_NUMERIC_ERROR = 32,
+        CPD_CONV_L0 = 32,
+        CPD_CONV_NUMERIC_ERROR = 64,
         CPD_CONV_INTERNAL_ERROR = 1048576
     }
 

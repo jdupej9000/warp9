@@ -151,6 +151,13 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
 
         memset(tmp, 0, tmp_size * sizeof(float));
         l0 += cpd_mstep(yt, pt1, p1, px, q, l, linv, m, n, num_eigs, sigma2, cpd->lambda, (float*)ttemp, tmp);
+
+        if (abs(l0) < 1e-10) {
+            conv = CPD_CONV_L0;
+            break;
+        }
+
+
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
 
