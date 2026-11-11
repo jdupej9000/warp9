@@ -2,7 +2,6 @@
 #include <sstream>
 #include <cstring>
 #include <string.h>
-#include <openblas_config.h>
 #include <cuda_runtime.h>
 #include <omp.h>
 #include "impl/kmeans.h"
