@@ -7,10 +7,10 @@
 #include <intrin.h>
 #include <stdio.h>
 #include "../config.h"
-#include <lapacke.h>
-#include <cblas.h>
+#include <Eigen>
 
 using namespace std;
+using namespace Eigen;
 
 namespace warpcore::impl
 {
@@ -62,7 +62,7 @@ namespace warpcore::impl
 		return 0;
 	}
 		
-	bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
+	/*bool solve_ls_chol(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
 	{
 		assert(y != nullptr);
 		assert(a != nullptr);
@@ -100,7 +100,7 @@ namespace warpcore::impl
 		delete[] ata;
 
 		return info == 0;
-	}
+	}*/
 
 	bool solve_ls_qr(float* b, const float* a, const float* y, int nrow, int ncol, int nrhs, bool yrowmajor)
 	{
@@ -111,31 +111,24 @@ namespace warpcore::impl
 		assert(ncol > 0);
 		assert(nrhs > 0);
 
-		float* a2 = new float[nrow * ncol];
-		memcpy(a2, a, sizeof(float) * nrow * ncol);
+		using ColMajorMatrix = Matrix<float, Dynamic, Dynamic, ColMajor>;
+		using RowMajorMatrix = Matrix<float, Dynamic, Dynamic, RowMajor>;
 
-		// Make y2 always col-major.
-		float* y2 = new float[nrow * nrhs];
-		if (yrowmajor) {
-			assert(nrhs == 3);
-			aos_to_soa<float, 3>(y, nrow, y2);
-		} else {
-			memcpy(y2, y, sizeof(float) * nrow * nrhs);
+		Map<const ColMajorMatrix> A(a, nrow, ncol);
+		Map<ColMajorMatrix> B(b, ncol, nrhs);
+
+		if (yrowmajor) {		
+			Map<const RowMajorMatrix> Y(y, nrow, nrhs);
+			B = A.householderQr().solve(Y);
+		}
+		else {			
+			Map<const ColMajorMatrix> Y(y, nrow, nrhs);
+			B = A.householderQr().solve(Y);
 		}
 
-		// Minimze norm2(Ab - y) using QR fact.
-		int info = LAPACKE_sgels(LAPACK_COL_MAJOR, 'N',
-			nrow, ncol, nrhs,
-			a2, nrow,
-			y2, nrow);
+		// or: B = A.colPivHouseholderQr().solve(Y);
+		// or: B = A.completeOrthogonalDecomposition().solve(Y);
 
-		// Extract the solutions.		
-		for (int i = 0; i < nrhs; i++)
-			memcpy(b + i * ncol, y2 + i * nrow, sizeof(float) * ncol);
-		
-		delete[] a2;
-		delete[] y2;
-
-		return info == 0;
+		return true;
 	}
 }

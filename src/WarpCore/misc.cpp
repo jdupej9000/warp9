@@ -3,7 +3,6 @@
 #include <cstring>
 #include <string.h>
 #include <openblas_config.h>
-#include <cblas.h>
 #include <cuda_runtime.h>
 #include <omp.h>
 #include "impl/kmeans.h"
@@ -65,11 +64,11 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         break;
 
     case WCINFO_OPENBLAS_VERSION:
-        ss << OPENBLAS_VERSION;
+        //ss << OPENBLAS_VERSION;
         break;
 
     case WCINFO_OPENBLAS_CONFIG:
-        ss << openblas_get_config();
+        //ss << openblas_get_config();
         break;
 
     case WCINFO_EIGEN_VERSION:

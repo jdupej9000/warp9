@@ -5,9 +5,10 @@
 #include <immintrin.h>
 #include <cmath>
 #include <cstring>
-#include <lapacke.h>
-#include <cblas.h>
 #include <exception>
+#include <Eigen>
+
+using namespace Eigen;
 
 namespace warpcore::impl
 {
@@ -62,44 +63,42 @@ namespace warpcore::impl
         if (allow) {
             pcl_center(x, allow, d, m, xoffs);
             cs = pcl_cs(x, allow, d, m, xoffs);
-        } else {
+        }
+        else {
             pcl_center(x, d, m, xoffs);
-            cs = pcl_cs(x, d, m, xoffs);            
+            cs = pcl_cs(x, d, m, xoffs);
         }
 
         *xcs = cs;
 
-        // Kabsch algorithm follows
-        float cov[33 + 10];
-        memset(cov, 0x0, sizeof(float) * 43);
-        float* u = cov + d * d;
-        float* vt = u + d * d;
-        float* s = vt + d * d;
-        float* superb = s + d;
+        // Kabsch algorithm follows.
+        float cov[9];
+        memset(cov, 0, sizeof(float) * 9);
 
         if (allow) {
             opa_cov(x, y, allow, d, m, xoffs, cs, cov);
-        } else {
+        }
+        else {
             opa_cov(x, y, d, m, xoffs, cs, cov);
         }
 
-        int info = LAPACKE_sgesvd(LAPACK_COL_MAJOR, 'A', 'A', d, d, cov, d, s, u, d, vt, d, superb);
-        if (info != 0)
+        using Mat3 = Matrix<float, 3, 3, ColMajor>;     
+        Map<const Mat3> C(cov);
+        JacobiSVD<Mat3> svd(C, ComputeFullU | ComputeFullV);
+
+        if (svd.info() != Success) {
             return -1;
+        }
 
-        float h[9];
-        memset(h, 0, sizeof(float) * d * d);
+        Mat3 U = svd.matrixU();
+        Mat3 V = svd.matrixV();
 
-        // u = u * diag(1,1,det(u) * det(vt))
-        float detuv = mat3_det(u) * mat3_det(vt);
-        u[6] *= detuv;
-        u[7] *= detuv;
-        u[8] *= detuv;
+        float detuv = U.determinant() * V.determinant();
+        U.col(2) *= detuv;
 
-        cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, d, d, d, 1.0f, u, d, vt, d, 0.0f, h, d); 
-        mat3_transpose(h);
-
-        memcpy(rot, h, sizeof(float) * d * d);       
+        Mat3 H = U * V.transpose();       
+        Map<Mat3> R(rot);
+        R = H.transpose();
 
         return 0;
     }
@@ -123,7 +122,7 @@ namespace warpcore::impl
         for(int i = 1; i < n; i++)
             pcl_transform(data[i], d, m, true, 1.0f / xforms[i].cs, xforms[i].offs, xforms[i].rot, mean);
 
-        cblas_sscal(d * m, 1.0f / n, mean, 1);
+        scale(mean, 1.0f / n, d * m);
     }
 
     void rigid_combine(rigid3* ret, const rigid3* f, const rigid3* g)

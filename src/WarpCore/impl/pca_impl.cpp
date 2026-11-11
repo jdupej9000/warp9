@@ -1,6 +1,4 @@
 #include "pca_impl.h"
-#include <lapacke.h>
-#include <cblas.h>
 #include "vec_math.h"
 #include "cpu_info.h"
 #include "utils.h"

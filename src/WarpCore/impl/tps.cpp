@@ -1,11 +1,12 @@
 #include "tps.h"
 #include <math.h>
 #include "../config.h"
-#include <lapacke.h>
-#include <cblas.h>
 #include "utils.h"
 #include "vec_math.h"
+#include <Eigen>
 #include <iostream>
+
+using namespace Eigen;
 
 namespace warpcore::impl
 {
@@ -116,10 +117,10 @@ namespace warpcore::impl
 			b[i + 2 * n4] = desti[2];
 		}
 
-		int* piv = new int[n4];
-		memset(piv, 0, n4 * sizeof(int));
-		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
-		delete[] piv;
+		using MatrixColMajor = Matrix<float, Dynamic, Dynamic, ColMajor>;
+		Map<MatrixColMajor> A(m, n4, n4);
+		Map<MatrixColMajor> B(b, n4, 3);
+		B = A.partialPivLu().solve(B).eval();
 
 		set_p(src);
 		set_aw(b);
@@ -170,10 +171,10 @@ namespace warpcore::impl
 			b[i + 2 * n4] = desti[2];
 		}
 
-		int* piv = new int[n4];
-		memset(piv, 0, n4 * sizeof(int));
-		LAPACKE_sgesv(LAPACK_COL_MAJOR, n4, 3, m, n4, piv, b, n4);
-		delete[] piv;
+		using MatrixColMajor = Matrix<float, Dynamic, Dynamic, ColMajor>;
+		Map<MatrixColMajor> A(m, n4, n4);
+		Map<MatrixColMajor> B(b, n4, 3);
+		B = A.partialPivLu().solve(B).eval();
 
 		set_p(src, idx);
 		set_aw(b);
