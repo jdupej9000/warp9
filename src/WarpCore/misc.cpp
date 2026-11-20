@@ -67,8 +67,29 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         #if defined(EIGEN_VECTORIZE_SSE)
                 ss << " sse";
         #endif
+        #if defined(EIGEN_VECTORIZE_SSE2)
+                ss << " sse2";
+        #endif
+        #if defined(EIGEN_VECTORIZE_SSE3)
+                ss << " sse3";
+        #endif
+        #if defined(EIGEN_VECTORIZE_SSSE3)
+                ss << " ssse3";
+        #endif
+        #if defined(EIGEN_VECTORIZE_SSE4_1)
+                ss << " sse4.1";
+        #endif
+        #if defined(EIGEN_VECTORIZE_SSE4_2)
+                ss << " sse4.2";
+        #endif
         #if defined(EIGEN_VECTORIZE_AVX)
                 ss << " avx";
+        #endif
+        #if defined(EIGEN_VECTORIZE_AVX2)
+                ss << " avx2";
+        #endif
+        #if defined(EIGEN_VECTORIZE_FMA)
+                ss << " fma3";
         #endif
         #if defined(EIGEN_VECTORIZE_AVX512)
                 ss << " avx512";
