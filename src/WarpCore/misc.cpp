@@ -62,14 +62,6 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         ss << omp_get_max_threads();
         break;
 
-    case WCINFO_OPENBLAS_VERSION:
-        //ss << OPENBLAS_VERSION;
-        break;
-
-    case WCINFO_OPENBLAS_CONFIG:
-        //ss << openblas_get_config();
-        break;
-
     case WCINFO_EIGEN_VERSION:
         ss << EIGEN_VERSION_STRING;
         #if defined(EIGEN_VECTORIZE_SSE)

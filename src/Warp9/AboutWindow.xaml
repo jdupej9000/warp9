@@ -23,9 +23,9 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource Brush.Background}">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock TextWrapping="Wrap" Margin="8,8,8,8">
-                            <Bold>OpenBLAS</Bold>
+                            <Bold>Eigen</Bold>
                             <LineBreak/>
-                            http://www.openmathlib.org/OpenBLAS/
+                            https://libeigen.gitlab.io/
                             
                             <LineBreak/>
                             <LineBreak/>
