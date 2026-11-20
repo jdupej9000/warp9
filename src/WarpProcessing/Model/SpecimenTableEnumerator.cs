@@ -8,7 +8,7 @@ namespace Warp9.Model
         public SpecimenTableEnumerator(SpecimenTable table)
         {
             this.table = table;
-            index = 0;
+            index = -1;
             numRows = table.Count;
         }
 
@@ -20,7 +20,7 @@ namespace Warp9.Model
 
         public bool MoveNext()
         {
-            if (index >= numRows)
+            if (index >= numRows - 1)
                 return false;
 
             index++;
@@ -29,7 +29,7 @@ namespace Warp9.Model
 
         public void Reset()
         {
-            index = 0;
+            index = -1;
         }
 
         public void Dispose()
