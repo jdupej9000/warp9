@@ -46,7 +46,9 @@ namespace Warp9.Viewer
         static readonly List<string> mappedFieldsList = new List<string>
         {
             "Nothing",
-            "Distance from base"
+            "Distance from base",
+            "Scaling from base",
+            "Log10 scaling from base"
         };
 
         public int MappedFieldIndex
@@ -118,6 +120,14 @@ namespace Warp9.Viewer
 
                     case 1: // vertex distance
                         HomoMeshDiff.VertexDistance(field.AsSpan(), baseMesh, activeMesh);
+                        break;
+
+                    case 2: // triangle expansion
+                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), baseMesh, baseMesh, activeMesh, false);
+                        break;
+
+                    case 3: // log10 triangle expansion
+                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), baseMesh, baseMesh, activeMesh, true);
                         break;
 
                 }
