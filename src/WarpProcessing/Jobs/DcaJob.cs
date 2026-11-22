@@ -128,7 +128,8 @@ namespace Warp9.Jobs
                     break;
 
                 case DcaRigidPostRegistrationKind.GpaOnWhitelisted:
-                    throw new NotImplementedException();
+                    yield return new PclGpaJobItem(index++, CorrespondenceRegKey, CorrespondenceSizeKey, CorrespondenceRegKey, VertexWhitelistKey);
+                    break;
 
                 default:
                     throw new NotImplementedException();

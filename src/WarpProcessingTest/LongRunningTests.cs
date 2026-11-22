@@ -25,23 +25,25 @@ namespace Warp9.Test
             using Warp9ProjectArchive archive = new Warp9ProjectArchive(facesFile, false);
             using Project project = Project.Load(archive);
 
-            DcaConfiguration cfg = new DcaConfiguration();
-            cfg.SpecimenTableKey = 21;
-            cfg.LandmarkColumnName = "Landmarks";
-            cfg.MeshColumnName = "Model";
-            cfg.RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa;
-            cfg.RigidPreregistrationSubset = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-            cfg.NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd;
-            cfg.SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback;
-            cfg.RigidPostRegistration = DcaRigidPostRegistrationKind.Gpa;
-            cfg.RejectImputation = DcaImputationKind.None;
-            cfg.RejectExpandedHighThreshold = 5.0f;
-            cfg.RejectExpandedLowThreshold = 0.2f;
-            cfg.RejectDistanceThreshold = 1.5f;
-            cfg.RejectDistant = false;
-            cfg.RejectExpanded = true;
-            cfg.BaseMeshIndex = 0;
-            cfg.BaseMeshOptimize = false;
+            DcaConfiguration cfg = new DcaConfiguration
+            {
+                SpecimenTableKey = 21,
+                LandmarkColumnName = "Landmarks",
+                MeshColumnName = "Model",
+                RigidPreregistration = DcaRigidPreregKind.LandmarkFittedGpa,
+                RigidPreregistrationSubset = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 },
+                NonrigidRegistration = DcaNonrigidRegistrationKind.LowRankCpd,
+                SurfaceProjection = DcaSurfaceProjectionKind.RaycastWithFallback,
+                RigidPostRegistration = DcaRigidPostRegistrationKind.GpaOnWhitelisted,
+                RejectImputation = DcaImputationKind.None,
+                RejectExpandedHighThreshold = 5.0f,
+                RejectExpandedLowThreshold = 0.2f,
+                RejectDistanceThreshold = 1.5f,
+                RejectDistant = false,
+                RejectExpanded = true,
+                BaseMeshIndex = 0,
+                BaseMeshOptimize = false
+            };
             cfg.CpdConfig.UseGpu = true;
             cfg.CpdConfig.Beta = 2;
             cfg.CpdConfig.Lambda = 2;

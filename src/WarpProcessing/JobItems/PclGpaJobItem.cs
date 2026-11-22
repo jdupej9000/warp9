@@ -3,25 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
 using Warp9.Data;
 using Warp9.Jobs;
 using Warp9.Processing;
+using Warp9.Utils;
 
 namespace Warp9.JobItems
 {
     public class PclGpaJobItem : ProjectJobItem
     {
-        public PclGpaJobItem(int index, string meshListWorkspaceItem, string sizeItem, string resultItem) :
+        public PclGpaJobItem(int index, string meshListWorkspaceItem, string sizeItem, string resultItem, string? vertexWhitelist = null) :
             base(index, "Mesh GPA", Jobs.JobItemFlags.FailuesAreFatal | Jobs.JobItemFlags.RunsAlone)
         {
             ResultItem = resultItem;
             SizeItem = sizeItem;
             MeshListItem = meshListWorkspaceItem;
+            VertexWhitelist = vertexWhitelist;
         }
 
         public string ResultItem { get; init; }
         public string SizeItem { get; init; }
         public string MeshListItem { get; init; }
+        public string? VertexWhitelist { get; init; }
 
         protected override bool RunInternal(IJob job, ProjectJobContext ctx)
         {
@@ -41,9 +45,20 @@ namespace Warp9.JobItems
                 throw new InvalidOperationException(MeshListItem + " is not a list of point clouds nor a list of meshes or does not exist at all.");
             }
 
+            bool[]? whiteList = null;
+            if (VertexWhitelist is not null &&
+                !ctx.Workspace.TryGet(VertexWhitelist, out whiteList))
+            {
+                throw new InvalidOperationException(VertexWhitelist + " is not a bool array or does not exist at all.");
+            }
+
             int n = pointClouds.Length;
             ctx.WriteLog(ItemIndex, MessageKind.Information,
                     string.Format("Running GPA on {0} meshes with {1} vertices.", n, pointClouds[0].VertexCount));
+            
+            Gpa gpa = (whiteList is not null) ?
+                Gpa.Fit(pointClouds, BitMask.MakeBitMask(whiteList)) :
+                Gpa.Fit(pointClouds);
 
             Gpa res = Gpa.Fit(pointClouds);
             ctx.WriteLog(ItemIndex, MessageKind.Information,
