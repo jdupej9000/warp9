@@ -71,7 +71,7 @@ namespace Warp9.Processing
         public DcaSurfaceProjectionKind SurfaceProjection { get; set; } = DcaSurfaceProjectionKind.RaycastWithFallback;
 
         [JsonPropertyName("rigid-postreg")]
-        public DcaRigidPostRegistrationKind RigidPostRegistration { get; set; } = DcaRigidPostRegistrationKind.Gpa;
+        public DcaRigidPostRegistrationKind RigidPostRegistration { get; set; } = DcaRigidPostRegistrationKind.GpaOnWhitelisted;
 
         [JsonPropertyName("reject-dist")]
         public bool RejectDistant { get; set; } = true;
