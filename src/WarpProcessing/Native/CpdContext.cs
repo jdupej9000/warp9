@@ -29,6 +29,13 @@ namespace Warp9.Native
         public bool UseGpu { get; set; } = true;
 
         [JsonIgnore]
+        public bool DoNotUseGpu { 
+            get { return !UseGpu; } 
+            set { UseGpu = !value; }
+        }
+
+
+        [JsonIgnore]
         public CpdFlags Flags
         {
             get
