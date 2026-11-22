@@ -17,13 +17,13 @@ Its features include registration algorithms, spatial searching structures, data
 ## Build instructions
 Ensure you have the following dependencies installed:
 - Visual Studio 2026
-- CUDA Toolkit 13.2 with VS integration
+- CUDA Toolkit 13.5 with VS integration
 
-**1. Install OpenBLAS**<br>
-Use the script `tools\Install-Deps.ps1` to download and install OpenBLAS. You should see it appear in the `thirdparty` directory.
+**1. Install dependencies**<br>
+Use the script `tools\Install-Deps.ps1` to download and install Eigen. You should see it appear in the `thirdparty` directory.
 
 **2. Build warp9**<br>
-Open `Warp9.sln` in Visual Studio and build it.
+Open `Warp9.sln` in Visual Studio and build it. Note that currently, only the x64 target is supported.
 
 **3. Run unit tests (optional)**<br>
 Use Visual Studio's Test explorer to find and execute unit tests. 
