@@ -246,7 +246,7 @@
 
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{DynamicResource GroupBoxHeaderBlock}" Margin="2">Advanced</TextBlock>
-                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">[NOT IMPLEMENTED] These settings should generally not be changed unless troubleshooting issues.</TextBlock>
+                        <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap" Margin="2,0,0,4">These settings should generally not be changed unless troubleshooting issues.</TextBlock>
                         <CheckBox Margin="2,0,0,4" IsChecked="{Binding CpdConfig.DoNotUseGpu, Mode=TwoWay}">Do not use GPU for acceleration</CheckBox>
                         <CheckBox Margin="2,0,0,4" IsEnabled="False">Do not run tasks in parallel</CheckBox>
                     </StackPanel>
