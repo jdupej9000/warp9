@@ -18,6 +18,7 @@ constexpr float CPD_SIGMA2_CONV_TRESH = 1e-8f;
 constexpr float CPD_DELTA_SIGMA2_CONV_THRESH = 1e-6f;
 constexpr float CPD_REL_SIGMA2_CONV_THRESH = 1e-5f;
 constexpr float CPD_REL_ERROR_CONV_THRESH = 1e-5f;
+constexpr double CPD_BLIND_SIGMA_DECAY = 0.9;
 
 using namespace warpcore::impl;
 
@@ -157,7 +158,6 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
             break;
         }
 
-
         if (isnan(l0) || isnan(abs((l0 - l0_old) / l0))) {
             conv = CPD_CONV_NUMERIC_ERROR;
 
@@ -172,11 +172,13 @@ extern "C" int cpd_process(const cpdinfo* cpd, const void* x, const void* y, con
         tol = abs((l0 - l0_old) / l0);
         const double sigma2_old = sigma2;
         sigma2 = cpd_update_sigma2(xt, ttemp, pt1, p1, px, m, n);
-        if (isnan(sigma2)) {
+        if (!isnormal(sigma2))
+            sigma2 = sigma2_old * CPD_BLIND_SIGMA_DECAY;
+        /*if (isnan(sigma2)) {
             conv = CPD_CONV_NUMERIC_ERROR;
             debug = 3;
             break;
-        }
+        }*/
 
         conv |= cpd_get_convergence(cpd, it, sigma2, sigma2_old, tol, tol_old);
 
