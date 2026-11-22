@@ -87,6 +87,8 @@ namespace Warp9.Forms
                     cfg.RigidPreregistrationSubset.Select((t) => t.ToString()));
         }
 
+       
+
         private void UpdateColumnSelectors()
         {
             cmbMeshes.Items.Clear();
@@ -101,7 +103,7 @@ namespace Warp9.Forms
 
             cmbBase.Items.Clear();
             for (int i = 0; i < specTable?.SpecimenTable.Count; i++)
-                cmbBase.Items.Add(i);
+                cmbBase.Items.Add($"{i} ({specTable.SpecimenTable.MakeRow(i).ToString()})");
 
             if (cmbMeshes.Items.Count > 0)
                 cmbMeshes.SelectedIndex = 0;

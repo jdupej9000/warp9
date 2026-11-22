@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Warp9.Model
 {
@@ -167,6 +169,25 @@ namespace Warp9.Model
             }
 
             return null;
+        }
+
+        public override string ToString()
+        {
+            List<string> elems = new List<string>();
+
+            foreach (var col in ParentTable.Columns)
+            {
+                if (col.Value.ColumnType == SpecimenTableColumnType.Factor ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Boolean ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Integer ||
+                    col.Value.ColumnType == SpecimenTableColumnType.Real ||
+                    col.Value.ColumnType == SpecimenTableColumnType.String)
+                {
+                    elems.Add($"{col.Key}={this[col.Key]}");
+                }
+            }
+
+            return string.Join(", ", elems);
         }
     };
 }
