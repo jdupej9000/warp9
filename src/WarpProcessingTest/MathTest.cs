@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Warp9.Data;
 using Warp9.Native;
+using Warp9.Utils;
 
 namespace Warp9.Test
 {
@@ -118,6 +119,31 @@ namespace Warp9.Test
 
             for (int i = 0; i < pos1.Count; i++)
                 ProcessingTestUtils.AssertEqual(rigid.Transform(pos1.Data[i]), pos2.Data[i]);
+        }
+
+        [TestMethod]
+        [DataRow(-0.1, 2.368961)]
+        [DataRow(1, 0)]
+        [DataRow(2, 0)]
+        [DataRow(3, 0.6931472)]
+        [DataRow(4, 1.791759)]
+        public void LogGammaTest(double x, double expected)
+        {
+            double lg = MathUtils.LogGamma(x);
+            Assert.IsTrue(Math.Abs(expected - lg) < 1e-6,
+                 $"Wanted {expected}, got {lg}.");
+        }
+
+        [TestMethod]        
+        public void WelchTestTest()
+        {
+            float[] a = [-0.01112665f, -0.22385566f, 0.41129160f, -0.52425784f, 1.55907586f, 2.95639539f, 0.19795464f, -1.81770239f, 0.36817302f, 1.41356318f];
+            float[] b = [-0.068592729f, -0.393753915f, -0.600497711f, -0.142202350f, -0.997982974f, 0.024891781f, -0.238450122f, -0.001190203f, -0.500847654f, 0.384637404f];
+            double expected_pval = 0.1396;
+
+            double pval = MathUtils.WelchTest(a, b);
+            Assert.IsTrue(Math.Abs(expected_pval - pval) < 1e-4,
+                $"Wanted {expected_pval}, got {pval}.");
         }
     }
 }
