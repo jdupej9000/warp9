@@ -44,9 +44,10 @@ namespace Warp9.Viewer
 
         protected static readonly List<string> mappedFieldsList = new List<string>
         {
-            "Vertex distance", "Signed vertex distance",
-            "Surface distance", "Signed surface distance",
-            "Triangle expansion", "Log10 triangle expansion"
+            "Normalwise dispersion (A)", "Tangential dispersion (A)",
+            "Vertex distance (B-A)", "Signed vertex distance (B-A)",
+            "Surface distance (B-A)", "Signed surface distance (B-A)",
+            "Triangle expansion (B-A)", "Log10 triangle expansion (B-A)"
         };
 
         public List<string> MappedFieldsList => mappedFieldsList;

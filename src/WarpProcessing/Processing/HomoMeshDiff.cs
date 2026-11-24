@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX.DXGI;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,6 +169,74 @@ namespace Warp9.Processing
             {
                 result[i] = MathF.Abs(Vector3.Dot(pos1[i] - pos0[i], normal[i]));
             }
+        }
+
+        public static void NormalwiseDispersion(Span<float> result, Mesh mean, PointCloud[] pcls)
+        {
+            if(!mean.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posMean) ||
+               !mean.TryGetData(MeshSegmentSemantic.Normal, out ReadOnlySpan<Vector3> normal))
+            {
+                return;
+            }
+
+            for (int j = 0; j < result.Length; j++)
+                result[j] = 0;
+
+            int numMeshes = 0;
+            for(int i = 0; i < pcls.Length; i++)
+            {
+                if (pcls[i].TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
+                {
+                    for(int j = 0; j < pos.Length; j++)
+                    {
+                        result[j] += Vector3.Dot(pos[j] - posMean[j], normal[j]);
+                    }
+
+                    numMeshes++;
+                }
+            }
+
+            if (numMeshes == 0)
+                return;
+
+            float factor = 1.0f / numMeshes;
+            for (int j = 0; j < result.Length; j++)
+                result[j] *= factor;
+        }
+
+        public static void TangentialDispersion(Span<float> result, Mesh mean, PointCloud[] pcls)
+        {
+            if (!mean.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> posMean) ||
+                !mean.TryGetData(MeshSegmentSemantic.Normal, out ReadOnlySpan<Vector3> normal))
+            {
+                return;
+            }
+
+            for (int j = 0; j < result.Length; j++)
+                result[j] = 0;
+
+            int numMeshes = 0;
+            for (int i = 0; i < pcls.Length; i++)
+            {
+                if (pcls[i].TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos))
+                {
+                    for (int j = 0; j < pos.Length; j++)
+                    {
+                        float nw = Vector3.Dot(pos[j] - posMean[j], normal[j]);
+                        float total2 = Vector3.DistanceSquared(pos[j], posMean[j]);
+                        result[j] += MathF.Sqrt(total2 - nw * nw);
+                    }
+
+                    numMeshes++;
+                }
+            }
+
+            if (numMeshes == 0)
+                return;
+
+            float factor = 1.0f / numMeshes;
+            for (int j = 0; j < result.Length; j++)
+                result[j] *= factor;
         }
     }
 }

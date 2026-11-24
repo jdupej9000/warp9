@@ -259,37 +259,46 @@ namespace Warp9.Viewer
 
             if (recalcField)
             {
-                if(field is null) field = new float[nv];
-                               
+                if(field is null) field = new float[nv];                               
 
                 switch (mappedFieldIndex)
                 {
-                    case 0: // vertex distance
+                    case 0: // normaliwise dispersion of A
+                        if (dataA.MeanMesh is not null)
+                            HomoMeshDiff.NormalwiseDispersion(field.AsSpan(), dataA.MeanMesh, dataA.Samples);
+                        break;
+
+                    case 1: // tangential dispersion of A
+                        if (dataA.MeanMesh is not null)
+                            HomoMeshDiff.TangentialDispersion(field.AsSpan(), dataA.MeanMesh, dataA.Samples);
+                        break;
+
+                    case 2: // vertex distance
                         if(dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.VertexDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
-                    case 1: // signed vertex distance
+                    case 3: // signed vertex distance
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.SignedVertexDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
-                    case 2: // surface distance
+                    case 4: // surface distance
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.SurfaceDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
-                    case 3: // signed surface distance
+                    case 5: // signed surface distance
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
-                    case 4: // triangle expansion
+                    case 6: // triangle expansion
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.FaceScalingFactor(field.AsSpan(), dataA.MeanMesh, dataA.MeanMesh, dataB.MeanMesh, false);
                         break;
 
-                    case 5: // log10 triangle expansion
+                    case 7: // log10 triangle expansion
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.FaceScalingFactor(field.AsSpan(), dataA.MeanMesh, dataA.MeanMesh, dataB.MeanMesh, true);
                         break;
