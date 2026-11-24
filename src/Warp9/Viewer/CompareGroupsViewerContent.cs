@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,101 @@ namespace Warp9.Viewer
         GpaGroups_OpaMean = 1
     }
 
+    internal class SpecimenSelectionData
+    {
+        public SpecimenSelectionData(Project proj, SpecimenTable corrTable, SpecimenTableSelection sel, IFaceCollection faces)
+        {
+            project = proj;
+            selection = sel;
+            this.faces = faces;
+            this.corrTable = corrTable;
+        }
+
+        Project project;
+        SpecimenTableSelection selection;
+        SpecimenTable corrTable;
+        Mesh? mean;
+        IFaceCollection faces;
+        PointCloud[]? samples;
+                
+        public Mesh? MeanMesh => mean;
+        public PointCloud[]? Samples => samples;
+        public bool IsValid => samples is not null;
+
+        public void Invalidate(CompGroupRegType reg, bool form)
+        {
+            samples = null; 
+
+            if (!corrTable.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
+               col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
+                throw new InvalidOperationException();
+
+            float[]? cs = null;
+            if (form &&
+                corrTable.Columns.TryGetValue(ModelConstants.CentroidSizeColumnName, out SpecimenTableColumn? col2) &&
+                col2 is SpecimenTableColumn<double> csCol)
+            {
+                cs = csCol.Data.ConvertAll((t) => (float)t).ToArray();
+            }
+            
+            IEnumerable<(int Index, PointCloud? Item)> groupPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
+                        .Index()
+                        .Where((t) => selection.Selected[t.Index]);
+
+            if (reg == CompGroupRegType.None && cs is null)
+            {
+                samples = groupPcls.Select((t) => t.Item!).ToArray();
+            }
+            else if (reg == CompGroupRegType.None && cs is not null)
+            {
+                samples = groupPcls.Select((t) => MeshBlend.ScalePosition(t.Item!, cs[t.Index])).ToArray();
+            }
+            else if (reg == CompGroupRegType.GpaGroups_OpaMean)
+            {
+                samples = groupPcls.Select((t) => t.Item!).ToArray();
+                Gpa gpaFit = Gpa.Fit(samples);
+                int m = samples.Length;
+
+                for (int i = 0; i < m; i++)
+                {
+                    if (cs is null)
+                    {
+                        samples[i] = gpaFit.GetTransformed(i);
+                    }
+                    else
+                    {
+                        float[] cssel = groupPcls.Select((t) => cs[t.Index]).ToArray();
+                        samples[i] = MeshBlend.ScalePosition(gpaFit.GetTransformed(i), cssel[i]);
+                    }
+                }
+            }
+
+            if (samples is null || samples.Length == 0)
+            {
+                mean = null;
+                return;
+            }
+
+            PointCloud pclMean = MeshBlend.Mean(samples);
+            MeshBuilder mbMean = MeshNormals.MakeNormals(pclMean, faces, NormalsAlgorithm.FastRobust);
+            mbMean.CopyIndicesFrom(faces);
+            mean = mbMean.ToMesh();
+        }
+
+        public void ApplyCorrection(Rigid3 rigid)
+        {
+            if(mean is not null)
+                RigidTransform.TransformPosition(mean, rigid);
+
+            if(samples is not null)
+            {
+                for (int i = 0; i < samples.Length; i++)
+                    RigidTransform.TransformPosition(samples[i], rigid);
+            }
+        }
+    }
+
+
     public class CompareGroupsViewerContent : GroupColormapMeshViewerContentBase
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
@@ -33,13 +129,11 @@ namespace Warp9.Viewer
         { 
             selectionA = new SpecimenTableSelection(specTableEntry.Payload.Table);
             selectionB = new SpecimenTableSelection(specTableEntry.Payload.Table);
-          
             sidebar = new CompareGroupsSideBar(this);            
         }
                
         SpecimenTableSelection selectionA, selectionB;
-        PointCloud? pclA = null;
-        Mesh? meshB = null;
+        SpecimenSelectionData dataA, dataB;   
         int regIndex = 0;
         CompareGroupsSideBar sidebar;
 
@@ -62,7 +156,11 @@ namespace Warp9.Viewer
             meshMean = GetVisibleMesh();
 
             if (meshMean is not null)
-                Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meshMean);
+            {
+                Scene.Mesh0!.Mesh = new ReferencedData<Mesh>(meshMean);                
+                dataA = new SpecimenSelectionData(project, dcaEntry.Payload.Table!, selectionA, meshMean);
+                dataB = new SpecimenSelectionData(project, dcaEntry.Payload.Table!, selectionB, meshMean);
+            }
 
             base.AttachRenderer(renderer);
         }
@@ -104,18 +202,20 @@ namespace Warp9.Viewer
         {
             CompGroupRegType regType = (CompGroupRegType)regIndex;
 
-            if (a)
-            {
-                pclA = GetCorrPosBlend(selectionA, compareForm, regType);
-            }
+            if((a || b) && dataA is not null && dataB is not null)
+            {   
+                dataA.Invalidate(regType, compareForm);
+                dataB.Invalidate(regType, compareForm);
 
-            if (b)
-            {
-                MeshBuilder mbB = MeshNormals.MakeNormals(GetCorrPosBlend(selectionB, compareForm, regType), 
-                    meshMean!, NormalsAlgorithm.FastRobust);
-
-                mbB.CopyIndicesFrom(meshMean!);
-                meshB = mbB.ToMesh();
+                if (regType != CompGroupRegType.None &&
+                    dataA.MeanMesh is not null &&
+                    dataB.MeanMesh is not null)
+                {
+                    Rigid3 rigid = RigidTransform.FitOpa(dataB.MeanMesh, dataA.MeanMesh);
+                    rigid.cs = 1;
+                    dataA.ApplyCorrection(rigid);
+                    //pclAreg = RigidTransform.TransformPosition(pclA, rigid);
+                }
             }
 
             sidebar.SetSelectionDescription(Describe(selectionA), Describe(selectionB));
@@ -127,11 +227,16 @@ namespace Warp9.Viewer
             SpecimenTableSelection selT = selectionA;
             selectionA = selectionB;
             selectionB = selT;
-            UpdateGroups(true, true);
+
+            SpecimenSelectionData dataT = dataA;
+            dataA = dataB;
+            dataB = dataT;
+
+            sidebar.SetSelectionDescription(Describe(selectionA), Describe(selectionB));
+            UpdateMappedField(true);
         }
 
        
-
         private string Describe(SpecimenTableSelection sel)
         {
             string desc = ModelUtils.DescribeSpecimenSelection(specTableEntry.Payload.Table, sel.Selected, out bool complete);
@@ -140,114 +245,69 @@ namespace Warp9.Viewer
 
             return desc;
         }
-
-        private PointCloud? GetCorrPosBlend(SpecimenTableSelection sel, bool form, CompGroupRegType reg = CompGroupRegType.None)
-        {
-            if (!dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CorrespondencePclColumnName, out SpecimenTableColumn? col) ||
-                col is not SpecimenTableColumn<ProjectReferenceLink> pclCol)
-                throw new InvalidOperationException();
-
-            float[]? cs = null;
-            if (form &&
-                dcaEntry.Payload.Table!.Columns.TryGetValue(ModelConstants.CentroidSizeColumnName, out SpecimenTableColumn? col2) &&
-                col2 is SpecimenTableColumn<double> csCol)
-            {
-                cs = csCol.Data.ConvertAll((t) => (float)t).ToArray();
-            }
-
-            IEnumerable<(int Index, PointCloud? Item)> groupPcls = ModelUtils.LoadSpecimenTableRefs<PointCloud>(project, pclCol)
-                        .Index()
-                        .Where((t) => sel.Selected[t.Index]);
-
-            if (reg == CompGroupRegType.None)
-            {
-                if (cs is not null)
-                {
-                    return MeshBlend.WeightedMean(groupPcls.Select((t) => (t.Item, cs[t.Index])));
-                }
-                else
-                {
-                    return MeshBlend.WeightedMean(groupPcls.Select((t) => (t.Item, 1.0f)));
-                }
-            }
-            else if(reg == CompGroupRegType.GpaGroups_OpaMean)
-            { 
-                PointCloud[] pcls = groupPcls.Select((t) => t.Item!).ToArray();
-                Gpa gpaFit = Gpa.Fit(pcls);
-
-                if (form)
-                {
-                    // Recompute mean but with properly scaled meshes.
-                    return MeshBlend.WeightedMean(pcls.Index().
-                        Select((t) => (t.Item, cs[t.Index] / gpaFit.GetTransform(t.Index).cs)));
-                }
-                else
-                {
-                    return gpaFit.Mean;
-                }
-            }
-
-            throw new NotImplementedException();
-        }
-
+     
         protected override void UpdateMappedField(bool recalcField)
         {
-            if (pclA is null || meshB is null || meshMean is null ||
-                pclA.VertexCount != meshB.VertexCount || pclA.VertexCount != meshMean.VertexCount)
+            if (dataA is null || dataB is null || !dataA.IsValid || !dataB.IsValid)
             {
                 sidebar?.SetInfoText("");
                 AttributeField = null;
                 return;
             }
 
-            PointCloud pclAreg = pclA;
-            if (RegistrationIndex != 0)
-            {
-                Rigid3 rigid = RigidTransform.FitOpa(meshB, pclA);
-                rigid.cs = 1;
-                pclAreg = RigidTransform.TransformPosition(pclA, rigid);
-            }
-            // TODO: opa on means
+            int nv = dataA.MeanMesh!.VertexCount;
 
             if (recalcField)
             {
-                int nv = pclA.VertexCount;
-                
                 if(field is null) field = new float[nv];
+                               
 
                 switch (mappedFieldIndex)
                 {
                     case 0: // vertex distance
-                        HomoMeshDiff.VertexDistance(field.AsSpan(), pclA, meshB);
+                        if(dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.VertexDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
                     case 1: // signed vertex distance
-                        HomoMeshDiff.SignedVertexDistance(field.AsSpan(), pclA, meshB);
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.SignedVertexDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
                     case 2: // surface distance
-                        HomoMeshDiff.SurfaceDistance(field.AsSpan(), pclA, meshB);
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.SurfaceDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
                     case 3: // signed surface distance
-                        HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), pclA, meshB);
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.SignedSurfaceDistance(field.AsSpan(), dataA.MeanMesh, dataB.MeanMesh);
                         break;
 
                     case 4: // triangle expansion
-                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), meshMean, pclA, meshB, false);
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.FaceScalingFactor(field.AsSpan(), dataA.MeanMesh, dataA.MeanMesh, dataB.MeanMesh, false);
                         break;
 
                     case 5: // log10 triangle expansion
-                        HomoMeshDiff.FaceScalingFactor(field.AsSpan(), meshMean, pclA, meshB, true);
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.FaceScalingFactor(field.AsSpan(), dataA.MeanMesh, dataA.MeanMesh, dataB.MeanMesh, true);
                         break;
                 }
 
                 AttributeField = field;
             }
 
-            float rmsDistance = MeshDistance.DistanceProcrustes(pclAreg, 1, meshB, 1, null);
-            sidebar?.SetInfoText(string.Format("RMS distance: {0:F4}\nVertex count: {1}\n# Group A: {2}\n# Group B: {3}", 
-                rmsDistance, pclA.VertexCount, selectionA.NumSelected(), selectionB.NumSelected()));
+            if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+            {
+                float rmsDistance = MeshDistance.DistanceProcrustes(dataA.MeanMesh!, 1, dataB.MeanMesh!, 1, null);
+                sidebar?.SetInfoText(string.Format("RMS distance: {0:F4}\nVertex count: {1}\n# Group A: {2}\n# Group B: {3}",
+                    rmsDistance, nv, selectionA.NumSelected(), selectionB.NumSelected()));
+            }
+            else
+            {
+                sidebar?.SetInfoText(string.Empty);
+            }
 
             base.UpdateMappedField(recalcField);
         }

@@ -32,6 +32,22 @@ namespace Warp9.Processing
             return WeightedMean(pcls.Select((m) => (m, 1.0f)));
         }
 
+        public static PointCloud? ScalePosition(PointCloud? pcl, float factor)
+        {
+            if (pcl is null)
+                return null;
+
+            int nv = pcl.VertexCount;
+            byte[] posNew = new byte[nv * 3 * 4];
+            Span<Vector3> posNewVector = MemoryMarshal.Cast<byte, Vector3>(posNew.AsSpan());
+
+            pcl.TryGetData(MeshSegmentSemantic.Position, out ReadOnlySpan<Vector3> pos);
+            for (int i = 0; i < nv; i++)
+                posNewVector[i] = pos[i] * factor;
+
+            return PointCloud.FromRawPositions(nv, posNew);
+        }
+
         public static PointCloud? WeightedMean(IEnumerable<(PointCloud?, float)> pcls)
         {
             byte[] meanPos = Array.Empty<byte>();

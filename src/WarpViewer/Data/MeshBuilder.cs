@@ -110,7 +110,7 @@ namespace Warp9.Data
             indexDataEdit = null;
         }
 
-        public void CopyIndicesFrom(Mesh m)
+        public void CopyIndicesFrom(IFaceCollection m)
         {
             if (m.TryGetIndexData(out ReadOnlySpan<FaceIndices> idx))
             {
