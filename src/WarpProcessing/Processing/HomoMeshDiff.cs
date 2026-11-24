@@ -189,7 +189,7 @@ namespace Warp9.Processing
                 {
                     for(int j = 0; j < pos.Length; j++)
                     {
-                        result[j] += Vector3.Dot(pos[j] - posMean[j], normal[j]);
+                        result[j] += MathF.Abs(Vector3.Dot(pos[j] - posMean[j], normal[j]));
                     }
 
                     numMeshes++;
