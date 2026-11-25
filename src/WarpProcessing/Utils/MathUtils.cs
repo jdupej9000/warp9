@@ -165,5 +165,29 @@ namespace Warp9.Utils
 
             return p;
         }
+
+        // Galwey (2009) "A new measure of the effective number of
+        // tests, a practical tool for comparing families of non-independent
+        // significance tests", Genetic Epidemiology 33(7):559-568.
+        public static double GalweyEffectiveTests(ReadOnlySpan<float> corEvals, int k)
+        {
+            double sum_sqrt = 0;
+            double sum_lin = 0;
+
+            int kk = Math.Min(k, corEvals.Length);
+            for (int i = 0; i < kk; i++)
+            {
+                double lam = corEvals[i];
+                if (lam < 0.0) 
+                    lam = 0.0;  
+
+                sum_lin += lam;
+                sum_sqrt += Math.Sqrt(lam);
+            }
+
+            if (sum_lin <= 0.0) return -1;
+
+            return (sum_sqrt * sum_sqrt) / sum_lin;
+        }
     }
 }
