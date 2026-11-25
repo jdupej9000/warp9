@@ -30,3 +30,4 @@ enum WCORE_CLUST_METHOD
 extern "C" WCEXPORT int wcore_get_info(int index, char* buffer, int bufferSize);
 extern "C" WCEXPORT int set_optpath(int path);
 extern "C" WCEXPORT int clust_fit(const float* x, int d, int n, int k, float* cent, int* label, int method);
+extern "C" WCEXPORT int get_eigs_cormat(const float* x, int dim, int obs, int numeigs, float* eigs);

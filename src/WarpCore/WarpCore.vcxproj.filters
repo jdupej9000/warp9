@@ -105,6 +105,9 @@
     <ClInclude Include="impl\tri_grid_raycast.h">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
+    <ClInclude Include="impl\eigs.h">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -181,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="test\test_geom.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\eigs.cpp">
+      <Filter>Source Files\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

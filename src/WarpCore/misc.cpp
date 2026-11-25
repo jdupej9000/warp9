@@ -7,13 +7,17 @@
 #include "impl/kmeans.h"
 #include "impl/pcl_utils.h"
 #include "impl/cpu_info.h"
+#include "impl/eigs.h"
 #include "defs.h"
 #include "git_version.g.h"
-#include <Core>
-#include <Util/Version.h>
+#include <Eigen/Core>
+#include <Spectra/Util/Version.h>
+#include <Spectra/SymEigsSolver.h>
 
 using namespace std;
 using namespace warpcore::impl;
+using namespace Eigen;
+using namespace Spectra;
 
 extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
 {
@@ -205,3 +209,22 @@ extern "C" int clust_fit(const float* x, int d, int n, int k, float* cent, int* 
 
     return WCORE_OK;
 }
+
+extern "C" int get_eigs_cormat(const float* x, int dim, int obs, int numeigs, float* eigs)
+{
+    ColumnCorrelationOp op(x, dim, obs);
+    int ncv = std::min(dim, std::max(2 * numeigs + 1, numeigs + 2));
+    
+    SymEigsSolver<ColumnCorrelationOp> e(op, numeigs, ncv);
+    e.init();
+    int nconv = e.compute(SortRule::LargestMagn, 1000, 1e-10f, SortRule::LargestMagn);
+
+    if (e.info() != CompInfo::Successful)
+        return WCORE_NONCONVERGENCE;
+
+    Eigen::VectorXf evals = e.eigenvalues();
+    memcpy(eigs, evals.data(), nconv * sizeof(float));
+
+    return nconv;
+}
+

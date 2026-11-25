@@ -56,7 +56,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(VCInstallDir)Auxiliary\VS\UnitTest\include;$(ProjectDir)..\..\thirdparty\eigen\eigen-5.0.1\Eigen;$(ProjectDir)..\..\thirdparty\spectra\spectra-1.2.0\include\Spectra;$(IncludePath)</IncludePath>
+    <IncludePath>$(VCInstallDir)Auxiliary\VS\UnitTest\include;$(ProjectDir)..\..\thirdparty\eigen\eigen-5.0.1;$(ProjectDir)..\..\thirdparty\spectra\spectra-1.2.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VCInstallDir)Auxiliary\VS\UnitTest\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -242,6 +242,7 @@
     <ClInclude Include="gpa.h" />
     <ClInclude Include="impl\cpd_impl.h" />
     <ClInclude Include="impl\cpu_info.h" />
+    <ClInclude Include="impl\eigs.h" />
     <ClInclude Include="impl\gpa_impl.h" />
     <ClInclude Include="impl\kmeans.h" />
     <ClInclude Include="impl\pca_impl.h" />
@@ -269,6 +270,7 @@
     <ClCompile Include="gpa.cpp" />
     <ClCompile Include="impl\cpd_impl.cpp" />
     <ClCompile Include="impl\cpu_info.cpp" />
+    <ClCompile Include="impl\eigs.cpp" />
     <ClCompile Include="impl\gpa_impl.cpp" />
     <ClCompile Include="impl\pca_impl.cpp" />
     <ClCompile Include="impl\pcl_utils.cpp" />
