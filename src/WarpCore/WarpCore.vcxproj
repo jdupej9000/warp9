@@ -56,7 +56,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(VCInstallDir)Auxiliary\VS\UnitTest\include;$(ProjectDir)..\..\thirdparty\eigen\eigen-5.0.1\Eigen;$(IncludePath)</IncludePath>
+    <IncludePath>$(VCInstallDir)Auxiliary\VS\UnitTest\include;$(ProjectDir)..\..\thirdparty\eigen\eigen-5.0.1\Eigen;$(ProjectDir)..\..\thirdparty\spectra\spectra-1.2.0\include\Spectra;$(IncludePath)</IncludePath>
     <LibraryPath>$(VCInstallDir)Auxiliary\VS\UnitTest\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

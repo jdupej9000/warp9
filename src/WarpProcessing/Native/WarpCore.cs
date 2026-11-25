@@ -28,6 +28,7 @@ namespace Warp9.Native
         GIT_HASH = 5,
         OPENMP_THREADS = 6,       
         EIGEN_VERSION = 1100,
+        SPECTRA_VERSION = 1200,
         CUDA_DEVICE = 2000,
         CUDA_DEVICE_SM_COUNT = 2001,
         CUDA_DEVICE_MEMORY = 2002,

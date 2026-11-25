@@ -10,6 +10,7 @@
 #include "defs.h"
 #include "git_version.g.h"
 #include <Core>
+#include <Util/Version.h>
 
 using namespace std;
 using namespace warpcore::impl;
@@ -103,6 +104,10 @@ extern "C" int wcore_get_info(int index, char* buffer, int bufferSize)
         #if defined(EIGEN_HAS_OPENMP)
                 ss << " openmp";
         #endif         
+        break;
+
+    case WCINFO_SPECTRA_VERSION:
+        ss << SPECTRA_MAJOR_VERSION << "." << SPECTRA_MINOR_VERSION << "." << SPECTRA_PATCH_VERSION;
         break;
 
     case WCINFO_CUDA_DEVICE: 
