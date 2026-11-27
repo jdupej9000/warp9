@@ -163,7 +163,9 @@ namespace Warp9.Viewer
         {
             var stops = Palettes[paletteIndex].Stops;
 
-            if(UsePaletteSteps)
+            if (Palettes[paletteIndex].RequiresHiRes)
+                LutSpec = new LutSpec(1024, stops);
+            else if (UsePaletteSteps)
                 LutSpec = new LutSpec(PaletteSteps, stops);
             else
                 LutSpec = new LutSpec(0, stops);

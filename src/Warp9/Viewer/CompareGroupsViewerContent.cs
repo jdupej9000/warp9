@@ -320,9 +320,7 @@ namespace Warp9.Viewer
 
                 AttributeField = field;
             }
-
             
-
             if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
             {
                 float rmsDistance = MeshDistance.DistanceProcrustes(dataA.MeanMesh!, 1, dataB.MeanMesh!, 1, null);

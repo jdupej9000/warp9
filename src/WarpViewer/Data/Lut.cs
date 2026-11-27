@@ -29,6 +29,7 @@ namespace Warp9.Data
             int pos = Math.Clamp((int)(x * numPixels), 0, numPixels - 1);
             return Color.FromArgb(colors[pos]);
         }
+               
 
         public static Lut Create(int width, LutSpec spec)
         {
@@ -49,6 +50,15 @@ namespace Warp9.Data
         {
             return Create(width, new LutSpec(steps, stops));
         }
+
+        public static readonly (float, Color)[] PValColors =
+        {
+            (0.00f, Color.FromArgb(51, 80, 120)),
+            (0.01f, Color.FromArgb(51, 80, 120)),
+            (0.05f, Color.FromArgb(81, 113, 149)),
+            (0.10f, Color.FromArgb(177, 192, 211)),            
+            (1.00f, Color.FromArgb(255, 255, 255))
+        };
 
         // https://www.kennethmoreland.com/color-advice/
         public static readonly (float, Color)[] FastColors =

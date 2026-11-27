@@ -21,6 +21,7 @@ namespace Warp9.Utils
         public string Name { get; }
         public BitmapSource Image { get; }
 
+        public bool RequiresHiRes { get; private set; } = false;
         public (float, System.Drawing.Color)[] Stops { get; }
         const int Width = 24, Height = 12;
 
@@ -39,6 +40,24 @@ namespace Warp9.Utils
             return new PaletteItem(name, BitmapSource.Create(Width, Height, 96, 96, PixelFormats.Bgra32, null, pixels, Width * 4), stops);
         }
 
+        public static PaletteItem CreateSharp(string name, (float, System.Drawing.Color)[] stops)
+        {
+            Lut lut = Lut.Create(Width, stops);
+
+            int[] pixels = new int[Width * Height];
+            for (int i = 0; i < Width; i++)
+            {
+                int c = lut.Sample((float)i / (float)(Width - 1)).ToArgb();
+                for (int j = 0; j < Height; j++)
+                    pixels[j * Width + i] = c;
+            }
+
+            PaletteItem pi = new PaletteItem(name, BitmapSource.Create(Width, Height, 96, 96, PixelFormats.Bgra32, null, pixels, Width * 4), stops);
+            pi.RequiresHiRes = true;
+
+            return pi;
+        }
+
         public static readonly List<PaletteItem> KnownPaletteItems = new List<PaletteItem>
         {
             PaletteItem.Create("Fast", Lut.FastColors),
@@ -47,7 +66,8 @@ namespace Warp9.Utils
             PaletteItem.Create("Black body", Lut.BlackBodyColors),
             PaletteItem.Create("Jet", Lut.JetColors),
             PaletteItem.Create("Blue to green", Lut.BlueToGreenColors),
-            PaletteItem.Create("Shades of grey", Lut.GreyColors)
+            PaletteItem.Create("Shades of grey", Lut.GreyColors),
+            PaletteItem.CreateSharp("p-values", Lut.PValColors)
         };
     }
 }
