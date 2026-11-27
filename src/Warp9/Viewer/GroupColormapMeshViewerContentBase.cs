@@ -44,25 +44,52 @@ namespace Warp9.Viewer
 
         protected static readonly List<string> mappedFieldsList = new List<string>
         {
-            "Normalwise dispersion (A)", "Tangential dispersion (A)",
-            "Vertex distance (B-A)", "Signed vertex distance (B-A)",
-            "Surface distance (B-A)", "Signed surface distance (B-A)",
-            "Triangle expansion (B-A)", "Log10 triangle expansion (B-A)",
-            "Sgn. vertex distance t-test (B-A)", "Sgn. surface distance t-test (B-A)"
+            "Normalwise dispersion (A)", 
+            "Tangential dispersion (A)",
+            "Vertex distance (B-A)",
+            "Signed vertex distance (B-A)",
+            "Surface distance (B-A)", 
+            "Signed surface distance (B-A)",
+            "Triangle expansion (B-A)", 
+            "Log10 triangle expansion (B-A)",
+            "Sgn. vertex distance t-test (B-A)", 
+            "Sgn. surface distance t-test (B-A)"
+        };
+
+        protected static readonly List<string> mcCorrectionsList = new List<string>()
+        {
+            "No correction", 
+            "Bonferonni",
+            "Šidák (alpha=0.05)", 
+            "Holm", 
+            "Benjamini-Hochberg",
+            "Effective test count (Galwey + Šidák)"
         };
 
         public List<string> MappedFieldsList => mappedFieldsList;
+        public List<string> McCorrectionsList => mcCorrectionsList;
 
         public int MappedFieldIndex
         {
             get { return mappedFieldIndex; }
-            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); }
+            set { mappedFieldIndex = value; UpdateMappedField(true); OnPropertyChanged("MappedFieldIndex"); OnPropertyChanged("McCorrectionEnabled"); }
         }
 
         public bool ModelsForm
         {
             get { return compareForm; }
             set { compareForm = value; UpdateGroups(true, true); OnPropertyChanged("ModelsForm"); }
+        }
+
+        public int McCorrectionIndex
+        {
+            get { return mcCorrectionIndex; }
+            set { mcCorrectionIndex = value; UpdateMappedField(true); OnPropertyChanged("McCorrectionIndex"); }
+        }
+
+        public bool McCorrectionEnabled
+        {
+            get { return MappedFieldIndex == 8 || MappedFieldIndex == 9; }
         }
 
         protected Mesh? GetVisibleMesh()

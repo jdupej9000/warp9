@@ -24,6 +24,7 @@ namespace Warp9.Viewer
         }
 
         protected int paletteIndex = 0, paletteSteps = 0;
+        protected int mcCorrectionIndex = 0;
         protected bool useLutSteps = false;
 
         public List<PaletteItem> Palettes => PaletteItem.KnownPaletteItems;

@@ -318,6 +318,35 @@ namespace Warp9.Viewer
                         break;
                 }
 
+                if (McCorrectionEnabled)
+                {
+                    switch (McCorrectionIndex)
+                    {
+                        case 0: // no correction
+                            break;
+
+                        case 1: // Bonferonni
+                            MultipleTestingCorrection.Bonferonni(field);
+                            break;
+
+                        case 2:
+                            MultipleTestingCorrection.Sidak(field, 0.05f);
+                            break;
+
+                        case 3:
+                            MultipleTestingCorrection.Holm(field, 0.05f);
+                            break;
+
+                        case 4:
+                            MultipleTestingCorrection.BenjaminiHochberg1995(field, 0.05f);
+                            break;
+
+                        case 5:
+                            // TODO: Galwey + Sidak
+                            break;
+                    }
+                }
+
                 AttributeField = field;
             }
             

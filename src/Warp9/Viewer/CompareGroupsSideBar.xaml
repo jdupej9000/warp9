@@ -66,24 +66,29 @@ ToolTip="Restore size when computing mean group models. This compares form and t
             <Label Height="8" />
 
             <StackPanel Orientation="Vertical" Margin="4">
-                <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>
-            <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap">Subtract mean of Group A from the mean of Group B and use the following visualization.</TextBlock>
+                
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Mapped field</TextBlock>            
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />            
+            <Label Height="8" />
 
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Multiple testing correction</TextBlock>            
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" IsEnabled="{Binding Path=McCorrectionEnabled}" ItemsSource="{Binding Path=McCorrectionsList}" SelectedIndex="{Binding Path=McCorrectionIndex, Mode=TwoWay}" />
+            <TextBlock Style="{DynamicResource TextBlockDimmed}" TextWrapping="Wrap">Only available for t-test visualizations. Mapped p-values are processed instead of the significance threshold.</TextBlock>
+            <Label Height="8" />
+
+            <TextBlock Style="{DynamicResource TextBlockSidebarSection}">Palette</TextBlock>
+            <ComboBox Height="24" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{Binding Image}"/>
+                                <Label Width="4" />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             <Label Height="4" />
-            <ComboBox Height="24" Width="199" HorizontalAlignment="Left" ItemsSource="{Binding Path=MappedFieldsList}" SelectedIndex="{Binding Path=MappedFieldIndex, Mode=TwoWay}" />
-                <Label Height="4" />
-                <ComboBox Height="24" Width="199" HorizontalAlignment="Left"  ItemsSource="{Binding Path=Palettes}" SelectedIndex="{Binding Path=PaletteIndex, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding Image}"/>
-                                    <Label Width="4" />
-                                    <TextBlock Text="{Binding Name}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <Label Height="4" />
 
             <StackPanel Orientation="Horizontal">
                 <ToggleButton Style="{DynamicResource NoBorderToggle}" Width="100" IsChecked="{Binding Path=UsePaletteSteps, Mode=TwoWay}" Margin="0" Padding="0">
