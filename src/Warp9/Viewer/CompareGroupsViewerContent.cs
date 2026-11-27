@@ -126,7 +126,7 @@ namespace Warp9.Viewer
     {
         public CompareGroupsViewerContent(Project proj, long dcaEntityKey, string name) :
             base(proj, dcaEntityKey, name)
-        { 
+        {   
             selectionA = new SpecimenTableSelection(specTableEntry.Payload.Table);
             selectionB = new SpecimenTableSelection(specTableEntry.Payload.Table);
             sidebar = new CompareGroupsSideBar(this);            
@@ -248,7 +248,7 @@ namespace Warp9.Viewer
      
         protected override void UpdateMappedField(bool recalcField)
         {
-            if (dataA is null || dataB is null || !dataA.IsValid || !dataB.IsValid)
+            if (dataA is null || dataB is null || !dataA.IsValid || !dataB.IsValid || dataA.MeanMesh is null)
             {
                 sidebar?.SetInfoText("");
                 AttributeField = null;
