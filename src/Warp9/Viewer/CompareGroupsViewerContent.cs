@@ -257,6 +257,8 @@ namespace Warp9.Viewer
 
             int nv = dataA.MeanMesh!.VertexCount;
 
+            StringBuilder infoText = new StringBuilder();
+
             if (recalcField)
             {
                 if(field is null) field = new float[nv];                               
@@ -302,21 +304,33 @@ namespace Warp9.Viewer
                         if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
                             HomoMeshDiff.FaceScalingFactor(field.AsSpan(), dataA.MeanMesh, dataA.MeanMesh, dataB.MeanMesh, true);
                         break;
+
+                    case 8: // signed vertex distance significance
+                        infoText.AppendLine("WARNING: p-values uncorrected!");
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.SignedVertexDistanceWelchTest(field.AsSpan(), dataB.MeanMesh, dataA.Samples, dataB.Samples);
+                        break;
+
+                    case 9: // signed surface distance significance
+                        infoText.AppendLine("WARNING: p-values uncorrected!");
+                        if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
+                            HomoMeshDiff.SignedSurfaceDistanceWelchTest(field.AsSpan(), dataB.MeanMesh, dataA.Samples, dataB.Samples);
+                        break;
                 }
 
                 AttributeField = field;
             }
 
+            
+
             if (dataA.MeanMesh is not null && dataB.MeanMesh is not null)
             {
                 float rmsDistance = MeshDistance.DistanceProcrustes(dataA.MeanMesh!, 1, dataB.MeanMesh!, 1, null);
-                sidebar?.SetInfoText(string.Format("RMS distance: {0:F4}\nVertex count: {1}\n# Group A: {2}\n# Group B: {3}",
-                    rmsDistance, nv, selectionA.NumSelected(), selectionB.NumSelected()));
+                infoText.AppendFormat("RMS distance: {0:F4}\nVertex count: {1}\n# Group A: {2}\n# Group B: {3}",
+                    rmsDistance, nv, selectionA.NumSelected(), selectionB.NumSelected());                
             }
-            else
-            {
-                sidebar?.SetInfoText(string.Empty);
-            }
+
+            sidebar?.SetInfoText(infoText.ToString());
 
             base.UpdateMappedField(recalcField);
         }

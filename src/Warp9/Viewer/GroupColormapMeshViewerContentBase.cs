@@ -47,7 +47,8 @@ namespace Warp9.Viewer
             "Normalwise dispersion (A)", "Tangential dispersion (A)",
             "Vertex distance (B-A)", "Signed vertex distance (B-A)",
             "Surface distance (B-A)", "Signed surface distance (B-A)",
-            "Triangle expansion (B-A)", "Log10 triangle expansion (B-A)"
+            "Triangle expansion (B-A)", "Log10 triangle expansion (B-A)",
+            "Sgn. vertex distance t-test (B-A)", "Sgn. surface distance t-test (B-A)"
         };
 
         public List<string> MappedFieldsList => mappedFieldsList;

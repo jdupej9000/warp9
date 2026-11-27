@@ -14,7 +14,7 @@ namespace Warp9.Processing
 {
     public static class HomoMeshDiff
     {
-        public static void PerVertexTwoSamples(Span<float> result, PointCloud[] sample1, PointCloud[] sample2, PointCloud proj, Func<int, ReadOnlySpan<Vector3>, ReadOnlySpan<Vector3>, ReadOnlySpan<Vector3>, ReadOnlySpan<Vector3>, float> fun)
+        public static void PerVertexTwoSamples(Span<float> result, PointCloud[] sample1, PointCloud[] sample2, PointCloud proj, Func<int, ReadOnlySpan<Vector3>, ReadOnlySpan<Vector3>, Vector3, Vector3, float> fun)
         {
             const int BlockSize = 16;
 
@@ -35,14 +35,14 @@ namespace Warp9.Processing
                 TryCopySegmentPart(proj, MeshSegmentSemantic.Normal, i, blk, tileNormal.AsSpan(), 0, 1);
 
                 // TODO: flip to staggered reads and sequential writes
-                for (int j = 0; j < n1; i++)
+                for (int j = 0; j < n1; j++)
                     TryCopySegmentPart(sample1[j], MeshSegmentSemantic.Position, i, blk, tile1.AsSpan(), j, n1);
 
-                for (int j = 0; j < n2; i++)
+                for (int j = 0; j < n2; j++)
                     TryCopySegmentPart(sample2[j], MeshSegmentSemantic.Position, i, blk, tile2.AsSpan(), j, n2);
 
                 for (int j = 0; j < blk; j++)
-                    result[j + i] = fun(j + i, tile1.AsSpan(j * n1, n1), tile2.AsSpan(j * n2, n2), tileProj.AsSpan(), tileNormal.AsSpan());
+                    result[j + i] = fun(j + i, tile1.AsSpan(j * n1, n1), tile2.AsSpan(j * n2, n2), tileProj[j], tileNormal[j]);
             }
         }
 
@@ -59,10 +59,10 @@ namespace Warp9.Processing
                 (idx, pts1, pts2, pos, norm) =>
                 {
                     for (int i = 0; i < n1; i++)
-                        xa[i] = Vector3.Dot(pts1[i] - pos[i], norm[i]);
+                        xa[i] = Vector3.Dot(pts1[i] - pos, norm);
 
                     for (int i = 0; i < n2; i++)
-                        xb[i] = Vector3.Dot(pts2[i] - pos[i], norm[i]);
+                        xb[i] = Vector3.Dot(pts2[i] - pos, norm);
 
                     return (float)MathUtils.WelchTest(xa.AsSpan(), xb.AsSpan());
                 });
@@ -81,10 +81,10 @@ namespace Warp9.Processing
                 (idx, pts1, pts2, pos, norm) =>
                 {
                     for (int i = 0; i < n1; i++)
-                        xa[i] = (pts1[i] - pos[i]).Length() * MathF.Sign(Vector3.Dot(pts1[i] - pos[i], norm[i]));
+                        xa[i] = (pts1[i] - pos).Length() * MathF.Sign(Vector3.Dot(pts1[i] - pos, norm));
 
                     for (int i = 0; i < n2; i++)
-                        xb[i] = (pts2[i] - pos[i]).Length() * MathF.Sign(Vector3.Dot(pts2[i] - pos[i], norm[i]));
+                        xb[i] = (pts2[i] - pos).Length() * MathF.Sign(Vector3.Dot(pts2[i] - pos, norm));
 
                     return (float)MathUtils.WelchTest(xa.AsSpan(), xb.AsSpan());
                 });
